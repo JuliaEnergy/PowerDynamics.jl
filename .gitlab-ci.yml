@@ -1,0 +1,36 @@
+stages:
+  - test
+  - deploy
+
+before_script:
+  - cat /etc/os-release
+  - julia -e "using InteractiveUtils; versioninfo();"
+  - julia -e "using Pkg; Pkg.develop(PackageSpec(url=pwd()))"
+
+test:julia-1.0:
+  stage: test
+  image: registry.gitlab.com/juliaenergy/docker-julia-extended:1.0
+  tags: [julia]
+  script:
+    - julia --code-coverage=user --inline=no -e "using Pkg; Pkg.test(\"PowerDynBase\", coverage=true)"
+    - julia -e "using Pkg; Pkg.activate(pwd()); Pkg.add(\"Coverage\"); using Coverage;
+        Codecov.submit_local(Codecov.process_folder(), pwd(), token=\"6e01583c-7bb7-401e-81ea-99eb4a622d16\")"
+
+test:doctest:
+  stage: test
+  image: registry.gitlab.com/juliaenergy/docker-julia-extended:1.0
+  tags: [julia]
+  script:
+    - julia -e "using Pkg; Pkg.add(\"Documenter\")" # install Documenter
+    - julia --color=yes docs/make.jl
+
+docs:
+  stage: deploy
+  image: registry.gitlab.com/juliaenergy/docker-julia-extended:1.0
+  tags: [julia]
+  only: [master]
+  before_script: [] # empty
+  script:
+    # trigger the docs generation of DPSA.jl using the gitlab API
+    # Tim put another page inbetween to hide the trigger token
+    - curl https://elena-international.com/update-dpsa-docs.php
