@@ -1,7 +1,7 @@
 name = "PowerDynBase"
 uuid = "7a7a2b06-a220-11e8-075f-5fa810722f34"
 authors = ["Tim Kittel <tim.kittel@elena-international.com>"]
-version = "0.1.0"
+version = "0.2.1"
 
 [deps]
 Lazy = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
