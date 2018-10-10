@@ -1,5 +1,3 @@
-julia 0.6
-DPSABase
-DPSADelaySystems
-DPSASolve
-DPSAPlot
+julia 1.0
+PowerDynBase
+PowerDynSolve
