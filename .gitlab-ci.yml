@@ -1,0 +1,33 @@
+stages:
+  - test
+  - deploy
+
+before_script:
+  - cat /etc/os-release
+  - julia -e "using InteractiveUtils; versioninfo();"
+  - julia -e "using Pkg; Pkg.add(PackageSpec(url=\"https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/JuliaEnergy/PowerDynBase.jl.git\"))"
+  - julia -e "using Pkg; Pkg.add(PackageSpec(url=\"https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/JuliaEnergy/PowerDynSolve.jl.git\"))"
+  - julia -e "using Pkg; Pkg.develop(PackageSpec(url=pwd()))"
+  - julia -e "using Pkg; Pkg.add(\"Documenter\")" # install Documenter
+
+.pages:
+  stage: deploy
+  image: registry.gitlab.com/juliaenergy/docker-julia-extended:1.0
+  tags:
+    - "julia"
+  artifacts:
+    paths:
+    - public
+
+pages:
+  extends: .pages
+  only: [master]
+  script:
+    - julia --color=yes docs/make.jl
+    - mv docs/build public # move to the directory picked up by Gitlab pages
+
+pages-test:
+  extends: .pages
+  except: [master]
+  script:
+    - julia --color=yes docs/make.jl
