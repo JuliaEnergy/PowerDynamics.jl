@@ -31,7 +31,8 @@ env:
 #    - gfortran
 before_install:
   - julia -e "using InteractiveUtils; versioninfo();"
-  - if [ $USE_POWER_DYN_MASTER = true ]; then julia -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/JuliaEnergy/PowerDynBase.jl.git"), PackageSpec(url="https://github.com/JuliaEnergy/PowerDynSolve.jl.git"))'; fi
+  - if [ $USE_POWER_DYN_MASTER = true ]; then julia -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/JuliaEnergy/PowerDynBase.jl.git"))'; fi
+  - if [ $USE_POWER_DYN_MASTER = true ]; then julia -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/JuliaEnergy/PowerDynSolve.jl.git"))'; fi
 
 #before_script:
 #  - julia -e "using InteractiveUtils; versioninfo();"
