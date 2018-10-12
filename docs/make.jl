@@ -24,3 +24,7 @@ makedocs(
         "fullindex.md",
         "contact.md"
     ])
+deploydocs(
+    repo = "github.com/JuliaEnergy/PowerDynamics.jl.git",
+    julia = "1.0"
+)
