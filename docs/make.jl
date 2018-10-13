@@ -23,8 +23,9 @@ makedocs(
         ],
         "fullindex.md",
         "contact.md",
-	html_canonical = "https://juliaenergy.github.io/PowerDynamics.jl/latest/",
-    ])
+    ],
+   html_canonical = "https://juliaenergy.github.io/PowerDynamics.jl/latest/",
+   )
 deploydocs(
     repo = "github.com/JuliaEnergy/PowerDynamics.jl.git",
     target = "build",
