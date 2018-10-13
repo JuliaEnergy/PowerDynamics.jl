@@ -3,4 +3,6 @@
 
 # PowerDynBase.jl
 
-[The documentation can be found here. (Link to be updated)](/)
+Base Package of [PowerDynamics.jl](https://github.com/JuliaEnergy/PowerDynamics.jl)
+
+[The documentation can be found here.](https://juliaenergy.github.io/PowerDynamics.jl/latest/)
