@@ -1,4 +1,4 @@
-PowerDynBasePowerDynBase# Language & Conventions
+# Language & Conventions
 
 Generally, variables are miniscule (e.g. `u`, `i`, `ω`) and parameters are capitalized (e.g. `H`, `D`, `P`, `Ω`). As it is common to use greek letters for modeling equations and Julia supports
 Unicode, greek letters are used within the Code, e.g. `Ω` and `ω` in [`PowerDynBase.SwingEq`](@ref). If you don't want to use greek keyboard (which I am currently switching to) you can simply type the latex representating `\Omega` and Atom can complete it with `Ω` using Tab.
