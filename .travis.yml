@@ -40,8 +40,7 @@ before_install:
 
 ## uncomment the following lines to override the default test script
 script:
-  #- julia -e 'Pkg.clone(pwd()); Pkg.build("DPSASolve"); Pkg.test("DPSASolve"; coverage=true)'
-  - julia --check-bounds=yes --color=yes -e 'using Pkg; Pkg.test(coverage=true)'
+  # - julia --check-bounds=yes --color=yes -e 'using Pkg; Pkg.test(coverage=true)'
   - julia 'docs/make.jl'
 after_success:
   # push coverage results to Coveralls

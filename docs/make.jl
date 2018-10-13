@@ -22,7 +22,8 @@ makedocs(
             "internalsSolve.md",
         ],
         "fullindex.md",
-        "contact.md"
+        "contact.md",
+	html_canonical = "https://juliaenergy.github.io/PowerDynamics.jl/latest/",
     ])
 deploydocs(
     repo = "github.com/JuliaEnergy/PowerDynamics.jl.git",
