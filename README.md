@@ -2,4 +2,4 @@
 
 Package for dynamical modeling of power grids
 
-[The documentation can be found here. (Link to be updated when I figured out how to publish it automatically with travis ^^)](/)
+[The documentation can be found here.](https://juliaenergy.github.io/PowerDynamics.jl/latest/)
