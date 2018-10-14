@@ -3,8 +3,8 @@ uuid = "c8f2aef6-a831-11e8-0c1f-69ba78e6e0e8"
 authors = ["Tim Kittel <tim.kittel@elena-international.com>"]
 
 [deps]
-PowerDynBase = "7a7a2b06-a220-11e8-075f-5fa810722f34"
-PowerDynSolve = "104c02b2-a50f-11e8-0c2b-43459bde1ede"
+PowerDynBase = "7ffb48b1-f436-5a59-a310-b4407da33972"
+PowerDynSolve = "7a7a2b06-a220-11e8-075f-5fa810722f34"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 
 [compat]
