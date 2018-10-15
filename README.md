@@ -1,4 +1,4 @@
-
+[![Build Status](https://travis-ci.org/JuliaEnergy/PowerDynamics.jl.svg?branch=master)](https://travis-ci.org/JuliaEnergy/PowerDynamics.jl)
 
 # PowerDynamics.jl
 
