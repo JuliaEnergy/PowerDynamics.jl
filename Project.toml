@@ -1,6 +1,7 @@
 name = "PowerDynamics"
 uuid = "c8f2aef6-a831-11e8-0c1f-69ba78e6e0e8"
 authors = ["Tim Kittel <tim.kittel@elena-international.com>"]
+version = "0.2.0"
 
 [deps]
 PowerDynBase = "7ffb48b1-f436-5a59-a310-b4407da33972"
