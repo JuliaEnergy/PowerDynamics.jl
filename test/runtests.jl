@@ -165,16 +165,26 @@ println("#### Single Node Tests ####")
     end
 
     let
+        println("## NodeDynamics/FourthOrderEquation.jl ##")
         @syms H  D  Ω  T_d_dash T_q_dash X_q_dash X_d_dash X_d X_q positive=true
         @syms P  E_f real=true
-        @syms omega domega real=true
+        @syms omega domega theta dtheta real=true
         fourth_dyn = construct_node_dynamics(FourthEq(H=H, P=P, D=D, Ω=Ω, E_f=E_f, T_d_dash=T_d_dash ,T_q_dash=T_q_dash ,X_q_dash=X_q_dash ,X_d_dash=X_d_dash,X_d=X_d, X_q=X_q))
-        dint = [domega]; int = [omega]; int_test = copy(int)
+        dint = [dtheta,domega]; int = [theta,omega]; int_test = copy(int)
         du = fourth_dyn.rhs(dint, u, i, int, t)
-        @test real(du) == (1 / T_q_dash)* (- real(u) + Ω * 2PI / H*(X_q - X_q_dash)* imag(i))
-        @test imag(du) == (1 / T_d_dash)* (- imag(u) - Ω * 2PI / H*(X_d - X_d_dash) * real(i) + E_f)
-        @test expand.(dint) == expand.([(P - D*omega - p)*2PI*Ω/H])
-
+        i_c = 1im*i*exp(-1im*theta)
+        e_c = 1im*u*exp(-1im*theta)
+        p = real(u * conj(i))
+        e_d = real(e_c)
+        e_q = imag(e_c)
+        i_d = real(i_c)
+        i_q = imag(i_c)
+        de_d = (1 / T_q_dash)* (- e_d + (X_q - X_q_dash)* i_q)
+        de_q = (1 / T_d_dash)* (- e_q - (X_d - X_d_dash) * i_d + E_f)# sign error?
+        de_c = de_d + 1im*de_q
+        @test expand(dint[1]) == omega
+        @test du == -1im*de_c*exp(1im*theta)+ u*1im*omega
+        @test expand(dint[2]) == expand((P - D*omega - p- (X_q_dash - X_d_dash)*i_d* i_q)*2PI*Ω/H)
     end
 end
 
