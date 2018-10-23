@@ -28,11 +28,24 @@ real frequency ``\omega_r`` of the rotator is given as ``\omega_r = \Omega + \om
 # Mathematical Representation
 Using `FourthEq` for node ``a`` applies the equations
 ```math
-\frac{du_a}{dt} = i u_a  \omega_a, \\
-\frac{H}{2\pi\Omega}\frac{d\omega_a}{dt} = P_a - D_a\omega_a - \Re\left(u_a \cdot i_a^*\right),
-\frac{du}{dt} = \frac{1}{T_q_dash} \left(- \Re(u) + Ω_H(X_q - X_q_dash) \Im(i_c)\right)
-+ j \frac{1}{T_d_dash} \left(- \Im(u) - Ω_H(X_d - X_d_dash) \cdot \Re(i_c) + E_f\right)
-
+\begin{align}
+    u &= -je_c e^{j\theta} = -j(e_d + je_q)e^{j\theta}\\
+    e_c&= e_d + je_q = jue^{-j\theta}\\
+    i & = -ji'e^{j\theta} = -j(i_d+ j i_q )e^{j\theta} = Y^L \cdot (u) \\
+    i_c&= i_d + ji_q = jie^{-j\theta}\\
+    p &= \Re (i^* u)
+\end{align}
+The fourth-order equations read (according to Sauer, p. 140, eqs. (6110)-(6114)) and p. 35 eqs(3.90)-(3.91)
+\begin{align}
+    \frac{d\theta}{dt} &= \omega \\
+     \frac{d\omega}{dt} &= P-D\omega - p -(x'_q-x'_d)i_d i_q\\
+    \frac{d e_q}{dt} &= \frac{1}{T'_d} (- e_q - (x_d - x'_d) i_{d}+ e_f) \\
+    \frac{d e_d}{dt} &= \frac{1}{T'_q} (- e_d + (x_q - x'_q) i_{q})  \\
+\end{align}
+With the PowerDynamics.jl \time{naming conventions} of $i$ and $u$ they read as
+\begin{align}
+   \dot u &= \frac{d}{dt}(-j e_c e^{j\theta})=-j(\dot e_d + j\dot e_q)e^{j\theta} + uj\omega
+\end{align}
 ```
 """
 @DynamicNode FourthEq(H, P, D, Ω, E_f, T_d_dash ,T_q_dash ,X_q_dash ,X_d_dash,X_d, X_q) <: OrdinaryNodeDynamics() begin
@@ -40,22 +53,28 @@ Using `FourthEq` for node ``a`` applies the equations
     @assert D > 0 "damping (D) should be >0"
     @assert T_d_dash > 0 "time constant of d-axis (T_d_dash) should be >0"
     @assert T_q_dash > 0 "time constant of q-axis (T_q_dash) should be >0"
-    @assert X_d_dash > 0 "transient reactance of d-axis (X_d_dash) should be >0"
-    @assert X_q_dash > 0 "transient reactance of q-axis (X_q_dash) should be >0"
-    @assert X_d > 0 "reactance of d-axis (X_d_dash) should be >0"
-    @assert X_q > 0 "reactance of q-axis (X_q_dash) should be >0"
+    @assert X_d_dash >= 0 "transient reactance of d-axis (X_d_dash) should be >=0"
+    @assert X_q_dash >= 0 "transient reactance of q-axis (X_q_dash) should be >=0"
+    @assert X_d >= 0 "reactance of d-axis (X_d_dash) should be >=0"
+    @assert X_q >= 0 "reactance of q-axis (X_q_dash) should be >=0"
 
     Ω_H = Ω * 2pi / H #    norm = 2 * H / (2 * np.pi * 50)  # normalize the parameters as done for coupling_const, input_power, damping_const
 
-end [[ω, dω]] begin
+end [[θ,dθ],[ω, dω]] begin
+    i_c = 1im*i*exp(-1im*θ)
+    e_c = 1im*u*exp(-1im*θ)
     p = real(u * conj(i))
+    e_d = real(e_c)
+    e_q = imag(e_c)
+    i_d = real(i_c)
+    i_q = imag(i_c)
 
-    dϕ = ω # dϕ is only a temp variable that Julia should optimize out
-    #du = u * im * dϕ
-    du_d = (1 / T_q_dash)* (- real(u) + Ω_H*(X_q - X_q_dash)* imag(i))
-    du_q = (1 / T_d_dash)* (- imag(u) - Ω_H*(X_d - X_d_dash) * real(i) + E_f)
-    du = du_d + 1im*du_q
-    dω = (P - D*ω - p)*Ω_H
+    dθ = ω
+    de_d = (1 / T_q_dash)* (- e_d + (X_q - X_q_dash)* i_q)
+    de_q = (1 / T_d_dash)* (- e_q - (X_d - X_d_dash) * i_d + E_f)
+    de_c = de_d + 1im*de_q
+    du = -1im*de_c*exp(1im*θ)+ u*1im*ω
+    dω = (P - D*ω - p- (X_q_dash - X_d_dash)*i_d* i_q)*Ω_H
 end
 
 export FourthEq
