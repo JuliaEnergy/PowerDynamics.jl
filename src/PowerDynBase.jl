@@ -57,6 +57,9 @@ include("NodeDynamics/PVAlgebraic.jl")
 include("NodeDynamics/SlackAlgebraic.jl")
 include("NodeDynamics/SwingEquation.jl")
 include("NodeDynamics/FourthOrderEquation.jl")
+include("NodeDynamics/VoltageSourceInverterMinimal.jl")
+include("NodeDynamics/VoltageSourceInverterVoltagePT1.jl")
+
 
 
 # the structures building the grid dynamics from the node dynamics
