@@ -186,6 +186,38 @@ println("#### Single Node Tests ####")
         @test du == -1im*de_c*exp(1im*theta)+ u*1im*omega
         @test expand(dint[2]) == expand((P - D*omega - p- (X_q_dash - X_d_dash)*i_d* i_q)*2PI*Ω/H)
     end
+    let
+        println("## NodeDynamics/VoltageSourceInverterMinimal.jl ##")
+        @syms τ_P τ_Q K_P K_Q positive=true
+        @syms P Q V_r real=true
+        @syms omega domega real=true
+        VSIMindyn = construct_node_dynamics(VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P,Q=Q))
+        dint = [domega]; int = [omega]; int_test = copy(int)
+        du = VSIMindyn.rhs(dint, u, i, int, t)
+        p = real(u * conj(i))
+        q = imag(u * conj(i))
+        v = abs(u)
+        dv = 1/τ_Q*(-v+ V_r- K_Q *(q-Q))
+        @test du == u * 1im * omega + dv*(u/v)
+        @test expand.(dint) == expand.([1/τ_P*(-omega-K_P*(p-P))])
+    end
+
+    let
+        println("## NodeDynamics/VoltageSourceInverterVoltagePT1.jl ##")
+        @syms τ_v τ_P τ_Q K_P K_Q positive=true
+        @syms P Q V_r real=true
+        @syms q_m dq_m omega domega real=true
+        VSIdyn = construct_node_dynamics(VSIVoltagePT1(τ_v=τ_v,τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P,Q=Q))
+        dint = [domega,dq_m]; int = [omega,q_m]; int_test = copy(int)
+        du = VSIdyn.rhs(dint, u, i, int, t)
+        p = real(u * conj(i))
+        q = imag(u * conj(i))
+        v = abs(u)
+        dv = 1/τ_v*(-v+V_r - K_Q*(q_m-Q))
+        @test du == u * 1im * omega + dv*(u/v)
+        @test expand.(dint[1]) == expand.(1/τ_P*(-omega-K_P*(p-P)))
+        @test expand.(dint[2]) == expand.(1/τ_Q*(q-q_m))
+    end
 end
 
 
