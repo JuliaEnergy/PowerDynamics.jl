@@ -7,4 +7,5 @@ makedocs(
     # html options
     format = :html,
     sitename = "PowerDynBase.jl",
-    pages = ["index.md"])
+    pages = ["index.md"],
+    strict=true)

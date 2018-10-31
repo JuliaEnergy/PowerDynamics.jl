@@ -20,9 +20,11 @@ struct ODENodeSymbols <: AbstractNodeSymbols
     vars::AbstractVector{Symbol}
     dvars::AbstractVector{Symbol}
 end
+"Get the symbols representing the internal variables of the node."
 internalsymbolsof(s::ODENodeSymbols) = s.vars
 internalsymbolsof(s::AbstractNodeSymbols) = s |> ODENodeSymbols |> internalsymbolsof
 internalsymbolsof(s) = s |> symbolsof |> internalsymbolsof
+"Get the symbols representing the derivative of the internal variables of the node."
 internaldsymbolsof(s::ODENodeSymbols) = s.dvars
 internaldsymbolsof(s::AbstractNodeSymbols) = s |> ODENodeSymbols |> internaldsymbolsof
 internaldsymbolsof(s) = s |> symbolsof |> internaldsymbolsof
@@ -33,6 +35,7 @@ struct DAENodeSymbols <: AbstractNodeSymbols
     DAENodeSymbols(vars, dvars, outvars) = new(ODENodeSymbols(vars, dvars), outvars)
 end
 ODENodeSymbols(s::DAENodeSymbols) = s.odesymbols
+"Get the symbols representing the output of the internal variables of the node."
 internaloutsymbolsof(s::DAENodeSymbols) = s.outvars
 internaloutsymbolsof(s::AbstractNodeSymbols) = s |> DAENodeSymbols |> internaloutsymbolsof
 internaloutsymbolsof(s) = s |> symbolsof |> internaloutsymbolsof
