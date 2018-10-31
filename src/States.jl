@@ -25,7 +25,7 @@ Encode a state vector and the corresponding rhs information.
 # Indexing
 
 In an instance `b` of of a `BaseState` behaves like an
-[`Array`](@ref), i.e. you can access the ``j``-th element
+array, i.e. you can access the ``j``-th element
 of the state vector (and set it to a value ``ξ``) by calling `b[j] ( = ξ )`.
 
 """
@@ -67,9 +67,9 @@ Encode the information on the value of a state vector at a particular time point
 # Indexing
 
 Concerning the indexing, a `State` object ``s`` basically behaves like a
-an [`Array`](@ref).
+an array.
 There are plenty of convenient ways to access its contents at a node ``j``
-by using a particular [`Symbol`](@ref):
+by using a particular symbol:
 
 * `s[j, :u]`: complex voltage
 * `s[j, :v]`: voltage magnitude

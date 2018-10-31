@@ -73,8 +73,10 @@ getDEVariableType(::Type{Val{OrdinaryNodeDynamics}}) = ODEVariable
 "Get number of internal arguments of the node."
 nint(dyn::OrdinaryNodeDynamics) = dyn.n_int
 
+"Get the symbols data structure for the node."
 symbolsof(n::OrdinaryNodeDynamics) = n.symbols
 
+"Get the parameters struct for the node."
 parametersof(n::OrdinaryNodeDynamics) = n.parameters
 
 ################################################################################

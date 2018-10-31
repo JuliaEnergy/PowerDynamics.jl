@@ -34,12 +34,9 @@ abstract type AbstractNetworkFunction{T<:AbstractNodeDynamics, M<:AbstractMatrix
         systemsize
         intrange # unitrange telling me where I find the internal dynamic variables
         nodalintranges # unit ranges to find the internal variables for each node in the full length of internal variables
-        rhsinterface::Function
     end
 
 Representing the full dynamics of the power grid.
-
-From [DPSABase.`AbstractNetworkFunction`](#ref) it inherits the conditions that `T<:AbstractNodeDynamics` and `M<:AbstractMatrix}`.
 """
 @with_kw struct NetworkRHS{T, M} <: AbstractNetworkFunction{T, M}
     nodes::AbstractVector{T}
@@ -49,12 +46,22 @@ From [DPSABase.`AbstractNetworkFunction`](#ref) it inherits the conditions that 
     intrange # unitrange telling me where I find the internal dynamic variables
     nodalintranges # unit ranges to find the internal variables for each node in the full length of internal variables
 end
+"""
+    (rhs::NetworkRHS)(x::AbstractDEVariable, t)
+
+Evalate the network right-hand-side function.
+"""
 function (rhs::NetworkRHS)(x::AbstractDEVariable, t)
     # distribute the values of the of the DEVariables over all
     nodeiterator(rhs, x, t)
     nothing
 end
 # external constructor
+"""
+    NetworkRHS(nodes::AbstractVector{T}, LY::M) where {T<:AbstractNodeDynamics, M<:AbstractMatrix}
+
+Create an [`PowerDynBase.NetworkRHS`](#ref) object from a node list and the nodal admittance matrix.
+"""
 function NetworkRHS(nodes::AbstractVector{T}, LY::M) where {T<:AbstractNodeDynamics, M<:AbstractMatrix}
     numnodes = length(nodes)
     @assert size(LY) == (numnodes, numnodes)
@@ -68,14 +75,35 @@ function NetworkRHS(nodes::AbstractVector{T}, LY::M) where {T<:AbstractNodeDynam
         nodalintranges = internal_unitranges(nodes)
     )
 end
+
 Nodes(rhs::NetworkRHS) = rhs.nodes
 SystemSize(rhs::NetworkRHS) = rhs.systemsize
 AdmittanceLaplacian(rhs::NetworkRHS) = rhs.LY
 
 # fall-back: only GridDynamics(x) needs to be defined, the rest is automatically via this line and the following
+"""
+    NetworkRHS(x)
+
+Return the struct of type [`PowerDynBase.NetworkRHS`](#ref) for `x`.
+"""
 NetworkRHS(x) = x |> GridDynamics |> NetworkRHS
+"""
+    SystemSize(x)
+
+Return the full system size, i.e. number of independent, dynamic, real-valued variables, for `x`.
+"""
 SystemSize(x) = x |> NetworkRHS |> SystemSize
+"""
+    Nodes(x)
+
+Return the array of nodes for `x`.
+"""
 Nodes(x) = x |> NetworkRHS |> Nodes
+"""
+    AdmittanceLaplacian(x)
+
+Return the nodal admittance matrix of the system.
+"""
 AdmittanceLaplacian(x) = x |> NetworkRHS |> AdmittanceLaplacian
 
 """
