@@ -60,7 +60,7 @@ end
 """
     NetworkRHS(nodes::AbstractVector{T}, LY::M) where {T<:AbstractNodeDynamics, M<:AbstractMatrix}
 
-Create an [`PowerDynBase.NetworkRHS`](#ref) object from a node list and the nodal admittance matrix.
+Create an [`PowerDynBase.NetworkRHS`](@ref) object from a node list and the nodal admittance matrix.
 """
 function NetworkRHS(nodes::AbstractVector{T}, LY::M) where {T<:AbstractNodeDynamics, M<:AbstractMatrix}
     numnodes = length(nodes)
@@ -84,7 +84,7 @@ AdmittanceLaplacian(rhs::NetworkRHS) = rhs.LY
 """
     NetworkRHS(x)
 
-Return the struct of type [`PowerDynBase.NetworkRHS`](#ref) for `x`.
+Return the struct of type [`PowerDynBase.NetworkRHS`](@ref) for `x`.
 """
 NetworkRHS(x) = x |> GridDynamics |> NetworkRHS
 """

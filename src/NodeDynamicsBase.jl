@@ -67,7 +67,7 @@ function (dyn::OrdinaryNodeDynamics)(n, u::ODEVariable, i,
     nothing
 end
 
-"Identify each subtype of [`AbstractNodeDynamics`](#ref) with its corresponding subtype of [`AbstractDEVariable`](#ref)"
+"Identify each subtype of [`AbstractNodeDynamics`](@ref) with its corresponding subtype of [`AbstractDEVariable`](@ref)"
 getDEVariableType(::Type{Val{OrdinaryNodeDynamics}}) = ODEVariable
 
 "Get number of internal arguments of the node."
@@ -144,7 +144,7 @@ convert(::Type{OrdinaryNodeDynamicsWithMass}, dyn::OrdinaryNodeDynamics) =
 """
     promote_rule(::Type{OrdinaryNodeDynamics}, ::Type{OrdinaryNodeDynamicsWithMass}) = OrdinaryNodeDynamicsWithMass
 
-`OrdinaryNodeDynamics` can be promoted to `OrdinaryNodeDynamicsWithMass`, see [`DPSABase.convert`](#ref).
+`OrdinaryNodeDynamics` can be promoted to `OrdinaryNodeDynamicsWithMass`, see [`PowerDynBase.convert`](@ref).
 """
 promote_rule(::Type{<:OrdinaryNodeDynamics}, ::Type{<:OrdinaryNodeDynamicsWithMass}) =
     OrdinaryNodeDynamicsWithMass
@@ -223,13 +223,13 @@ end
 """
     promote_rule(::Type{OrdinaryNodeDynamics}, ::Type{AlgebraicNodeDynamics}) = AlgebraicNodeDynamics
 
-`OrdinaryNodeDynamics` can be promoted to `AlgebraicNodeDynamics`, see [`DPSABase.convert`](#ref).
+`OrdinaryNodeDynamics` can be promoted to `AlgebraicNodeDynamics`, see [`PowerDynBase.convert`](@ref).
 """
 promote_rule(::Type{OrdinaryNodeDynamics}, ::Type{AlgebraicNodeDynamics}) = AlgebraicNodeDynamics
 
 """
     promote_rule(::Type{OrdinaryNodeDynamicsWithMass}, ::Type{AlgebraicNodeDynamics}) = AlgebraicNodeDynamics
 
-`OrdinaryNodeDynamicsWithMass` can be promoted to `AlgebraicNodeDynamics`, see [`DPSABase.convert`](#ref).
+`OrdinaryNodeDynamicsWithMass` can be promoted to `AlgebraicNodeDynamics`, see [`PowerDynBase.convert`](@ref).
 """
 promote_rule(::Type{OrdinaryNodeDynamicsWithMass}, ::Type{AlgebraicNodeDynamics}) = AlgebraicNodeDynamics
