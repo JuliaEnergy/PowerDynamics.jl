@@ -16,7 +16,20 @@ abstract type AbstractAlgebraicNodeDynamics{N <: AbstractNodeParameters} <: Abst
 # ODEs
 ################################################################################
 
-rhsdescription = @doc doc"""
+@doc doc"""
+```Julia
+OrdinaryNodeDynamics(;rhs, n_int)
+```
+
+The type representing the dynamics of a node that is described via ODEs.
+
+Each node ``a`` has the complex voltage ``u`` and ``n`` real internal variables ``y_1, \dots, y_n``, so it
+generally describes a system of ordinary differential equation as
+
+```math
+\frac{du_a}{dt} = f_u(u_a, {i_c}_a, y_1, \dots, y_n) \\
+\frac{dy_{ak}}{dt} = f_k(u_a, {i_c}_a, y_1, \dots, y_n)\quad \forall k = 1, \dots, n.
+```
 ``f`` is represented by `rhs` field of `OrdinaryNodeDynamics`.
 - the general signature of `rhs` is
 ```Julia
@@ -35,24 +48,6 @@ rhs(dint_dt::AbstractVector,
 - Output
   - the (complex) return value describes ``\frac{du}{dt}``
   - `rhs` writes values in `dint_dt` describing the left-hand side ``\frac{dy_1}{dt}, \dots, \frac{dy_n}{dt}``
-"""
-
-@doc doc"""
-```Julia
-OrdinaryNodeDynamics(;rhs, n_int)
-```
-
-The type representing the dynamics of a node that is described via ODEs.
-
-Each node ``a`` has the complex voltage ``u`` and ``n`` real internal variables ``y_1, \dots, y_n``, so it
-generally describes a system of ordinary differential equation as
-
-```math
-\frac{du_a}{dt} = f_u(u_a, {i_c}_a, y_1, \dots, y_n) \\
-\frac{dy_{ak}}{dt} = f_k(u_a, {i_c}_a, y_1, \dots, y_n)\quad \forall k = 1, \dots, n.
-```
-
-$rhsdescription
 
 """
 @with_kw struct OrdinaryNodeDynamics{N <: AbstractNodeParameters} <: AbstractOrdinaryNodeDynamics{N}
@@ -104,8 +99,24 @@ m^{int}_k\frac{dy_{ak}}{dt} = f_k(u_a, {i_c}_a, y_1, \dots, y_n)\quad \forall k 
 
 As we assume that all masses are binary (either 1, or 0), that means, one can implement [semi-explicit differential algebraic equations](https://en.wikipedia.org/wiki/Differential-algebraic_system_of_equations) with
 this node dynamics type.
-
-$rhsdescription
+``f`` is represented by `rhs` field of `OrdinaryNodeDynamics`.
+- the general signature of `rhs` is
+```Julia
+rhs(dint_dt::AbstractVector,
+    u::Complex,
+    i::Complex,
+    int::AbstractVector,
+    t,
+    )::Complex
+```
+- Input
+  - `u` is the complex voltage ``u``
+  - `i` is the complex current ``i``
+  - `int` is the array of internal variables ``y_1, \dots, y_n``
+  - `t` is the time ``t``
+- Output
+  - the (complex) return value describes ``\frac{du}{dt}``
+  - `rhs` writes values in `dint_dt` describing the left-hand side ``\frac{dy_1}{dt}, \dots, \frac{dy_n}{dt}``
 
 The binary masses are:
 - `m_u` is the boolean value for ``m_u``
