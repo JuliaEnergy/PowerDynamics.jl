@@ -1,25 +1,15 @@
-DOCSPATH=$(HOME)/work/JuliaDPSA/dpsadocs
-DOCS_SERVER=dpsadocs
-DOCSPATH_SERVER=dpsadocs
-
-.PHONY : docs
-deploy-docs: docs push-docs pull-docs-remote
+.PHONY : docs test coverage clean
 
 docs:
-	julia --color=yes docs/make.jl
+	julia -e "using Pkg; Pkg.activate(\".\"); include(\"docs/make.jl\")"
 
-push-docs:
-	cp -rf docs/build/* $(DOCSPATH)/
-	git -C $(DOCSPATH) add $(DOCSPATH)/*
-	git -C $(DOCSPATH) commit -m "docs update"
-	git -C $(DOCSPATH) push
+test:
+	julia --check-bounds=yes --color=yes -e "using Pkg; Pkg.activate(\".\"); Pkg.test()"
 
-pull-docs-remote:
-	curl https://elena-international.com/update-dpsa-docs.php
-#	ssh $(DOCS_SERVER) "cd $(DOCSPATH_SERVER); \
-#	       	git stash; \
-#		git stash drop; \
-#		git pull; \
-#		chmod a+rx *" 
+coverage:
+	julia --check-bounds=yes --color=yes --inline=no -e "using Pkg; Pkg.activate(\".\"); Pkg.test(coverage=true)"
 
-		
+clean:
+	find src -name "*.jl.*.cov" -type f -delete
+	find test -name "*.jl.*.cov" -type f -delete
+	rm -rf docs/build

@@ -7,8 +7,7 @@ The main types are:
 - [`PowerDynBase.OrdinaryNodeDynamics`](@ref)
 - [`PowerDynBase.OrdinaryNodeDynamicsWithMass`](@ref)
 
-## Documentation
-```@autodocs
-Modules = [PowerDynBase]
-Pages   = ["NodeDynamicsBase.jl"]
+```@docs
+PowerDynBase.OrdinaryNodeDynamics
+PowerDynBase.OrdinaryNodeDynamicsWithMass
 ```

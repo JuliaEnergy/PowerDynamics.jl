@@ -1,5 +1,8 @@
 # Error Types
-```@autodocs
-Modules = [PowerDynBase]
-Pages   = ["Errors.jl"]
+```@docs
+PowerDynBase.PowerDynamicsError
+PowerDynBase.NodeDynamicsError
+PowerDynBase.GridDynamicsError
+PowerDynBase.StateError
+PowerDynSolve.GridSolutionError
 ```
