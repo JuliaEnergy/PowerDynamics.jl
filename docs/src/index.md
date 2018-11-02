@@ -1,16 +1,37 @@
 
+[![Build Status](https://travis-ci.org/JuliaEnergy/PowerDynamics.jl.svg?branch=master)](https://travis-ci.org/JuliaEnergy/PowerDynamics.jl)
+[![Chat on Slack.](https://img.shields.io/badge/chat%20on-slack-yellow.svg)](https://julialang.slack.com/messages/CDAGL4T09/)
+[![Get your Slack invitation.](https://img.shields.io/badge/get%20invitation-slack-yellow.svg)](https://slackinvite.julialang.org/)
+[![Code on Github.](https://img.shields.io/badge/code%20on-github-blue.svg)](https://github.com/JuliaEnergy/PowerDynamics.jl)
+
 # PowerDynamics.jl - Dynamic Power System Analysis in Julia
 
 This package provides all the tools you need to create a dynamic power grid model
 and analyze it.
 
+The source code is licensed under [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html) and [published on github](https://github.com/JuliaEnergy/PowerDynamics.jl).
+
 ## Installation
 
-For now install all the packages using git directly.
-**Please be aware of the order and make sure you have access rights.**
-They will be registered with the official package managers upon publishing.
+The installation can be done via the new package manager. Either use
+```
+]add PowerDynamics
+```
+or copy
+```Julia
+using Pkg; Pkg.add("PowerDynamics")
+```
 
-TBD: add new installation instructions
+Please note that `PowerDynamics.jl` is a fast developing library whose API is not settled yet.
+In order to ensure that your old code will still work in the future while using the latest version of
+`PowerDynamics.jl` for your new code, **we strongly recommend the usage of environments**. [Please check out
+this video from the introduction of Pkg3, where environments are introduced, too.](https://www.youtube.com/watch?v=HgFmiT5p0zU)
+
+### Compatibility
+
+`PowerDynamics.jl` is written for Julia 1.0 and above.
+We will quickly switch to new Julia version as they come out, but support older Versions and enable long transition periods for users.
+Julia Version 0.x are not supported.
 
 ## Usage
 
