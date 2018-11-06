@@ -163,6 +163,10 @@ Base.setindex!(s::AbstractState, v, n, ::Type{Val{:u}}) = begin
     setindex!(BaseState(s), real(v) ,2 .* n .- 1)
     setindex!(BaseState(s), imag(v), 2 .* n)
 end
+Base.setindex!(s::AbstractState, v, n, ::Type{Val{:v}}) = begin
+    u = s[n, :u]
+    s[n, :u] = v.*u./abs.(u)
+end
 Base.setindex!(s::AbstractState, v, n, ::Type{Val{:int}}, i) = begin
     BaseState(s)[internalindex(s, n, i)] = v
 end
