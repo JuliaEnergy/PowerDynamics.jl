@@ -60,6 +60,12 @@ state[2:3, :ω] = [omega1, omega2]
 @test_throws BoundsError state[1, :int, 1] = omega2
 @test_throws StateError state[1, :ω] = omega2
 
+# modify the v as test
+@syms v positive=true
+state[1, :u] = u_Sw1
+state[:, :v] = v
+@test state[1, :v] |> simplify == v 
+
 ## getindex for angle (numerically) ##
 v_Sl = rand()
 v_Sw1 = rand()
