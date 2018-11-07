@@ -36,8 +36,13 @@ struct BaseState{G <: GridDynamics, V} #<: AbstractVector{V} where {G <: GridDyn
         @assert grid.rhs.systemsize == length(vec)
         new{G, V}(grid, vec)
     end
+    function BaseState{G, V}(grid::G) where {G <: GridDynamics, V}
+        new{G, V}(grid, zeros(V, SystemSize(grid)))
+    end
 end
 BaseState(grid::G, vec::AbstractVector{V}) where {G <: GridDynamics, V} = BaseState{G, V}(grid, vec)
+BaseState(grid::G, V::Type) where {G <: GridDynamics} = BaseState{G, V}(grid)
+BaseState(grid::G) where {G <: GridDynamics} = BaseState(grid, Float64)
 
 Base.size(s::BaseState) = size(s.vec)
 Base.getindex(s::BaseState, n) = getindex(s.vec, n)
@@ -113,10 +118,11 @@ struct State{G, V, T} <: AbstractState{G, V, T}
 end
 State(b::BaseState; t=nothing) = State(b, t)
 State(g::GridDynamics, v::AbstractVector; t=nothing) = State(BaseState(g, v), t)
+State(g::GridDynamics; t=nothing) = State(BaseState(g))
 
 # Interface Functions
 BaseState(s::State) = s.base
-Base.copy(s::State) = State(copy(s.base), deepcopy(s.t)) # grid dynamics should not be copied
+Base.copy(s::State) = State(copy(BaseState(s)), deepcopy(s.t)) # grid dynamics should not be copied
 
 
 # derived function for all AbstractState
@@ -179,3 +185,23 @@ Base.setindex!(s::AbstractState, v, n, ::Type{Val{sym}}) where sym = setindex!(s
 
 convert(::Type{BaseState}, s::State) = BaseState(s.base)
 convert(::Type{A}, s::State{G, V, T}) where {V, A <:AbstractVector{V}, T, G} = @>> s BaseState convert(A)
+function Base.:+(s1::AbstractState, s2::AbstractState)
+    @assert GridDynamics(s1) == GridDynamics(s2)
+    State(GridDynamics(s1), BaseState(s1).vec .+ BaseState(s2).vec)
+end
+function Base.:-(s1::AbstractState, s2::AbstractState)
+    @assert GridDynamics(s1) == GridDynamics(s2)
+    State(GridDynamics(s1), BaseState(s1).vec .- BaseState(s2).vec)
+end
+Base.:-(s::AbstractState) = State(GridDynamics(s), .- BaseState(s).vec)
+Base.:*(k, s::AbstractState) = State(GridDynamics(s), k.*BaseState(s).vec)
+Base.:*(s::AbstractState, k) = k*s # commutivity
+Base.:/(s::AbstractState, k) = (1/k)*s
+function Base.:(==)(s1::AbstractState, s2::AbstractState)
+    @assert GridDynamics(s1) == GridDynamics(s2)
+    all(BaseState(s1).vec .== BaseState(s2).vec)
+end
+function Base.:≈(s1::AbstractState, s2::AbstractState)
+    @assert GridDynamics(s1) == GridDynamics(s2)
+    all(BaseState(s1).vec .≈ BaseState(s2).vec)
+end
