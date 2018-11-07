@@ -64,7 +64,7 @@ state[2:3, :ω] = [omega1, omega2]
 @syms v positive=true
 state[1, :u] = u_Sw1
 state[:, :v] = v
-@test state[1, :v] |> simplify == v 
+@test state[1, :v] |> simplify == v
 
 ## getindex for angle (numerically) ##
 v_Sl = rand()
@@ -82,3 +82,15 @@ state = State(grid, [real(u_Sl), imag(u_Sl), real(u_Sw1), imag(u_Sw1), real(u_Sw
 @test state[1, :φ] ≈ φ_Sl
 @test state[2, :φ] ≈ φ_Sw1
 @test state[3, :φ] ≈ φ_Sw2
+
+## binary operations ##
+s1 = State(grid, ones(SystemSize(grid)))
+s2 = State(grid, ones(SystemSize(grid)))
+@test s1 == s1
+@test s1 ≈ s2
+@test (PowerDynBase.BaseState(s1 + s2).vec .== 2) |> all
+@test (PowerDynBase.BaseState(s1 - s2).vec .== 0) |> all
+@test (PowerDynBase.BaseState(-s1).vec .== -1) |> all
+@test (PowerDynBase.BaseState(2*s1).vec .== 2) |> all
+@test (PowerDynBase.BaseState(s1*2).vec .== 2) |> all
+@test (PowerDynBase.BaseState(s1/2).vec .≈ 0.5) |> all
