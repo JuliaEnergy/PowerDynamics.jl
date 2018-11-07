@@ -50,8 +50,8 @@ convert(::Type{<:AbstractVector{V}}, s::BaseState{G, V}) where {G, V} = s.vec
 @doc doc"""
 ```Julia
 
-    State(base, t)
-    State(grid, vec, t)
+    State(base; t=nothing)
+    State(grid, vec; t=nothing)
 
 ```
 
@@ -95,8 +95,13 @@ The internal variables can be also directly accessed with symbols, i.e.
 
 returns the frequency ``ω`` at node ``j``.
 To find out the proper symbol, the easiest way is to look into the docs
-of the corresponding [`AbstractNodeDynamics`](@ref) subtype or simply at the
-output of `print`:
+of the corresponding [`AbstractNodeParameters`](@ref) subtype,
+check the output of [`internalsymbolsof`](@ref)
+or simply look at the output of `println`:
+
+    julia> internalsymbolsof(SwingEq(H=2, P=3, D=4, Ω=5))
+    1-element Array{Symbol,1}:
+     :ω
 
     julia> println(SwingEq(H=2, P=3, D=4, Ω=5))
     SwingEq[:ω](H=2, P=3, D=4, Ω=5)

@@ -3,15 +3,15 @@
 
 @doc doc"""
 ```Julia
-SwingEq(;H, P, D, Ω)
+FourthEq(H, P, D, Ω, E_f, T_d_dash ,T_q_dash ,X_q_dash ,X_d_dash,X_d, X_q)
 ```
 
-A node type that applies the swing equation to the frequency/angle dynamics and
-keeps the voltage magnitude as is.
+A node type that applies the 4th-order synchronous machine model
+with frequency/angle and voltage dynamics.
 
-Additionally to ``u``, it has the internal dynamic variable ``\omega`` representing
-the frequency of the rotator relative to the grid frequency ``\Omega``, i.e. the
-real frequency ``\omega_r`` of the rotator is given as ``\omega_r = \Omega + \omega``.
+Additionally to ``u``, it has the internal dynamic variables
+* ``\omega`` representing the frequency of the rotator relative to the grid frequency ``\Omega``, i.e. the real frequency ``\omega_r`` of the rotator is given as ``\omega_r = \Omega + \omega`` and
+* ``\theta`` representing the relative angle of the rotor with respect to the voltage angle ``\phi``.
 
 # Keyword Arguments
 - `H`: inertia
@@ -28,24 +28,22 @@ real frequency ``\omega_r`` of the rotator is given as ``\omega_r = \Omega + \om
 # Mathematical Representation
 Using `FourthEq` for node ``a`` applies the equations
 ```math
-\begin{align}
-    u &= -je_c e^{j\theta} = -j(e_d + je_q)e^{j\theta}\\
-    e_c&= e_d + je_q = jue^{-j\theta}\\
-    i & = -ji'e^{j\theta} = -j(i_d+ j i_q )e^{j\theta} = Y^L \cdot (u) \\
-    i_c&= i_d + ji_q = jie^{-j\theta}\\
-    p &= \Re (i^* u)
-\end{align}
+    u = -je_c e^{j\theta} = -j(e_d + je_q)e^{j\theta}\\
+    e_c= e_d + je_q = jue^{-j\theta}\\
+    i  = -ji'e^{j\theta} = -j(i_d+ j i_q )e^{j\theta} = Y^L \cdot u \\
+    i_c= i_d + ji_q = jie^{-j\theta}\\
+    p = \Re (i^* u)
+```
 The fourth-order equations read (according to Sauer, p. 140, eqs. (6110)-(6114)) and p. 35 eqs(3.90)-(3.91)
-\begin{align}
-    \frac{d\theta}{dt} &= \omega \\
-     \frac{d\omega}{dt} &= P-D\omega - p -(x'_q-x'_d)i_d i_q\\
-    \frac{d e_q}{dt} &= \frac{1}{T'_d} (- e_q - (x_d - x'_d) i_{d}+ e_f) \\
-    \frac{d e_d}{dt} &= \frac{1}{T'_q} (- e_d + (x_q - x'_q) i_{q})  \\
-\end{align}
+```math
+    \frac{d\theta}{dt} = \omega \\
+     \frac{d\omega}{dt} = P-D\omega - p -(x'_q-x'_d)i_d i_q\\
+    \frac{d e_q}{dt} = \frac{1}{T'_d} (- e_q - (x_d - x'_d) i_{d}+ e_f) \\
+    \frac{d e_d}{dt} = \frac{1}{T'_q} (- e_d + (x_q - x'_q) i_{q})  \\
+```
 With the PowerDynamics.jl \time{naming conventions} of $i$ and $u$ they read as
-\begin{align}
-   \dot u &= \frac{d}{dt}(-j e_c e^{j\theta})=-j(\dot e_d + j\dot e_q)e^{j\theta} + uj\omega
-\end{align}
+```math
+   \dot u = \frac{d}{dt}(-j e_c e^{j\theta})=-j(\dot e_d + j\dot e_q)e^{j\theta} + uj\omega
 ```
 """
 @DynamicNode FourthEq(H, P, D, Ω, E_f, T_d_dash ,T_q_dash ,X_q_dash ,X_d_dash,X_d, X_q) <: OrdinaryNodeDynamics() begin
