@@ -14,8 +14,11 @@ The currently implementes node types are
   * [`PowerDynBase.VSIMinimal`](@ref)
   * [`PowerDynBase.VSIVoltagePT1`](@ref)
 
+They are all subtypes of [`PowerDynBase.AbstractNodeParameters`](@ref).
+
 
 ```@docs
+PowerDynBase.AbstractNodeParameters
 PQAlgebraic
 PVAlgebraic
 SlackAlgebraic
