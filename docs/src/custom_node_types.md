@@ -5,5 +5,4 @@ new node type will be a subtype of [`PowerDynBase.AbstractNodeParameters`](@ref)
 
 ```@docs
 @DynamicNode
-AbstractNodeParameters
 ```

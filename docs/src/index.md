@@ -76,7 +76,7 @@ have any questions, [contact us](@ref Contact).
 new descriptions of synchronous machines.
 
 After going through the introduction for a [Grid Modeler](@ref), we recommend that you read
-through [Node Dynamics Types](@ref) and [Custom Node Types](@ref) and try to implement
+through [Dynamics Types](@ref) and [Custom Node Types](@ref) and try to implement
 a new node type for an example grid. With that, you should have all the tools you need.
 If you have any questions, [contact us](@ref Contact).
 
