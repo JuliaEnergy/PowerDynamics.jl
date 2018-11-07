@@ -11,6 +11,24 @@ and analyze it.
 
 The source code is licensed under [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html) and [published on github](https://github.com/JuliaEnergy/PowerDynamics.jl).
 
+These Docs have been built with the following version of the sub-packages:
+```@setup versions
+using Pkg
+env = Pkg.Types.EnvCache()
+subpackages = copy(env.project["deps"])
+pop!(subpackages, "Reexport") # ignore Reexport here
+uuids = map(Base.UUID, values(subpackages))
+function printversions()
+  for uuid in uuids
+    pkg = Pkg.Types.manifest_info(env, uuid)
+    println(rpad(" * $(pkg["name"]) ", 30, "."), " $(pkg["version"])")
+  end
+end
+```
+```@example versions
+printversions() # hide
+```
+
 ## Installation
 
 The installation can be done via the new package manager. Either use
@@ -30,8 +48,8 @@ this video from the introduction of Pkg3, where environments are introduced, too
 ### Compatibility
 
 `PowerDynamics.jl` is written for Julia 1.0 and above.
-We will quickly switch to new Julia version as they come out, but support older Versions and enable long transition periods for users.
-Julia Version 0.x are not supported.
+We will quickly switch to new Julia version as they come out, but support older versions and enable long transition periods for users.
+Julia versions 0.x are not supported.
 
 ## Usage
 
