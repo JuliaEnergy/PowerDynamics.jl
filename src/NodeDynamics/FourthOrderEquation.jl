@@ -48,7 +48,7 @@ With the PowerDynamics.jl \time{naming conventions} of $i$ and $u$ they read as
 """
 @DynamicNode FourthEq(H, P, D, Ω, E_f, T_d_dash ,T_q_dash ,X_q_dash ,X_d_dash,X_d, X_q) <: OrdinaryNodeDynamics() begin
     @assert H > 0 "inertia (H) should be >0"
-    @assert D > 0 "damping (D) should be >0"
+    @assert D >= 0 "damping (D) should be >=0"
     @assert T_d_dash > 0 "time constant of d-axis (T_d_dash) should be >0"
     @assert T_q_dash > 0 "time constant of q-axis (T_q_dash) should be >0"
     @assert X_d_dash >= 0 "transient reactance of d-axis (X_d_dash) should be >=0"
