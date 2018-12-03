@@ -30,7 +30,7 @@ env:
 before_install:
   - julia --color=yes -e "using InteractiveUtils; versioninfo();"
   - if [ $USE_POWER_DYN_MASTER = true ]; then julia --color=yes -e 'using Pkg; Pkg.add([PackageSpec(url="https://github.com/JuliaEnergy/PowerDynBase.jl.git"), PackageSpec(url="https://github.com/JuliaEnergy/PowerDynSolve.jl.git")])'; fi
-  - julia --color=yes -e 'using Pkg; ps=Pkg.PackageSpec(name="Documenter", version="0.19"); Pkg.add(ps); Pkg.pin(ps)'
+  - julia --color=yes -e 'using Pkg; Pkg.add("Documenter")
   - julia --color=yes -e 'using Pkg; Pkg.update()'
 
 #before_script:
