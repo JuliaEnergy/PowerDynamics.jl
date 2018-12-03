@@ -3,10 +3,9 @@ using Documenter
 using PowerDynBase, PowerDynSolve
 
 makedocs(
-    # options
     modules = [PowerDynBase, PowerDynSolve],
-    # html options
-    format = :html,
+    authors = "Tim Kittel and contributors.",
+    linkcheck=true,
     sitename = "PowerDynamics.jl",
     pages = [
         "General" => "index.md",
@@ -16,19 +15,12 @@ makedocs(
         "custom_node_types.md",
         "states_solutions.md",
         "error_types.md",
-        # "Documentation of Internals" => [
-        #     "internalsBase.md",
-        #     "internalsSolve.md",
-        # ],
         "fullindex.md",
         "contact.md",
     ],
-   html_canonical = "https://juliaenergy.github.io/PowerDynamics.jl/latest/",
+   html_canonical = "https://juliaenergy.github.io/PowerDynamics.jl/stable/",
    )
 deploydocs(
     repo = "github.com/JuliaEnergy/PowerDynamics.jl.git",
-    target = "build",
-    julia = "1.0",
-    deps = nothing,
-    make = nothing
+    target = "build"
 )
