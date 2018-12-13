@@ -66,7 +66,7 @@ Generally, we distinguish three types of user for `PowerDynamics.jl`:
 **Your Goal** is to use `PowerDynamics.jl` to model your grid of preference. You don't
 want to implement new types of nodes.
 
-We recommend you to choose your favorite example from [`PowerDynamicsExamples`](https://gitlab.com/JuliaEnergy/PowerDynamicsExamples),
+We recommend you to choose your favorite example from [`PowerDynamicsExamples`](https://github.com/JuliaEnergy/PowerDynamicsExamples),
 read [Node Types](@ref) and try to understand it. That should give you the kickstart you need. If you
 have any questions, [contact us](@ref Contact).
 

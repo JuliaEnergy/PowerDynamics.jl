@@ -26,7 +26,7 @@ Unicode, greek letters are used within the Code, e.g. `Ω` and `ω` in [`PowerDy
 ## List of modeling conventions
 
 - Counting of nodes starts at 1.
-- Ranges of nodes are mathematical, i.e. they include the first and the last element. For example $\sum_k=3^6$ sums over $3$, $4$, $5$, and $6$.
+- Ranges of nodes are mathematical, i.e. they include the first and the last element. For example $\sum_{k=3}^6$ sums over $3$, $4$, $5$, and $6$.
 - For now, no selfadmittance is allowed, i.e. $y_{aa} = 0$ for all nodes $a$.
 - The admittance laplacian uses the following definition ([convention from wikipedia](https://en.wikipedia.org/wiki/Nodal_admittance_matrix#Construction))
 ```math
