@@ -11,7 +11,17 @@ and analyze it.
 
 The source code is licensed under [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html) and [published on github](https://github.com/JuliaEnergy/PowerDynamics.jl).
 
-These Docs have been built with the following version of the sub-packages:
+These Docs have been built
+```@setup documentationbuildtime
+using Dates
+function printBuiltTime()
+  println(Dates.format(now(), "on YYYY-mm-dd at HH:MM"))
+end
+```
+```@example documentationbuildtime
+printBuiltTime() # hide
+```
+with the following version of the sub-packages:
 ```@setup versions
 using Pkg
 env = Pkg.Types.EnvCache()
@@ -66,7 +76,7 @@ Generally, we distinguish three types of user for `PowerDynamics.jl`:
 **Your Goal** is to use `PowerDynamics.jl` to model your grid of preference. You don't
 want to implement new types of nodes.
 
-We recommend you to choose your favorite example from [`PowerDynamicsExamples`](https://github.com/JuliaEnergy/PowerDynamicsExamples),
+We recommend you to choose your favorite example from [`PowerDynamicsExamples`](https://gitlab.com/JuliaEnergy/PowerDynamicsExamples),
 read [Node Types](@ref) and try to understand it. That should give you the kickstart you need. If you
 have any questions, [contact us](@ref Contact).
 
