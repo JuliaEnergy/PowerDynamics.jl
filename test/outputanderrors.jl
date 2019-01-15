@@ -1,9 +1,10 @@
 
 include("testing_base.jl")
+using Crayons
 
 struct DummyNodeDynamics{N <: PowerDynBase.AbstractNodeParameters} <: PowerDynBase.AbstractNodeDynamics{N} end
 let
-println("OUTPUT TESTS:")
+println(Crayon(foreground = :light_gray), "OUTPUT TESTS:")
 @test_nowarn println(PQAlgebraic)
 @test_nowarn println(SwingEq)
 @test_nowarn println(PQAlgebraic(S=3+4im))
@@ -20,4 +21,5 @@ LY = [1 -1; -1 1] # now a valid admittance laplacian
 @test_throws GridDynamicsError GridDynamics([DummyNodeDynamics{PowerDynBase.SwingEq}()], LY)
 
 @test_throws UndefKeywordError SlackAlgebraic()
+print(Crayon(reset=true))
 end

@@ -50,6 +50,9 @@ include("DEVariables.jl")
 include("NodeParametersBase.jl")
 include("NodeDynamicsBase.jl")
 
+# NodeSymbols
+include("NodeSymbols.jl")
+
 # all possible node dynamics
 include("DynamicNodeMacro.jl")
 include("NodeDynamics/PQAlgebraic.jl")
