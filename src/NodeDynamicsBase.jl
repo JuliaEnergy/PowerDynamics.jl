@@ -52,7 +52,6 @@ rhs(dint_dt::AbstractVector,
 """
 @with_kw struct OrdinaryNodeDynamics{N <: AbstractNodeParameters} <: AbstractOrdinaryNodeDynamics{N}
     rhs::Function # how to define the function type, should be clear so the interface is forced, keyword FunctionWrapper
-    symbols::ODENodeSymbols
     parameters::N
     n_int
 end
@@ -67,9 +66,6 @@ getDEVariableType(::Type{Val{OrdinaryNodeDynamics}}) = ODEVariable
 
 "Get number of internal arguments of the node."
 nint(dyn::OrdinaryNodeDynamics) = dyn.n_int
-
-"Get the symbols data structure for the node."
-symbolsof(n::OrdinaryNodeDynamics) = n.symbols
 
 "Get the parameters struct for the node."
 parametersof(n::OrdinaryNodeDynamics) = n.parameters
@@ -128,8 +124,8 @@ struct OrdinaryNodeDynamicsWithMass{N <: AbstractNodeParameters} <: AbstractAlge
     m_u::Bool # Answers the question: Is the voltage treated as a dynamic variable with a differential
     m_int::AbstractVector{Bool} # for each internal variable: true if there is a differential for it, else false (if it is an algebraic constraint only)
 end
-OrdinaryNodeDynamicsWithMass(;rhs::Function, symbols, n_int, m_u, m_int, parameters) = OrdinaryNodeDynamicsWithMass(
-    OrdinaryNodeDynamics(rhs, symbols, parameters, n_int),
+OrdinaryNodeDynamicsWithMass(;rhs::Function, n_int, m_u, m_int, parameters) = OrdinaryNodeDynamicsWithMass(
+    OrdinaryNodeDynamics(rhs, parameters, n_int),
     m_u, m_int)
 (dyn::OrdinaryNodeDynamicsWithMass)(args...;kwargs...) = dyn.ode_dynamics(args...;kwargs...)
 
@@ -139,8 +135,7 @@ nint(dyn::OrdinaryNodeDynamicsWithMass) = nint(dyn.ode_dynamics)
 
 OrdinaryNodeDynamics(n::OrdinaryNodeDynamicsWithMass) = n.ode_dynamics
 
-symbolsof(n::OrdinaryNodeDynamicsWithMass) = n |> OrdinaryNodeDynamics |> symbolsof
-
+# TODO: remove OrdinaryNodeDynamics(::OrdinaryNodeDynamicsWithMass) and access the field here directly
 parametersof(n::OrdinaryNodeDynamicsWithMass) = n |> OrdinaryNodeDynamics |> parametersof
 
 """
@@ -171,7 +166,6 @@ const no_internal_differentials = Vector{Bool}()
 "DOCS TBD!"
 @with_kw struct AlgebraicNodeDynamics{N <: AbstractNodeParameters} <: AbstractAlgebraicNodeDynamics{N}
     root::Function # how to define the function type, should be clear so the interface is forced, keyword FunctionWrapper
-    symbols::DAENodeSymbols
     parameters::N
     n_int
     d_u::Bool # Answers the question: Is the voltage treated as a dynamic variable with a differential
@@ -186,8 +180,6 @@ end
 getDEVariableType(::Type{Val{AlgebraicNodeDynamics}}) = DAEVariable
 
 nint(dyn::AlgebraicNodeDynamics) = dyn.n_int
-
-symbolsof(n::AlgebraicNodeDynamics) = n.symbols
 
 parametersof(n::AlgebraicNodeDynamics) = n.parameters
 
@@ -223,7 +215,6 @@ Conversion of `OrdinaryNodeDynamicsWithMass` to `AlgebraicNodeDynamics` by trans
 function convert(::Type{AlgebraicNodeDynamics}, node::OrdinaryNodeDynamicsWithMass)
     AlgebraicNodeDynamics(
         root=rhs2root(node.ode_dynamics.rhs),
-        symbols=convert(DAENodeSymbols, symbolsof(node)),
         parameters=parametersof(node),
         n_int=node.ode_dynamics.n_int,
         d_u=node.m_u,

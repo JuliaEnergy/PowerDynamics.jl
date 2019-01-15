@@ -1,9 +1,6 @@
 
 using Test
-using Random
-random_seed = 1234
-@show random_seed
-Random.seed!(random_seed)
+using Crayons
 
 testlist = [
     ("nodedynamics.jl", "Single Node Tests"),
@@ -13,7 +10,9 @@ testlist = [
     ("outputanderrors.jl", "Output and Error Tests"),
     ("states.jl", "States Tests"),
 ]
-
-@testset "$desc" for (file, desc) in testlist
-    @time include(file)
+@testset "All Tests" begin
+    @testset "$desc" for (file, desc) in testlist
+        t = @elapsed include(file)
+        println(Crayon(foreground = :green, bold = true), "$desc:", Crayon(reset = true), " $t s")
+    end
 end

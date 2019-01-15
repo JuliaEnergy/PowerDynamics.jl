@@ -44,9 +44,9 @@ swing_num = 2
 pq_num = 2
 num = pq_num + swing_num
 pars = [
-[SwingEq(H=symbols("H_$i", positive=true), P=symbols("P_$i", real=true), D=symbols("D_$i", positive=true), Ω=symbols("Omega_$i", real=true)) for i=1:swing_num ];
-[PQAlgebraic(S=symbols("S_$i")) for i in 1:pq_num]
-]
+    [SwingEq(H=symbols("H_$i", positive=true), P=symbols("P_$i", real=true), D=symbols("D_$i", positive=true), Ω=symbols("Omega_$i", real=true)) for i=1:swing_num ];
+    [PQAlgebraic(S=symbols("S_$i")) for i in 1:pq_num]
+    ]
 dyns = construct_node_dynamics.(pars)
 LY = SymbolMatrix("LY", num)
 grid_dyn = GridDynamics(pars, LY, skip_LY_check=true)

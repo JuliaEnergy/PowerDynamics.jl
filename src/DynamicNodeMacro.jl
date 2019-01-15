@@ -42,7 +42,6 @@ function cndfunction_builder!(::Type{Val{:OrdinaryNodeDynamics}},
     append!(dynamicscall.args, [
         Expr(:kw, :rhs, :rhs!),
         Expr(:kw, :n_int, length(internals.vars)),
-        Expr(:kw, :symbols, :(ODENodeSymbols($(Expr(:vect, QuoteNode.(internals.vars)...)), $(Expr(:vect, QuoteNode.(internals.dvars)...))))),
         Expr(:kw, :parameters, :par),
         ])
     append!(cndfunction.args[2].args, [rhsfunction, dynamicscall])
@@ -81,7 +80,19 @@ function getinternalvars(::Type{Val{:OrdinaryNodeDynamicsWithMass}}, internalsde
 end
 
 function getinternalvars(::Type{Val{T}}, args...;kwargs...) where {T}
-    throw(NodeDynamicsError("unknown node dynamics type $T"))
+    throw(NodeDynamicsError("cannot extract internal symbols for $T. Are you sure that is implemented?"))
+end
+
+function generate_symbolsof_fct(::Type{Val{:OrdinaryNodeDynamics}}, name, internals)
+    :(symbolsof(::Type{$name}) = ODENodeSymbols($(Expr(:vect, QuoteNode.(internals.vars)...)), $(Expr(:vect, QuoteNode.(internals.dvars)...))))
+end
+
+function generate_symbolsof_fct(::Type{Val{:OrdinaryNodeDynamicsWithMass}}, name, internals)
+    generate_symbolsof_fct(Val{:OrdinaryNodeDynamics}, name, internals)
+end
+
+function generate_symbolsof_fct(::Type{Val{T}}, name, internals) where T
+    throw(NodeDynamicsError("cannot generator `symbolsof` function for $T. Are you sure that is implemented?"))
 end
 
 """See [`PowerDynBase.@DynamicNode`](@ref)."""
@@ -109,9 +120,12 @@ function DynamicNode(typedef, prep, internalsdef, func_body)
         cndfunction
         )
 
+    fct_symbolsof = generate_symbolsof_fct(Val{dynamicstype}, name, internals)
+
     ret = quote
         @__doc__ $(struct_def)
         $(cndfunction)
+        $(fct_symbolsof)
     end
     return ret
 end

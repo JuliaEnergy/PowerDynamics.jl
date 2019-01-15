@@ -1,4 +1,5 @@
 begin
+        using Test
         using PowerDynBase
         # using SymEngine
         using SymPy
@@ -7,7 +8,8 @@ begin
         using MacroTools
         using Test
         using Random
-        @show random_seed = 1234
+        random_seed = 1234
+        @show random_seed
         Random.seed!(random_seed)
         using LinearAlgebra
 end

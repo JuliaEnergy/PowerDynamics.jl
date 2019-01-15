@@ -79,13 +79,17 @@ cnd_function_test = quote
                                 end
                         end
                 end
-                OrdinaryNodeDynamicsWithMass(a=1, b=3, rhs=rhs!, n_int=2, symbols=ODENodeSymbols([:a, :b], [:da, :db]), parameters=par)
+                OrdinaryNodeDynamicsWithMass(a=1, b=3, rhs=rhs!, n_int=2, parameters=par)
         end
 end |> rlr |> rsb
 @test cndfunction |> rlr |> rsb == cnd_function_test
+symbolsof_fct = PowerDynBase.generate_symbolsof_fct(Val{:OrdinaryNodeDynamicsWithMass}, :MyParams, internals) |> rlr |> rsb
+symbolsof_fct_test = :(symbolsof(::Type{MyParams}) = ODENodeSymbols([:a, :b], [:da, :db])) |> rlr |> rsb
+@test symbolsof_fct == symbolsof_fct_test
 full_macro_return = PowerDynBase.DynamicNode(:(MyParams(p1, p2) <: OrdinaryNodeDynamicsWithMass(a=1, b=3)), prep, :([[a, da], [b, db]]), funcbody ) |> rlr |> rsb
 full_macro_return_test = quote
         @__doc__ $(struct_def_tests)
         $(cnd_function_test)
+        $(symbolsof_fct_test)
 end |> rlr |> rsb
 @test full_macro_return == full_macro_return_test
