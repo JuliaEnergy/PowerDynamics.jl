@@ -5,9 +5,6 @@ os:
   # - osx
 julia:
   - 1.0
-  # - 0.6
-  # - 0.7
-  - nightly
 notifications:
   email: false
 git:
@@ -16,27 +13,33 @@ env:
   global:
     - PYTHON=conda
 
-codecov: true
+before_install:
+  - julia -e "using InteractiveUtils; versioninfo();"
 
-# uncomment the following lines to allow failures on nightly julia
-# (tests will run but not make your overall status red)
-matrix:
- allow_failures:
- - julia: nightly
-
-## uncomment and modify the following lines to manually install system packages
-#addons:
-#  apt: # apt-get for linux
-#    packages:
-#    - gfortran
-before_script: # homebrew for mac
+before_script:
 #  - if [ $TRAVIS_OS_NAME = osx ]; then brew install gcc; fi
   - julia -e 'using Pkg; Pkg.add(PackageSpec(name="Documenter", version="0.19"))'
 
 # uncomment the following lines to override the default test script
-script:
- - julia --check-bounds=yes --color=yes --inline=no -e "using Pkg; Pkg.test(coverage=true)"
- - julia docs/make.jl
-after_success:
-  # push coverage results to Codecov
-  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+jobs:
+  include:
+    - stage: "Tests"
+      name: "Unit/Integration Tests"
+      script:
+        - julia --check-bounds=yes --color=yes --inline=no -e "using Pkg; Pkg.test(coverage=true)"
+      after_success:
+        # push coverage results to Codecov
+        - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+    - name: "Documentation Test"
+      script:
+        - julia docs/make.jl
+    - name: "Changelog Check"
+      if: type IN (pull_request)
+      before_install:
+      before_script:
+      script:
+        - git fetch origin master:master
+        # show all changed files for debugging
+        - git diff HEAD master --name-only
+        # check if CHANGELOG.md has been modified
+        - git diff HEAD master --name-only | grep ^CHANGELOG.md$
