@@ -21,7 +21,7 @@ env:
 
 script:
   - if [ $JULIA_COVERAGE_VERSION == $TRAVIS_JULIA_VERSION ]; then export PUSH_COVERAGE=true; else export PUSH_COVERAGE=false; fi
-    && echo -e "${RED}${BOLD}PUSH_COVERAGE=$PUSH_COVERAGE"
+    && echo -e "${GREEN}${BOLD}PUSH_COVERAGE=$PUSH_COVERAGE"
     && julia --check-bounds=yes --color=yes --inline=no -e "using Pkg; Pkg.test(coverage=true)"
     && julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; res=Codecov.process_folder();
           if ENV["PUSH_COVERAGE"] == "true" Codecov.submit(res) end;
@@ -45,24 +45,3 @@ jobs:
         - git diff HEAD master --name-only
         # check if CHANGELOG.md has been modified
         - git diff HEAD master --name-only | grep ^CHANGELOG.md$ || (ret=$? && echo -e "${RED}${BOLD}You didn't provide the details of your change in CHANGELOG.md" && exit $ret)
-
-# before_install:
-#   - julia -e "using InteractiveUtils; versioninfo();"
-
-# before_script:
-# #  - if [ $TRAVIS_OS_NAME = osx ]; then brew install gcc; fi
-#   - julia -e 'using Pkg; Pkg.add(PackageSpec(name="Documenter", version="0.19"))'
-#
-# # uncomment the following lines to override the default test script
-# - stage: Test
-#   script:
-#     - julia --check-bounds=yes --color=yes --inline=no -e "using Pkg; Pkg.test(coverage=true)"
-#   after_success:
-#     # push coverage results to Codecov
-#     - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
-#   julia:
-#     - 1.0
-#     - 1.1
-# - stage: "Documentation Test"
-#   script:
-#     - julia docs/make.jl
