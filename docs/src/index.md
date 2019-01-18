@@ -26,10 +26,6 @@ with the following version of the sub-packages:
 using Pkg
 env = Pkg.Types.EnvCache()
 subpackages = copy(env.project["deps"])
-pop!(subpackages, "Reexport") # ignore Reexport here
-if haskey(subpackages, "Documenter")
-  pop!(subpackages, "Documenter") # ignore Documenter here
-end
 uuids = map(Base.UUID, values(subpackages))
 function printversions()
   for uuid in uuids
