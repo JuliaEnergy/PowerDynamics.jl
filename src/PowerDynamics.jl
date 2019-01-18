@@ -7,6 +7,7 @@ module PowerDynamics
 
 using Reexport
 @reexport using PowerDynBase
+@reexport using PowerDynOperationPoint
 @reexport using PowerDynSolve
 
 end # DPSA
