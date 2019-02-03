@@ -6,4 +6,4 @@
 
 # PowerDynamics.jl
 
-Package for dynamic modeling of power grids. [Please check out the Docs.](https://juliaenergy.github.io/PowerDynamics.jl/stable/)
+PowerDynamics.jl: An Open-Source Framework Written in Julia for Dynamic Power Grid Modeling and Analysis. [Please check out the Docs.](https://juliaenergy.github.io/PowerDynamics.jl/stable/)
