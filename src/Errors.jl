@@ -3,6 +3,7 @@
 
 import Base: showerror
 
+"Abstract super type of all PowerDynamics.jl Errors."
 abstract type PowerDynamicsError <: Exception end
 Base.showerror(io::IO, e::T) where {T<:PowerDynamicsError} = print(io, "$T: ",e.msg)
 

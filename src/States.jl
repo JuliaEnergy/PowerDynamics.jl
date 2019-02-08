@@ -25,7 +25,7 @@ Encode a state vector and the corresponding rhs information.
 # Indexing
 
 In an instance `b` of of a `BaseState` behaves like an
-[`Array`](@ref), i.e. you can access the ``j``-th element
+array, i.e. you can access the ``j``-th element
 of the state vector (and set it to a value ``ξ``) by calling `b[j] ( = ξ )`.
 
 """
@@ -36,8 +36,13 @@ struct BaseState{G <: GridDynamics, V} #<: AbstractVector{V} where {G <: GridDyn
         @assert grid.rhs.systemsize == length(vec)
         new{G, V}(grid, vec)
     end
+    function BaseState{G, V}(grid::G) where {G <: GridDynamics, V}
+        new{G, V}(grid, zeros(V, SystemSize(grid)))
+    end
 end
 BaseState(grid::G, vec::AbstractVector{V}) where {G <: GridDynamics, V} = BaseState{G, V}(grid, vec)
+BaseState(grid::G, V::Type) where {G <: GridDynamics} = BaseState{G, V}(grid)
+BaseState(grid::G) where {G <: GridDynamics} = BaseState(grid, Float64)
 
 Base.size(s::BaseState) = size(s.vec)
 Base.getindex(s::BaseState, n) = getindex(s.vec, n)
@@ -50,8 +55,8 @@ convert(::Type{<:AbstractVector{V}}, s::BaseState{G, V}) where {G, V} = s.vec
 @doc doc"""
 ```Julia
 
-    State(base, t)
-    State(grid, vec, t)
+    State(base; t=nothing)
+    State(grid, vec; t=nothing)
 
 ```
 
@@ -67,9 +72,9 @@ Encode the information on the value of a state vector at a particular time point
 # Indexing
 
 Concerning the indexing, a `State` object ``s`` basically behaves like a
-an [`Array`](@ref).
+an array.
 There are plenty of convenient ways to access its contents at a node ``j``
-by using a particular [`Symbol`](@ref):
+by using a particular symbol:
 
 * `s[j, :u]`: complex voltage
 * `s[j, :v]`: voltage magnitude
@@ -95,8 +100,13 @@ The internal variables can be also directly accessed with symbols, i.e.
 
 returns the frequency ``ω`` at node ``j``.
 To find out the proper symbol, the easiest way is to look into the docs
-of the corresponding [`AbstractNodeDynamics`](@ref) subtype or simply at the
-output of `print`:
+of the corresponding [`AbstractNodeParameters`](@ref) subtype,
+check the output of [`internalsymbolsof`](@ref)
+or simply look at the output of `println`:
+
+    julia> internalsymbolsof(SwingEq(H=2, P=3, D=4, Ω=5))
+    1-element Array{Symbol,1}:
+     :ω
 
     julia> println(SwingEq(H=2, P=3, D=4, Ω=5))
     SwingEq[:ω](H=2, P=3, D=4, Ω=5)
@@ -108,10 +118,11 @@ struct State{G, V, T} <: AbstractState{G, V, T}
 end
 State(b::BaseState; t=nothing) = State(b, t)
 State(g::GridDynamics, v::AbstractVector; t=nothing) = State(BaseState(g, v), t)
+State(g::GridDynamics; t=nothing) = State(BaseState(g))
 
 # Interface Functions
 BaseState(s::State) = s.base
-Base.copy(s::State) = State(copy(s.base), deepcopy(s.t)) # grid dynamics should not be copied
+Base.copy(s::State) = State(copy(BaseState(s)), deepcopy(s.t)) # grid dynamics should not be copied
 
 
 # derived function for all AbstractState
@@ -163,6 +174,10 @@ Base.setindex!(s::AbstractState, v, n, ::Type{Val{:u}}) = begin
     setindex!(BaseState(s), real(v) ,2 .* n .- 1)
     setindex!(BaseState(s), imag(v), 2 .* n)
 end
+Base.setindex!(s::AbstractState, v, n, ::Type{Val{:v}}) = begin
+    u = s[n, :u]
+    s[n, :u] = v.*u./abs.(u)
+end
 Base.setindex!(s::AbstractState, v, n, ::Type{Val{:int}}, i) = begin
     BaseState(s)[internalindex(s, n, i)] = v
 end
@@ -170,3 +185,23 @@ Base.setindex!(s::AbstractState, v, n, ::Type{Val{sym}}) where sym = setindex!(s
 
 convert(::Type{BaseState}, s::State) = BaseState(s.base)
 convert(::Type{A}, s::State{G, V, T}) where {V, A <:AbstractVector{V}, T, G} = @>> s BaseState convert(A)
+function Base.:+(s1::AbstractState, s2::AbstractState)
+    @assert GridDynamics(s1) == GridDynamics(s2)
+    State(GridDynamics(s1), BaseState(s1).vec .+ BaseState(s2).vec)
+end
+function Base.:-(s1::AbstractState, s2::AbstractState)
+    @assert GridDynamics(s1) == GridDynamics(s2)
+    State(GridDynamics(s1), BaseState(s1).vec .- BaseState(s2).vec)
+end
+Base.:-(s::AbstractState) = State(GridDynamics(s), .- BaseState(s).vec)
+Base.:*(k, s::AbstractState) = State(GridDynamics(s), k.*BaseState(s).vec)
+Base.:*(s::AbstractState, k) = k*s # commutivity
+Base.:/(s::AbstractState, k) = (1/k)*s
+function Base.:(==)(s1::AbstractState, s2::AbstractState)
+    @assert GridDynamics(s1) == GridDynamics(s2)
+    all(BaseState(s1).vec .== BaseState(s2).vec)
+end
+function Base.:≈(s1::AbstractState, s2::AbstractState)
+    @assert GridDynamics(s1) == GridDynamics(s2)
+    all(BaseState(s1).vec .≈ BaseState(s2).vec)
+end
