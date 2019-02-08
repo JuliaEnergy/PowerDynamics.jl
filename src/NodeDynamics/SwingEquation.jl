@@ -33,7 +33,7 @@ v = v(t=0) = \text{const.} \\
 ```
 """
 @DynamicNode SwingEq(H, P, D, Ω) <: OrdinaryNodeDynamics() begin
-    @assert D > 0 "damping (D) should be >0"
+    @assert D >= 0 "damping (D) should be >=0"
     @assert H > 0 "inertia (H) should be >0"
     Ω_H = Ω * 2pi / H
 end [[ω, dω]] begin

@@ -50,6 +50,9 @@ include("DEVariables.jl")
 include("NodeParametersBase.jl")
 include("NodeDynamicsBase.jl")
 
+# NodeSymbols
+include("NodeSymbols.jl")
+
 # all possible node dynamics
 include("DynamicNodeMacro.jl")
 include("NodeDynamics/PQAlgebraic.jl")
@@ -57,6 +60,9 @@ include("NodeDynamics/PVAlgebraic.jl")
 include("NodeDynamics/SlackAlgebraic.jl")
 include("NodeDynamics/SwingEquation.jl")
 include("NodeDynamics/FourthOrderEquation.jl")
+include("NodeDynamics/VoltageSourceInverterMinimal.jl")
+include("NodeDynamics/VoltageSourceInverterVoltagePT1.jl")
+
 
 
 # the structures building the grid dynamics from the node dynamics

@@ -14,20 +14,50 @@ abstract type AbstractAlgebraicGridDynamics <: GridDynamics end
 
 NetworkRHS(g::GridDynamics) = g.rhs
 
-"TBD"
+"""
+    struct OrdinaryGridDynamics <: AbstractOrdinaryGridDynamics
+        rhs::NetworkRHS
+    end
+
+The data structure that contains all the information necessary for a power grid model that can be described
+as an ordinary differential equation. In this case, only the [`PowerDynBase.NetworkRHS`](@ref) is necessary.
+"""
 @with_kw struct OrdinaryGridDynamics <: AbstractOrdinaryGridDynamics
     rhs::NetworkRHS
 end
 (dyn::OrdinaryGridDynamics)(dx_dt::AbstractVector, x_in::AbstractVector, p, t) = dyn.rhs(ODEVariable(x_in, dx_dt), t)
 
-"TBD"
+"""
+    struct OrdinaryGridDynamicsWithMass <: AbstractAlgebraicGridDynamics
+        rhs::NetworkRHS
+        masses::AbstractVector{Bool} # diagonal part of the mass matrix, off-diagonal is assumed to be 0 anyway
+    end
+
+The data structure that contains all the information necessary for a power grid model that can be described
+as an ordinary differential equation with masses, i.e. a semi-explicit differential algebraic equation.
+`rhs` is the [`PowerDynBase.NetworkRHS`](@ref). `masses` is a 1-dimensional array representing the diagonal entries
+of the mass matrix. The off-diagonal entries are assumed to be 0. `masses` can only contain boolean values
+representing: `true` the equation is treated as a ordinary differential eqation and `false` the equation is
+treated as an algebraic constraint on the state variables.
+"""
 @with_kw struct OrdinaryGridDynamicsWithMass <: AbstractAlgebraicGridDynamics
     rhs::NetworkRHS
     masses::AbstractVector{Bool} # diagonal part of the mass matrix, off-diagonal is assumed to be 0 anyway
 end
 (dyn::OrdinaryGridDynamicsWithMass)(dx_dt::AbstractVector, x_in::AbstractVector, p, t) = dyn.rhs(ODEVariable(x_in, dx_dt), t)
 
-"TBD"
+"""
+    struct AlgebraicGridDynamics <: AbstractAlgebraicGridDynamics
+        rhs::NetworkRHS
+        differentials::AbstractVector{Bool} # boolean values whether there a variable is a differential
+    end
+
+The data structure that contains all the information necessary for a power grid model that can be described
+as an differential algebraic equation.
+`rhs` is the [`PowerDynBase.NetworkRHS`](@ref). `differentials` is a 1-dimensional array of boolean values.
+A `true` entry means the corresponding variable is dynamic and has a derivative variable.
+A `false` entry means the corresponding variable is defined by an algebraic constraint only.
+"""
 @with_kw struct AlgebraicGridDynamics <: AbstractAlgebraicGridDynamics
     rhs::NetworkRHS
     differentials::AbstractVector{Bool} # boolean values whether there a variable is a differential
@@ -35,7 +65,7 @@ end
 (dyn::AlgebraicGridDynamics)(x_out::AbstractVector, dx_dt::AbstractVector, x_in::AbstractVector, p, t) = dyn.root(DAEVariable(val=x_in, ddt=dx_dt, out=x_out), t)
 
 
-"Create for each subtype of [`DPSABase.AbstractNodeDynamics`](#ref) the corresponding subtype of [`DPSABase.GridDynamics`](#ref)."
+"Create for each subtype of [`PowerDynBase.AbstractNodeDynamics`](@ref) the corresponding subtype of [`PowerDynBase.GridDynamics`](@ref)."
 _GridDynamics(nodes::AbstractVector{<:OrdinaryNodeDynamics}, LY::AbstractMatrix) =
     OrdinaryGridDynamics(NetworkRHS(nodes, LY))
 
@@ -63,9 +93,9 @@ end
         skip_LY_check=false,
         kwargs...)
 
-Bring all sutypes of [`DPSABase.AbstractNodeDynamics`](#ref) on one level and then
-create for each subtype of [`DPSABase.AbstractNodeDynamics`](#ref) the corresponding subtype of [`DPSABase.GridDynamics`](#ref) by using
-[`DPSABase._GridDynamics`](#ref).
+Bring all sutypes of [`PowerDynBase.AbstractNodeDynamics`](@ref) on one level and then
+create for each subtype of [`PowerDynBase.AbstractNodeDynamics`](@ref) the corresponding subtype of [`PowerDynBase.GridDynamics`](@ref) by using
+[`PowerDynBase._GridDynamics`](@ref).
 """
 function GridDynamics(
     nodes::AbstractArray{<:AbstractNodeDynamics},
@@ -84,16 +114,17 @@ end
 """
     function GridDynamics(nodes::AbstractVector{<:AbstractNodeParameters}, args...; kwargs...)
 
-Convert all subtypes of [`DPSABase.AbstractNodeParameters`](#ref) to the corresponding
-subtypes of [`DPSABase.AbstractNodeDynamics`](#ref) and then call [`DPSABase.GridDynamics`](#ref)
+Convert all subtypes of [`PowerDynBase.AbstractNodeParameters`](@ref) to the corresponding
+subtypes of [`PowerDynBase.AbstractNodeDynamics`](@ref) and then call [`PowerDynBase.GridDynamics`](@ref)
 again.
 """
 function GridDynamics(nodes::AbstractVector{<:AbstractNodeParameters}, args...; kwargs...)
     GridDynamics(map(construct_node_dynamics, nodes), args...; kwargs...)
 end
 
-
+"Return the 1-dimensional differentials array (see [`PowerDynBase.AlgebraicGridDynamics`](@ref)) for the internal variables for each node."
 int_differentials(node::AbstractAlgebraicNodeDynamics, nodes::AbstractAlgebraicNodeDynamics...) = [int_differentials(node); int_differentials(nodes...)]
+"Return the 1-dimensional differentials array (see [`PowerDynBase.AlgebraicGridDynamics`](@ref)) for the voltagee variables for each node."
 u_differentials(node::AbstractAlgebraicNodeDynamics, nodes::AbstractAlgebraicNodeDynamics...) = [u_differentials(node); u_differentials(nodes...)]
 u_differentials(node::OrdinaryNodeDynamicsWithMass) = repeat([node.m_u], inner=2) # 1 Complex number is 2 Real numbers
 int_differentials(node::OrdinaryNodeDynamicsWithMass) = node.m_int

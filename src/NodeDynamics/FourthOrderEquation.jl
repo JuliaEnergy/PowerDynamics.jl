@@ -3,15 +3,15 @@
 
 @doc doc"""
 ```Julia
-SwingEq(;H, P, D, Ω)
+FourthEq(H, P, D, Ω, E_f, T_d_dash ,T_q_dash ,X_q_dash ,X_d_dash,X_d, X_q)
 ```
 
-A node type that applies the swing equation to the frequency/angle dynamics and
-keeps the voltage magnitude as is.
+A node type that applies the 4th-order synchronous machine model
+with frequency/angle and voltage dynamics.
 
-Additionally to ``u``, it has the internal dynamic variable ``\omega`` representing
-the frequency of the rotator relative to the grid frequency ``\Omega``, i.e. the
-real frequency ``\omega_r`` of the rotator is given as ``\omega_r = \Omega + \omega``.
+Additionally to ``u``, it has the internal dynamic variables
+* ``\omega`` representing the frequency of the rotator relative to the grid frequency ``\Omega``, i.e. the real frequency ``\omega_r`` of the rotator is given as ``\omega_r = \Omega + \omega`` and
+* ``\theta`` representing the relative angle of the rotor with respect to the voltage angle ``\phi``.
 
 # Keyword Arguments
 - `H`: inertia
@@ -30,7 +30,7 @@ Using `FourthEq` for node ``a`` applies the equations
 ```math
     u = -je_c e^{j\theta} = -j(e_d + je_q)e^{j\theta}\\
     e_c= e_d + je_q = jue^{-j\theta}\\
-    i  = -ji'e^{j\theta} = -j(i_d+ j i_q )e^{j\theta} = Y^L \cdot (u) \\
+    i  = -ji'e^{j\theta} = -j(i_d+ j i_q )e^{j\theta} = Y^L \cdot u \\
     i_c= i_d + ji_q = jie^{-j\theta}\\
     p = \Re (i^* u)
 ```
@@ -48,7 +48,7 @@ With the PowerDynamics.jl \time{naming conventions} of $i$ and $u$ they read as
 """
 @DynamicNode FourthEq(H, P, D, Ω, E_f, T_d_dash ,T_q_dash ,X_q_dash ,X_d_dash,X_d, X_q) <: OrdinaryNodeDynamics() begin
     @assert H > 0 "inertia (H) should be >0"
-    @assert D > 0 "damping (D) should be >0"
+    @assert D >= 0 "damping (D) should be >=0"
     @assert T_d_dash > 0 "time constant of d-axis (T_d_dash) should be >0"
     @assert T_q_dash > 0 "time constant of q-axis (T_q_dash) should be >0"
     @assert X_d_dash >= 0 "transient reactance of d-axis (X_d_dash) should be >=0"

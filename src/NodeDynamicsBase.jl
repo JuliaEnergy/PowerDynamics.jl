@@ -16,7 +16,20 @@ abstract type AbstractAlgebraicNodeDynamics{N <: AbstractNodeParameters} <: Abst
 # ODEs
 ################################################################################
 
-rhsdescription = @doc doc"""
+@doc doc"""
+```Julia
+OrdinaryNodeDynamics(;rhs, n_int)
+```
+
+The type representing the dynamics of a node that is described via ODEs.
+
+Each node ``a`` has the complex voltage ``u`` and ``n`` real internal variables ``y_1, \dots, y_n``, so it
+generally describes a system of ordinary differential equation as
+
+```math
+\frac{du_a}{dt} = f_u(u_a, {i_c}_a, y_1, \dots, y_n) \\
+\frac{dy_{ak}}{dt} = f_k(u_a, {i_c}_a, y_1, \dots, y_n)\quad \forall k = 1, \dots, n.
+```
 ``f`` is represented by `rhs` field of `OrdinaryNodeDynamics`.
 - the general signature of `rhs` is
 ```Julia
@@ -35,29 +48,10 @@ rhs(dint_dt::AbstractVector,
 - Output
   - the (complex) return value describes ``\frac{du}{dt}``
   - `rhs` writes values in `dint_dt` describing the left-hand side ``\frac{dy_1}{dt}, \dots, \frac{dy_n}{dt}``
-"""
-
-@doc doc"""
-```Julia
-OrdinaryNodeDynamics(;rhs, n_int)
-```
-
-The type representing the dynamics of a node that is described via ODEs.
-
-Each node ``a`` has the complex voltage ``u`` and ``n`` real internal variables ``y_1, \dots, y_n``, so it
-generally describes a system of ordinary differential equation as
-
-```math
-\frac{du_a}{dt} = f_u(u_a, {i_c}_a, y_1, \dots, y_n) \\
-\frac{dy_{ak}}{dt} = f_k(u_a, {i_c}_a, y_1, \dots, y_n)\quad \forall k = 1, \dots, n.
-```
-
-$rhsdescription
 
 """
 @with_kw struct OrdinaryNodeDynamics{N <: AbstractNodeParameters} <: AbstractOrdinaryNodeDynamics{N}
     rhs::Function # how to define the function type, should be clear so the interface is forced, keyword FunctionWrapper
-    symbols::ODENodeSymbols
     parameters::N
     n_int
 end
@@ -67,14 +61,13 @@ function (dyn::OrdinaryNodeDynamics)(n, u::ODEVariable, i,
     nothing
 end
 
-"Identify each subtype of [`AbstractNodeDynamics`](#ref) with its corresponding subtype of [`AbstractDEVariable`](#ref)"
+"Identify each subtype of [`AbstractNodeDynamics`](@ref) with its corresponding subtype of [`AbstractDEVariable`](@ref)"
 getDEVariableType(::Type{Val{OrdinaryNodeDynamics}}) = ODEVariable
 
 "Get number of internal arguments of the node."
 nint(dyn::OrdinaryNodeDynamics) = dyn.n_int
 
-symbolsof(n::OrdinaryNodeDynamics) = n.symbols
-
+"Get the parameters struct for the node."
 parametersof(n::OrdinaryNodeDynamics) = n.parameters
 
 ################################################################################
@@ -102,8 +95,24 @@ m^{int}_k\frac{dy_{ak}}{dt} = f_k(u_a, {i_c}_a, y_1, \dots, y_n)\quad \forall k 
 
 As we assume that all masses are binary (either 1, or 0), that means, one can implement [semi-explicit differential algebraic equations](https://en.wikipedia.org/wiki/Differential-algebraic_system_of_equations) with
 this node dynamics type.
-
-$rhsdescription
+``f`` is represented by `rhs` field of `OrdinaryNodeDynamics`.
+- the general signature of `rhs` is
+```Julia
+rhs(dint_dt::AbstractVector,
+    u::Complex,
+    i::Complex,
+    int::AbstractVector,
+    t,
+    )::Complex
+```
+- Input
+  - `u` is the complex voltage ``u``
+  - `i` is the complex current ``i``
+  - `int` is the array of internal variables ``y_1, \dots, y_n``
+  - `t` is the time ``t``
+- Output
+  - the (complex) return value describes ``\frac{du}{dt}``
+  - `rhs` writes values in `dint_dt` describing the left-hand side ``\frac{dy_1}{dt}, \dots, \frac{dy_n}{dt}``
 
 The binary masses are:
 - `m_u` is the boolean value for ``m_u``
@@ -115,8 +124,8 @@ struct OrdinaryNodeDynamicsWithMass{N <: AbstractNodeParameters} <: AbstractAlge
     m_u::Bool # Answers the question: Is the voltage treated as a dynamic variable with a differential
     m_int::AbstractVector{Bool} # for each internal variable: true if there is a differential for it, else false (if it is an algebraic constraint only)
 end
-OrdinaryNodeDynamicsWithMass(;rhs::Function, symbols, n_int, m_u, m_int, parameters) = OrdinaryNodeDynamicsWithMass(
-    OrdinaryNodeDynamics(rhs, symbols, parameters, n_int),
+OrdinaryNodeDynamicsWithMass(;rhs::Function, n_int, m_u, m_int, parameters) = OrdinaryNodeDynamicsWithMass(
+    OrdinaryNodeDynamics(rhs, parameters, n_int),
     m_u, m_int)
 (dyn::OrdinaryNodeDynamicsWithMass)(args...;kwargs...) = dyn.ode_dynamics(args...;kwargs...)
 
@@ -126,8 +135,7 @@ nint(dyn::OrdinaryNodeDynamicsWithMass) = nint(dyn.ode_dynamics)
 
 OrdinaryNodeDynamics(n::OrdinaryNodeDynamicsWithMass) = n.ode_dynamics
 
-symbolsof(n::OrdinaryNodeDynamicsWithMass) = n |> OrdinaryNodeDynamics |> symbolsof
-
+# TODO: remove OrdinaryNodeDynamics(::OrdinaryNodeDynamicsWithMass) and access the field here directly
 parametersof(n::OrdinaryNodeDynamicsWithMass) = n |> OrdinaryNodeDynamics |> parametersof
 
 """
@@ -142,7 +150,7 @@ convert(::Type{OrdinaryNodeDynamicsWithMass}, dyn::OrdinaryNodeDynamics) =
 """
     promote_rule(::Type{OrdinaryNodeDynamics}, ::Type{OrdinaryNodeDynamicsWithMass}) = OrdinaryNodeDynamicsWithMass
 
-`OrdinaryNodeDynamics` can be promoted to `OrdinaryNodeDynamicsWithMass`, see [`DPSABase.convert`](#ref).
+`OrdinaryNodeDynamics` can be promoted to `OrdinaryNodeDynamicsWithMass`, see [`PowerDynBase.convert`](@ref).
 """
 promote_rule(::Type{<:OrdinaryNodeDynamics}, ::Type{<:OrdinaryNodeDynamicsWithMass}) =
     OrdinaryNodeDynamicsWithMass
@@ -158,7 +166,6 @@ const no_internal_differentials = Vector{Bool}()
 "DOCS TBD!"
 @with_kw struct AlgebraicNodeDynamics{N <: AbstractNodeParameters} <: AbstractAlgebraicNodeDynamics{N}
     root::Function # how to define the function type, should be clear so the interface is forced, keyword FunctionWrapper
-    symbols::DAENodeSymbols
     parameters::N
     n_int
     d_u::Bool # Answers the question: Is the voltage treated as a dynamic variable with a differential
@@ -173,8 +180,6 @@ end
 getDEVariableType(::Type{Val{AlgebraicNodeDynamics}}) = DAEVariable
 
 nint(dyn::AlgebraicNodeDynamics) = dyn.n_int
-
-symbolsof(n::AlgebraicNodeDynamics) = n.symbols
 
 parametersof(n::AlgebraicNodeDynamics) = n.parameters
 
@@ -210,7 +215,6 @@ Conversion of `OrdinaryNodeDynamicsWithMass` to `AlgebraicNodeDynamics` by trans
 function convert(::Type{AlgebraicNodeDynamics}, node::OrdinaryNodeDynamicsWithMass)
     AlgebraicNodeDynamics(
         root=rhs2root(node.ode_dynamics.rhs),
-        symbols=convert(DAENodeSymbols, symbolsof(node)),
         parameters=parametersof(node),
         n_int=node.ode_dynamics.n_int,
         d_u=node.m_u,
@@ -221,13 +225,13 @@ end
 """
     promote_rule(::Type{OrdinaryNodeDynamics}, ::Type{AlgebraicNodeDynamics}) = AlgebraicNodeDynamics
 
-`OrdinaryNodeDynamics` can be promoted to `AlgebraicNodeDynamics`, see [`DPSABase.convert`](#ref).
+`OrdinaryNodeDynamics` can be promoted to `AlgebraicNodeDynamics`, see [`PowerDynBase.convert`](@ref).
 """
 promote_rule(::Type{OrdinaryNodeDynamics}, ::Type{AlgebraicNodeDynamics}) = AlgebraicNodeDynamics
 
 """
     promote_rule(::Type{OrdinaryNodeDynamicsWithMass}, ::Type{AlgebraicNodeDynamics}) = AlgebraicNodeDynamics
 
-`OrdinaryNodeDynamicsWithMass` can be promoted to `AlgebraicNodeDynamics`, see [`DPSABase.convert`](#ref).
+`OrdinaryNodeDynamicsWithMass` can be promoted to `AlgebraicNodeDynamics`, see [`PowerDynBase.convert`](@ref).
 """
 promote_rule(::Type{OrdinaryNodeDynamicsWithMass}, ::Type{AlgebraicNodeDynamics}) = AlgebraicNodeDynamics
