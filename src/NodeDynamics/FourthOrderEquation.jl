@@ -10,8 +10,8 @@ A node type that applies the 4th-order synchronous machine model
 with frequency/angle and voltage dynamics.
 
 Additionally to ``u``, it has the internal dynamic variables
-* ``\omega`` representing the frequency of the rotator relative to the grid frequency ``\Omega``, i.e. the real frequency ``\omega_r`` of the rotator is given as ``\omega_r = \Omega + \omega`` and
-* ``\theta`` representing the relative angle of the rotor with respect to the voltage angle ``\phi``.
+* ``ω`` representing the frequency of the rotator relative to the grid frequency ``\Omega``, i.e. the real frequency ``\omega_r`` of the rotator is given as ``\omega_r = \Omega + \omega`` and
+* ``θ`` representing the relative angle of the rotor with respect to the voltage angle ``\phi``.
 
 # Keyword Arguments
 - `H`: inertia
@@ -37,11 +37,12 @@ Using `FourthEq` for node ``a`` applies the equations
 The fourth-order equations read (according to Sauer, p. 140, eqs. (6110)-(6114)) and p. 35 eqs(3.90)-(3.91)
 ```math
     \frac{d\theta}{dt} = \omega \\
-     \frac{d\omega}{dt} = P-D\omega - p -(x'_q-x'_d)i_d i_q\\
+     \frac{d\omega}{dt} = (P-D\omega - p -(x'_q-x'_d)i_d i_q)*Ω_H\\
     \frac{d e_q}{dt} = \frac{1}{T'_d} (- e_q - (x_d - x'_d) i_{d}+ e_f) \\
     \frac{d e_d}{dt} = \frac{1}{T'_q} (- e_d + (x_q - x'_q) i_{q})  \\
 ```
-With the PowerDynamics.jl \time{naming conventions} of $i$ and $u$ they read as
+Where ``Ω_H`` is defined as ``Ω_H = (Ω * 2pi) / H ``.
+With the PowerDynamics.jl \time{naming conventions} of ``i`` and ``u`` they read as
 ```math
    \dot u = \frac{d}{dt}(-j e_c e^{j\theta})=-j(\dot e_d + j\dot e_q)e^{j\theta} + uj\omega
 ```
