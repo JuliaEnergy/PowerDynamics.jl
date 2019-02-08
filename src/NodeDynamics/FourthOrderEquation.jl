@@ -18,6 +18,7 @@ Additionally to ``u``, it has the internal dynamic variables
 - `P`: active (real) power output
 - `D`: damping coefficient
 - `Ω`: rated frequency of the power grid, often 50Hz
+- `Ω_H`: normalized `Ω` according to ``Ω_H = (Ω * 2\pi) / H``
 - `T_d_dash`: time constant of d-axis
 - `T_q_dash`: time constant of q-axis
 - `X_d_dash`: transient reactance of d-axis
@@ -34,14 +35,13 @@ Using `FourthEq` for node ``a`` applies the equations
     i_c= i_d + ji_q = jie^{-j\theta}\\
     p = \Re (i^* u)
 ```
-The fourth-order equations read (according to Sauer, p. 140, eqs. (6110)-(6114)) and p. 35 eqs(3.90)-(3.91)
+The fourth-order equations read (according to P. Sauer, "Power System Dynamics and Stability", p. 140, eqs. (6110)-(6114)) and p. 35 eqs(3.90)-(3.91)
 ```math
     \frac{d\theta}{dt} = \omega \\
      \frac{d\omega}{dt} = (P-D\omega - p -(x'_q-x'_d)i_d i_q)*Ω_H\\
     \frac{d e_q}{dt} = \frac{1}{T'_d} (- e_q - (x_d - x'_d) i_{d}+ e_f) \\
     \frac{d e_d}{dt} = \frac{1}{T'_q} (- e_d + (x_q - x'_q) i_{q})  \\
 ```
-Where ``Ω_H`` is defined as ``Ω_H = (Ω * 2pi) / H ``.
 With the PowerDynamics.jl \time{naming conventions} of ``i`` and ``u`` they read as
 ```math
    \dot u = \frac{d}{dt}(-j e_c e^{j\theta})=-j(\dot e_d + j\dot e_q)e^{j\theta} + uj\omega

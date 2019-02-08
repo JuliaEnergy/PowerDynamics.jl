@@ -4,7 +4,8 @@ VSIVoltagePT1(;τ_v,τ_P,τ_Q,K_P,K_Q,E_r,P,Q)
 ```
 
 A node type that applies the frequency and voltage droop control to control the frequency and
-voltage dynamics.
+voltage dynamics. The following implementation is taken from
+J. Schiffer et. al. , Automatica 50 (2014) 2457–2469.
 
 Additionally to ``u``, it has the internal dynamic variable ``\omega`` representing
 the frequency of the rotator relative to the grid frequency ``\Omega``, i.e. the
