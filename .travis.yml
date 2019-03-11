@@ -22,7 +22,8 @@ env:
 before_script:
   - julia -e 'using Pkg;
       Pkg.add(PackageSpec(name="MbedTLS", version="0.6.6"));
-      Pkg.pin(PackageSpec(name="MbedTLS", version="0.6.6"));'
+      Pkg.pin(PackageSpec(name="MbedTLS", version="0.6.6"));
+      Pkg.update();'
 
 script:
   - if [ $JULIA_COVERAGE_VERSION == $TRAVIS_JULIA_VERSION ]; then export PUSH_COVERAGE=true; else export PUSH_COVERAGE=false; fi
