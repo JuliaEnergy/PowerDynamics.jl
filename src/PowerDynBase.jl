@@ -60,6 +60,7 @@ include("NodeDynamics/PVAlgebraic.jl")
 include("NodeDynamics/SlackAlgebraic.jl")
 include("NodeDynamics/SwingEquation.jl")
 include("NodeDynamics/FourthOrderEquation.jl")
+include("NodeDynamics/FourthOrderEquationGovernorExciterAVR.jl")
 include("NodeDynamics/VoltageSourceInverterMinimal.jl")
 include("NodeDynamics/VoltageSourceInverterVoltagePT1.jl")
 
