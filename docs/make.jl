@@ -18,7 +18,7 @@ makedocs(
         "fullindex.md",
         "contact.md",
     ],
-   html_canonical = "https://juliaenergy.github.io/PowerDynamics.jl/stable/",
+   format = Documenter.HTML(canonical = "https://juliaenergy.github.io/PowerDynamics.jl/stable/"),
    )
 deploydocs(
     repo = "github.com/JuliaEnergy/PowerDynamics.jl.git",
