@@ -140,6 +140,20 @@ dv = 1/τ_v*(-v+V_r - K_Q*(q_m-Q))
 @test expand.(dint[2]) == expand.(1/τ_Q*(q-q_m))
 end
 
+@testset "ExponetialRecoveryLoad" begin
+@syms V0 Nps Npt Nqs Nqt Tp Tq positive=true
+@syms P0 Q0 Pd Qd real=true
+@syms x_p dx_p x_q dx_q real=true
+ExpRec = construct_node_dynamics(ExponentialRecoveryLoad(P0=P0, Q0=Q0, Nps=Nps, Npt=Npt, Nqs=Nqs, Nqt=Nqt, Tp=Tp, Tq=Tq, V0=V0))
+dint = [dx_p,dx_q]; int = [x_p,x_q]; int_test = copy(int)
+
+du = ExpRec.ode_dynamics.rhs(dint, u, i, int, t)
+
+@test expand(dint[1]) == expand((1/Tp) * (-x_p + P0*(v/V0)^Nps - P0*(v/V0)^Npt))
+@test expand(dint[2]) == expand((1/Tq) * (-x_q + Q0*(v/V0)^Nqs - Q0*(v/V0)^Nqt))
+@test expand(du) == expand((-p + x_p + P0*((v/V0)^Npt)) + im*(-q + x_q + Q0*((v/V0)^Nqt)))
+end
+
 @testset "FourthOrderEqGovernorExciterAVR" begin
 @syms H  D  Ω  T_d_dash T_q_dash X_q_dash X_d_dash X_d X_q T_e T_a T_f K_a K_f V_ref R_d T_sv T_ch positive=true
 @syms P K_e real=true
@@ -166,5 +180,4 @@ de_c = de_d + 1im*de_q
 @test expand(dint[5]) == expand((1 / T_f) * (- r_f + ((K_f/T_f) * e_f)))
 @test expand(dint[6]) == expand((1 / T_sv) * (-P_sv + P - (1/R_d)*(((omega+(Ω*2PI))/(Ω*2PI))-1)))
 @test expand(dint[7]) == expand((1 / T_ch) * (-P_m  + P_sv))
-
 end
