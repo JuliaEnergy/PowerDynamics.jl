@@ -139,3 +139,32 @@ dv = 1/τ_v*(-v+V_r - K_Q*(q_m-Q))
 @test expand.(dint[1]) == expand.(1/τ_P*(-omega-K_P*(p-P)))
 @test expand.(dint[2]) == expand.(1/τ_Q*(q-q_m))
 end
+
+@testset "FourthOrderEqGovernorExciterAVR" begin
+@syms H  D  Ω  T_d_dash T_q_dash X_q_dash X_d_dash X_d X_q T_e T_a T_f K_a K_f V_ref R_d T_sv T_ch positive=true
+@syms P K_e real=true
+@syms omega domega theta dtheta e_f de_f v_r dv_r r_f dr_f P_sv dP_sv P_m dP_m real=true
+fourth_dyn = construct_node_dynamics(FourthOrderEqGovernorExciterAVR(H=H, P=P, D=D, Ω=Ω, T_d_dash=T_d_dash ,T_q_dash=T_q_dash ,X_q_dash=X_q_dash ,X_d_dash=X_d_dash,X_d=X_d, X_q=X_q, T_e=T_e, T_a=T_a, T_f=T_f, K_e=K_e, K_a=K_a, K_f=K_f, V_ref=V_ref, R_d=R_d, T_sv=T_sv, T_ch=T_ch))
+dint = [dtheta,domega,de_f,dv_r,dr_f,dP_sv,dP_m]; int = [theta,omega,e_f,v_r,r_f,P_sv,P_m]; int_test = copy(int)
+du = fourth_dyn.rhs(dint, u, i, int, t)
+i_c = 1im*i*exp(-1im*theta)
+e_c = 1im*u*exp(-1im*theta)
+p = real(u * conj(i))
+e_d = real(e_c)
+e_q = imag(e_c)
+i_d = real(i_c)
+i_q = imag(i_c)
+V_mes = e_c - 1im*X_d_dash*i_c
+de_d = (1 / T_q_dash)* (- e_d + (X_q - X_q_dash)* i_q)
+de_q = (1 / T_d_dash)* (- e_q - (X_d - X_d_dash) * i_d + e_f)# sign error?
+de_c = de_d + 1im*de_q
+@test expand(dint[1]) == omega
+@test du == -1im*de_c*exp(1im*theta)+ u*1im*omega
+@test expand(dint[2]) == expand((P_m - D*omega - p- (X_q_dash - X_d_dash)*i_d* i_q)*2PI*Ω/H)
+@test expand(dint[3]) == expand((1 / T_e) * ((- (K_e + (0.098*exp(0.55*e_f))) * e_f) + v_r))
+@test expand(dint[4]) == expand((1 / T_a) * (- v_r + (K_a * r_f) - ((K_a * K_f)/T_f)*e_f + K_a*(V_ref - abs(V_mes))))
+@test expand(dint[5]) == expand((1 / T_f) * (- r_f + ((K_f/T_f) * e_f)))
+@test expand(dint[6]) == expand((1 / T_sv) * (-P_sv + P - (1/R_d)*(((omega+(Ω*2PI))/(Ω*2PI))-1)))
+@test expand(dint[7]) == expand((1 / T_ch) * (-P_m  + P_sv))
+
+end
