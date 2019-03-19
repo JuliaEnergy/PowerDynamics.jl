@@ -1,3 +1,2 @@
-comment: false
 ignore:
   - "*.jl.*cov"
