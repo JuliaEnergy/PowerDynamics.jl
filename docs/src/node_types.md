@@ -2,29 +2,21 @@
 
 The currently implementes node types are
 
-* Purely Algebraic:
-  * [`PowerDynBase.PQAlgebraic`](@ref) (PQ-bus)
-  * [`PowerDynBase.PVAlgebraic`](@ref) (PV-bus)
-  * [`PowerDynBase.SlackAlgebraic`](@ref) (Slack-bus / Vφ-bus)
-* Synchronous Machine Models:
-  * [`PowerDynBase.SwingEq`](@ref) (2nd order)
-  * [`PowerDynBase.SwingEqLVS`](@ref) (2nd order with an additional term for numerical voltage stability)
-  * [`PowerDynBase.FourthEq`](@ref) (4th order)
-* Voltage Source Inverters:
-  * [`PowerDynBase.VSIMinimal`](@ref)
-  * [`PowerDynBase.VSIVoltagePT1`](@ref)
+```@eval
+using InteractiveUtils, PowerDynBase, Markdown
+nodetypes = subtypes(PowerDynBase.AbstractNodeParameters)
+join(["* [`$n`](@ref PowerDynBase.$n)" for n in nodetypes], "\n") |> Markdown.parse
+```
 
 They are all subtypes of [`PowerDynBase.AbstractNodeParameters`](@ref).
 
+## Detailed Node Type Documentation
 
 ```@docs
 PowerDynBase.AbstractNodeParameters
-PQAlgebraic
-PVAlgebraic
-SlackAlgebraic
-SwingEq
-SwingEqLVS
-FourthEq
-VSIMinimal
-VSIVoltagePT1
+```
+
+```@autodocs
+Modules = [PowerDynBase]
+Filter = t -> typeof(t) === DataType && t !== PowerDynBase.AbstractNodeParameters && t <: PowerDynBase.AbstractNodeParameters
 ```
