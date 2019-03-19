@@ -63,7 +63,7 @@ include("NodeDynamics/FourthOrderEquation.jl")
 include("NodeDynamics/FourthOrderEquationGovernorExciterAVR.jl")
 include("NodeDynamics/VoltageSourceInverterMinimal.jl")
 include("NodeDynamics/VoltageSourceInverterVoltagePT1.jl")
-
+include("NodeDynamics/ExponentialRecovery.jl")
 
 
 # the structures building the grid dynamics from the node dynamics
