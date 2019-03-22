@@ -63,6 +63,7 @@ include("NodeDynamics/FourthOrderEquation.jl")
 include("NodeDynamics/FourthOrderEquationGovernorExciterAVR.jl")
 include("NodeDynamics/VoltageSourceInverterMinimal.jl")
 include("NodeDynamics/VoltageSourceInverterVoltagePT1.jl")
+include("NodeDynamics/CurrentSourceInverterMinimal.jl")
 include("NodeDynamics/ExponentialRecovery.jl")
 
 
