@@ -140,6 +140,15 @@ dv = 1/τ_v*(-v+V_r - K_Q*(q_m-Q))
 @test expand.(dint[2]) == expand.(1/τ_Q*(q-q_m))
 end
 
+@testset "CSIMinimal" begin
+@syms I_r real=true
+CSIMindyn = construct_node_dynamics(CSIMinimal(I_r=I_r))
+dint = []; int = [];
+CSIMindyn.ode_dynamics.rhs(dint, u, i, int, t) == I_r - abs(i)
+@test internalsymbolsof(CSIMindyn) == []
+@test internaldsymbolsof(CSIMindyn) == []
+end
+
 @testset "ExponetialRecoveryLoad" begin
 @syms V0 Nps Npt Nqs Nqt Tp Tq positive=true
 @syms P0 Q0 Pd Qd real=true
