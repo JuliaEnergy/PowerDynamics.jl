@@ -94,3 +94,7 @@ s2 = State(grid, ones(SystemSize(grid)))
 @test (PowerDynBase.BaseState(2*s1).vec .== 2) |> all
 @test (PowerDynBase.BaseState(s1*2).vec .== 2) |> all
 @test (PowerDynBase.BaseState(s1/2).vec .≈ 0.5) |> all
+
+@test convert(PowerDynBase.BaseState, s1) === s1.base
+@test convert(Vector, s1) == ones(Float64, 8)
+@test convert(Array, s1) == ones(Float64, 8)

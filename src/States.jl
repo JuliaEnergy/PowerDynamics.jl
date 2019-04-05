@@ -50,7 +50,7 @@ Base.setindex!(s::BaseState, v,  n) = setindex!(s.vec, v, n)
 Base.copy(s::BaseState) = BaseState(GridDynamics(s), deepcopy(s.vec)) # grid dynamics should not be copied
 GridDynamics(s::BaseState) = s.grid
 
-convert(::Type{<:AbstractVector{V}}, s::BaseState{G, V}) where {G, V} = s.vec
+convert(::Type{A}, s::BaseState) where {A<:AbstractArray} = convert(A, s.vec)
 
 @doc doc"""
 ```Julia
@@ -183,8 +183,8 @@ Base.setindex!(s::AbstractState, v, n, ::Type{Val{:int}}, i) = begin
 end
 Base.setindex!(s::AbstractState, v, n, ::Type{Val{sym}}) where sym = setindex!(s, v, n, Val{:int}, sym)
 
-convert(::Type{BaseState}, s::State) = BaseState(s.base)
-convert(::Type{A}, s::State{G, V, T}) where {V, A <:AbstractVector{V}, T, G} = @>> s BaseState convert(A)
+convert(::Type{BaseState}, s::State) = s.base
+convert(::Type{A}, s::State) where {A <:AbstractArray} = @>> s BaseState convert(A)
 function Base.:+(s1::AbstractState, s2::AbstractState)
     @assert GridDynamics(s1) == GridDynamics(s2)
     State(GridDynamics(s1), BaseState(s1).vec .+ BaseState(s2).vec)
