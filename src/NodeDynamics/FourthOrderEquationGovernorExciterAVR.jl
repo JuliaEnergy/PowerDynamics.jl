@@ -128,9 +128,9 @@ end [[θ, dθ],[ω, dω],[e_f, de_f],[v_r, dv_r],[r_f,dr_f],[P_sv, dP_sv],[P_m, 
     i_q = imag(i_c)
 
     #Exciter
-    V_mes = e_c - 1im*X_d_dash*i_c
+    V_mes = abs(u - 1im*X_d_dash*i)
     dr_f = (1 / T_f) * (- r_f + ((K_f/T_f) * e_f))
-    dv_r = (1 / T_a) * (- v_r + (K_a * r_f) - ((K_a * K_f)/T_f)*e_f + K_a*(V_ref - abs(V_mes)))
+    dv_r = (1 / T_a) * (- v_r + (K_a * r_f) - ((K_a * K_f)/T_f)*e_f + K_a*(V_ref - V_mes))
     de_f = (1 / T_e) * ((- (K_e + (0.098*exp(0.55*e_f))) * e_f) + v_r) #S_e_fd, Sauer p70
 
     #Governor
