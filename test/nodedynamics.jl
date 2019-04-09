@@ -177,7 +177,7 @@ e_d = real(e_c)
 e_q = imag(e_c)
 i_d = real(i_c)
 i_q = imag(i_c)
-V_mes = e_c - 1im*X_d_dash*i_c
+V_mes = abs(u - 1im*X_d_dash*i)
 de_d = (1 / T_q_dash)* (- e_d + (X_q - X_q_dash)* i_q)
 de_q = (1 / T_d_dash)* (- e_q - (X_d - X_d_dash) * i_d + e_f)# sign error?
 de_c = de_d + 1im*de_q
@@ -185,7 +185,7 @@ de_c = de_d + 1im*de_q
 @test du == -1im*de_c*exp(1im*theta)+ u*1im*omega
 @test expand(dint[2]) == expand((P_m - D*omega - p- (X_q_dash - X_d_dash)*i_d* i_q)*2PI*Ω/H)
 @test expand(dint[3]) == expand((1 / T_e) * ((- (K_e + (0.098*exp(0.55*e_f))) * e_f) + v_r))
-@test expand(dint[4]) == expand((1 / T_a) * (- v_r + (K_a * r_f) - ((K_a * K_f)/T_f)*e_f + K_a*(V_ref - abs(V_mes))))
+@test expand(dint[4]) == expand((1 / T_a) * (- v_r + (K_a * r_f) - ((K_a * K_f)/T_f)*e_f + K_a*(V_ref - V_mes)))
 @test expand(dint[5]) == expand((1 / T_f) * (- r_f + ((K_f/T_f) * e_f)))
 @test expand(dint[6]) == expand((1 / T_sv) * (-P_sv + P - (1/R_d)*(((omega+(Ω*2PI))/(Ω*2PI))-1)))
 @test expand(dint[7]) == expand((1 / T_ch) * (-P_m  + P_sv))
