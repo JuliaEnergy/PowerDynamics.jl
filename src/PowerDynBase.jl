@@ -40,6 +40,8 @@ end
 # errors
 include("Errors.jl")
 
+include("Helpers.jl")
+
 # complex view (interpreting part of an array of real values as an array with complex values)
 include("complexview.jl")
 
