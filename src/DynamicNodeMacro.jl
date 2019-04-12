@@ -13,18 +13,24 @@ function cndfunction_builder!(::Type{Val{:OrdinaryNodeDynamics}},
     cndfunction
     )
     rhscall = :(rhs!(
-        dint::AbstractVector, # output for internal variables
-        u,#::Complex,
-        i,#::Complex,
-        int::AbstractVector,
-        t)#::Complex
+        dx,
+        x,
+        e_s,
+        e_d,
+        p,
+        t)
         )
     rhsbody = quote end
     rhsbody.args[1] = func_body.args[1]
-    extracted_vars =  [:($sym = int[$index] ) for (index, sym) in enumerate(internals.vars)]
+    append!(rhsbody.args, [:(i = total_current(e_s, e_d))])
+    append!(rhsbody.args, [:(u = x[1] + x[2] * im)])
+
+    extracted_vars =  [:($sym = x[$(index+2)] ) for (index, sym) in enumerate(internals.vars)]
     append!(rhsbody.args, extracted_vars)
     append!(rhsbody.args, func_body.args)
-    extracted_dvars =  [:(dint[$index] = $sym) for (index, sym) in enumerate(internals.dvars)]
+    extracted_dvars =  [:(dx[$(index+2)] = $sym) for (index, sym) in enumerate(internals.dvars)]
+    du_real = [:(dx[1] = real(du))]
+    du_imag = [:(dx[2] = imag(du))]
     errorif = Expr(:block,
         :(if typeof(e) === UndefVarError
             throw(NodeDynamicsError("you need to provide $(e.var)"))
@@ -36,15 +42,13 @@ function cndfunction_builder!(::Type{Val{:OrdinaryNodeDynamics}},
     # That way a user is not confused (hopefully)
     deleteat!(errorif.args[1].args[2].args, 1)
     catchdef = Expr(:try, Expr(:block), :e, errorif)
-    append!(catchdef.args[1].args, [extracted_dvars; :(return du)])
+    append!(catchdef.args[1].args, [du_real; du_imag ; extracted_dvars; :(return nothing)])
     append!(rhsbody.args, [catchdef])
     rhsfunction = Expr(:function, rhscall, rhsbody)
-    append!(dynamicscall.args, [
-        Expr(:kw, :rhs, :rhs!),
-        Expr(:kw, :n_int, length(internals.vars)),
-        Expr(:kw, :parameters, :par),
-        ])
-    append!(cndfunction.args[2].args, [rhsfunction, dynamicscall])
+    all_syms = [:u_r, :u_i]
+    append!(all_syms, internals.vars)
+    ode_vertex = :(ODEVertex(f! = rhs!, dim = $(length(internals.vars) +2), sym = $all_syms))
+    append!(cndfunction.args[2].args, [rhsfunction, ode_vertex])
 
     nothing
 end
@@ -55,6 +59,18 @@ end
 
 function cndfunction_builder!(::Type{Val{T}}, args...;kwargs...) where {T}
     throw(NodeDynamicsError("unknown node dynamics type $T"))
+end
+
+function total_current(e_s, e_d)
+    # Keeping with the convention of negative sign for outging current
+    current = 0.0im
+    for e in e_s
+        current += e[1] + e[2]*im
+    end
+    for e in e_d
+        current -= e[1] + e[2]*im
+    end
+    current
 end
 
 function buildparameterstruct(name, parameters)
@@ -182,6 +198,7 @@ macro DynamicNode(typedef, prep, internals, func_body)
     @capture(typedef, name_(parameters__) <: dynamicscall_)
     mainexstr = "$(copy(mainex)|>rlr)"
     showex = :(showdefinition(io::IO, ::Type{$name}) = println(io, $mainexstr))
+    println(mainexstr)
     append!(mainex.args, [showex])
     return esc(mainex)
 end
