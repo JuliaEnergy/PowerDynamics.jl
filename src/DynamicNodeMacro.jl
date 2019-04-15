@@ -5,6 +5,7 @@ import Base: @__doc__
 using Base.Meta
 using Base.Iterators
 using MacroTools
+using NetworkDynamics
 
 function cndfunction_builder!(::Type{Val{:OrdinaryNodeDynamics}},
     internals,
@@ -186,7 +187,6 @@ macro DynamicNode(typedef, prep, internals, func_body)
     @capture(typedef, name_(parameters__) <: dynamicscall_)
     mainexstr = "$(copy(mainex)|>rlr)"
     showex = :(showdefinition(io::IO, ::Type{$name}) = println(io, $mainexstr))
-    println(mainexstr)
     append!(mainex.args, [showex])
     return esc(mainex)
 end
