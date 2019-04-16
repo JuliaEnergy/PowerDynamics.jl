@@ -9,6 +9,7 @@ using NetworkDynamics
 
 function cndfunction_builder!(::Type{Val{:OrdinaryNodeDynamics}},
     internals,
+    massmatrix_block,
     dynamicscall,
     func_body,
     cndfunction
@@ -48,7 +49,8 @@ function cndfunction_builder!(::Type{Val{:OrdinaryNodeDynamics}},
     rhsfunction = Expr(:function, rhscall, rhsbody)
     all_syms = [:u_r, :u_i]
     append!(all_syms, internals.vars)
-    ode_vertex = :(ODEVertex(f! = rhs!, dim = $(length(internals.vars) +2), sym = $all_syms))
+    massmatrix = build_massmatrix(massmatrix_block)
+    ode_vertex = :(ODEVertex(f! = rhs!, dim = $(length(internals.vars) +2), massmatrix=$massmatrix, sym = $all_syms))
     append!(cndfunction.args[2].args, [rhsfunction, ode_vertex])
 
     nothing
@@ -60,6 +62,10 @@ end
 
 function cndfunction_builder!(::Type{Val{T}}, args...;kwargs...) where {T}
     throw(NodeDynamicsError("unknown node dynamics type $T"))
+end
+
+function build_massmatrix(massmatrix_block)
+    # massmatrix=MassMatrix(m_u=false,m_int=no_internal_masses)
 end
 
 function buildparameterstruct(name, parameters)
@@ -101,7 +107,8 @@ function generate_symbolsof_fct(::Type{Val{T}}, name, internals) where T
 end
 
 """See [`PowerDynBase.@DynamicNode`](@ref)."""
-function DynamicNode(typedef, prep, internalsdef, func_body)
+function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
+    println(prep)
     @capture(typedef, name_(parameters__) <: dynamicscall_)
     dynamicstype = dynamicscall.args[1]
     internals = getinternalvars(Val{dynamicstype}, internalsdef)
@@ -182,8 +189,8 @@ end
 ```
 
 """
-macro DynamicNode(typedef, prep, internals, func_body)
-    mainex = DynamicNode(typedef, prep, internals, func_body)
+macro DynamicNode(typedef, massmatrix, prep, internals, func_body)
+    mainex = DynamicNode(typedef, massmatrix, prep, internals, func_body)
     @capture(typedef, name_(parameters__) <: dynamicscall_)
     mainexstr = "$(copy(mainex)|>rlr)"
     showex = :(showdefinition(io::IO, ::Type{$name}) = println(io, $mainexstr))
