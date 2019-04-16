@@ -16,7 +16,8 @@ using MacroTools
     if length(fields) == 0
         mass_list = nothing
     else
-        mass_list = append!([m_u],m_int)
+        mass_list = [m_u]
+        append!(mass_list,m_int)
     end
     println(mass_list)
 end
