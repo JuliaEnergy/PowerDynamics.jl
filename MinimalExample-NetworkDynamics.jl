@@ -2,13 +2,13 @@
 #]add git@github.com:FHell/NetworkDynamics.jl.git
 #PkgDev.generate("PowerDynBase", "network_dynamics")
 using PowerDynBase
-#include("src/DynamicNodeMacro.jl")
-#include("src/NodeDynamics/SwingEquation.jl")
 using NetworkDynamics
 using LightGraphs
-using LinearAlgebra
 using DifferentialEquations
+using LinearAlgebra
+# TODO: remove Plots package before merging into master
 using Plots
+include("src/Helpers.jl")
 
 pyplot()
 
@@ -72,21 +72,20 @@ function (cae::complex_admittance_edge!)(e,v_s,v_d,p,t)
     nothing
 end
 
-swing_par = SwingEq(H=0.1, P=1, D=0.1, Ω=50)
-swing_dyn = construct_node_dynamics(swing_par)
-
 # Example PQ node:
 pq_1 = StaticVertex(f! = PQVertex(randn() + randn()*im),
                  dim = 2)
 
-using GraphPlot
-gplot(g)
+#using GraphPlot
+#gplot(g)
 
 pq_list = [ODEVertex(f! = PQVertex(randn() + randn()*im),
                      dim = 2,
                      massmatrix = 0.,
                      sym = [:v_r, :v_i])
            for i in 1:5]
+
+pq_list = [construct_node_dynamics(PQAlgebraic(S=1+im*1)) for i in 1:5]
 
 vertex_list = [construct_node_dynamics(SwingEq(H=abs(0.1*randn()), P=1, D=abs(0.1*randn()), Ω=50))
               for i in 1:5]
@@ -105,7 +104,6 @@ begin
     test_prob = ODEProblem(power_network_rhs,x0,(0.,50.))
 end
 
-#TODO: solve UndefVarError here, total_current not defined
 test_sol = solve(test_prob, Rosenbrock23(autodiff=false), force_dtmin=true)
 
 struct root_rhs
@@ -124,7 +122,7 @@ using NLsolve
 
 nl_res = nlsolve(rr, x0)
 ic = nl_res.zero
-test_prob = ODEProblem(power_network_rhs,ic,(0.,50.))
+test_prob = ODEProblem(power_network_rhs,ic,(0.,500.))
 test_sol = solve(test_prob, Rosenbrock23(autodiff=false))
 
 test_sol
