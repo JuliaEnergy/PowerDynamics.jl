@@ -8,11 +8,11 @@ using Test
         @test isa(swing_dyn, ODEVertex)
         @test swing_dyn.massmatrix == nothing
 
-        pq_par = PQAlgebraic(S=S=10+3*im)
+        pq_par = PQAlgebraic(S=10+3*im)
         pq_dyn = construct_node_dynamics(pq_par)
         @test pq_dyn.massmatrix == [0,0]
 
-        
+
         #dx = [0.1 0.05 0.0]
         #x = [0.2 0.5 0.01]
         #e_s = [[2 0.3]]
