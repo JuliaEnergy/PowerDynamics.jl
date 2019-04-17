@@ -12,7 +12,7 @@ abstract type AbstractOrdinaryNodeDynamics{N <: AbstractNodeParameters} <: Abstr
 "Abstract super type for all node dynamics represented by DAEs."
 abstract type AbstractAlgebraicNodeDynamics{N <: AbstractNodeParameters} <: AbstractNodeDynamics{N} end
 
-function MassMatrix(m_u::Bool = false, m_int = no_internal_masses)
+function MassMatrix(;m_u::Bool = false, m_int = no_internal_masses)
     mm = [m_u, m_u] # double mass for u, because it is a complex variable
     append!(mm, m_int)
     return mm .|> Int

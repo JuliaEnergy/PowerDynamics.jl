@@ -8,7 +8,6 @@ using DifferentialEquations
 using LinearAlgebra
 # TODO: remove Plots package before merging into master
 using Plots
-include("src/Helpers.jl")
 
 pyplot()
 
@@ -35,55 +34,6 @@ function (cae::complex_admittance_edge!)(e,v_s,v_d,p,t)
     nothing
 end
 
-begin
-    # Making sure the function works as intended
-    v1 = [1.,2.]
-    v2 = [3.,4.]
-    e = zeros(10)
-    e1 = view(l, 5:6)
-    cae = complex_admittance_edge!(3. + 5*im)
-    cae(e1,v1,v2,nothing,0.)
-    println(e1)
-end
-
-struct PQVertex
-    P_complex
-end
-function (pq::PQVertex)(dv, v, e_s, e_d, p, t)
-    current = total_current(e_s, e_d)
-    voltage = v[1] + v[2] * im
-    residual = pq.P_complex - voltage * conj(current)
-    dv[1] = real(residual)
-    dv[2] = imag(residual)
-    nothing
-end
-
-struct complex_admittance_edge!
-    admittance
-end
-
-function (cae::complex_admittance_edge!)(e,v_s,v_d,p,t)
-    source_voltage = v_s[1] + v_s[2]*im
-    destination_voltage = v_d[1] + v_d[2]*im
-    # If current is flowing away from the source, it is negative at the source.
-    complex_current = cae.admittance * (destination_voltage - source_voltage)
-    e[1] = real(complex_current)
-    e[2] = imag(complex_current)
-    nothing
-end
-
-# Example PQ node:
-pq_1 = StaticVertex(f! = PQVertex(randn() + randn()*im),
-                 dim = 2)
-
-#using GraphPlot
-#gplot(g)
-
-pq_list = [ODEVertex(f! = PQVertex(randn() + randn()*im),
-                     dim = 2,
-                     massmatrix = 0.,
-                     sym = [:v_r, :v_i])
-           for i in 1:5]
 
 pq_list = [construct_node_dynamics(PQAlgebraic(S=1+im*1)) for i in 1:5]
 
