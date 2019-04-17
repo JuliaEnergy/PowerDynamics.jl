@@ -81,7 +81,6 @@ end
 function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
     @capture(typedef, name_(parameters__))
     internals = getinternalvars(internalsdef)
-
     # build parameters struct
     struct_def = buildparameterstruct(name, parameters)
 
@@ -163,7 +162,6 @@ macro DynamicNode(typedef, prep, internals, func_body)
 end
 
 macro DynamicNode(typedef, massmatrix_exp, prep, internals, func_body)
-    dump(typedef)
     massmatrix = eval(massmatrix_exp)
     return create(typedef, massmatrix, prep, internals, func_body)
 end
