@@ -59,7 +59,7 @@ With the PowerDynamics.jl naming conventions of ``i`` and ``u`` they read as
    \dot u = \frac{d}{dt}(-j e_c e^{j\theta})=-j(\dot e_d + j\dot e_q)e^{j\theta} + uj\omega
 ```
 """
-@DynamicNode FourthEq(H, P, D, Ω, E_f, T_d_dash ,T_q_dash ,X_q_dash ,X_d_dash,X_d, X_q) <: OrdinaryNodeDynamics() begin
+@DynamicNode FourthEq(H, P, D, Ω, E_f, T_d_dash ,T_q_dash ,X_q_dash ,X_d_dash,X_d, X_q) begin
     @assert H > 0 "inertia (H) should be >0"
     @assert D >= 0 "damping (D) should be >=0"
     @assert T_d_dash > 0 "time constant of d-axis (T_d_dash) should be >0"

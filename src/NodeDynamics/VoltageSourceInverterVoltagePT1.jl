@@ -41,7 +41,7 @@ Using `VSIVoltagePT1` for node ``a`` (according to J. Schiffer et. al., eq. (6))
 In general ``τ_V ≪ τ_P``, assuming ``τ_V = 0`` would then lead to `VSIMinimal`.
 
 """
-@DynamicNode VSIVoltagePT1(τ_v,τ_P,τ_Q,K_P,K_Q,V_r,P,Q) <: OrdinaryNodeDynamics() begin
+@DynamicNode VSIVoltagePT1(τ_v,τ_P,τ_Q,K_P,K_Q,V_r,P,Q) begin
     @assert τ_v > 0 "time constant voltage droop delay should be >0"
     @assert τ_P > 0 "time constant active power measurement should be >0"
     @assert τ_Q > 0 "time constant reactive power measurement should be >0"

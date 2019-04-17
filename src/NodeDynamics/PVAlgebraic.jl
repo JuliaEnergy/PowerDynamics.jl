@@ -19,7 +19,9 @@ Using `PVAlgebraic` for node ``a`` applies the equations
 0 = V_a - \left\|u_a\right\|.
 ```
 """
-@DynamicNode PVAlgebraic(P, V) <: OrdinaryNodeDynamicsWithMass(m_u=false, m_int=no_internal_masses) begin
+@DynamicNode PVAlgebraic(P, V) begin
+    MassMatrix()
+end begin
 end [] begin
     v = abs(u)
     p = real(u*conj(i))

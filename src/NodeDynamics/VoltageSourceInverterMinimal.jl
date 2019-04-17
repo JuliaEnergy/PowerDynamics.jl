@@ -39,7 +39,7 @@ Using `VSIMinimal` for node ``a`` (according to J. Schiffer et. al., eq. (7)) gi
 ```
 ```
 """
-@DynamicNode VSIMinimal(τ_P,τ_Q,K_P,K_Q,V_r,P,Q) <: OrdinaryNodeDynamics() begin
+@DynamicNode VSIMinimal(τ_P,τ_Q,K_P,K_Q,V_r,P,Q) begin
     @assert τ_P > 0 "time constant active power measurement should be >0"
     @assert τ_Q > 0 "time constant reactive power measurement should be >0"
     @assert K_Q > 0 "reactive power droop constant should be >0"
