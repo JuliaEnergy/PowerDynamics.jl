@@ -68,6 +68,10 @@ include("NodeDynamics/VoltageSourceInverterVoltagePT1.jl")
 include("NodeDynamics/CurrentSourceInverterMinimal.jl")
 include("NodeDynamics/ExponentialRecovery.jl")
 
+# all lines types
+include("Lines/LineMacro.jl")
+include("Lines/StaticLine.jl")
+include("Lines/StaticLine2.jl")
 
 # the structures building the grid dynamics from the node dynamics
 include("NetwirkRHSs.jl")
@@ -86,6 +90,9 @@ export NetworkRHS, GridDynamics
 export SystemSize, Nodes, AdmittanceLaplacian, masses, differentials
 export State
 export internalsymbolsof, internaldsymbolsof, internaloutsymbolsof, parametersof
+
+export @Line, StaticLine, StaticLine2!
+export construct_edge
 
 export convert, promote_rule # only so the autodocs work properly
 
