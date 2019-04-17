@@ -83,8 +83,6 @@ function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
     internals = getinternalvars(internalsdef)
 
     # build parameters struct
-    @show(name)
-    dump(parameters)
     struct_def = buildparameterstruct(name, parameters)
 
     # build `construct_node_dynamics`
