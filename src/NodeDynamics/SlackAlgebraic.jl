@@ -20,7 +20,9 @@ Using `SlackAlgebraic` for node ``a`` applies the equation
 0 = U_a - u_a.
 ```
 """
-@DynamicNode SlackAlgebraic(U) <: OrdinaryNodeDynamicsWithMass(m_u=false, m_int=no_internal_masses) begin
+@DynamicNode SlackAlgebraic(U) begin
+    MassMatrix()
+end begin
 end [] begin
         du = u - U
 end

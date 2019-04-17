@@ -32,7 +32,7 @@ v = v(t=0) = \text{const.} \\
 \frac{H}{2\pi\Omega}\frac{d\omega_a}{dt} = P_a - D_a\omega_a - \Re\left(u_a \cdot i_a^*\right),
 ```
 """
-@DynamicNode SwingEq(H, P, D, Ω) <: OrdinaryNodeDynamics() begin
+@DynamicNode SwingEq(H, P, D, Ω) begin
     @assert D >= 0 "damping (D) should be >=0"
     @assert H > 0 "inertia (H) should be >0"
     Ω_H = Ω * 2pi / H
@@ -78,7 +78,7 @@ which is equivalent to
 \frac{H}{2\pi\Omega}\frac{d\omega_a}{dt} = P_a - D_a\omega_a - \Re\left(u_a \cdot i_a^*\right),
 ```
 """
-@DynamicNode SwingEqLVS(H, P, D, Ω, Γ, V) <: OrdinaryNodeDynamics() begin
+@DynamicNode SwingEqLVS(H, P, D, Ω, Γ, V) begin
     @assert Γ > 0 "voltage magnitude stability coefficient (Γ) should be >0"
     # the following is a bit of a hack and should only be done if you really know what you do
     swing_node_dyn = construct_node_dynamics(convert(SwingEq, par))

@@ -7,10 +7,9 @@ using Base.Iterators
 using MacroTools
 using NetworkDynamics
 
-function cndfunction_builder!(::Type{Val{:OrdinaryNodeDynamics}},
+function cndfunction_builder!(
     internals,
-    massmatrix_block,
-    dynamicscall,
+    massmatrix,
     func_body,
     cndfunction
     )
@@ -49,24 +48,12 @@ function cndfunction_builder!(::Type{Val{:OrdinaryNodeDynamics}},
     rhsfunction = Expr(:function, rhscall, rhsbody)
     all_syms = [:u_r, :u_i]
     append!(all_syms, internals.vars)
-    massmatrix = build_massmatrix(massmatrix_block)
     ode_vertex = :(ODEVertex(f! = rhs!, dim = $(length(internals.vars) +2), massmatrix=$massmatrix, sym = $all_syms))
     append!(cndfunction.args[2].args, [rhsfunction, ode_vertex])
 
     nothing
 end
 
-function cndfunction_builder!(::Type{Val{:OrdinaryNodeDynamicsWithMass}}, args...; kwargs...)
-    cndfunction_builder!(Val{:OrdinaryNodeDynamics}, args...; kwargs...)
-end
-
-function cndfunction_builder!(::Type{Val{T}}, args...;kwargs...) where {T}
-    throw(NodeDynamicsError("unknown node dynamics type $T"))
-end
-
-function build_massmatrix(massmatrix_block)
-    # massmatrix=MassMatrix(m_u=false,m_int=no_internal_masses)
-end
 
 function buildparameterstruct(name, parameters)
     struct_def = Expr(
@@ -81,39 +68,23 @@ function buildparameterstruct(name, parameters)
     )
 end
 
-function getinternalvars(::Type{Val{:OrdinaryNodeDynamics}}, internalsdef)
+function getinternalvars(internalsdef)
     (vars = map(ex -> ex.args[1] , internalsdef.args),
         dvars = map(ex -> ex.args[2] , internalsdef.args))
 end
 
-function getinternalvars(::Type{Val{:OrdinaryNodeDynamicsWithMass}}, internalsdef)
-    getinternalvars(Val{:OrdinaryNodeDynamics}, internalsdef)
-end
-
-function getinternalvars(::Type{Val{T}}, args...;kwargs...) where {T}
-    throw(NodeDynamicsError("cannot extract internal symbols for $T. Are you sure that is implemented?"))
-end
-
-function generate_symbolsof_fct(::Type{Val{:OrdinaryNodeDynamics}}, name, internals)
+function generate_symbolsof_fct(name, internals)
     :(symbolsof(::Type{$name}) = ODENodeSymbols($(Expr(:vect, QuoteNode.(internals.vars)...)), $(Expr(:vect, QuoteNode.(internals.dvars)...))))
-end
-
-function generate_symbolsof_fct(::Type{Val{:OrdinaryNodeDynamicsWithMass}}, name, internals)
-    generate_symbolsof_fct(Val{:OrdinaryNodeDynamics}, name, internals)
-end
-
-function generate_symbolsof_fct(::Type{Val{T}}, name, internals) where T
-    throw(NodeDynamicsError("cannot generator `symbolsof` function for $T. Are you sure that is implemented?"))
 end
 
 """See [`PowerDynBase.@DynamicNode`](@ref)."""
 function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
-    println(prep)
-    @capture(typedef, name_(parameters__) <: dynamicscall_)
-    dynamicstype = dynamicscall.args[1]
-    internals = getinternalvars(Val{dynamicstype}, internalsdef)
+    @capture(typedef, name_(parameters__))
+    internals = getinternalvars(internalsdef)
 
     # build parameters struct
+    @show(name)
+    dump(parameters)
     struct_def = buildparameterstruct(name, parameters)
 
     # build `construct_node_dynamics`
@@ -125,14 +96,14 @@ function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
     cndfunction = Expr(:function, cndcall, cndbody)
 
     # this might be different for
-    cndfunction_builder!(Val{dynamicstype},
+    cndfunction_builder!(
         internals,
-        dynamicscall,
+        massmatrix,
         func_body,
         cndfunction
         )
 
-    fct_symbolsof = generate_symbolsof_fct(Val{dynamicstype}, name, internals)
+    fct_symbolsof = generate_symbolsof_fct(name, internals)
 
     ret = quote
         @__doc__ $(struct_def)
@@ -189,9 +160,19 @@ end
 ```
 
 """
-macro DynamicNode(typedef, massmatrix, prep, internals, func_body)
+macro DynamicNode(typedef, prep, internals, func_body)
+    return create(typedef, nothing, prep, internals, func_body)
+end
+
+macro DynamicNode(typedef, massmatrix_exp, prep, internals, func_body)
+    dump(typedef)
+    massmatrix = eval(massmatrix_exp)
+    return create(typedef, massmatrix, prep, internals, func_body)
+end
+
+function create(typedef, massmatrix, prep, internals, func_body)
     mainex = DynamicNode(typedef, massmatrix, prep, internals, func_body)
-    @capture(typedef, name_(parameters__) <: dynamicscall_)
+    @capture(typedef, name_(parameters__))
     mainexstr = "$(copy(mainex)|>rlr)"
     showex = :(showdefinition(io::IO, ::Type{$name}) = println(io, $mainexstr))
     append!(mainex.args, [showex])

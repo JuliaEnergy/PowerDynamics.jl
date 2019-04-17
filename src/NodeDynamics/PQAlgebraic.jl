@@ -17,7 +17,10 @@ Using `PQAlgebraic` for node ``a`` applies the equation
 0 = S_a - u_a \cdot i_a^*.
 ```
 """
-@DynamicNode PQAlgebraic(S) <: OrdinaryNodeDynamicsWithMass(m_u=false, m_int=no_internal_masses)  begin
+@DynamicNode PQAlgebraic(S) begin
+    MassMatrix()
+end  begin
+    # no prep
 end [] begin
     s = u*conj(i)
     du = S - s

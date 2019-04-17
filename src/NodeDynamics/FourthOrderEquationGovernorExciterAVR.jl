@@ -96,7 +96,7 @@ With the PowerDynamics.jl naming conventions of ``i`` and ``u`` they read as
    \dot u = \frac{d}{dt}(-j e_c e^{j\theta})=-j(\dot e_d + j\dot e_q)e^{j\theta} + uj\omega \\
 ```
 """
-@DynamicNode FourthOrderEqGovernorExciterAVR(H, P, D, Ω, T_d_dash ,T_q_dash ,X_q_dash ,X_d_dash,X_d, X_q, T_e, T_a, T_f, K_e, K_a, K_f, V_ref, R_d, T_sv, T_ch) <: OrdinaryNodeDynamics() begin # S_e_fd,
+@DynamicNode FourthOrderEqGovernorExciterAVR(H, P, D, Ω, T_d_dash ,T_q_dash ,X_q_dash ,X_d_dash,X_d, X_q, T_e, T_a, T_f, K_e, K_a, K_f, V_ref, R_d, T_sv, T_ch) begin # S_e_fd,
     @assert H > 0 "inertia (H) should be >0"
     @assert D >= 0 "damping (D) should be >=0"
     @assert T_d_dash > 0 "time constant of d-axis (T_d_dash) should be >0"
