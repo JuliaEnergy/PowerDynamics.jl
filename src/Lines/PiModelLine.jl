@@ -1,8 +1,8 @@
-@Line StaticLine(Y) begin
+@Line PiModelLine(y, y_shunt_km, y_shunt_mk, t_km, t_mk) begin
     # If current is flowing away from the source, it is negative at the source.
-    # the current flowing in and out of the line is the same: I_mk=I_km
-    # hence, the current vector becomes only one complex current
-    complex_current = Y * (destination_voltage - source_voltage)
+    voltage_vector = [source_voltage,destination_voltage]
+    Y = PiModel(y, y_shunt_km, y_shunt_mk, t_km, t_mk)
+    current_vector = Y * voltage_vector
 end
 
 ##### Macro Generated functions should look like:
@@ -18,5 +18,3 @@ end
 #function construct_line(sl:: StaticLine)
 #    return StaticEdge(f! = rhs!,dim = 2)
 #end
-
-export StaticLine
