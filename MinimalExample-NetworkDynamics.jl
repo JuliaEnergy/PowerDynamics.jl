@@ -42,6 +42,7 @@ vertex_list = [construct_node_dynamics(SwingEq(H=abs(0.1*randn()), P=1, D=abs(0.
 
 append!(vertex_list, pq_list)
 
+#edge_list = [StaticLine(1-1*im) for e in edges(g)]
 
 edge_list = [StaticEdge(f! = complex_admittance_edge!(0.0 - 5.0im),
                         dim = 2)
