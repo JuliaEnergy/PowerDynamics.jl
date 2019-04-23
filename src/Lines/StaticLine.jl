@@ -3,6 +3,7 @@
     # the current flowing in and out of the line is the same: I_mk=I_km
     # hence, the current vector becomes only one complex current
     complex_current = Y * (destination_voltage - source_voltage)
+    current_vector = [complex_current,complex_current]
 end
 
 ##### Macro Generated functions should look like:
