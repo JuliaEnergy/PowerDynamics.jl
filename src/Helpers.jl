@@ -5,7 +5,7 @@ function total_current(e_s, e_d)
         current += e[1] + e[2]*im
     end
     for e in e_d
-        current -= e[1] + e[2]*im
+        current -= e[3] + e[4]*im
     end
     current
 end
