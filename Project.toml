@@ -1,7 +1,7 @@
 name = "PowerDynamics"
 uuid = "cc46b21f-1b17-51c2-b642-af74c3d3a8be"
 authors = ["Tim Kittel <tim.kittel@elena-international.com>"]
-version = "0.4.1"
+version = "1.0.0"
 
 [deps]
 PowerDynBase = "7ffb48b1-f436-5a59-a310-b4407da33972"
@@ -10,10 +10,10 @@ PowerDynSolve = "b2d36aa5-a2b1-5d23-8bd9-f353e61de00d"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 
 [compat]
-Julia = "1.0"
-PowerDynBase = "^0"
-PowerDynSolve = ">=0.4.1"
-PowerDynOperationPoint = "^0.2"
+julia = "1"
+PowerDynBase = "1"
+PowerDynSolve = "1"
+PowerDynOperationPoint = "1"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
