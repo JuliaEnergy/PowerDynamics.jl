@@ -19,8 +19,16 @@ function create_line(name, parameters, func_body)
     append!(rhsbody.args, [:(source_voltage = v_s[1] + v_s[2]*im)])
     append!(rhsbody.args, [:(destination_voltage = v_d[1] + v_d[2]*im)])
     append!(rhsbody.args, func_body.args)
+
+    es_real = [:(e[1] = real(current_vector[1]))]
+    es_imag = [:(e[2] = imag(current_vector[1]))]
+    ed_real = [:(e[3] = real(current_vector[2]))]
+    ed_imag = [:(e[4] = imag(current_vector[2]))]
+
+    append!(rhsbody.args, [es_real; es_imag; ed_real; ed_imag])
+
     rhs_function_exp = Expr(:function, rhscall, rhsbody)
-    edge_exp = :(return StaticEdge(f! = rhs!, dim = 2))
+    edge_exp = :(return StaticEdge(f! = rhs!, dim = 4))
     append!(cl_function.args[2].args, [rhs_function_exp, edge_exp])
 
     ret = quote

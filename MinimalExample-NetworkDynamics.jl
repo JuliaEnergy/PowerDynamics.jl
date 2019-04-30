@@ -13,42 +13,16 @@ pyplot()
 
 g = barabasi_albert(10,5)
 
-begin
-    #=
-    Conventon is the following:
-    v[1] + 1.j*v[2] is the complex voltage at a vertex.
-    e[1] + 1.j*e[2] is the complex current at an edge.
-    =#
-end
-struct complex_admittance_edge!
-    admittance
-end
-
-function (cae::complex_admittance_edge!)(e,v_s,v_d,p,t)
-    source_voltage = v_s[1] + v_s[2]*im
-    destination_voltage = v_d[1] + v_d[2]*im
-    # If current is flowing away from the source, it is negative at the source.
-    complex_current = cae.admittance * (destination_voltage - source_voltage)
-    e[1] = real(complex_current)
-    e[2] = imag(complex_current)
-    nothing
-end
-
 
 pq_list = [construct_node_dynamics(PQAlgebraic(S=1+im*1)) for i in 1:5]
-
 vertex_list = [construct_node_dynamics(SwingEq(H=abs(0.1*randn()), P=1, D=abs(0.1*randn()), Ω=50))
               for i in 1:5]
-
 append!(vertex_list, pq_list)
 
-#edge_list = [StaticLine(1-1*im) for e in edges(g)]
+edge_list = [construct_edge(StaticLine(Y=0.0 - 5.0im)) for e in edges(g)]
 
-edge_list = [StaticEdge(f! = complex_admittance_edge!(0.0 - 5.0im),
-                        dim = 2)
-             for e in edges(g)]
-
-power_network_rhs = network_dynamics(vertex_list, edge_list, g)
+power_network_rhs =
+network_dynamics(vertex_list, edge_list, g)
 
 begin
     x0 = rand(25)

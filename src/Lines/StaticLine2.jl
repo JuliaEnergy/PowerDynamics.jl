@@ -12,7 +12,9 @@ function(sl::StaticLine2!)(e, v_s, v_d, p, t)
     complex_current = sl.Y * (destination_voltage - source_voltage)
     e[1] = real(complex_current)
     e[2] = imag(complex_current)
+    e[3] = real(complex_current)
+    e[4] = imag(complex_current)
     nothing
 end
 
-convert(::Type{StaticEdge}, sl::StaticLine2!) = StaticEdge(f! = sl, dim = 2)
+convert(::Type{StaticEdge}, sl::StaticLine2!) = StaticEdge(f! = sl, dim = 4)
