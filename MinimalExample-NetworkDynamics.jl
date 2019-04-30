@@ -31,22 +31,7 @@ end
 
 test_sol = solve(test_prob, Rosenbrock23(autodiff=false), force_dtmin=true)
 
-struct root_rhs
-    rhs
-    mm
-end
-function (rr::root_rhs)(x)
-    dx = similar(x)
-    rr.rhs(dx, x, nothing, 0.)
-    rr.mm * dx .- dx
-end
-
-rr = root_rhs(power_network_rhs, power_network_rhs.mass_matrix)
-
-using NLsolve
-
-nl_res = nlsolve(rr, x0)
-ic = nl_res.zero
+ic = find_valid_ic(power_network_rhs, x0)
 test_prob = ODEProblem(power_network_rhs,ic,(0.,500.))
 test_sol = solve(test_prob, Rosenbrock23(autodiff=false))
 
