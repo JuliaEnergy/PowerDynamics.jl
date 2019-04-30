@@ -21,8 +21,7 @@ append!(vertex_list, pq_list)
 
 edge_list = [construct_edge(StaticLine(Y=0.0 - 5.0im)) for e in edges(g)]
 
-power_network_rhs =
-network_dynamics(vertex_list, edge_list, g)
+power_network_rhs =network_dynamics(vertex_list, edge_list, g)
 
 begin
     x0 = rand(25)
