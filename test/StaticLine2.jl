@@ -16,6 +16,11 @@ function tests()
         v_d = [12; 2*im]
         # assure function call does not explode!
         edge.f!(e, v_s, v_d, 0, 0)
+
+        @test e[1] == 0
+        @test e[2] == 50
+        @test e[3] == 0
+        @test e[4] == 50
     end
 end
 
