@@ -43,7 +43,7 @@ function _read_lines_from_csv(filename, num_nodes)
     df_names = [:from, :to, :R, :X, :charging, :tap_ratio]
     names!(getfield(lines_df, :colindex), df_names)
 
-    g = SimpleGraph(num_nodes);
+    g = SimpleGraph(num_nodes)
     edge_list = Array{StaticEdge, 1}()
     for line_index = 1:size(lines_df)[1]
         from = lines_df[line_index,:from]
