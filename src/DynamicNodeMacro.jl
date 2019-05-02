@@ -74,7 +74,7 @@ function getinternalvars(internalsdef)
 end
 
 function generate_symbolsof_fct(name, internals)
-    :(symbolsof(::Type{$name}) = ODENodeSymbols($(Expr(:vect, QuoteNode.(internals.vars)...)), $(Expr(:vect, QuoteNode.(internals.dvars)...))))
+    :(symbolsof(::Type{$name}) = $(Expr(:vect, QuoteNode.(internals.vars)...)))
 end
 
 """See [`PowerDynBase.@DynamicNode`](@ref)."""
