@@ -11,7 +11,7 @@ function tests()
     end
 
     @testset "StaticLine2! should run edge function without errors" begin
-        e = []
+        e = zeros(4)
         v_s = [10; 5*im]
         v_d = [12; 2*im]
         # assure function call does not explode!

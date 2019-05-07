@@ -74,7 +74,13 @@ function getinternalvars(internalsdef)
 end
 
 function generate_symbolsof_fct(name, internals)
-    :(symbolsof(::Type{$name}) = $(Expr(:vect, QuoteNode.(internals.vars)...)))
+    vars = [:u_r, :u_i]
+    append!(vars, internals.vars)
+    :(symbolsof(::$name) = $(Expr(:vect, QuoteNode.(vars)...)))
+end
+
+function generate_dimension_fct(name, internals)
+    :(dimension(::$name) = $(length(internals.vars)+2))
 end
 
 """See [`PowerDynBase.@DynamicNode`](@ref)."""
@@ -101,11 +107,13 @@ function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
         )
 
     fct_symbolsof = generate_symbolsof_fct(name, internals)
+    fct_dimension = generate_dimension_fct(name, internals)
 
     ret = quote
         @__doc__ $(struct_def)
         $(cndfunction)
         $(fct_symbolsof)
+        $(fct_dimension)
     end
     return ret
 end

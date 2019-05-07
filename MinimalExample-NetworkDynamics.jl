@@ -23,17 +23,16 @@ edge_list = [construct_edge(StaticLine(Y=0.0 - 5.0im)) for e in edges(g)]
 
 power_network_rhs =network_dynamics(vertex_list, edge_list, g)
 
-begin
-    x0 = rand(25)
-    test_prob = ODEProblem(power_network_rhs,x0,(0.,50.))
-end
 
+x0 = rand(25)
+test_prob = ODEProblem(power_network_rhs,x0,(0.,50.))
 test_sol = solve(test_prob, Rosenbrock23(autodiff=false), force_dtmin=true)
 
 ic = find_valid_ic(power_network_rhs, x0)
 test_prob = ODEProblem(power_network_rhs,ic,(0.,500.))
 test_sol = solve(test_prob, Rosenbrock23(autodiff=false))
 
+@show(test_sol)
 test_sol
 plot(test_sol)
 

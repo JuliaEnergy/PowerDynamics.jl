@@ -4,10 +4,12 @@ using LightGraphs
 using PowerDynBase
 using NetworkDynamics
 
+
 function read_network_from_csv(bus_file, line_file)
     nodes = _read_nodes_from_csv(bus_file)
     network_graph, lines = _read_lines_from_csv(line_file, length(nodes))
-    network_dynamics(map(construct_node_dynamics, nodes), lines, network_graph)
+    nd = network_dynamics(map(construct_node_dynamics, nodes), map(construct_edge, lines), network_graph)
+    PowerGrid(nd, network_graph, nodes, lines)
 end
 
 function _read_nodes_from_csv(filename)
@@ -35,7 +37,7 @@ function _read_nodes_from_csv(filename)
             )])
         end
     end
-    return node_list
+    node_list
 end
 
 function _read_lines_from_csv(filename, num_nodes)
@@ -44,7 +46,7 @@ function _read_lines_from_csv(filename, num_nodes)
     names!(getfield(lines_df, :colindex), df_names)
 
     g = SimpleGraph(num_nodes)
-    edge_list = Array{StaticEdge, 1}()
+    line_list = []
     for line_index = 1:size(lines_df)[1]
         from = lines_df[line_index,:from]
         to = lines_df[line_index,:to]
@@ -53,9 +55,9 @@ function _read_lines_from_csv(filename, num_nodes)
             continue
         end
         admittance = 1/(lines_df[line_index,:R] + im*lines_df[line_index,:X])
-        edge = construct_edge(StaticLine(Y=admittance))
-        append!(edge_list, [edge])
+        line = StaticLine(Y=admittance)
+        push!(line_list, line)
         add_edge!(g, from, to);
     end
-    g, edge_list
+    g, line_list
 end

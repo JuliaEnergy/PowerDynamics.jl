@@ -91,8 +91,10 @@ end [[ω, dω]] begin
     # Linear Voltage Stability (LVS) term
     dv = - Γ * (v - V)
 
-    du =  u/v * dv + swing_eq_rhs!(dint, u, i, int, t)
-    dω = dint[1]
+    swing_eq_rhs!(dx, x, e_s, e_d, p, t)
+    du =  u/v * dv + (dx[1]+dx[2]*im)
+    dω = dx[3]
+    println("i:$(i), u:$(u), du: $(du), domega:$(dω)")
 end
 convert(::Type{SwingEq}, p::SwingEqLVS) =
     SwingEq(H=p.H, P=p.P, D=p.D, Ω=p.Ω)
