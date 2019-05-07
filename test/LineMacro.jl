@@ -9,15 +9,10 @@ function tests()
 
     @testset "LineMacro construct_edge should return StaticEdge" begin
         @test isa(edge, StaticEdge)
-
-        e = []
-        v_s = [10; 5*im]
-        v_d = [12; 2*im]
-        edge.f!(e, v_s, v_d, 0, 0)
     end
 
     @testset "LineMacro should run edge function without errors" begin
-        e = []
+        e = zeros(4)
         v_s = [10; 5*im]
         v_d = [12; 2*im]
         # assure function call does not explode!

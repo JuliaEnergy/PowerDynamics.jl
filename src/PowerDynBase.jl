@@ -55,6 +55,9 @@ include("NodeDynamicsBase.jl")
 # NodeSymbols
 include("NodeSymbols.jl")
 
+include("PowerGrid.jl")
+include("parsers/csv_parser.jl")
+
 # all possible node dynamics
 include("DynamicNodeMacro.jl")
 include("NodeDynamics/PQAlgebraic.jl")
@@ -80,6 +83,9 @@ include("GridDynamics.jl")
 # States (kind of an interface)
 include("States.jl")
 
+include("solve/PowerGridSolutions.jl")
+include("solve/solve.jl")
+
 # export of the main types and functions
 export GridDynamicsError, NodeDynamicsError, MissingParameterError, StateError
 export OrdinaryNodeDynamics, OrdinaryNodeDynamicsWithMass
@@ -95,5 +101,10 @@ export @Line, StaticLine, StaticLine2!
 export construct_edge
 
 export convert, promote_rule # only so the autodocs work properly
+
+export read_network_from_csv
+export PowerGrid
+export systemsize
+export symbolsof
 
 end # module DPSABase
