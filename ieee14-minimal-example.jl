@@ -6,43 +6,12 @@ using Plots
 using SparseArrays
 using NetworkDynamics
 using DifferentialEquations
-using NLsolve
 
 powergrid = read_network_from_csv("IEEE14_busses.csv", "IEEE14_lines.csv")
 
-struct RootRhs2
-    rhs
-end
-function (rr::RootRhs2)(x)
-    dx = similar(x)
-    rr.rhs(dx, x, nothing, 0.)
-    dx
-end
-
-function RootRhs2(of::ODEFunction)
-    RootRhs2(of.f)
-end
-
-function find_valid_ic2(of::ODEFunction, ic_guess)
-    rr = RootRhs2(of)
-    nl_res = nlsolve(rr, ic_guess)
-    if converged(nl_res) == true
-        return nl_res.zero
-    else
-        println("Failed to find initial conditions on the constraint manifold!")
-        println("Try running nlsolve with other options.")
-    end
-end
-
 # find the fixed point = normal operation point
 system_size = systemsize(powergrid)
-ic = find_valid_ic(powergrid.network_dynamics, ones(system_size))
-ic2 = find_valid_ic2(powergrid.network_dynamics, ones(system_size))
-@show(ic)
-@show(ic2)
-
-#symbols = [:u_r_1, :u_i_1, :ω_1, :u_r_2, :u_i_2, :u_r_3, :u_i_3, :ω_3, :u_r_4, :u_i_4, :u_r_5, :u_i_5, :u_r_6, :u_i_6, :ω_6, :u_r_7, :u_i_7, :u_r_8, :u_i_8, :ω_8, :u_r_9, :u_i_9, :u_r_10, :u_i_10, :u_r_11, :u_i_11, :u_r_12, :u_i_12, :u_r_13, :u_i_13, :u_r_14, :u_i_14]
-
+ic = find_operationpoint(powergrid.network_dynamics, ones(system_size))
 
 begin
     # just ensure the correct admittance laplacian is used

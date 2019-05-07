@@ -86,6 +86,8 @@ include("States.jl")
 include("solve/PowerGridSolutions.jl")
 include("solve/solve.jl")
 
+include("operationpoint/operationpoint.jl")
+
 # export of the main types and functions
 export GridDynamicsError, NodeDynamicsError, MissingParameterError, StateError
 export OrdinaryNodeDynamics, OrdinaryNodeDynamicsWithMass
@@ -101,6 +103,8 @@ export @Line, StaticLine, StaticLine2!
 export construct_edge
 
 export convert, promote_rule # only so the autodocs work properly
+
+export find_operationpoint
 
 export read_network_from_csv
 export PowerGrid
