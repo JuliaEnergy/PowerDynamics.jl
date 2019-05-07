@@ -3,9 +3,9 @@ using Lazy
 using RecipesBase
 
 """
-    struct GridSolution <: AbstractSingleGridSolutions
+    struct PowerGridSolution
         dqsol::AbstractTimeseriesSolution
-        griddynamics::GridDynamics
+        powergrid::PowerGrid
     end
 The data structure interfacing to the solution of the differntial equations of a power grid.
 Normally, it is not created by hand but return from `PowerDynSolve.solve`.
@@ -92,9 +92,14 @@ end
 variable_index(nodes, n::AbstractArray, s::Symbol) = map(n -> variable_index(nodes, n, s), n)
 variable_index(nodes, n, s::Symbol) = startindex(nodes, n) + findfirst(ns -> ns == s, symbolsof(nodes[n]))
 
-
 startindex(nodes, n::AbstractArray) = map(n -> startindex(nodes, n), n)
-@views startindex(nodes, n) = sum(map(node -> dimension(node), nodes[1:n])) + 1
+@views startindex(nodes, n) = begin
+    if n == 1
+        0
+    else
+        sum(map(node -> dimension(node), nodes[1:n-1]))
+    end
+end
 
 # define the plotting recipes
 
