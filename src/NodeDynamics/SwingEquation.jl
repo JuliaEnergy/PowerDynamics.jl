@@ -79,22 +79,18 @@ which is equivalent to
 ```
 """
 @DynamicNode SwingEqLVS(H, P, D, Ω, Γ, V) begin
+    @assert D >= 0 "damping (D) should be >=0"
+    @assert H > 0 "inertia (H) should be >0"
     @assert Γ > 0 "voltage magnitude stability coefficient (Γ) should be > 0"
-    # FIXME
-    # the following is a bit of a hack and should only be done if you really know what you do
-    swing_node_dyn = construct_node_dynamics(convert(SwingEq, par))
-    #@assert typeof(swing_node_dyn) === OrdinaryNodeDynamics{SwingEq}
-    #@assert swing_node_dyn.n_int == 1
-    swing_eq_rhs! = swing_node_dyn.f!
+    Ω_H = Ω * 2pi / H
 end [[ω, dω]] begin
+    p = real(u * conj(i))
+    dϕ = ω # dϕ is only a temp variable that Julia should optimize out
+    dω = (P - D*ω - p)*Ω_H
     v = abs(u)
     # Linear Voltage Stability (LVS) term
     dv = - Γ * (v - V)
-
-    swing_eq_rhs!(dx, x, e_s, e_d, p, t)
-    du =  u/v * dv + (dx[1]+dx[2]*im)
-    dω = dx[3]
-    println("i:$(i), u:$(u), du: $(du), domega:$(dω)")
+    du =  u/v * dv + u * im * dϕ
 end
 convert(::Type{SwingEq}, p::SwingEqLVS) =
     SwingEq(H=p.H, P=p.P, D=p.D, Ω=p.Ω)
