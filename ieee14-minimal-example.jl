@@ -36,8 +36,10 @@ end
 
 # find the fixed point = normal operation point
 system_size = systemsize(powergrid)
-ic = find_valid_ic2(powergrid.network_dynamics, ones(system_size))
+ic = find_valid_ic(powergrid.network_dynamics, ones(system_size))
+ic2 = find_valid_ic2(powergrid.network_dynamics, ones(system_size))
 @show(ic)
+@show(ic2)
 
 #symbols = [:u_r_1, :u_i_1, :ω_1, :u_r_2, :u_i_2, :u_r_3, :u_i_3, :ω_3, :u_r_4, :u_i_4, :u_r_5, :u_i_5, :u_r_6, :u_i_6, :ω_6, :u_r_7, :u_i_7, :u_r_8, :u_i_8, :ω_8, :u_r_9, :u_i_9, :u_r_10, :u_i_10, :u_r_11, :u_i_11, :u_r_12, :u_i_12, :u_r_13, :u_i_13, :u_r_14, :u_i_14]
 
