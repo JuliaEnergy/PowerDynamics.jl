@@ -4,3 +4,5 @@
     Y = PiModel(y, y_shunt_km, y_shunt_mk, 1, 1)
     current_vector = Y * voltage_vector
 end
+
+export PiModelLine
