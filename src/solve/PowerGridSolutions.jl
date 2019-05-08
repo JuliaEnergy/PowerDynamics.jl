@@ -1,6 +1,7 @@
 using DiffEqBase: AbstractTimeseriesSolution
-using Lazy
+using Lazy: @>>
 using RecipesBase
+
 
 """
     struct PowerGridSolution

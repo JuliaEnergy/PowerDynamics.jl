@@ -35,8 +35,6 @@ end
 
 #####################################################################
 
-
-
 # errors
 include("Errors.jl")
 
@@ -45,15 +43,9 @@ include("Helpers.jl")
 # complex view (interpreting part of an array of real values as an array with complex values)
 include("complexview.jl")
 
-# DEVariables
-include("DEVariables.jl")
-
 # base definitions for all node dynamics
-include("NodeParametersBase.jl")
 include("NodeDynamicsBase.jl")
 
-# NodeSymbols
-include("NodeSymbols.jl")
 
 include("PowerGrid.jl")
 include("parsers/csv_parser.jl")
@@ -74,14 +66,7 @@ include("NodeDynamics/ExponentialRecovery.jl")
 # all lines types
 include("Lines/LineMacro.jl")
 include("Lines/StaticLine.jl")
-include("Lines/StaticLine2.jl")
-
-# the structures building the grid dynamics from the node dynamics
-include("NetwirkRHSs.jl")
-include("GridDynamics.jl")
-
-# States (kind of an interface)
-include("States.jl")
+include("Lines/PiModelLine.jl")
 
 include("solve/PowerGridSolutions.jl")
 include("solve/solve.jl")
@@ -90,14 +75,11 @@ include("operationpoint/operationpoint.jl")
 
 # export of the main types and functions
 export GridDynamicsError, NodeDynamicsError, MissingParameterError, StateError
-export OrdinaryNodeDynamics, OrdinaryNodeDynamicsWithMass
-export no_internal_masses, no_internal_differentials
-export @DynamicNode, AbstractNodeParameters, showdefinition
+export no_internal_masses
+export @DynamicNode, showdefinition
 export construct_node_dynamics
-export NetworkRHS, GridDynamics
-export SystemSize, Nodes, AdmittanceLaplacian, masses, differentials
+
 export State
-export internalsymbolsof, internaldsymbolsof, internaloutsymbolsof, parametersof
 
 export @Line, StaticLine, StaticLine2!
 export construct_edge
@@ -111,4 +93,4 @@ export PowerGrid
 export systemsize
 export symbolsof
 
-end # module DPSABase
+end
