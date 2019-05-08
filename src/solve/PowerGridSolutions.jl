@@ -62,22 +62,21 @@ tspan(sol::PowerGridSolution, tres) = range(TimeSeries(sol).t[1], stop=TimeSerie
     end
 end
 (sol::PowerGridSolution)(t::Number, n::Number, ::Type{Val{:u}}) = begin
-    u_real_index = startindex(sol.powergrid.nodes, n)
-    u_real = TimeSeries(sol)(t, idxs= u_real_index)
-    u_imag = TimeSeries(sol)(t, idxs= u_real_index + 1)
+    u_real = TimeSeries(sol)(t, idxs= variable_index(sol.powergrid.nodes, n, :u_r))
+    u_imag = TimeSeries(sol)(t, idxs= variable_index(sol.powergrid.nodes, n, :u_i))
     u_real + im * u_imag
 end
-(sol::PowerGridSolution)(t, n, ::Type{Val{:u}}) = begin
-    u_real = @>> TimeSeries(sol)(t, idxs= 2 .* n .- 1) convert(Array)
-    u_imag = @>> TimeSeries(sol)(t, idxs= 2 .* n) convert(Array)
+(sol::PowerGridSolution)(t, n::AbstractArray, ::Type{Val{:u}}) = begin
+    u_real = @>> TimeSeries(sol)(t, idxs= variable_index(sol.powergrid.nodes, n, :u_r)) convert(Array)
+    u_imag = @>> TimeSeries(sol)(t, idxs= variable_index(sol.powergrid.nodes, n, :u_i)) convert(Array)
     u_real .+ im .* u_imag
 end
 (sol::PowerGridSolution)(t, n, ::Type{Val{:v}}) = sol(t, n, :u) .|> abs
 (sol::PowerGridSolution)(t, n, ::Type{Val{:φ}}) = sol(t, n, :u) .|> angle
 
 #TODO: reimplement
-#(sol::PowerGridSolution)(t, n, ::Type{Val{:i}}) = (AdmittanceLaplacian(sol) * sol(t, :, :u))[n, :]
-#(sol::PowerGridSolution)(t::Number, n, ::Type{Val{:i}}) = (AdmittanceLaplacian(sol) * sol(t, :, :u))[n]
+(sol::PowerGridSolution)(t, n, ::Type{Val{:i}}) = (AdmittanceLaplacian(sol) * sol(t, :, :u))[n, :]
+(sol::PowerGridSolution)(t::Number, n, ::Type{Val{:i}}) = (AdmittanceLaplacian(sol) * sol(t, :, :u))[n]
 
 (sol::PowerGridSolution)(t, n, ::Type{Val{:iabs}}) = sol(t, n, :i) .|> abs
 (sol::PowerGridSolution)(t, n, ::Type{Val{:δ}}) = sol(t, n, :i) .|> angle
@@ -99,6 +98,10 @@ startindex(nodes, n::AbstractArray) = map(n -> startindex(nodes, n), n)
     else
         sum(map(node -> dimension(node), nodes[1:n-1]))
     end
+end
+
+get_current(sol, t, n) = begin
+    #TODO implement
 end
 
 # define the plotting recipes

@@ -28,18 +28,13 @@ begin
 
     timespan = (0.0,0.3)
     # solve it
-    #solution = solve(powergrid, x0, timespan)
-    problem = ODEProblem{true}(powergrid.network_dynamics,x0,timespan)
-    solution = solve(problem, Rodas4(autodiff=false), force_dtmin=true)
-    pl = plot(solution, vars = [s for s in powergrid.network_dynamics.syms if occursin("ω", string(s))])
-    display(pl)
+    solution = solve(powergrid, x0, timespan)
 end
 
-#swing_indices = findall(n -> isa(n, SwingEqLVS), powergrid.nodes)
-#swing_indices = findall(busses_df[:type] .== "G")
-#ω_colors = reshape(Plots.get_color_palette(:auto, plot_color(:white), 8)[swing_indices], (1,length(swing_indices)))
-#ω_labels = reshape([latexstring(string(raw"\omega", "_{$i}")) for i=swing_indices], (1, length(swing_indices)))
-#p_labels = reshape([latexstring(string(raw"p", "_{$i}","[$(busses_df[i,:type])]")) for i=1:length(node_list)], (1, length(node_list)))
+swing_indices = findall(n -> isa(n, SwingEqLVS), powergrid.nodes)
+ω_colors = reshape(Plots.get_color_palette(:auto, plot_color(:white), 8)[swing_indices], (1,length(swing_indices)))
+ω_labels = reshape([latexstring(string(raw"\omega", "_{$i}")) for i=swing_indices], (1, length(swing_indices)))
+p_labels = reshape([latexstring(string(raw"p", "_{$i}")) for i=1:length(powergrid.nodes)], (1, length(powergrid.nodes)))
 
 ################################################################
 # plotting the network representing the power grid
@@ -52,19 +47,19 @@ end
 
 
 begin
-    #pl_v = plot(solution, :, :v, legend = (0.4, 1.), ylabel=L"V [p.u.]")
-    #pl_p = plot(sol, :, :p, legend = (0.8, 0.95), ylabel=L"p [p.u.]", label=p_labels)
-    #pl_ω = plot(solution, swing_indices, :ω, legend = (0.8, 0.7), ylabel=L"\omega \left[rad/s\right]", label=ω_labels, color=ω_colors)
-    #pl = plot(
-         #pl_v,pl_ω;
-        #layout=(2,1),
-        #size = (500, 500),
-        #lw=3,
-        #xlabel=L"t[s]"
-    #)
-    #savefig(pl, "ieee14-frequency-perturbation.pdf")
-    #savefig(pl, "ieee14-frequency-perturbation.svg")
-    #display(pl)
+    pl_v = plot(solution, :, :v, legend = (0.4, 1.), ylabel=L"V [p.u.]")
+    #pl_p = plot(solution, :, :p, legend = (0.8, 0.95), ylabel=L"p [p.u.]", label=p_labels)
+    pl_ω = plot(solution, swing_indices, :ω, legend = (0.8, 0.7), ylabel=L"\omega \left[rad/s\right]", label=ω_labels, color=ω_colors)
+    pl = plot(
+        pl_v, pl_ω;
+        layout=(2,1),
+        size = (500, 500),
+        lw=3,
+        xlabel=L"t[s]"
+    )
+    savefig(pl, "ieee14-frequency-perturbation.pdf")
+    savefig(pl, "ieee14-frequency-perturbation.svg")
+    display(pl)
 end
 
 
