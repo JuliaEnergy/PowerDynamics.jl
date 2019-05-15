@@ -6,6 +6,7 @@ version = "0.7.1"
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Debugger = "31a5f54b-26ea-5ae9-a837-f05ce5417438"
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 GraphPlot = "a2cc645c-3eea-5389-862e-a155d0052231"
