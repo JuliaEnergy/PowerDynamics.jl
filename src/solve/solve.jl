@@ -12,6 +12,6 @@ const iipfunc = true # is in-place function
 
 function solve(pg::PowerGrid, x0, timespan)
     problem = ODEProblem{iipfunc}(pg.network_dynamics,x0,timespan)
-    solution = solve(problem, Rodas4(autodiff=false), force_dtmin=true)
+    solution = solve(problem, Rodas4(autodiff=false))
     PowerGridSolution(solution, pg)
 end

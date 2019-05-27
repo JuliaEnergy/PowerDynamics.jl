@@ -1,6 +1,7 @@
 using DiffEqBase: AbstractTimeseriesSolution
 using Lazy: @>>
 using RecipesBase
+using NetworkDynamics
 
 
 """
@@ -75,9 +76,8 @@ end
 (sol::PowerGridSolution)(t, n, ::Type{Val{:v}}) = sol(t, n, :u) .|> abs
 (sol::PowerGridSolution)(t, n, ::Type{Val{:φ}}) = sol(t, n, :u) .|> angle
 
-#TODO: reimplement
-(sol::PowerGridSolution)(t, n, ::Type{Val{:i}}) = (AdmittanceLaplacian(sol) * sol(t, :, :u))[n, :]
-(sol::PowerGridSolution)(t::Number, n, ::Type{Val{:i}}) = (AdmittanceLaplacian(sol) * sol(t, :, :u))[n]
+(sol::PowerGridSolution)(t, n, ::Type{Val{:i}}) = get_current(sol, t, n)
+(sol::PowerGridSolution)(t::Number, n, ::Type{Val{:i}}) = get_current(sol, t, n)
 
 (sol::PowerGridSolution)(t, n, ::Type{Val{:iabs}}) = sol(t, n, :i) .|> abs
 (sol::PowerGridSolution)(t, n, ::Type{Val{:δ}}) = sol(t, n, :i) .|> angle
@@ -101,9 +101,31 @@ startindex(nodes, n::AbstractArray) = map(n -> startindex(nodes, n), n)
     end
 end
 
+# current for a timeseries t
 get_current(sol, t, n) = begin
     #TODO implement
+    vertices = map(construct_node_dynamics, sol.powergrid.nodes)
+    edges = map(construct_edge, sol.powergrid.lines)
+    sef = StaticEdgeFunction(vertices, edges, sol.powergrid.graph)
+    xt = sol.dqsol(t)
+    hcat([get_current_internal(sef, x, n) for x in xt]...)
 end
+
+# current for a single point in time
+get_current(sol, t::Number, n) = begin
+    vertices = map(construct_node_dynamics, sol.powergrid.nodes)
+    edges = map(construct_edge, sol.powergrid.lines)
+    sef = StaticEdgeFunction(vertices,edges,sol.powergrid.graph)
+    x = sol.dqsol(t)
+    (e_s, e_d) = sef(x, Nothing, 0)
+    total_current(e_s[n], e_d[n])
+end
+
+get_current_internal(sef, x, nodes) = begin
+    (e_s, e_d) = sef(x, Nothing, 0)
+    [total_current(e_s[n], e_d[n]) for n in nodes]
+end
+
 
 # define the plotting recipes
 
@@ -116,7 +138,7 @@ tslabel(sym, n::AbstractArray, i) = tslabel.(Ref(sym), n, Ref(i))
 tstransform(arr::AbstractArray{T, 1}) where T = arr
 tstransform(arr::AbstractArray{T, 2}) where T = arr'
 
-const PLOT_TTIME_RESOLUTION = 10_000
+const PLOT_TTIME_RESOLUTION = 10_000 # TODO:@sabine is this high resolution really needed?
 
 @recipe function f(sol::PowerGridSolution, ::Colon, sym::Symbol, args...)
     sol, eachindex(sol.powergrid.nodes), sym, args...

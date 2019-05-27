@@ -11,7 +11,7 @@ powergrid = read_network_from_csv("IEEE14_busses.csv", "IEEE14_lines.csv")
 
 # find the fixed point = normal operation point
 system_size = systemsize(powergrid)
-ic = find_operationpoint(powergrid.network_dynamics, ones(system_size))
+op = find_operationpoint(powergrid.network_dynamics, ones(system_size))
 
 begin
     # just ensure the correct admittance laplacian is used
@@ -19,7 +19,7 @@ begin
     #rhs = NetworkRHS(g)
     #rhs.LY[:] = LY_default
     # define the initial condition as a perturbation from the fixed point
-    x0 = copy(ic)
+    x0 = copy(op)
     x0[3] += 0.2 # perturbation on the ω of the first node
     #x0[n, :int, i] : access to the i-th internal variables of the n-th node
     #x0[n, :u] : access to the complex voltage of the n-th node
@@ -47,11 +47,12 @@ p_labels = reshape([latexstring(string(raw"p", "_{$i}")) for i=1:length(powergri
 
 
 begin
-    pl_v = plot(solution, :, :v, legend = (0.4, 1.), ylabel=L"V [p.u.]")
-    #pl_p = plot(solution, :, :p, legend = (0.8, 0.95), ylabel=L"p [p.u.]", label=p_labels)
+    #pl_v = plot(solution, :, :v, legend = (0.4, 1.), ylabel=L"V [p.u.]")
+    #pl_i = plot(solution, :, :i, legend = (0.4, 1.), ylabel=L"i [p.u.]")
+    pl_p = plot(solution, :, :p, legend = (0.8, 0.95), ylabel=L"p [p.u.]", label=p_labels)
     pl_ω = plot(solution, swing_indices, :ω, legend = (0.8, 0.7), ylabel=L"\omega \left[rad/s\right]", label=ω_labels, color=ω_colors)
     pl = plot(
-        pl_v, pl_ω;
+        pl_p, pl_ω;
         layout=(2,1),
         size = (500, 500),
         lw=3,

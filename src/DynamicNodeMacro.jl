@@ -6,6 +6,7 @@ using Base.Meta
 using Base.Iterators
 using MacroTools
 using NetworkDynamics
+using LinearAlgebra
 
 function cndfunction_builder!(
     internals,
@@ -48,7 +49,7 @@ function cndfunction_builder!(
     rhsfunction = Expr(:function, rhscall, rhsbody)
     all_syms = [:u_r, :u_i]
     append!(all_syms, internals.vars)
-    ode_vertex = :(ODEVertex(f! = rhs!, dim = $(length(internals.vars) +2), massmatrix=$massmatrix, sym = $all_syms))
+    ode_vertex = :(ODEVertex(f! = rhs!, dim = $(length(internals.vars) +2), mass_matrix=$massmatrix, sym = $all_syms))
     append!(cndfunction.args[2].args, [rhsfunction, ode_vertex])
 
     nothing
@@ -89,6 +90,8 @@ function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
     internals = getinternalvars(internalsdef)
     # build parameters struct
     struct_def = buildparameterstruct(name, parameters)
+
+    massmatrix = isnothing(massmatrix) ? I : massmatrix
 
     # build `construct_node_dynamics`
     cndcall = :(construct_node_dynamics(par::$(name)))
