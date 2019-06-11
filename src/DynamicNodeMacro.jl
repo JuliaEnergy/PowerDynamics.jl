@@ -180,7 +180,7 @@ end
 function create(typedef, massmatrix, prep, internals, func_body)
     mainex = DynamicNode(typedef, massmatrix, prep, internals, func_body)
     @capture(typedef, name_(parameters__))
-    mainexstr = "$(copy(mainex)|>rlr)"
+    mainexstr = "$(copy(mainex)|>rmlines|>prettify)"
     showex = :(showdefinition(io::IO, ::Type{$name}) = println(io, $mainexstr))
     append!(mainex.args, [showex])
     return esc(mainex)
