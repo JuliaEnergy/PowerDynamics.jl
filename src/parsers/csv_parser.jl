@@ -1,15 +1,19 @@
 using CSV
 using DataFrames
 using LightGraphs
+using MetaGraphs
 using PowerDynBase
 using NetworkDynamics
 
 
 function read_network_from_csv(bus_file, line_file)
+    graph = MetaGraph(SimpleGraph())
     nodes = _read_nodes_from_csv(bus_file)
-    network_graph, lines = _read_lines_from_csv(line_file, length(nodes))
-    nd = network_dynamics(map(construct_node_dynamics, nodes), map(construct_edge, lines), network_graph)
-    PowerGrid(nd, network_graph, nodes, lines)
+    num_nodes = length(nodes)
+    add_vertices!(graph, num_nodes)
+    [set_prop!(graph, n, :node, nodes[n]) for n=1:num_nodes]
+    lines = _read_lines_from_csv(line_file, graph, num_nodes)
+    PowerGrid(graph, nodes, lines)
 end
 
 function _read_nodes_from_csv(filename)
@@ -40,12 +44,11 @@ function _read_nodes_from_csv(filename)
     node_list
 end
 
-function _read_lines_from_csv(filename, num_nodes)
+function _read_lines_from_csv(filename, graph, num_nodes)
     lines_df = CSV.read(filename)
     df_names = [:from, :to, :R, :X, :charging, :tap_ratio]
     names!(getfield(lines_df, :colindex), df_names)
 
-    g = SimpleGraph(num_nodes)
     line_list = []
     for line_index = 1:size(lines_df)[1]
         from = lines_df[line_index,:from]
@@ -57,7 +60,8 @@ function _read_lines_from_csv(filename, num_nodes)
         admittance = 1/(lines_df[line_index,:R] + im*lines_df[line_index,:X])
         line = StaticLine(Y=admittance)
         push!(line_list, line)
-        add_edge!(g, from, to);
+        add_edge!(graph, from, to);
+        set_prop!(graph, Edge(from, to), :line, line)
     end
-    g, line_list
+    line_list
 end

@@ -1,3 +1,4 @@
+using PowerDynBase
 using NLsolve
 
 struct RootRhs2
@@ -13,11 +14,17 @@ function RootRhs2(of::ODEFunction)
     RootRhs2(of.f)
 end
 
-function find_operationpoint(of::ODEFunction, ic_guess)
-    rr = RootRhs2(of)
+function find_operationpoint(pg::PowerGrid, ic_guess = nothing)
+    # TODO check for slack bus
+    if ic_guess === nothing
+        system_size = systemsize(pg)
+        ic_guess = ones(system_size)
+    end
+
+    rr = RootRhs2(ode_function(pg))
     nl_res = nlsolve(rr, ic_guess)
     if converged(nl_res) == true
-        return nl_res.zero
+        return State(pg, nl_res.zero)
     else
         println("Failed to find initial conditions on the constraint manifold!")
         println("Try running nlsolve with other options.")
