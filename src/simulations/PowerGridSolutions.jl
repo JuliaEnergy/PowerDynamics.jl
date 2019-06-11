@@ -90,20 +90,12 @@ end
 
 
 variable_index(nodes, n::AbstractArray, s::Symbol) = map(n -> variable_index(nodes, n, s), n)
-variable_index(nodes, n, s::Symbol) = startindex(nodes, n) + findfirst(ns -> ns == s, symbolsof(nodes[n]))
 
 startindex(nodes, n::AbstractArray) = map(n -> startindex(nodes, n), n)
-@views startindex(nodes, n) = begin
-    if n == 1
-        0
-    else
-        sum(map(node -> dimension(node), nodes[1:n-1]))
-    end
-end
+
 
 # current for a timeseries t
 get_current(sol, t, n) = begin
-    #TODO implement
     vertices = map(construct_node_dynamics, sol.powergrid.nodes)
     edges = map(construct_edge, sol.powergrid.lines)
     sef = StaticEdgeFunction(vertices, edges, sol.powergrid.graph)
