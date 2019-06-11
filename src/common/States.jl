@@ -93,7 +93,7 @@ end
 Base.getindex(s::State, n, ::Type{Val{:u}}) = getindex(s, 2 .* n .- 1) + im .* getindex(s, 2 .* n)
 Base.getindex(s::State, n, ::Type{Val{:v}}) = abs.(s[n, :u])
 Base.getindex(s::State, n, ::Type{Val{:φ}}) = angle.(s[n, :u])
-#Base.getindex(s::State, n, ::Type{Val{:i}}) = getindex(AdmittanceLaplacian(s) * s[:, :u], n)
+#Base.getindex(s::State, n, ::Type{Val{:i}}) = #TODO implement
 Base.getindex(s::State, n, ::Type{Val{:iabs}}) = abs.(s[n, :i])
 Base.getindex(s::State, n, ::Type{Val{:δ}}) = angle.(s[n, :i])
 Base.getindex(s::State, n, ::Type{Val{:s}}) = s[n, :u] .* conj.(s[n, :i])

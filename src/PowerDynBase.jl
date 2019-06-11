@@ -5,35 +5,31 @@ module PowerDynBase
 
 using Markdown # for the @doc
 
-# errors
-include("Errors.jl")
+include("common/Errors.jl")
+include("common/Helpers.jl")
+include("common/NodeDynamicsBase.jl")
+include("common/PowerGrid.jl")
+include("common/States.jl")
 
-include("Helpers.jl")
-
-include("NodeDynamicsBase.jl")
-
-include("PowerGrid.jl")
 include("parsers/csv_parser.jl")
 
 # all possible node dynamics
-include("DynamicNodeMacro.jl")
-include("NodeDynamics/PQAlgebraic.jl")
-include("NodeDynamics/PVAlgebraic.jl")
-include("NodeDynamics/SlackAlgebraic.jl")
-include("NodeDynamics/SwingEquation.jl")
-include("NodeDynamics/FourthOrderEquation.jl")
-include("NodeDynamics/FourthOrderEquationGovernorExciterAVR.jl")
-include("NodeDynamics/VoltageSourceInverterMinimal.jl")
-include("NodeDynamics/VoltageSourceInverterVoltagePT1.jl")
-include("NodeDynamics/CurrentSourceInverterMinimal.jl")
-include("NodeDynamics/ExponentialRecovery.jl")
+include("nodes/NodeMacro.jl")
+include("nodes/PQAlgebraic.jl")
+include("nodes/PVAlgebraic.jl")
+include("nodes/SlackAlgebraic.jl")
+include("nodes/SwingEquation.jl")
+include("nodes/FourthOrderEquation.jl")
+include("nodes/FourthOrderEquationGovernorExciterAVR.jl")
+include("nodes/VoltageSourceInverterMinimal.jl")
+include("nodes/VoltageSourceInverterVoltagePT1.jl")
+include("nodes/CurrentSourceInverterMinimal.jl")
+include("nodes/ExponentialRecovery.jl")
 
 # all line types
-include("Lines/LineMacro.jl")
-include("Lines/StaticLine.jl")
-include("Lines/PiModelLine.jl")
-
-include("States.jl")
+include("lines/LineMacro.jl")
+include("lines/StaticLine.jl")
+include("lines/PiModelLine.jl")
 
 include("operationpoint/operationpoint.jl")
 
