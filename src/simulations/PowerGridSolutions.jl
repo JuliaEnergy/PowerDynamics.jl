@@ -96,7 +96,7 @@ startindex(nodes, n::AbstractArray) = map(n -> startindex(nodes, n), n)
 
 # current for a timeseries t
 get_current(sol, t, n) = begin
-    vertices = map(construct_node_dynamics, sol.powergrid.nodes)
+    vertices = map(construct_vertex, sol.powergrid.nodes)
     edges = map(construct_edge, sol.powergrid.lines)
     sef = StaticEdgeFunction(vertices, edges, sol.powergrid.graph)
     xt = sol.dqsol(t)
@@ -105,7 +105,7 @@ end
 
 # current for a single point in time
 get_current(sol, t::Number, n) = begin
-    vertices = map(construct_node_dynamics, sol.powergrid.nodes)
+    vertices = map(construct_vertex, sol.powergrid.nodes)
     edges = map(construct_edge, sol.powergrid.lines)
     sef = StaticEdgeFunction(vertices,edges,sol.powergrid.graph)
     x = sol.dqsol(t)

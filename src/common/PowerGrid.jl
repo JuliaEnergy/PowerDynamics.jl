@@ -14,7 +14,7 @@ function PowerGrid(graph::G) where G <: AbstractMetaGraph
 end
 
 function ode_function(pg::PowerGrid)
-    network_dynamics(map(construct_node_dynamics, pg.nodes), map(construct_edge, pg.lines), pg.graph)
+    network_dynamics(map(construct_vertex, pg.nodes), map(construct_edge, pg.lines), pg.graph)
 end
 
 @views systemsize(pg::PowerGrid) = sum(map(n -> dimension(n), pg.nodes))

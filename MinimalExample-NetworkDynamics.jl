@@ -14,8 +14,8 @@ pyplot()
 g = barabasi_albert(10,5)
 
 
-pq_list = [construct_node_dynamics(PQAlgebraic(S=1+im*1)) for i in 1:5]
-vertex_list = [construct_node_dynamics(SwingEq(H=abs(0.1*randn()), P=1, D=abs(0.1*randn()), Ω=50))
+pq_list = [construct_vertex(PQAlgebraic(S=1+im*1)) for i in 1:5]
+vertex_list = [construct_vertex(SwingEq(H=abs(0.1*randn()), P=1, D=abs(0.1*randn()), Ω=50))
               for i in 1:5]
 append!(vertex_list, pq_list)
 

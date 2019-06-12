@@ -1,5 +1,7 @@
-
-include("testing_base.jl")
+using Test
+using SymPy
+using PowerDynBase
+#include("testing_base.jl")
 
 ################################################################################
 # define variables as SymPy symbols for all node tests
@@ -14,12 +16,10 @@ p, q = real(s), imag(s)
 @testset "PQAlgebraic" begin
 @syms S
 pq_par = PQAlgebraic(S=S)
-pq_dyn = construct_node_dynamics(pq_par)
-@test pq_par === parametersof(pq_dyn)
-dint = []; int = []
-@test pq_dyn.ode_dynamics.rhs(dint, u, i, int, t) == S - s
-@test internalsymbolsof(pq_dyn) == []
-@test internaldsymbolsof(pq_dyn) == []
+pq_dyn = construct_vertex(pq_par)
+#@test pq_dyn.ode_dynamics.rhs(dint, u, i, int, t) == S - s
+@test symbolsof(pq_dyn) == [:u_r, :u_i]
+
 
 @syms du
 ints = PowerDynBase.ODEVariable(val = int)
@@ -31,7 +31,7 @@ end
 @testset "PVAlgebraic" begin
 @syms P real=true
 @syms V positive=true
-pv_dyn = construct_node_dynamics(PVAlgebraic(P=P, V=V))
+pv_dyn = construct_vertex(PVAlgebraic(P=P, V=V))
 dint = []; int = []
 @test pv_dyn.ode_dynamics.rhs(dint, u, i, int, t) == (v-V) + im*(p-P)
 @test internalsymbolsof(pv_dyn) == []
@@ -40,7 +40,7 @@ end
 
 @testset "SlackAlgebraic" begin
 @syms U
-slack_dyn = construct_node_dynamics(SlackAlgebraic(U=U))
+slack_dyn = construct_vertex(SlackAlgebraic(U=U))
 dint = []; int = []
 @test slack_dyn.ode_dynamics.rhs(dint, u, i, int, t) == u - U
 @test internalsymbolsof(slack_dyn) == []
@@ -52,7 +52,7 @@ end
 @syms P Ω real=true
 @syms omega domega real=true
 swing_par = SwingEq(H=H, P=P, D=D, Ω=Ω)
-swing_dyn = construct_node_dynamics(swing_par)
+swing_dyn = construct_vertex(swing_par)
 @test swing_par === parametersof(swing_dyn)
 dint = [domega]; int = [omega]; int_test = copy(int)
 @test swing_dyn.rhs(dint, u, i, int, t) == u*im*omega
@@ -68,7 +68,7 @@ swing_dyn(1, us, i, ints, t)
 @test expand.(ints.ddt) == expand.([(P - D*omega - p)*2PI*Ω/H])
 
 @syms V Γ positive=true
-swing_lvs_dyn = construct_node_dynamics(SwingEqLVS(H=H, P=P, D=D, Ω=Ω, Γ=Γ, V=V))
+swing_lvs_dyn = construct_vertex(SwingEqLVS(H=H, P=P, D=D, Ω=Ω, Γ=Γ, V=V))
 dint = [domega]; int = [omega]; int_test = copy(int)
 @test swing_lvs_dyn.rhs(dint, u, i, int, t) == u*im*omega - u/v * Γ * (v-V)
 @test expand.(dint) == expand.([(P - D*omega - p)*2PI*Ω/H])
@@ -91,7 +91,7 @@ end
 @syms H  D  Ω  T_d_dash T_q_dash X_q_dash X_d_dash X_d X_q positive=true
 @syms P  E_f real=true
 @syms omega domega theta dtheta real=true
-fourth_dyn = construct_node_dynamics(FourthEq(H=H, P=P, D=D, Ω=Ω, E_f=E_f, T_d_dash=T_d_dash ,T_q_dash=T_q_dash ,X_q_dash=X_q_dash ,X_d_dash=X_d_dash,X_d=X_d, X_q=X_q))
+fourth_dyn = construct_vertex(FourthEq(H=H, P=P, D=D, Ω=Ω, E_f=E_f, T_d_dash=T_d_dash ,T_q_dash=T_q_dash ,X_q_dash=X_q_dash ,X_d_dash=X_d_dash,X_d=X_d, X_q=X_q))
 dint = [dtheta,domega]; int = [theta,omega]; int_test = copy(int)
 du = fourth_dyn.rhs(dint, u, i, int, t)
 i_c = 1im*i*exp(-1im*theta)
@@ -113,7 +113,7 @@ end
 @syms τ_P τ_Q K_P K_Q positive=true
 @syms P Q V_r real=true
 @syms omega domega real=true
-VSIMindyn = construct_node_dynamics(VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P,Q=Q))
+VSIMindyn = construct_vertex(VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P,Q=Q))
 dint = [domega]; int = [omega]; int_test = copy(int)
 du = VSIMindyn.rhs(dint, u, i, int, t)
 p = real(u * conj(i))
@@ -128,7 +128,7 @@ end
 @syms τ_v τ_P τ_Q K_P K_Q positive=true
 @syms P Q V_r real=true
 @syms q_m dq_m omega domega real=true
-VSIdyn = construct_node_dynamics(VSIVoltagePT1(τ_v=τ_v,τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P,Q=Q))
+VSIdyn = construct_vertex(VSIVoltagePT1(τ_v=τ_v,τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P,Q=Q))
 dint = [domega,dq_m]; int = [omega,q_m]; int_test = copy(int)
 du = VSIdyn.rhs(dint, u, i, int, t)
 p = real(u * conj(i))
@@ -142,7 +142,7 @@ end
 
 @testset "CSIMinimal" begin
 @syms I_r real=true
-CSIMindyn = construct_node_dynamics(CSIMinimal(I_r=I_r))
+CSIMindyn = construct_vertex(CSIMinimal(I_r=I_r))
 dint = []; int = [];
 CSIMindyn.ode_dynamics.rhs(dint, u, i, int, t) == I_r - abs(i)
 @test internalsymbolsof(CSIMindyn) == []
@@ -153,7 +153,7 @@ end
 @syms V0 Nps Npt Nqs Nqt Tp Tq positive=true
 @syms P0 Q0 Pd Qd real=true
 @syms x_p dx_p x_q dx_q real=true
-ExpRec = construct_node_dynamics(ExponentialRecoveryLoad(P0=P0, Q0=Q0, Nps=Nps, Npt=Npt, Nqs=Nqs, Nqt=Nqt, Tp=Tp, Tq=Tq, V0=V0))
+ExpRec = construct_vertex(ExponentialRecoveryLoad(P0=P0, Q0=Q0, Nps=Nps, Npt=Npt, Nqs=Nqs, Nqt=Nqt, Tp=Tp, Tq=Tq, V0=V0))
 dint = [dx_p,dx_q]; int = [x_p,x_q]; int_test = copy(int)
 
 du = ExpRec.ode_dynamics.rhs(dint, u, i, int, t)
@@ -167,7 +167,7 @@ end
 @syms H  D  Ω  T_d_dash T_q_dash X_q_dash X_d_dash X_d X_q T_e T_a T_f K_a K_f V_ref R_d T_sv T_ch positive=true
 @syms P K_e real=true
 @syms omega domega theta dtheta e_f de_f v_r dv_r r_f dr_f P_sv dP_sv P_m dP_m real=true
-fourth_dyn = construct_node_dynamics(FourthOrderEqGovernorExciterAVR(H=H, P=P, D=D, Ω=Ω, T_d_dash=T_d_dash ,T_q_dash=T_q_dash ,X_q_dash=X_q_dash ,X_d_dash=X_d_dash,X_d=X_d, X_q=X_q, T_e=T_e, T_a=T_a, T_f=T_f, K_e=K_e, K_a=K_a, K_f=K_f, V_ref=V_ref, R_d=R_d, T_sv=T_sv, T_ch=T_ch))
+fourth_dyn = construct_vertex(FourthOrderEqGovernorExciterAVR(H=H, P=P, D=D, Ω=Ω, T_d_dash=T_d_dash ,T_q_dash=T_q_dash ,X_q_dash=X_q_dash ,X_d_dash=X_d_dash,X_d=X_d, X_q=X_q, T_e=T_e, T_a=T_a, T_f=T_f, K_e=K_e, K_a=K_a, K_f=K_f, V_ref=V_ref, R_d=R_d, T_sv=T_sv, T_ch=T_ch))
 dint = [dtheta,domega,de_f,dv_r,dr_f,dP_sv,dP_m]; int = [theta,omega,e_f,v_r,r_f,P_sv,P_m]; int_test = copy(int)
 du = fourth_dyn.rhs(dint, u, i, int, t)
 i_c = 1im*i*exp(-1im*theta)

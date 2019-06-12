@@ -41,7 +41,7 @@ include("simulations/simulations.jl")
 export GridDynamicsError, NodeDynamicsError, MissingParameterError, StateError
 export no_internal_masses
 export @DynamicNode, showdefinition
-export construct_node_dynamics
+export construct_vertex
 
 export State
 
@@ -57,5 +57,6 @@ export PowerGrid
 export ode_function
 export systemsize
 export symbolsof
+export total_current
 
 end
