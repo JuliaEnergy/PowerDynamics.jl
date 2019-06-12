@@ -44,7 +44,7 @@ prep = quote
         prepline2
     end
 cndfunction = quote
-        function construct_node_dynamics(par::MyParams)
+        function construct_vertex(par::MyParams)
                 p1 = par.p1
                 p2 = par.p2
                 prepline1
@@ -57,7 +57,7 @@ PowerDynBase.cndfunction_builder!(Val{:OrdinaryNodeDynamicsWithMass},
         funcbody,
         cndfunction)
 cnd_function_test = quote
-        function construct_node_dynamics(par::MyParams)
+        function construct_vertex(par::MyParams)
                 p1 = par.p1
                 p2 = par.p2
                 prepline1

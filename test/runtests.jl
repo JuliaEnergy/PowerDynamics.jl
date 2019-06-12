@@ -3,12 +3,15 @@ using Test
 using Crayons
 
 testlist = [
-    ("nodedynamics.jl", "Single Node Tests"),
-    ("dynamicnodemacro.jl", "Dynamic Node Macro Tests"),
-    ("complexview.jl", "Complex View Tests"),
-    ("griddynamics.jl", "Grid Construction Tests"),
-    ("outputanderrors.jl", "Output and Error Tests"),
-    ("states.jl", "States Tests"),
+    ("nodes/PQAlgebraic.jl", "PQAlgebraic Node Tests"),
+    ("nodes/PVAlgebraic.jl", "PVAlgebraic Node Tests"),
+    ("nodes/SlackAlgebraic.jl", "SlackAlgebraic Node Tests"),
+    ("nodes/SwingEq.jl", "SwingEq Node Tests"),
+    ("nodes/SwingEqLVS.jl", "SwingEqLVS Node Tests"),
+    ("nodes/FourthOrderEquation.jl", "FourthOrderEq Node Tests")
+    #("dynamicnodemacro.jl", "Dynamic Node Macro Tests"),
+    #("outputanderrors.jl", "Output and Error Tests"),
+    #("states.jl", "States Tests"),
 ]
 @testset "All Tests" begin
     @testset "$desc" for (file, desc) in testlist

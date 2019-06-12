@@ -93,8 +93,8 @@ function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
 
     massmatrix = isnothing(massmatrix) ? I : massmatrix
 
-    # build `construct_node_dynamics`
-    cndcall = :(construct_node_dynamics(par::$(name)))
+    # build `construct_vertex`
+    cndcall = :(construct_vertex(par::$(name)))
     extracted_parameters = map(sym -> :( $sym = par.$sym ), parameters)
     cndbody = quote end
     append!(cndbody.args, extracted_parameters)
