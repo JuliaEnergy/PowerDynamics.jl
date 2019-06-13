@@ -1,6 +1,6 @@
-using Test
-using SymPy
-using PowerDynBase
+using Test: @testset, @test
+using SymPy: @syms
+using PowerDynBase: SlackAlgebraic, construct_vertex, symbolsof
 
 include("NodeTestBase.jl")
 
