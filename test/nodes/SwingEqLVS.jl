@@ -1,7 +1,7 @@
-using Test
-using SymPy
-using PowerDynBase
-using LinearAlgebra
+using Test: @testset, @test
+using SymPy: @syms
+using PowerDynBase: SwingEqLVS, construct_vertex, symbolsof
+using LinearAlgebra: I
 
 include("NodeTestBase.jl")
 

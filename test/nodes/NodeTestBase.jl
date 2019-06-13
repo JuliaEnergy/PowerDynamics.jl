@@ -1,5 +1,4 @@
-using SymPy
-using PowerDynBase
+using SymPy: @syms
 
 @syms du u i
 @syms t real=true

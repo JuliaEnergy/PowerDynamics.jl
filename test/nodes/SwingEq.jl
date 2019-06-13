@@ -1,7 +1,7 @@
-using Test
-using SymPy
-using PowerDynBase
-using LinearAlgebra
+using Test: @testset, @test
+using SymPy: @syms
+using PowerDynBase: SwingEq, construct_vertex, symbolsof
+using LinearAlgebra: I
 
 include("NodeTestBase.jl")
 
@@ -16,8 +16,6 @@ include("NodeTestBase.jl")
 
     swing = SwingEq(H=H, P=P, D=D, Ω=Ω)
     swing_vertex = construct_vertex(swing)
-
-
 
     @test symbolsof(swing) == [:u_r, :u_i, :ω]
     @test swing_vertex.mass_matrix == I

@@ -1,7 +1,9 @@
-using Test
-using SymPy
-using PowerDynBase
-using LinearAlgebra
+using Test: @testset, @test
+using SymPy: @syms
+using PowerDynBase: FourthEq, construct_vertex, symbolsof
+using LinearAlgebra: I
+
+include("NodeTestBase.jl")
 
 @testset "FourthOrderEq" begin
     @syms H  D  Ω  T_d_dash T_q_dash X_q_dash X_d_dash X_d X_q positive=true
