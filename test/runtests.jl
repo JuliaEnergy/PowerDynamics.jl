@@ -8,9 +8,12 @@ testlist = [
     ("nodes/SlackAlgebraic.jl", "SlackAlgebraic Node Tests"),
     ("nodes/SwingEq.jl", "SwingEq Node Tests"),
     ("nodes/SwingEqLVS.jl", "SwingEqLVS Node Tests"),
-    ("nodes/FourthOrderEquation.jl", "FourthOrderEq Node Tests"),
-    ("nodes/VoltageSourceInverterMinimal.jl", "VoltageSourceInverterMinimal Node Tests")
-    #("dynamicnodemacro.jl", "Dynamic Node Macro Tests"),
+    ("nodes/FourthOrderEq.jl", "FourthOrderEq Node Tests"),
+    ("nodes/VoltageSourceInverterMinimal.jl", "VoltageSourceInverterMinimal Node Tests"),
+    ("nodes/VoltageSourceInverterVoltagePT1.jl", "VoltageSourceInverterVoltagePT1 Node Tests"),
+    ("nodes/CurrentSourceInverterMinimal.jl", "CurrentSourceInverterMinimal Node Tests"),
+    ("nodes/ExponentialRecoveryLoad.jl", "ExponentialRecoveryLoad Node Tests"),
+    ("nodes/FourthOrderEqGovernorExciterAVR.jl", "FourthOrderEqGovernorExciterAVR Node Tests")
     #("outputanderrors.jl", "Output and Error Tests"),
     #("states.jl", "States Tests"),
 ]
