@@ -15,11 +15,8 @@ import Base: convert
 Encode the information on the value of a state vector at a particular time point.
 
 # Keyword Arguments
-- `base` is an instance of a `BaseState`, essentially it contains the state
-    vector and the complete rhs of the system. Instead of `base`, you can also
-    directly use a [`GridDynamics`](@ref) instance `grid` and a properly sized
+- Use a [`PowerGrid`](@ref) instance `grid` and a properly sized
     state vector `vec` to instantiate a `State`.
-- `t` is a time point associated to the `base`. It defaults to `nothing`.
 
 # Indexing
 
@@ -52,11 +49,11 @@ The internal variables can be also directly accessed with symbols, i.e.
 
 returns the frequency ``ω`` at node ``j``.
 To find out the proper symbol, the easiest way is to look into the docs
-of the corresponding [`AbstractNodeParameters`](@ref) subtype,
-check the output of [`internalsymbolsof`](@ref)
+of the corresponding node type,
+check the output of [`symbolsof`](@ref)
 or simply look at the output of `println`:
 
-    julia> internalsymbolsof(SwingEq(H=2, P=3, D=4, Ω=5))
+    julia> symbolsof(SwingEq(H=2, P=3, D=4, Ω=5))
     1-element Array{Symbol,1}:
      :ω
 
