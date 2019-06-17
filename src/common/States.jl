@@ -49,8 +49,7 @@ The variables can be also directly accessed with symbols, i.e.
 returns the frequency ``ω`` at node ``j``.
 To find out the proper symbol, the easiest way is to look into the docs
 of the corresponding node type,
-check the output of [`symbolsof`](@ref)
-or simply look at the output of `println`:
+check the output of symbolsof or simply look at the output of `println`:
 
     julia> symbolsof(SwingEq(H=2, P=3, D=4, Ω=5))
     1-element Array{Symbol,1}:

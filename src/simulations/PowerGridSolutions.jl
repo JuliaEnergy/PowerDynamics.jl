@@ -11,7 +11,7 @@ using NetworkDynamics
     end
 The data structure interfacing to the solution of the differntial equations of a power grid.
 Normally, it is not created by hand but return from `PowerDynSolve.solve`.
-# Accessing the solution in a similar interface as [`PowerDynBase.State`](@ref).
+# Accessing the solution in a similar interface as [`State`](@ref).
 For some grid solution `sol`, one can access the variables as
 ```julia
 sol(t, n, s)
