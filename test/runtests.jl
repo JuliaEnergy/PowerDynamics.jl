@@ -13,9 +13,9 @@ testlist = [
     ("nodes/VoltageSourceInverterVoltagePT1.jl", "VoltageSourceInverterVoltagePT1 Node Tests"),
     ("nodes/CurrentSourceInverterMinimal.jl", "CurrentSourceInverterMinimal Node Tests"),
     ("nodes/ExponentialRecoveryLoad.jl", "ExponentialRecoveryLoad Node Tests"),
-    ("nodes/FourthOrderEqGovernorExciterAVR.jl", "FourthOrderEqGovernorExciterAVR Node Tests")
-    #("outputanderrors.jl", "Output and Error Tests"),
-    #("states.jl", "States Tests"),
+    ("nodes/FourthOrderEqGovernorExciterAVR.jl", "FourthOrderEqGovernorExciterAVR Node Tests"),
+    ("lines/LineMacro.jl", "LineMacro tests"),
+    ("common/states.jl", "States Tests"),
 ]
 @testset "All Tests" begin
     @testset "$desc" for (file, desc) in testlist
