@@ -1,6 +1,9 @@
 using DifferentialEquations: ODEProblem, ODEFunction
 using MetaGraphs, LightGraphs
 
+"""
+Encapsulates nodes & lines of the power grid and a graph connecting both.
+"""
 struct PowerGrid
     graph:: G where G <: AbstractGraph
     nodes
