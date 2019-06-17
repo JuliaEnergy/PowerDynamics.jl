@@ -2,7 +2,7 @@ using DifferentialEquations: ODEProblem, ODEFunction
 using MetaGraphs, LightGraphs
 
 struct PowerGrid
-    graph:: G where G <: AbstractMetaGraph
+    graph:: G where G <: AbstractGraph
     nodes
     lines
 end
