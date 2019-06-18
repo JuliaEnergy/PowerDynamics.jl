@@ -91,7 +91,7 @@ function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
     # build parameters struct
     struct_def = buildparameterstruct(name, parameters)
 
-    massmatrix = isnothing(massmatrix) ? I : massmatrix
+    massmatrix = massmatrix === nothing ? I : massmatrix
 
     # build `construct_vertex`
     cndcall = :(construct_vertex(par::$(name)))
