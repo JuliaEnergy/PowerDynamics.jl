@@ -16,3 +16,8 @@ end
 struct StateError <: PowerDynamicsError
     msg::String
 end
+
+"Error to be thrown if something goes wrong during the operation point search."
+struct OperationPointError <: PowerDynamicsError
+    msg::String
+end
