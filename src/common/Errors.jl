@@ -12,11 +12,6 @@ struct NodeDynamicsError <: PowerDynamicsError
     msg::String
 end
 
-"Error to be thrown if something goes wrong during the grid dynamics construction."
-struct GridDynamicsError <: PowerDynamicsError
-    msg::String
-end
-
 "Error to be thrown if something goes wrong when creating or modifying states."
 struct StateError <: PowerDynamicsError
     msg::String
