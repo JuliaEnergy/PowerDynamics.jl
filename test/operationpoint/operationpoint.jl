@@ -17,6 +17,17 @@ using Test: @test, @testset
     @test S2 ≈ op[2, :s]
 end
 
+@testset "no convergence" begin
+    S2 = -2+3im
+    Y = 2+1.5im
+    nodes = [PQAlgebraic(S=S2), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=2)]
+    graph = SimpleGraph(2)
+    add_edge!(graph, 1, 2);
+    lines = [StaticLine(Y=Y)]
+    grid = PowerGrid(graph, nodes, lines)
+    @test_throws OperationPointError find_operationpoint(grid)
+end
+
 @testset "algebraic and dynamic node" begin
     U1 = 1+5im
     P2 = -1
