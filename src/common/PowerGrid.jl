@@ -1,4 +1,4 @@
-using DifferentialEquations: ODEProblem, ODEFunction
+using DifferentialEquations: ODEFunction
 using MetaGraphs, LightGraphs
 
 """
