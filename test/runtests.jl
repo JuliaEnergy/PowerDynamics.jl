@@ -15,6 +15,7 @@ testlist = [
     ("nodes/ExponentialRecoveryLoad.jl", "ExponentialRecoveryLoad Node Tests"),
     ("nodes/FourthOrderEqGovernorExciterAVR.jl", "FourthOrderEqGovernorExciterAVR Node Tests"),
     ("lines/LineMacro.jl", "LineMacro tests"),
+    ("common/PowerGrid.jl", "PowerGrid Tests"),
     ("common/states.jl", "States Tests"),
 ]
 @testset "All Tests" begin
