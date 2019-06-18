@@ -22,4 +22,6 @@ include("NodeTestBase.jl")
     @test swing_lvs_vertex.mass_matrix == I
 
     smoketest_rhs(swing_lvs_vertex, int_x=omega, int_dx=domega)
+
+    @test convert(SwingEq, swing_lvs) == SwingEq(H=H, P=P, D=D, Ω=Ω)
 end
