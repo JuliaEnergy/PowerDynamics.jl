@@ -18,7 +18,8 @@ testlist = [
     ("common/PowerGrid.jl", "PowerGrid Tests"),
     ("common/states.jl", "States Tests"),
     ("simulations/PowerGridSolutions.jl", "PowerGridSolutions Tests"),
-    ("simulations/simulations.jl", "Simulations Tests")
+    ("simulations/simulations.jl", "Simulation Tests"),
+    ("operationpoint/operationpoint.jl", "operationpoint Tests")
 ]
 @testset "All Tests" begin
     @testset "$desc" for (file, desc) in testlist
