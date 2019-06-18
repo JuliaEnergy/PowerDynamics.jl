@@ -16,7 +16,7 @@ testlist = [
     ("nodes/FourthOrderEqGovernorExciterAVR.jl", "FourthOrderEqGovernorExciterAVR Node Tests"),
     ("lines/LineMacro.jl", "LineMacro tests"),
     ("common/PowerGrid.jl", "PowerGrid Tests"),
-    ("common/states.jl", "States Tests"),
+    ("common/States.jl", "States Tests"),
     ("simulations/PowerGridSolutions.jl", "PowerGridSolutions Tests"),
     ("simulations/simulations.jl", "Simulation Tests"),
     ("operationpoint/operationpoint.jl", "operationpoint Tests")

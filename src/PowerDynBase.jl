@@ -11,7 +11,7 @@ include("common/NodeDynamicsBase.jl")
 include("common/PowerGrid.jl")
 include("common/States.jl")
 
-include("parsers/csv_parser.jl")
+include("parsers/CSVParser.jl")
 
 # all possible node dynamics
 include("nodes/NodeMacro.jl")
