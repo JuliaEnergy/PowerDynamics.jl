@@ -1,10 +1,15 @@
 using Test: @test, @testset
 using PowerDynBase: SlackAlgebraic, SwingEqLVS, PowerGrid, State
 using SymPy: @syms, simplify
+using LightGraphs: SimpleGraph, add_edge!, edges
 
-include("../test_grid.jl")
-
-grid = create_grid()
+Y = 0 + 5*im
+graph = SimpleGraph(3)
+nodes = [SlackAlgebraic(U=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1)]
+add_edge!(graph, 1, 2)
+add_edge!(graph, 1, 3)
+lines = [StaticLine(Y=Y) for e in edges(graph)]
+grid = PowerGrid(graph, nodes, lines)
 @syms u_Sl u_Sw1 u_Sw2
 @syms omega1 omega2 real=true
 state = State(grid, [real(u_Sl), imag(u_Sl), real(u_Sw1), imag(u_Sw1), omega1, real(u_Sw2), imag(u_Sw2), omega2])
@@ -24,17 +29,6 @@ state = State(grid, [real(u_Sl), imag(u_Sl), real(u_Sw1), imag(u_Sw1), omega1, r
 @test state[2:3, :var, 3] == [omega1, omega2]
 @test state[2:3, :ω] == [omega1, omega2]
 @test state[2:3, :var, [3, 3]] == [omega1, omega2]
-
-#@test state[1, :i] == (LY * complex.([u_Sl, u_Sw1, u_Sw2]))[1]
-#@test state[:, :i] == LY * complex.([u_Sl, u_Sw1, u_Sw2])
-#@test state[1, :iabs] == abs((LY * complex.([u_Sl, u_Sw1, u_Sw2]))[1])
-#@test state[:, :iabs] == abs.((LY * complex.([u_Sl, u_Sw1, u_Sw2])))
-#@test state[2, :s] ==  state[2, :u] * conj((LY * complex.([u_Sl, u_Sw1, u_Sw2]))[2])
-#@test state[2, :p] ==  real(state[2, :u] * conj((LY * complex.([u_Sl, u_Sw1, u_Sw2]))[2]))
-#@test state[2, :q] ==  imag(state[2, :u] * conj((LY * complex.([u_Sl, u_Sw1, u_Sw2]))[2]))
-#@test state[:, :s] ==  state[:, :u] .* conj.((LY * complex.([u_Sl, u_Sw1, u_Sw2])))
-#@test state[:, :p] ==  real(state[:, :u] .* conj.((LY * complex.([u_Sl, u_Sw1, u_Sw2]))))
-#@test state[:, :q] ==  imag(state[:, :u] .* conj.((LY * complex.([u_Sl, u_Sw1, u_Sw2]))))
 
 @test_throws BoundsError state[length(grid.nodes)+1, :u]
 @test_throws BoundsError state[2, :var, 4]
@@ -84,6 +78,22 @@ state = State(grid, [real(u_Sl), imag(u_Sl), real(u_Sw1), imag(u_Sw1), omega1, r
 @test state[1, :φ] ≈ φ_Sl
 @test state[2, :φ] ≈ φ_Sw1
 @test state[3, :φ] ≈ φ_Sw2
+
+i_1 = -Y * (u_Sw1 - u_Sl) -Y * (u_Sw2 - u_Sl)
+i_2 = Y * (u_Sw1 - u_Sl)
+i_3 = Y * (u_Sw2 - u_Sl)
+@test state[1, :i] == i_1
+@test state[2, :i] == i_2
+
+@test state[:, :i] == [i_1, i_2, i_3]
+@test state[2, :iabs] == abs(i_2)
+s_2 =  state[2, :u] * conj(i_2)
+@test state[2, :s] == s_2
+@test state[2, :p] ==  real(s_2)
+@test state[2, :q] ==  imag(s_2)
+@test state[:, :s] ==  state[:, :u] .* conj.([i_1, i_2, i_3])
+@test state[:, :p] ==  real(state[:, :u] .* conj.([i_1, i_2, i_3]))
+@test state[:, :q] ==  imag(state[:, :u] .* conj.([i_1, i_2, i_3]))
 
 ## binary operations ##
 s1 = State(grid, ones(systemsize(grid)))
