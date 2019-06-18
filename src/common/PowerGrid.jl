@@ -1,5 +1,7 @@
 using DifferentialEquations: ODEFunction
-using MetaGraphs, LightGraphs
+using LightGraphs: edges, nv, AbstractGraph
+using MetaGraphs: get_prop, AbstractMetaGraph
+using NetworkDynamics: network_dynamics
 
 """
 Encapsulates nodes & lines of the power grid and a graph connecting both.

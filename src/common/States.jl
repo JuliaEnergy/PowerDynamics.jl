@@ -1,6 +1,8 @@
 # (C) 2018 Potsdam Institute for Climate Impact Research, authors and contributors (see AUTHORS file)
 # Licensed under GNU GPL v3 (see LICENSE file)
 
+using NetworkDynamics: StaticEdgeFunction
+
 import Base: convert
 
 
