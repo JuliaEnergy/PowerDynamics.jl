@@ -31,7 +31,6 @@ function find_operationpoint(pg::PowerGrid, ic_guess = nothing)
     if converged(nl_res) == true
         return State(pg, nl_res.zero)
     else
-        println("Failed to find initial conditions on the constraint manifold!")
-        println("Try running nlsolve with other options.")
+        throw(OperationPointError("Failed to find initial conditions on the constraint manifold!"))
     end
 end
