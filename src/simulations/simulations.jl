@@ -1,5 +1,5 @@
-using DifferentialEquations
-using DiffEqBase: DEProblem
+using DifferentialEquations: ODEProblem
+using LightGraphs: rem_edge!
 import DiffEqBase: solve
 
 @Base.kwdef struct Perturbation

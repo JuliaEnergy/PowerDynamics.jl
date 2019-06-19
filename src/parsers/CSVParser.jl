@@ -1,9 +1,8 @@
-using CSV
-using DataFrames
-using LightGraphs
-using MetaGraphs
-using PowerDynBase
-using NetworkDynamics
+using CSV: getfield, CSV
+using DataFrames: names!, getfield
+using LightGraphs: SimpleGraph, add_edge!, add_vertices!, Edge
+using MetaGraphs: MetaGraph, set_prop!
+using Logging: @warn
 
 
 function read_network_from_csv(bus_file, line_file)
@@ -54,7 +53,7 @@ function _read_lines_from_csv(filename, graph, num_nodes)
         from = lines_df[line_index,:from]
         to = lines_df[line_index,:to]
         if (from > num_nodes) || (to > num_nodes)
-            warn("Skipping line $line_index from $from to $(to)!")
+            @warn("Skipping line $line_index from $from to $(to)!")
             continue
         end
         admittance = 1/(lines_df[line_index,:R] + im*lines_df[line_index,:X])
