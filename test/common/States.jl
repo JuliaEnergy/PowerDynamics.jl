@@ -1,7 +1,8 @@
 using Test: @test, @testset
-using PowerDynBase: SlackAlgebraic, SwingEqLVS, PowerGrid, State
+using PowerDynBase: SlackAlgebraic, SwingEqLVS, PowerGrid, State, startindex
 using SymPy: @syms, simplify
 using LightGraphs: SimpleGraph, add_edge!, edges
+
 
 Y = 0 + 5*im
 graph = SimpleGraph(3)
@@ -13,6 +14,10 @@ grid = PowerGrid(graph, nodes, lines)
 @syms u_Sl u_Sw1 u_Sw2
 @syms omega1 omega2 real=true
 state = State(grid, [real(u_Sl), imag(u_Sl), real(u_Sw1), imag(u_Sw1), omega1, real(u_Sw2), imag(u_Sw2), omega2])
+
+@test startindex(nodes, 1) == 0
+@test startindex(nodes, 2) == 2
+@test startindex(nodes, 3) == 5
 
 @test state[1, :u] == complex(u_Sl)
 @test state[2, :u] == complex(u_Sw1)

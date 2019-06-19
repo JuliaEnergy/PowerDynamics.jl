@@ -104,7 +104,7 @@ internalindex(s, n::AbstractArray, i::AbstractArray) = internalindex.(Ref(s), n,
 internalindex(s, n::Integer, sym::Symbol) = variable_index(s.grid.nodes, n, sym)
 internalindex(s, n::Integer, i) = variable_index(s.grid.nodes, n, i)
 
-variable_index(nodes, n, s::Symbol) = begin
+variable_index(nodes, n::Integer, s::Symbol) = begin
     first_idx = findfirst(ns -> ns == s, symbolsof(nodes[n]))
     if first_idx == nothing
         throw(StateError("Variable: $s not defined for node: $n"))
