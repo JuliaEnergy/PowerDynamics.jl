@@ -45,4 +45,7 @@ end
         #@test_nowarn sol(0.1, 1, :i)
         #@test_nowarn sol(0.1, :, :i)
         @test_nowarn sol([sol.dqsol.t[1], sol.dqsol.t[end]], :, :int, 3)
+
+        @test_throws BoundsError sol(0.1, 10, :u)
+        @test sol(0.1) isa State
 end

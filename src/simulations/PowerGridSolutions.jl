@@ -1,6 +1,6 @@
 using DiffEqBase: AbstractTimeseriesSolution
 using Lazy: @>>
-using RecipesBase
+using RecipesBase: @recipe
 using NetworkDynamics: StaticEdgeFunction
 
 
@@ -40,7 +40,6 @@ struct PowerGridSolution
         new(dqsol, powergrid)
     end
 end
-PowerGrid(sol::PowerGridSolution) = sol.powergrid
 TimeSeries(sol::PowerGridSolution) = sol.dqsol
 tspan(sol::PowerGridSolution) = (TimeSeries(sol).t[1], TimeSeries(sol).t[end])
 tspan(sol::PowerGridSolution, tres) = range(TimeSeries(sol).t[1], stop=TimeSeries(sol).t[end], length=tres)
@@ -49,11 +48,10 @@ tspan(sol::PowerGridSolution, tres) = range(TimeSeries(sol).t[1], stop=TimeSerie
 (sol::PowerGridSolution)(::Type{Val{:initial}}) = sol(tspan(sol)[1])
 (sol::PowerGridSolution)(::Type{Val{:final}}) = sol(tspan(sol)[2])
 
-# TODO: check this one
-#(sol::PowerGridSolution)(t::Number) = begin
-#    t = convert(Time, t)
-#    State(GridDynamics(sol), convert(Array, TimeSeries(sol)(t)), t=t)
-#end
+
+(sol::PowerGridSolution)(t::Number) = begin
+    State(sol.powergrid, convert(Array, TimeSeries(sol)(t)))
+end
 
 (sol::PowerGridSolution)(t, ::Colon, sym::Symbol, args...; kwargs...) = sol(t, eachindex(sol.powergrid.nodes), sym, args...; kwargs...)
 (sol::PowerGridSolution)(t, n, sym::Symbol, args...) = begin
