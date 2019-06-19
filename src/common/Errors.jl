@@ -21,3 +21,7 @@ end
 struct OperationPointError <: PowerDynamicsError
     msg::String
 end
+
+struct GridSolutionError <: PowerDynamicsError
+    msg::String
+end

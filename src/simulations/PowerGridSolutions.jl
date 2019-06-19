@@ -1,7 +1,7 @@
 using DiffEqBase: AbstractTimeseriesSolution
 using Lazy: @>>
 using RecipesBase
-using NetworkDynamics
+using NetworkDynamics: StaticEdgeFunction
 
 
 """
@@ -89,7 +89,7 @@ end
 (sol::PowerGridSolution)(t, n, ::Type{Val{sym}}) where sym = sol(t, n, Val{:int}, sym)
 
 
-variable_index(nodes, n::AbstractArray, s::Symbol) = map(n -> variable_index(nodes, n, s), n)
+variable_index(nodes, n::AbstractArray, s) = map(n -> variable_index(nodes, n, s), n)
 
 startindex(nodes, n::AbstractArray) = map(n -> startindex(nodes, n), n)
 
@@ -144,8 +144,4 @@ end
     xlabel --> "t"
     t = tspan(sol, tres)
     t, tstransform(sol(t, n, sym, args...))
-end
-
-struct GridSolutionError <: PowerDynamicsError
-    msg::String
 end
