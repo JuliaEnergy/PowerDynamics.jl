@@ -1,0 +1,4 @@
+Bus Number,Bus Type,Bus Type Expl.,Base Voltage [kV],P_gen [100MW],Q_gen  [100 MVAr],P_load  [100MW],Q_load  [100 MVAr],Inertia,Damping,Generator Capacity
+1,G,G,69,2.32,0,0,0,5.148,2,615
+2,S,Slack Bus,69,0.4,-0.424,0.217,0.127,6.54,2,60
+4,L,Load,69,0,0,0.478,0,,,

@@ -1,7 +1,7 @@
 # Language & Conventions
 
 Generally, variables are miniscule (e.g. `u`, `i`, `ω`) and parameters are capitalized (e.g. `H`, `D`, `P`, `Ω`). As it is common to use greek letters for modeling equations and Julia supports
-Unicode, greek letters are used within the Code, e.g. `Ω` and `ω` in [`PowerDynBase.SwingEq`](@ref). If you don't want to use greek keyboard (which I am currently switching to) you can simply type the latex representating `\Omega` and Atom can complete it with `Ω` using Tab.
+Unicode, greek letters are used within the Code, e.g. `Ω` and `ω` in [`PowerDynamics.SwingEq`](@ref). If you don't want to use greek keyboard (which I am currently switching to) you can simply type the latex representating `\Omega` and Atom can complete it with `Ω` using Tab.
 
 ## List of symbols and corresponding names
 
@@ -39,7 +39,7 @@ Y^L_{ab} = \begin{cases}
 ```math
 {i_c}_a = \sum_{b} LY_{ab} u_b .
 ```
-- The complex power is calculated as (with ``^*`` as complex comjucation)
+- The complex power is calculated as (with ``^*`` as complex conjugation)
 ```math
 s_a = u_a \cdot {i_c}_a^*.
 ```

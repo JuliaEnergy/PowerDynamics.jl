@@ -1,9 +1,9 @@
 
 using Documenter
-using PowerDynBase, PowerDynSolve
+using PowerDynamics
 
 makedocs(
-    modules = [PowerDynBase, PowerDynSolve],
+    modules = [PowerDynamics],
     authors = "Tim Kittel and contributors.",
     linkcheck=true,
     sitename = "PowerDynamics.jl",

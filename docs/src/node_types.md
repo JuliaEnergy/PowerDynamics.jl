@@ -3,20 +3,18 @@
 The currently implementes node types are
 
 ```@eval
-using InteractiveUtils, PowerDynBase, Markdown
-nodetypes = subtypes(PowerDynBase.AbstractNodeParameters)
-join(["* [`$n`](@ref PowerDynBase.$n)" for n in nodetypes], "\n") |> Markdown.parse
+using InteractiveUtils, PowerDynamics, Markdown
+nodetypes = subtypes(PowerDynamics.AbstractNodeParameters)
+join(["* [`$n`](@ref PowerDynamics.$n)" for n in nodetypes], "\n") |> Markdown.parse
 ```
-
-They are all subtypes of [`PowerDynBase.AbstractNodeParameters`](@ref).
 
 ## Detailed Node Type Documentation
 
 ```@docs
-PowerDynBase.AbstractNodeParameters
+PowerDynamics.AbstractNodeParameters
 ```
 
 ```@autodocs
-Modules = [PowerDynBase]
-Filter = t -> typeof(t) === DataType && t !== PowerDynBase.AbstractNodeParameters && t <: PowerDynBase.AbstractNodeParameters
+Modules = [PowerDynamics]
+Filter = t -> typeof(t) === DataType
 ```

@@ -1,8 +1,8 @@
 # Error Types
 ```@docs
-PowerDynBase.PowerDynamicsError
-PowerDynBase.NodeDynamicsError
-PowerDynBase.GridDynamicsError
-PowerDynBase.StateError
-PowerDynSolve.GridSolutionError
+PowerDynamics.PowerDynamicsError
+PowerDynamics.NodeDynamicsError
+PowerDynamics.GridDynamicsError
+PowerDynamics.StateError
+PowerDynamics.GridSolutionError
 ```
