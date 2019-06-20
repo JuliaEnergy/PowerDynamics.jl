@@ -1,0 +1,53 @@
+## Documentation: http://docs.travis-ci.com/user/languages/julia/
+language: julia
+os:
+  - linux
+  # - osx
+julia:
+  - 1.0
+  - 1.1
+notifications:
+  email: false
+git:
+  depth: 99999999
+env:
+  global:
+    - JULIA_COVERAGE_VERSION='1.1'
+    - PYTHON=conda
+    - RED='\033[0;31m'
+    - GREEN='\033[0;32m'
+    - NOCOLOR='\033[0m'
+    - BOLD=$(tput bold)
+
+before_script:
+  - julia -e 'using Pkg;
+      Pkg.add(PackageSpec(name="MbedTLS", version="0.6.6"));
+      Pkg.pin(PackageSpec(name="MbedTLS", version="0.6.6"));
+      Pkg.update();'
+
+script:
+  - if [ $JULIA_COVERAGE_VERSION == $TRAVIS_JULIA_VERSION ]; then export PUSH_COVERAGE=true; else export PUSH_COVERAGE=false; fi
+    && echo -e "${GREEN}${BOLD}PUSH_COVERAGE=$PUSH_COVERAGE"
+    && julia --check-bounds=yes --color=yes --inline=no -e "using Pkg; Pkg.test(coverage=true)"
+    && julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; res=Codecov.process_folder();
+          if ENV["PUSH_COVERAGE"] == "true" Codecov.submit(res) end;
+          covered_lines, total_lines =  get_summary(res); println("covered_lines/total_lines = $covered_lines/$total_lines = $(covered_lines/total_lines)");'
+  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="Documenter", version="0.19"))'
+    && julia docs/make.jl
+
+# keep the below for testing reasons
+# script: echo "Julia $TRAVIS_JULIA_VERSION"
+
+jobs:
+  include:
+    - name: "Changelog Check"
+      if: type IN (pull_request)
+      language: minimal
+      before_install:
+      before_script:
+      script:
+        - git fetch origin master:master
+        # show all changed files for debugging
+        - git diff HEAD master --name-only
+        # check if CHANGELOG.md has been modified
+        - git diff HEAD master --name-only | grep ^CHANGELOG.md$ || (ret=$? && echo -e "${RED}${BOLD}You didn't provide the details of your change in CHANGELOG.md" && exit $ret)
