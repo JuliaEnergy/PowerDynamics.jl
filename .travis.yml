@@ -24,6 +24,8 @@ before_script:
       Pkg.add(PackageSpec(name="MbedTLS", version="0.6.6"));
       Pkg.pin(PackageSpec(name="MbedTLS", version="0.6.6"));
       Pkg.update();'
+  - julia --color=yes -e 'using Pkg; Pkg.add("Documenter")'
+  - julia --color=yes -e 'using Pkg; Pkg.update()'
 
 script:
   - if [ $JULIA_COVERAGE_VERSION == $TRAVIS_JULIA_VERSION ]; then export PUSH_COVERAGE=true; else export PUSH_COVERAGE=false; fi
@@ -32,8 +34,7 @@ script:
     && julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; res=Codecov.process_folder();
           if ENV["PUSH_COVERAGE"] == "true" Codecov.submit(res) end;
           covered_lines, total_lines =  get_summary(res); println("covered_lines/total_lines = $covered_lines/$total_lines = $(covered_lines/total_lines)");'
-  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="Documenter", version="0.19"))'
-    && julia docs/make.jl
+  - julia --color=yes docs/make.jl
 
 # keep the below for testing reasons
 # script: echo "Julia $TRAVIS_JULIA_VERSION"
