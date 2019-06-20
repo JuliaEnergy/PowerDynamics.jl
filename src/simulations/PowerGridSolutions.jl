@@ -1,6 +1,6 @@
 using DiffEqBase: AbstractTimeseriesSolution
 using Lazy: @>>
-using RecipesBase: @recipe
+using RecipesBase: @recipe, RecipesBase
 using NetworkDynamics: StaticEdgeFunction
 
 
