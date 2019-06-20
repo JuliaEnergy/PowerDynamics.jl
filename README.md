@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/JuliaEnergy/PowerDynBase.jl.svg?branch=master)](https://travis-ci.org/JuliaEnergy/PowerDynBase.jl)
+[![Build Status](https://travis-ci.org/JuliaEnergy/PowerDynBase.jl.svg?branch=master)](https://travis-ci.org/JuliaEnergy/PowerDynBase.jl/branches)
 [![codecov](https://codecov.io/gh/JuliaEnergy/PowerDynBase.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaEnergy/PowerDynBase.jl)
 [![Stable Docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliaenergy.github.io/PowerDynamics.jl/stable/)
 [![Dev Docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliaenergy.github.io/PowerDynamics.jl/dev/)
