@@ -20,10 +20,6 @@ env:
     - BOLD=$(tput bold)
 
 before_script:
-  - julia -e 'using Pkg;
-      Pkg.add(PackageSpec(name="MbedTLS", version="0.6.6"));
-      Pkg.pin(PackageSpec(name="MbedTLS", version="0.6.6"));
-      Pkg.update();'
   - julia --color=yes -e 'using Pkg; Pkg.add("Documenter")'
   - julia --color=yes -e 'using Pkg; Pkg.update()'
 
