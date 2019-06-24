@@ -8,7 +8,6 @@ LightGraphs
 LinearAlgebra
 Logging
 MacroTools
-Markdown
 MetaGraphs
 NLsolve
 NetworkDynamics
