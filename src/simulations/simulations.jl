@@ -69,7 +69,17 @@ end
 
 function (sc::ShortCircuit)(powergrid)
     line_list_power_drop = copy(powergrid.lines)
-    line_list_power_drop[sc.line_number] = 
+    healthy_line = line_list_power_drop[sc.line_number]
+
+    X = inv(healthy_line.Y)
+    Xg = inv(sc.short_circuit_admittance)
+
+    Xprime = X + (1. - sc.line_fraction) * sc.line_fraction * X * X / Xg
+    Xl_shunt = inv(1. - sc.line_fraction) * Xg + sc.line_fraction * X
+    Xr_shunt = inv(sc.line_fraction) * Xg + (1. - sc.line_fraction) * X
+
+    line_list_power_drop[sc.line_number] = PiModelLine(inv(Xprime), inv(Xl_shunt), inv(Xr_shunt))
+
     PowerGrid(powergrid.graph, powergrid.nodes, line_list_power_drop)
 end
 
