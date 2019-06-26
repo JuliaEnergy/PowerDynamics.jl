@@ -22,6 +22,8 @@ end
 end
 
 @Base.kwdef struct SinglePhaseShortCircuitToGround
+    #ToDo use from/to and automatically find the line
+    # what is the indexing of lines?
     line_number
     line_fraction
     short_circuit_admittance
