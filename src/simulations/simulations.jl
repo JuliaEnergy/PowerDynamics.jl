@@ -14,11 +14,20 @@ end
 end
 
 @Base.kwdef struct PowerDrop
-    percent
     node_number
-    t1
-    t2
-    t3
+    percent
+    t_prefault
+    t_fault
+    t_postfault
+end
+
+@Base.kwdef struct ShortCircuit
+    line_number
+    line_fraction
+    short_circuit_admittance
+    t_prefault
+    t_fault
+    t_postfault
 end
 
 struct Inc
@@ -54,16 +63,14 @@ end
 
 function (pd::PowerDrop)(powergrid)
     node_list_power_drop = copy(powergrid.nodes)
-    n = powergrid.nodes[pd.node_number]
-    node_list_power_drop[pd.node_number] = SwingEqLVS(
-        H=n.H,
-        P=n.P*pd.percent,
-        D=n.D,
-        Ω=n.Ω,
-        Γ=n.Γ,
-        V=n.V
-    )
+    node_list_power_drop[pd.node_number].P *= pd.percent
     PowerGrid(powergrid.graph, node_list_power_drop, powergrid.lines)
+end
+
+function (sc::ShortCircuit)(powergrid)
+    line_list_power_drop = copy(powergrid.lines)
+    line_list_power_drop[sc.line_number] = 
+    PowerGrid(powergrid.graph, powergrid.nodes, line_list_power_drop)
 end
 
 function simulate(p::Perturbation, powergrid, x0; timespan)
@@ -75,15 +82,16 @@ function simulate(lf::LineFault, powergrid, x0; timespan)
 end
 
 function simulate(pd::PowerDrop, powergrid, x0)
-    sol1 = solve(powergrid, x0, pd.t1)
+    sol1 = solve(powergrid, x0, pd.t_prefault)
     final_state1 = sol1(:final)
 
     g_power_reduction = pd(powergrid)
-    sol2 = solve(g_power_reduction, State(g_power_reduction, final_state1.vec), pd.t2)
+    sol2 = solve(g_power_reduction, State(g_power_reduction, final_state1.vec), pd.t_fault)
     final_state2 = sol2(:final)
 
-    sol3 = solve(powergrid, State(powergrid, final_state2.vec), pd.t3)
-    sol3
+    sol3 = solve(powergrid, State(powergrid, final_state2.vec), pd.t_postfault)
+
+    CompositePowerGridSolution([sol1, sol2, sol3], [powergrid, g_power_reduction, powergrid])
 end
 
 const iipfunc = true # is in-place function
