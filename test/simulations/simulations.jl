@@ -29,3 +29,21 @@ faulty_grid = line_fault(grid)
 
 @test length(faulty_grid.lines) == 1
 @test collect(edges(faulty_grid.graph)) == [Edge(1,3)]
+
+
+@testset "test PowerDrop simulation" begin
+    nodes = [SwingEqLVS(H=1., P=-1, D=1, Ω=50, Γ=20, V=1), SwingEqLVS(H=1., P=-1, D=1, Ω=50, Γ=20, V=1)]
+    graph = SimpleGraph(2)
+    add_edge!(graph, 1, 2);
+    lines = [StaticLine(Y=-im)]
+    grid = PowerGrid(graph, nodes, lines)
+    state = State(grid, rand(systemsize(grid)))
+
+    sol = simulate(PowerDrop(
+    percent = 0.9,
+    node_number = 1,
+    t1 = (0., 2.),
+    t2 = (2., 3.),
+    t3 = (3., 5.)), grid, state)
+    @test sol != nothing
+end
