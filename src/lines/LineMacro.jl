@@ -52,7 +52,7 @@ function create_struct(name, parameters)
 end
 
 function create_showdefinition(exp, name)
-    mainexstr = "$(copy(exp)|>rmlines|>prettify)"
+    mainexstr = "$(copy(exp)|>rmlines|> MacroTools.striplines)"
     return :(showdefinition(io::IO, ::Type{$name}) = println(io, $mainexstr))
 end
 
