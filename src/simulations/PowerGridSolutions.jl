@@ -100,13 +100,11 @@ struct CompositePowerGridSolution
     dqsol_vec::AbstractVector{AbstractTimeseriesSolution}
     powergrid_vec::AbstractVector{PowerGrid}
 end
-
-# Don't do this but call the plotting routine with plot! on 
+# Call the plotting routine with plot! on
 # each PowerGridSolution seperately.
-
-#TimeSeries(sol::CompositePowerGridSolution) = vcat([dqsol.u for dqsol in sol.dqsol_vec]...)
-#tspan(sol::CompositePowerGridSolution) = (sol.dqsol_vec[1].t[1], sol.dqsol_vec[end].t[end])
-#tspan(sol::CompositePowerGridSolution, tres) = range(sol.dqsol_vec[1].t[1], stop=sol.dqsol_vec[end].t[end], length=tres)
+TimeSeries(sol::CompositePowerGridSolution) = vcat([dqsol.u for dqsol in sol.dqsol_vec]...)
+tspan(sol::CompositePowerGridSolution) = (sol.dqsol_vec[1].t[1], sol.dqsol_vec[end].t[end])
+tspan(sol::CompositePowerGridSolution, tres) = range(sol.dqsol_vec[1].t[1], stop=sol.dqsol_vec[end].t[end], length=tres)
 
 
 variable_index(nodes, n::AbstractArray, s) = map(n -> variable_index(nodes, n, s), n)
@@ -164,4 +162,12 @@ end
     xlabel --> "t"
     t = tspan(sol, tres)
     t, tstransform(sol(t, n, sym, args...))
+end
+
+# this will not work, kwarge.g. tspan should be checked?
+function plot(sol::CompositePowerGridSolution)
+    plot(sol.dqsol_vec[1])
+    for k in 2:length(sol.dqsol_vec)
+        plot!(sol.dqsol_vec[k])
+    end
 end

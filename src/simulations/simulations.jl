@@ -21,7 +21,7 @@ end
     t_postfault
 end
 
-@Base.kwdef struct ShortCircuit
+@Base.kwdef struct SinglePhaseShortCircuitToGround
     line_number
     line_fraction
     short_circuit_admittance
@@ -66,7 +66,7 @@ function (pd::PowerDrop)(powergrid)
     PowerGrid(powergrid.graph, node_list_power_drop, powergrid.lines)
 end
 
-function (sc::ShortCircuit)(powergrid)
+function (sc::SinglePhaseShortCircuitToGround)(powergrid)
     line_list_power_drop = copy(powergrid.lines)
     healthy_line = line_list_power_drop[sc.line_number]
 
@@ -101,6 +101,19 @@ function simulate(pd::PowerDrop, powergrid, x0)
     sol3 = solve(powergrid, State(powergrid, final_state2.vec), pd.t_postfault)
 
     CompositePowerGridSolution([sol1, sol2, sol3], [powergrid, g_power_reduction, powergrid])
+end
+
+function simulate(sc::SinglePhaseShortCircuitToGround, powergrid, x0)
+    sol1 = solve(powergrid, x0, sc.t_prefault)
+    final_state1 = sol1(:final)
+
+    g_faulted_line = sc(powergrid)
+    sol2 = solve(g_faulted_line, State(g_faulted_line, final_state1.vec), sc.t_fault)
+    final_state2 = sol2(:final)
+
+    sol3 = solve(powergrid, State(powergrid, final_state2.vec), sc.t_postfault)
+
+    CompositePowerGridSolution([sol1, sol2, sol3], [powergrid, g_faulted_line, powergrid])
 end
 
 const iipfunc = true # is in-place function
