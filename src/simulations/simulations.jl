@@ -1,4 +1,5 @@
-using OrdinaryDiffEq: ODEProblem, Rodas4
+using DifferentialEquations: ODEProblem, Rodas4
+using DiffEqBase: init, check_error!, step!, reinit!, auto_dt_reset!
 using LightGraphs: rem_edge!
 import DiffEqBase: solve
 
@@ -27,9 +28,8 @@ end
     line_number
     line_fraction
     short_circuit_admittance
-    t_prefault
     t_fault
-    t_postfault
+    t_clearing
 end
 
 struct Inc
@@ -87,6 +87,8 @@ function (sc::SinglePhaseShortCircuitToGround)(powergrid)
     PowerGrid(powergrid.graph, powergrid.nodes, line_list_power_drop)
 end
 
+const iipfunc = true # is in-place function
+
 function simulate(p::Perturbation, powergrid, x0; timespan)
     solve(powergrid, p(x0), timespan);
 end
@@ -108,20 +110,53 @@ function simulate(pd::PowerDrop, powergrid, x0)
     CompositePowerGridSolution([sol1, sol2, sol3], [powergrid, g_power_reduction, powergrid])
 end
 
-function simulate(sc::SinglePhaseShortCircuitToGround, powergrid, x0)
-    sol1 = solve(powergrid, x0, sc.t_prefault)
-    final_state1 = sol1(:final)
+function simulate(sc::SinglePhaseShortCircuitToGround, powergrid, x0; timespan)
+    @assert first(timespan) <= sc.t_fault "fault cannot happen in the past"
+    @assert sc.t_clearing <= last(timespan) "fault cannot end in the future"
 
-    g_faulted_line = sc(powergrid)
-    sol2 = solve(g_faulted_line, State(g_faulted_line, final_state1.vec), sc.t_fault)
-    final_state2 = sol2(:final)
+    rhs! = ode_function(powergrid)
+    fault_rhs! = ode_function(sc(powergrid))
 
-    sol3 = solve(powergrid, State(powergrid, final_state2.vec), sc.t_postfault)
+    problem = ODEProblem{iipfunc}(rhs!, x0.vec, timespan)
+    integrator = init(problem, Rodas4(autodiff=false))
 
-    CompositePowerGridSolution([sol1, sol2, sol3], [powergrid, g_faulted_line, powergrid])
+    # step to fault (skip if the simulation starts at sc.t_fault)
+    #if first(timespan) < sc.t_fault
+
+    println("start")
+
+    step!(integrator, sc.t_fault, true)
+    check_error!(integrator)
+
+    println("change rhs")
+    integrator.f = fault_rhs!
+    reinit!(integrator, integrator.u, t0=sc.t_fault, tf=sc.t_clearing, erase_sol=false, reset_dt=true)
+    auto_dt_reset!(integrator)
+
+    step!(integrator, sc.t_clearing, true)
+    check_error!(integrator)
+
+    println("change rhs")
+    integrator.f = rhs!
+    reinit!(integrator, integrator.u, t0=sc.t_clearing, tf=last(timespan), erase_sol=false, reset_dt=true)
+    auto_dt_reset!(integrator)
+
+    step!(integrator, last(timespan), true)
+    check_error!(integrator)
+
+    return integrator.sol
+
+    # sol1 = solve(powergrid, x0, sc.t_prefault)
+    # final_state1 = sol1(:final)
+    #
+    # g_faulted_line = sc(powergrid)
+    # sol2 = solve(g_faulted_line, State(g_faulted_line, final_state1.vec), sc.t_fault)
+    # final_state2 = sol2(:final)
+    #
+    # sol3 = solve(powergrid, State(powergrid, final_state2.vec), sc.t_postfault)
+    #
+    # CompositePowerGridSolution([sol1, sol2, sol3], [powergrid, g_faulted_line, powergrid])
 end
-
-const iipfunc = true # is in-place function
 
 function solve(pg::PowerGrid, x0, timespan)
     problem = ODEProblem{iipfunc}(rhs(pg),x0.vec,timespan)
