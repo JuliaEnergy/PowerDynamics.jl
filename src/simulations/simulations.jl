@@ -63,6 +63,9 @@ function (p::Perturbation)(op)
 end
 
 function (pd::PowerDrop)(powergrid)
+    # ToDo type SlackAlgebraic has no field P
+    # PROBLEM: node types are immutable. how to create a copy?
+    # fieldnames(::NodeType) is not defined
     node_list_power_drop = copy(powergrid.nodes)
     node_list_power_drop[pd.node_number].P *= pd.percent
     PowerGrid(powergrid.graph, node_list_power_drop, powergrid.lines)
@@ -79,7 +82,7 @@ function (sc::SinglePhaseShortCircuitToGround)(powergrid)
     Xl_shunt = inv(1. - sc.line_fraction) * Xg + sc.line_fraction * X
     Xr_shunt = inv(sc.line_fraction) * Xg + (1. - sc.line_fraction) * X
 
-    line_list_power_drop[sc.line_number] = PiModelLine(inv(Xprime), inv(Xl_shunt), inv(Xr_shunt))
+    line_list_power_drop[sc.line_number] = PiModelLine(y=inv(Xprime), y_shunt_km=inv(Xl_shunt), y_shunt_mk=inv(Xr_shunt))
 
     PowerGrid(powergrid.graph, powergrid.nodes, line_list_power_drop)
 end
@@ -131,4 +134,5 @@ export Dec
 export LineFault
 export Perturbation
 export PowerDrop
+export SinglePhaseShortCircuitToGround
 export simulate
