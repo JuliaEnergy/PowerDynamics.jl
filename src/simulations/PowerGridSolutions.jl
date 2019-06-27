@@ -88,7 +88,7 @@ end
 
 """
     struct CompositePowerGridSolution
-        dqsol_vec::AbstractVector{AbstractTimeseriesSolution}
+        pgsol_vec::AbstractVector{AbstractTimeseriesSolution}
         powergrid_vec::AbstractVector{PowerGrid}
     end
 This data structure collects several `PowerGridSolution objects` to conveniently
@@ -97,15 +97,21 @@ Normally, it is not created by hand but returned from `simulation` methods
 with time-dependent perturbations.
 """
 struct CompositePowerGridSolution
-    dqsol_vec::AbstractArray{PowerGridSolution,1}
+    pgsol_vec::AbstractArray{PowerGridSolution,1}
     powergrid_vec::AbstractArray{PowerGrid,1}
 end
 # Call the plotting routine with plot! on
 # each PowerGridSolution seperately.
-TimeSeries(sol::CompositePowerGridSolution) = vcat([dqsol.u for dqsol in sol.dqsol_vec]...)
-tspan(sol::CompositePowerGridSolution) = (sol.dqsol_vec[1].t[1], sol.dqsol_vec[end].t[end])
-tspan(sol::CompositePowerGridSolution, tres) = range(sol.dqsol_vec[1].t[1], stop=sol.dqsol_vec[end].t[end], length=tres)
-
+TimeSeries(sol::CompositePowerGridSolution) = vcat([pgsol.dqsol.u for pgsol in sol.pgsol_vec]...)
+tspan(sol::CompositePowerGridSolution) = (sol.pgsol_vec[1].dqsol.t[1], sol.pgsol_vec[end].dqsol.t[end])
+tspan(sol::CompositePowerGridSolution, tres) = range(sol.pgsol_vec[1].dqsol.t[1], stop=sol.pgsol_vec[end].dqsol.t[end], length=tres)
+function timepoints(sol::CompositePowerGridSolution)
+    timepoints = []
+    for pgs in sol.pgsol_vec
+        append!(timepoints, pgs.dqsol.t)
+    end
+    return timepoints
+end
 
 variable_index(nodes, n::AbstractArray, s) = map(n -> variable_index(nodes, n, s), n)
 
