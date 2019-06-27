@@ -1,6 +1,6 @@
-using DifferentialEquations: ODEProblem, Rodas4
-using DiffEqBase: init, check_error!, step!, reinit!, auto_dt_reset!
-using LightGraphs: rem_edge!
+using DifferentialEquations: ODEProblem, Rodas4, init, solve!, reinit!, savevalues!
+# using DiffEqBase: check_error!
+using LightGraphs: rem_edge!, edges, Edge
 import DiffEqBase: solve
 
 @Base.kwdef struct Perturbation
@@ -25,7 +25,8 @@ end
 @Base.kwdef struct SinglePhaseShortCircuitToGround
     #ToDo use from/to and automatically find the line
     # what is the indexing of lines?
-    line_number
+    from
+    to
     line_fraction
     short_circuit_admittance
     t_fault
@@ -73,8 +74,10 @@ function (pd::PowerDrop)(powergrid)
 end
 
 function (sc::SinglePhaseShortCircuitToGround)(powergrid)
+
+    line_number = findfirst([e==Edge(sc.from, sc.to) for e in edges(powergrid.graph)])
     line_list_power_drop = copy(powergrid.lines)
-    healthy_line = line_list_power_drop[sc.line_number]
+    healthy_line = line_list_power_drop[line_number]
 
     X = inv(healthy_line.Y)
     Xg = inv(sc.short_circuit_admittance)
@@ -83,7 +86,7 @@ function (sc::SinglePhaseShortCircuitToGround)(powergrid)
     Xl_shunt = inv(1. - sc.line_fraction) * Xg + sc.line_fraction * X
     Xr_shunt = inv(sc.line_fraction) * Xg + (1. - sc.line_fraction) * X
 
-    line_list_power_drop[sc.line_number] = PiModelLine(y=inv(Xprime), y_shunt_km=inv(Xl_shunt), y_shunt_mk=inv(Xr_shunt))
+    line_list_power_drop[line_number] = PiModelLine(y=inv(Xprime), y_shunt_km=inv(Xl_shunt), y_shunt_mk=inv(Xr_shunt))
 
     PowerGrid(powergrid.graph, powergrid.nodes, line_list_power_drop)
 end
@@ -112,40 +115,30 @@ function simulate(pd::PowerDrop, powergrid, x0)
 end
 
 function simulate(sc::SinglePhaseShortCircuitToGround, powergrid, x0; timespan)
-    @assert first(timespan) <= sc.t_fault "fault cannot happen in the past"
+    @assert first(timespan) <= sc.t_fault "fault cannot begin in the past"
     @assert sc.t_clearing <= last(timespan) "fault cannot end in the future"
 
-    rhs! = ode_function(powergrid)
-    fault_rhs! = ode_function(sc(powergrid))
+    problem = ODEProblem{iipfunc}(ode_function(sc(powergrid)), x0.vec, (first(timespan), sc.t_clearing))
+    fault_integrator = init(problem, Rodas4(autodiff=false))
 
-    problem = ODEProblem{iipfunc}(rhs!, x0.vec, timespan)
+    reinit!(fault_integrator, x0.vec, t0=sc.t_fault, tf=sc.t_clearing, erase_sol=false)
+    #savevalues!(fault_integrator)
+    solve!(fault_integrator)
+
+    problem = ODEProblem{iipfunc}(ode_function(powergrid), fault_integrator.u, (sc.t_clearing, last(timespan)))
     integrator = init(problem, Rodas4(autodiff=false))
 
-    # step to fault (skip if the simulation starts at sc.t_fault)
-    #if first(timespan) < sc.t_fault
+    # Now the trick: copy solution object to new integrator and
+    # make sure the counters are updated, otherwise sol is overwritten in the
+    # next step.
+    integrator.sol = fault_integrator.sol
+    integrator.saveiter = fault_integrator.saveiter
+    integrator.saveiter_dense = fault_integrator.saveiter_dense
+    integrator.success_iter = fault_integrator.success_iter
 
-    println("start")
+    solve!(integrator)
 
-    step!(integrator, sc.t_fault, true)
-    check_error!(integrator)
-
-    println("change rhs")
-    integrator.f = fault_rhs!
-    reinit!(integrator, integrator.u, t0=sc.t_fault, tf=sc.t_clearing, erase_sol=false, reset_dt=true)
-    auto_dt_reset!(integrator)
-
-    step!(integrator, sc.t_clearing, true)
-    check_error!(integrator)
-
-    println("change rhs")
-    integrator.f = rhs!
-    reinit!(integrator, integrator.u, t0=sc.t_clearing, tf=last(timespan), erase_sol=false, reset_dt=true)
-    auto_dt_reset!(integrator)
-
-    step!(integrator, last(timespan), true)
-    check_error!(integrator)
-
-    return integrator.sol
+    return PowerGridSolution(integrator.sol, powergrid)
 
     # sol1 = solve(powergrid, x0, sc.t_prefault)
     # final_state1 = sol1(:final)
