@@ -97,8 +97,8 @@ Normally, it is not created by hand but returned from `simulation` methods
 with time-dependent perturbations.
 """
 struct CompositePowerGridSolution
-    dqsol_vec::AbstractVector{AbstractTimeseriesSolution}
-    powergrid_vec::AbstractVector{PowerGrid}
+    dqsol_vec::AbstractArray{PowerGridSolution,1}
+    powergrid_vec::AbstractArray{PowerGrid,1}
 end
 # Call the plotting routine with plot! on
 # each PowerGridSolution seperately.
@@ -162,12 +162,4 @@ end
     xlabel --> "t"
     t = tspan(sol, tres)
     t, tstransform(sol(t, n, sym, args...))
-end
-
-# this will not work, kwarge.g. tspan should be checked?
-function plot(sol::CompositePowerGridSolution)
-    plot(sol.dqsol_vec[1])
-    for k in 2:length(sol.dqsol_vec)
-        plot!(sol.dqsol_vec[k])
-    end
 end

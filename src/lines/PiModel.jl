@@ -6,7 +6,7 @@ function PiModel(y, y_shunt_km, y_shunt_mk, t_km, t_mk)
     Assumptions:
     * the line admittance is symmetric
     """
-    Π = spzeros(Complex{Float64}, 2, 2)
+    Π = zeros(Complex{Float64}, 2, 2)
     Π[1, 1] = abs2(t_km) * (y + y_shunt_km)
     Π[1, 2] = - conj(t_km) * t_mk * y
     Π[2, 1] = - conj(t_mk) * t_km * y
