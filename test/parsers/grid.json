@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "type": "SwingEq",
+      "params":
+        {
+          "H": 1,
+          "P": 2,
+          "D": 3,
+          "Ω": 12
+        }
+    },
+    {
+      "type": "SlackAlgebraic",
+      "params":
+        {
+          "U": 1
+        }
+    }
+  ],
+  "lines": [
+    {
+      "type": "StaticLine",
+      "params": {
+        "from": 1,
+        "to": 2,
+        "Y": {
+          "r": 0.1,
+          "i": 5.0
+        }
+      }
+    }
+  ]
+}

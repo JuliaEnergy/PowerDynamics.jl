@@ -31,9 +31,8 @@ end
 
 function (lf::LineFault)(powergrid)
     @assert lf.from < lf.to "order important to remove the line from powergrid"
-    graph_copy = copy(powergrid.graph)
-    rem_edge!(graph_copy, lf.from, lf.to)
-    PowerGrid(graph_copy)
+    filtered_lines = filter(l -> (l.from !=lf.from || l.to !=lf.to), copy(powergrid.lines))
+    PowerGrid(powergrid.nodes, filtered_lines)
 end
 
 function (p::Perturbation)(op)
@@ -55,7 +54,7 @@ end
 const iipfunc = true # is in-place function
 
 function solve(pg::PowerGrid, x0, timespan)
-    problem = ODEProblem{iipfunc}(ode_function(pg),x0.vec,timespan)
+    problem = ODEProblem{iipfunc}(rhs(pg),x0.vec,timespan)
     solution = solve(problem, Rodas4(autodiff=false))
     PowerGridSolution(solution, pg)
 end

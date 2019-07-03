@@ -28,7 +28,7 @@ end
         nodes = [SwingEqLVS(H=1., P=-1, D=1, Ω=50, Γ=20, V=1), SwingEqLVS(H=1., P=-1, D=1, Ω=50, Γ=20, V=1)]
         graph = SimpleGraph(2)
         add_edge!(graph, 1, 2);
-        lines = [StaticLine(Y=-im)]
+        lines = [StaticLine(from=1, to=2, Y=-im)]
         grid = PowerGrid(graph, nodes, lines)
         state = State(grid, rand(systemsize(grid)))
         sol = solve(grid, state, (0.,10.))

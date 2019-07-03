@@ -1,16 +1,14 @@
 using CSV: getfield, CSV
 using DataFrames: names!, getfield
 using LightGraphs: SimpleGraph, add_edge!, add_vertices!, Edge
-using MetaGraphs: MetaGraph, set_prop!
 using Logging: @warn
 
 
 function read_network_from_csv(bus_file, line_file)
-    graph = MetaGraph(SimpleGraph())
+    graph = SimpleGraph()
     nodes = _read_nodes_from_csv(bus_file)
     num_nodes = length(nodes)
     add_vertices!(graph, num_nodes)
-    [set_prop!(graph, n, :node, nodes[n]) for n=1:num_nodes]
     lines = _read_lines_from_csv(line_file, graph, num_nodes)
     PowerGrid(graph, nodes, lines)
 end
@@ -57,10 +55,9 @@ function _read_lines_from_csv(filename, graph, num_nodes)
             continue
         end
         admittance = 1/(lines_df[line_index,:R] + im*lines_df[line_index,:X])
-        line = StaticLine(Y=admittance)
+        line = StaticLine(from=from, to=to, Y=admittance)
         push!(line_list, line)
         add_edge!(graph, from, to);
-        set_prop!(graph, Edge(from, to), :line, line)
     end
     line_list
 end

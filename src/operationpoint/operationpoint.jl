@@ -1,3 +1,4 @@
+#using DifferentialEquations: ODEFunction
 using NLsolve: nlsolve, converged
 
 struct RootRhs
@@ -7,10 +8,6 @@ function (rr::RootRhs)(x)
     dx = similar(x)
     rr.rhs(dx, x, nothing, 0.)
     dx
-end
-
-function RootRhs(of::ODEFunction)
-    RootRhs(of.f)
 end
 
 function find_operationpoint(pg::PowerGrid, ic_guess = nothing)
@@ -26,7 +23,7 @@ function find_operationpoint(pg::PowerGrid, ic_guess = nothing)
         ic_guess = ones(system_size)
     end
 
-    rr = RootRhs(ode_function(pg))
+    rr = RootRhs(rhs(pg))
     nl_res = nlsolve(rr, ic_guess)
     if converged(nl_res) == true
         return State(pg, nl_res.zero)

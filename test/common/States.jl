@@ -9,7 +9,7 @@ graph = SimpleGraph(3)
 nodes = [SlackAlgebraic(U=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1)]
 add_edge!(graph, 1, 2)
 add_edge!(graph, 1, 3)
-lines = [StaticLine(Y=Y) for e in edges(graph)]
+lines = [StaticLine(from=e.src, to=e.dst, Y=Y) for e in edges(graph)]
 grid = PowerGrid(graph, nodes, lines)
 @syms u_Sl u_Sw1 u_Sw2
 @syms omega1 omega2 real=true

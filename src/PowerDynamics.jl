@@ -11,6 +11,7 @@ include("common/PowerGrid.jl")
 include("common/States.jl")
 
 include("parsers/CSVParser.jl")
+include("parsers/JsonParser.jl")
 
 # all possible node dynamics
 include("nodes/NodeMacro.jl")
@@ -53,7 +54,7 @@ export find_operationpoint
 
 export read_network_from_csv
 export PowerGrid
-export ode_function
+export rhs
 export systemsize
 export symbolsof
 export total_current

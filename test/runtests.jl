@@ -21,6 +21,7 @@ testlist = [
     ("simulations/simulations.jl", "Simulation Tests"),
     ("operationpoint/operationpoint.jl", "operationpoint Tests"),
     ("parsers/CSVParser.jl", "CSVParser Tests"),
+    ("parsers/JsonParser.jl", "JsonParser Tests")
 ]
 @testset "All Tests" begin
     @testset "$desc" for (file, desc) in testlist

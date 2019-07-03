@@ -2,7 +2,7 @@ using Test
 using PowerDynamics
 using NetworkDynamics
 
-line = StaticLine(Y=10*im)
+line = StaticLine(from=1, to=2, Y=10*im)
 edge = construct_edge(line)
 
 @testset "LineMacro construct_edge should return StaticEdge" begin
