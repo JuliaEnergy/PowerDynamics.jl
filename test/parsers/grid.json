@@ -46,6 +46,99 @@
         {
           "U": 10
         }
+    },
+    {
+      "type": "PQAlgebraic",
+      "params":
+        {
+          "S": {
+            "re": 0,
+            "im": 10
+          }
+        }
+    },
+    {
+      "type": "PVAlgebraic",
+      "params":
+        {
+          "P": 10,
+          "V": 120
+        }
+    },
+    {
+      "type": "VSIMinimal",
+      "params":
+        {
+          "τ_P":1,
+          "τ_Q":2,
+          "K_P":3,
+          "K_Q":4,
+          "V_r":5,
+          "P":6,
+          "Q":7
+        }
+    },
+    {
+      "type": "VSIVoltagePT1",
+      "params":
+        {
+          "τ_v":1,
+          "τ_P":2,
+          "τ_Q":3,
+          "K_P":4,
+          "K_Q":5,
+          "V_r":6,
+          "P":7,
+          "Q":8
+        }
+    },
+    {
+      "type": "CSIMinimal",
+      "params":
+        {
+          "I_r":1
+        }
+    },
+    {
+      "type": "ExponentialRecoveryLoad",
+      "params":
+        {
+          "P0":1,
+          "Q0":2,
+          "Nps":3,
+          "Npt":4,
+          "Nqs":5,
+          "Nqt":6,
+          "Tp":7,
+          "Tq":8,
+          "V0":9
+        }
+    },
+    {
+      "type": "FourthOrderEqGovernorExciterAVR",
+      "params":
+        {
+          "H":1,
+          "P":2,
+          "D":3,
+          "Ω":4,
+          "T_d_dash":5,
+          "T_q_dash":6,
+          "X_q_dash":7 ,
+          "X_d_dash":8,
+          "X_d":9,
+          "X_q":10,
+          "T_e":11,
+          "T_a":12,
+          "T_f":13,
+          "K_e":14,
+          "K_a":15,
+          "K_f":16,
+          "V_ref":17,
+          "R_d":18,
+          "T_sv":19,
+          "T_ch":20
+        }
     }
   ],
   "lines": [
