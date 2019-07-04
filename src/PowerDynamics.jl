@@ -10,6 +10,7 @@ include("common/Helpers.jl")
 include("common/PowerGrid.jl")
 include("common/States.jl")
 
+include("parsers/Format.jl")
 include("parsers/CSVParser.jl")
 include("parsers/JsonParser.jl")
 

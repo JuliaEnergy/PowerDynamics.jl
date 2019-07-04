@@ -12,10 +12,39 @@
         }
     },
     {
+      "type": "SwingEqLVS",
+      "params":
+        {
+          "H": 1,
+          "P": 2,
+          "D": 3,
+          "Ω": 12,
+          "Γ": 13,
+          "V": 14
+        }
+    },
+    {
+      "type": "FourthOrderEq",
+      "params":
+        {
+          "H": 1,
+          "P": 2,
+          "D": 3,
+          "Ω": 12,
+          "E_f": 13,
+          "T_d_dash": 14,
+          "T_q_dash": 15,
+          "X_q_dash": 16,
+          "X_d_dash": 17,
+          "X_d": 18,
+          "X_q": 19
+        }
+    },
+    {
       "type": "SlackAlgebraic",
       "params":
         {
-          "U": 1
+          "U": 10
         }
     }
   ],
@@ -26,9 +55,22 @@
         "from": 1,
         "to": 2,
         "Y": {
-          "r": 0.1,
-          "i": 5.0
+          "re": 0.1,
+          "im": 5.0
         }
+      }
+    },
+    {
+      "type": "PiModelLine",
+      "params": {
+        "from": 1,
+        "to": 3,
+        "y": {
+          "re": 0.1,
+          "im": 5.0
+        },
+        "y_shunt_km": 200,
+        "y_shunt_mk": 300
       }
     }
   ]
