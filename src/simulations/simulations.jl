@@ -1,4 +1,4 @@
-using DifferentialEquations: ODEProblem, Rodas4
+using OrdinaryDiffEq: ODEProblem, Rodas4
 using LightGraphs: rem_edge!
 import DiffEqBase: solve
 

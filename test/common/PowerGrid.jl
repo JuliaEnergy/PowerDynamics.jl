@@ -1,7 +1,7 @@
 using Test: @test, @testset
 using PowerDynamics: SlackAlgebraic, SwingEqLVS, PowerGrid
 using LightGraphs: edges, Edge, nv, ne
-using DifferentialEquations: ODEFunction
+using OrdinaryDiffEq: ODEFunction
 
 
 nodes = [SlackAlgebraic(U=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1)]
