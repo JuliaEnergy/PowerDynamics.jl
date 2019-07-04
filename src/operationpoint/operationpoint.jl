@@ -1,4 +1,3 @@
-#using DifferentialEquations: ODEFunction
 using NLsolve: nlsolve, converged
 
 struct RootRhs
