@@ -1,4 +1,4 @@
-using PowerDynamics: read, write, Json
+using PowerDynamics: read_powergrid, write_powergrid, Json
 using Test: @test
 
 expected_swing_eq = SwingEq(H=1, P=2, D=3, Ω=12)
@@ -24,7 +24,7 @@ expected_pq, expected_pv, expected_vsi_minimal, expected_vsi_voltage_pt1, expect
 expected_exponential_recov_load, expected_fourth_order_eq_avr]
 expected_lines = [expected_static_line, expected_pimodel_line]
 
-grid = read(joinpath(@__DIR__, "grid.json"), Json)
+grid = read_powergrid(joinpath(@__DIR__, "grid.json"), Json)
 @test grid.nodes == expected_nodes
 @test grid.lines == expected_lines
 
@@ -32,10 +32,10 @@ target_dir = "../target"
 export_file = joinpath(target_dir,"grid_export.json")
 mkpath(target_dir)
 
-write(grid, export_file, Json)
+write_powergrid(grid, export_file, Json)
 
 # complete the cycle and read back in
-grid = read(export_file, Json)
+grid = read_powergrid(export_file, Json)
 
 @test grid.nodes == expected_nodes
 @test grid.lines == expected_lines

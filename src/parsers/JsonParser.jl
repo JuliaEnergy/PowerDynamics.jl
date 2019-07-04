@@ -5,14 +5,14 @@ using Logging: @warn
 
 abstract type Json <: Format end
 
-function read(file, ::Type{Json})
+function read_powergrid(file, ::Type{Json})
     json = parsefile(file; dicttype=Dict, inttype=Int64, use_mmap=true)
     nodes = get(json, "nodes", []) |> convert_nodes
     lines = get(json, "lines", []) |> convert_lines
     PowerGrid(nodes, lines)
 end
 
-function write(pg::PowerGrid, file, ::Type{Json})
+function write_powergrid(pg::PowerGrid, file, ::Type{Json})
     json_nodes = map(write_type, pg.nodes)
     json_lines = map(write_type, pg.lines)
     json_dict = Dict("version" => "1","nodes" => json_nodes, "lines" => json_lines)
@@ -90,4 +90,4 @@ end
 
 typedict(x) = Dict(fn => getfield(x, fn) for fn ∈ fieldnames(typeof(x)))
 
-export read
+export read_powergrid, write_powergrid, Json
