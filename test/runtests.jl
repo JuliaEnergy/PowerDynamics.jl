@@ -20,7 +20,6 @@ testlist = [
     ("simulations/PowerGridSolutions.jl", "PowerGridSolutions Tests"),
     ("simulations/simulations.jl", "Simulation Tests"),
     ("operationpoint/operationpoint.jl", "operationpoint Tests"),
-    ("parsers/CSVParser.jl", "CSVParser Tests"),
     ("parsers/JsonParser.jl", "JsonParser Tests")
 ]
 @testset "All Tests" begin

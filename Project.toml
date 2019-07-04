@@ -4,8 +4,6 @@ authors = ["Tim Kittel <tim.kittel@elena-international.com>"]
 version = "2.0.0"
 
 [deps]
-CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"

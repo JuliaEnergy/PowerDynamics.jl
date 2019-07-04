@@ -11,7 +11,6 @@ include("common/PowerGrid.jl")
 include("common/States.jl")
 
 include("parsers/Format.jl")
-include("parsers/CSVParser.jl")
 include("parsers/JsonParser.jl")
 
 # all possible node dynamics
@@ -53,7 +52,6 @@ export convert, promote_rule # only so the autodocs work properly
 
 export find_operationpoint
 
-export read_network_from_csv
 export PowerGrid
 export rhs
 export systemsize
