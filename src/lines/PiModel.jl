@@ -1,3 +1,5 @@
+using SparseArrays
+
 function PiModel(y, y_shunt_km, y_shunt_mk, t_km, t_mk)
     """
     Implementation of the unified branch model.
