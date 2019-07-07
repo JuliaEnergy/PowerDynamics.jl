@@ -31,6 +31,8 @@ include("nodes/RLCLoad.jl")
 include("lines/LineMacro.jl")
 include("lines/StaticLine.jl")
 include("lines/PiModelLine.jl")
+include("lines/PiModel.jl")
+include("lines/Transformer.jl")
 
 include("operationpoint/operationpoint.jl")
 
