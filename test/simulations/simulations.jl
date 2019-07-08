@@ -1,5 +1,6 @@
 using Test: @test
 using LightGraphs: SimpleGraph, add_edge!, edges, Edge
+using PowerDynamics: SlackAlgebraic, SwingEqLVS, StaticLine, Perturbation, Inc, Dec, LineFault
 
 Y = 0 + 5*im
 graph = SimpleGraph(3)

@@ -1,5 +1,5 @@
 using Test: @test, @testset, @test_nowarn
-using PowerDynamics: variable_index, startindex, solve, tspan
+using PowerDynamics: variable_index, startindex, solve, tspan, systemsize, SwingEqLVS
 
 import PowerDynamics.symbolsof
 import PowerDynamics.dimension

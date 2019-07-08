@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "type": "Foo",
+      "params":{}
+    }
+  ],
+  "lines": []
+}

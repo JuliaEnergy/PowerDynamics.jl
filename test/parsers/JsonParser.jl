@@ -39,3 +39,7 @@ grid = read_powergrid(export_file, Json)
 
 @test grid.nodes == expected_nodes
 @test grid.lines == expected_lines
+
+
+@test_throws ArgumentError read_powergrid(joinpath(@__DIR__, "grid_with_invalid_type.json"), Json)
+@test_throws UndefKeywordError read_powergrid(joinpath(@__DIR__, "grid_with_invalid_params.json"), Json)

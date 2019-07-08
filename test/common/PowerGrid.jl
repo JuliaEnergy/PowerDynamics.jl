@@ -1,5 +1,5 @@
 using Test: @test, @testset
-using PowerDynamics: SlackAlgebraic, SwingEqLVS, PowerGrid
+using PowerDynamics: SlackAlgebraic, SwingEqLVS, PowerGrid, systemsize, rhs
 using LightGraphs: edges, Edge, nv, ne
 using OrdinaryDiffEq: ODEFunction
 
