@@ -17,6 +17,7 @@ testlist = [
     ("nodes/RLCLoad.jl", "RLCLoad Node Tests"),
     ("lines/StaticLine.jl", "StaticLine tests"),
     ("lines/PiModelLine.jl", "PiModelLine tests"),
+    ("lines/LineMacro.jl", "LineMacro tests"),
     ("common/PowerGrid.jl", "PowerGrid Tests"),
     ("common/States.jl", "States Tests"),
     ("simulations/PowerGridSolutions.jl", "PowerGridSolutions Tests"),
