@@ -5,7 +5,7 @@ using PowerDynamics: RLCLoad, construct_vertex, symbolsof
 include("NodeTestBase.jl")
 
 @testset "RLCLoad" begin
-    @syms R,L,C real=true
+    @syms R L C positive=true
 
     pv = RLCLoad(R=R, L=L, C=C)
     pv_vertex = construct_vertex(pv)
