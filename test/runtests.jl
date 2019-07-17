@@ -14,13 +14,14 @@ testlist = [
     ("nodes/CurrentSourceInverterMinimal.jl", "CurrentSourceInverterMinimal Node Tests"),
     ("nodes/ExponentialRecoveryLoad.jl", "ExponentialRecoveryLoad Node Tests"),
     ("nodes/FourthOrderEqGovernorExciterAVR.jl", "FourthOrderEqGovernorExciterAVR Node Tests"),
-    ("lines/LineMacro.jl", "LineMacro tests"),
+    ("lines/StaticLine.jl", "StaticLine tests"),
+    ("lines/PiModelLine.jl", "PiModelLine tests"),
     ("common/PowerGrid.jl", "PowerGrid Tests"),
     ("common/States.jl", "States Tests"),
     ("simulations/PowerGridSolutions.jl", "PowerGridSolutions Tests"),
     ("simulations/simulations.jl", "Simulation Tests"),
     ("operationpoint/operationpoint.jl", "operationpoint Tests"),
-    ("parsers/CSVParser.jl", "CSVParser Tests"),
+    ("parsers/JsonParser.jl", "JsonParser Tests")
 ]
 @testset "All Tests" begin
     @testset "$desc" for (file, desc) in testlist

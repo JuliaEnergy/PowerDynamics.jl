@@ -9,10 +9,6 @@ function (rr::RootRhs)(x)
     dx
 end
 
-function RootRhs(of::ODEFunction)
-    RootRhs(of.f)
-end
-
 function find_operationpoint(pg::PowerGrid, ic_guess = nothing)
     if SlackAlgebraic ∉ pg.nodes .|> typeof
         throw(OperationPointError("currently not making any checks concerning assumptions of whether its possible to find the fixed point"))
@@ -26,7 +22,7 @@ function find_operationpoint(pg::PowerGrid, ic_guess = nothing)
         ic_guess = ones(system_size)
     end
 
-    rr = RootRhs(ode_function(pg))
+    rr = RootRhs(rhs(pg))
     nl_res = nlsolve(rr, ic_guess)
     if converged(nl_res) == true
         return State(pg, nl_res.zero)

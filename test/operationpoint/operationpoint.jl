@@ -1,4 +1,5 @@
-using PowerDynamics: OperationPointError
+using PowerDynamics: OperationPointError, find_operationpoint, rhs, RootRhs, SlackAlgebraic, SwingEqLVS, PQAlgebraic, StaticLine, 
+PowerGrid, find_operationpoint, RootRhs, rhs, systemsize
 using Test: @test, @testset
 
 
@@ -9,10 +10,10 @@ using Test: @test, @testset
     nodes = [SlackAlgebraic(U=U1), PQAlgebraic(S=S2)]
     graph = SimpleGraph(2)
     add_edge!(graph, 1, 2);
-    lines = [StaticLine(Y=Y)]
+    lines = [StaticLine(from=1, to=2, Y=Y)]
     grid = PowerGrid(graph, nodes, lines)
     op = find_operationpoint(grid)
-    root = RootRhs(ode_function(grid))
+    root = RootRhs(rhs(grid))
     @test all(root(convert(AbstractVector{Float64}, op)) .- zeros(systemsize(grid)) .< 1e-8)
     @test S2 ≈ op[2, :s]
 end
@@ -23,7 +24,7 @@ end
     nodes = [PQAlgebraic(S=S2), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=2)]
     graph = SimpleGraph(2)
     add_edge!(graph, 1, 2);
-    lines = [StaticLine(Y=Y)]
+    lines = [StaticLine(from=1, to=2, Y=Y)]
     grid = PowerGrid(graph, nodes, lines)
     @test_throws OperationPointError find_operationpoint(grid)
 end
@@ -35,10 +36,10 @@ end
     nodes = [SlackAlgebraic(U=U1), SwingEqLVS(H=1, P=P2, D=1, Ω=50, Γ=20, V=V2)]
     graph = SimpleGraph(2)
     add_edge!(graph, 1, 2);
-    lines = [StaticLine(Y=im)]
+    lines = [StaticLine(from=1, to=2, Y=im)]
     grid = PowerGrid(graph, nodes, lines)
     op = find_operationpoint(grid)
-    root = RootRhs(ode_function(grid))
+    root = RootRhs(rhs(grid))
     @test all(root(convert(AbstractVector{Float64}, op)) .- zeros(systemsize(grid)) .< 1e-8)
     @test V2 ≈ op[2, :v]
     @test P2 ≈ op[2, :p]

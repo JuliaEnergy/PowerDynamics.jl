@@ -18,3 +18,5 @@ Manifest.toml
 *.jpg
 *.html
 *.tex
+
+target/
