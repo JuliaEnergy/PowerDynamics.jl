@@ -32,6 +32,7 @@ end [[u_C, du_C],[i_L,di_L],[ω,dω]] begin
     du_C = 1/C *i_L + 1*im*ω*u_C
     di_L = -R/L*i_L+1/L*u -1/L*u_C+ 1*im*ω*i_L
     du = i_L - i # = enforcing current conservation
+    dω = 0
 end
 
 export RLCLoad
