@@ -20,8 +20,6 @@ Neville Watson and Jos Arrillaga, IET 2007, p.59, eq. (3.47)
 	\dfrac{du_C}{dt} = \frac{1}{C}i_L(t)\\
     \dfrac{di_L}{dt} = -\frac{R}{L} i_L(t)+\frac{1}{L} u(t)
 ```
-
-
 """
 @DynamicNode RLCLoad(R,L,C)  begin
 MassMatrix(m_int = [true, true,true])
