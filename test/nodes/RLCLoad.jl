@@ -9,7 +9,7 @@ include("NodeTestBase.jl")
 
     pv = RLCLoad(R=R, L=L, C=C)
     pv_vertex = construct_vertex(pv)
-    @test symbolsof(pv) == [:u_r, :u_i, :u_C, :i_L]
+    @test symbolsof(pv) == [:u_r, :u_i, :u_C, :i_L, :ω]
     @test pv_vertex.mass_matrix == [0,0,1,1,1]
 
     smoketest_rhs(pv_vertex)
