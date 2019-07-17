@@ -1,6 +1,4 @@
-using DifferentialEquations: ODEFunction
 using LightGraphs: edges, nv, AbstractGraph
-using MetaGraphs: get_prop, AbstractMetaGraph
 using NetworkDynamics: network_dynamics
 
 """
@@ -12,13 +10,13 @@ struct PowerGrid
     lines
 end
 
-function PowerGrid(graph::G) where G <: AbstractMetaGraph
-    nodes = [get_prop(graph, n, :node) for n=1:nv(graph)]
-    lines = [get_prop(graph, e, :line) for e in edges(graph)]
+function PowerGrid(nodes, lines)
+    graph = SimpleGraph(length(nodes))
+    [add_edge!(graph, l.from, l.to) for l in lines]
     PowerGrid(graph, nodes, lines)
 end
 
-function ode_function(pg::PowerGrid)
+function rhs(pg::PowerGrid)
     network_dynamics(map(construct_vertex, pg.nodes), map(construct_edge, pg.lines), pg.graph)
 end
 
