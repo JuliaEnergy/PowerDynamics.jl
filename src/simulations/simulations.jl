@@ -1,5 +1,4 @@
-using DifferentialEquations: ODEProblem, Rodas4, init, solve!, reinit!, savevalues!
-# using DiffEqBase: check_error!
+using OrdinaryDiffEq: ODEProblem, Rodas4, init, solve!, reinit!, savevalues!
 using LightGraphs: rem_edge!, edges, Edge
 import DiffEqBase: solve
 
@@ -100,18 +99,18 @@ function simulate(lf::LineFault, powergrid, x0; timespan)
     solve(lf(powergrid), x0, timespan);
 end
 
-function simulate(pd::PowerDrop, powergrid, x0)
-    sol1 = solve(powergrid, x0, pd.t_prefault)
-    final_state1 = sol1(:final)
-
-    g_power_reduction = pd(powergrid)
-    sol2 = solve(g_power_reduction, State(g_power_reduction, final_state1.vec), pd.t_fault)
-    final_state2 = sol2(:final)
-
-    sol3 = solve(powergrid, State(powergrid, final_state2.vec), pd.t_postfault)
-
-    CompositePowerGridSolution([sol1, sol2, sol3], [powergrid, g_power_reduction, powergrid])
-end
+# function simulate(pd::PowerDrop, powergrid, x0)
+#     sol1 = solve(powergrid, x0, pd.t_prefault)
+#     final_state1 = sol1(:final)
+#
+#     g_power_reduction = pd(powergrid)
+#     sol2 = solve(g_power_reduction, State(g_power_reduction, final_state1.vec), pd.t_fault)
+#     final_state2 = sol2(:final)
+#
+#     sol3 = solve(powergrid, State(powergrid, final_state2.vec), pd.t_postfault)
+#
+#     CompositePowerGridSolution([sol1, sol2, sol3], [powergrid, g_power_reduction, powergrid])
+# end
 
 function simulate(sc::SinglePhaseShortCircuitToGround, powergrid, x0; timespan)
     @assert first(timespan) <= sc.t_fault "fault cannot begin in the past"
