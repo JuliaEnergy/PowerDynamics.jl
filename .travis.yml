@@ -7,6 +7,8 @@ julia:
   - 1.1
 notifications:
   email: true
+  slack:
+    secure: AD9sPRoArnB3sewpw1P+MqXl9qB5QyDm9eyzvf2GqEYB8CPLA1oNo8nTee9oYEcMUIDqM0l7NrmeO
 git:
   depth: 99999999
 env:
