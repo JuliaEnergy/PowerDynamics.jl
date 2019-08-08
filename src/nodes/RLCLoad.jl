@@ -22,17 +22,16 @@ Neville Watson and Jos Arrillaga, IET 2007, p.59, eq. (3.47)
 ```
 """
 @DynamicNode RLCLoad(R,L,C)  begin
-MassMatrix(m_int = [true, true,true])
+MassMatrix(m_u=false, m_int = [true, true,true])
 end begin
     @assert R > 0 "Resistance should be >0"
     @assert L > 0 "Inductance should be >0"
     @assert C > 0 "Capacitance should be >0"
-
 end [[u_C, du_C],[i_L,di_L],[ω,dω]] begin
     du_C = 1/C *i_L + 1*im*ω*u_C
     di_L = -R/L*i_L+1/L*u -1/L*u_C+ 1*im*ω*i_L
-    du = i_L - i # = enforcing current conservation
     dω = 0
+    du = i_L - i # = enforcing current conservation
 end
 
 export RLCLoad

@@ -174,6 +174,7 @@ end
 
 macro DynamicNode(typedef, massmatrix_exp, prep, internals, func_body)
     massmatrix = eval(massmatrix_exp)
+    print(massmatrix_exp)
     return create(typedef, massmatrix, prep, internals, func_body)
 end
 

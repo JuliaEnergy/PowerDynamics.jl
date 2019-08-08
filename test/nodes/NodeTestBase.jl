@@ -8,8 +8,11 @@ function smoketest_rhs(vertex; int_x=[], int_dx=[])
     x = [real(u), imag(u)]
     append!(x, int_x)
     append!(dx, int_dx)
+    print(x)
+    print(dx)
     e_s = []
     e_d = [[real(i), imag(i), real(i), imag(i)]]
     p = []
+    #print(vertex.f!(dx, x, e_s, e_d, p, t))
     vertex.f!(dx, x, e_s, e_d, p, t)
 end

@@ -6,7 +6,6 @@ include("NodeTestBase.jl")
 
 @testset "RLCLoad" begin
     @syms R L C positive=true
-
     pv = RLCLoad(R=R, L=L, C=C)
     pv_vertex = construct_vertex(pv)
     @test symbolsof(pv) == [:u_r, :u_i, :u_C, :i_L, :ω]
