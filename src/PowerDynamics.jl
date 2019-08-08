@@ -25,6 +25,8 @@ include("nodes/VoltageSourceInverterMinimal.jl")
 include("nodes/VoltageSourceInverterVoltagePT1.jl")
 include("nodes/CurrentSourceInverterMinimal.jl")
 include("nodes/ExponentialRecoveryLoad.jl")
+include("nodes/RLCLoad.jl")
+
 
 # all line types
 include("lines/LineMacro.jl")
