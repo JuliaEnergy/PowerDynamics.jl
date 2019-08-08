@@ -24,7 +24,7 @@ before_script:
   - julia --color=yes -e 'using Pkg; Pkg.update()'
 
 script:
-  - if [ $JULIA_COVERAGE_VERSION == $TRAVIS_JULIA_VERSION ]; then export PUSH_COVERAGE=true; else export PUSH_COVERAGE=false; fi
+  - travis_wait 30 if [ $JULIA_COVERAGE_VERSION == $TRAVIS_JULIA_VERSION ]; then export PUSH_COVERAGE=true; else export PUSH_COVERAGE=false; fi
     && echo -e "${GREEN}${BOLD}PUSH_COVERAGE=$PUSH_COVERAGE"
     && julia --check-bounds=yes --color=yes --inline=no -e "using Pkg; Pkg.test(coverage=true)"
     && julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; res=Codecov.process_folder();
