@@ -6,7 +6,7 @@ os:
 julia:
   - 1.1
 notifications:
-  email: false
+  email: true
 git:
   depth: 99999999
 env:
