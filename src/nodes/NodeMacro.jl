@@ -24,6 +24,8 @@ function cndfunction_builder!(
         )
     rhsbody = quote end
     rhsbody.args[1] = func_body.args[1]
+    print(p)
+    #i_n = -rhsbody.args[1](x[1] + x[2] * im) # somehpw substract current from Y_n somewhere here
     append!(rhsbody.args, [:(i = total_current(e_s, e_d))])
     append!(rhsbody.args, [:(u = x[1] + x[2] * im)])
 

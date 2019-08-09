@@ -22,7 +22,7 @@ Using `CSIMinimal` for node ``a`` gives:
 ```
 
 """
-@DynamicNode CSIMinimal(I_r) begin
+@DynamicNode CSIMinimal(I_r,Y_n) begin
     MassMatrix()
 end  begin
 end [] begin
