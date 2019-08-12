@@ -9,6 +9,9 @@ julia:
 
 notifications:
   email: true
+  slack:
+    rooms:
+      - secure: PGKfUNOfa0VAxwAPXnUOTe/IIWXn7KxK3vWlfZo6B4q+MqiLQ9yAr33vNlGOiu/duUvEkCGEL9pcl4
 
 env:
   global:
