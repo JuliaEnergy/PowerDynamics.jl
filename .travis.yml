@@ -16,6 +16,6 @@ env:
 
 script:
   - julia --check-bounds=yes --color=yes --inline=no -e "using Pkg; Pkg.test(coverage=true)"
-    && julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; res=Codecov.process_folder(); Codecov.submit(res) end;
-  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="Documenter", version="0.19"))'
+    && julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; res=Codecov.process_folder(); Codecov.submit(res) end;'
+  - julia -e 'using Pkg; Pkg.add("Documenter")'
     && julia docs/make.jl
