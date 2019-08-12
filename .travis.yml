@@ -1,33 +1,24 @@
 ## Documentation: http://docs.travis-ci.com/user/languages/julia/
 language: julia
+
 os:
   - linux
+
 julia:
   - 1.1
+
 notifications:
   email: true
-git:
-  depth: 99999999
+  slack:
+    rooms:
+      - secure: PGKfUNOfa0VAxwAPXnUOTe/IIWXn7KxK3vWlfZo6B4q+MqiLQ9yAr33vNlGOiu/duUvEkCGEL9pcl4
+
 env:
   global:
-    - PYTHON=conda
+    - PYTHON=conda # necessary for SymPy
 
-after_success:
-  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())';
-
-#script: # the default script is equivalent to the following
-#  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-#  - julia --project -e 'using Pkg; Pkg.build(); Pkg.test(; coverage=true)';
-
-jobs:
-  include:
-    - stage: "Documentation"
-      julia: 1.1
-      os: linux
-      script:
-        - julia --color=yes -e 'using Pkg; Pkg.add("Documenter")'
-        - julia --color=yes -e 'using Pkg; Pkg.update()'
-        - julia --project=docs/ -e 'using Pkg; Pkg.instantiate();
-                                    Pkg.develop(PackageSpec(path=pwd()))'
-        - julia --project=docs/ docs/make.jl
-      after_success: skip
+script:
+  - julia --check-bounds=yes --color=yes --inline=no -e "using Pkg; Pkg.test(coverage=true)"
+    && julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; res=Codecov.process_folder(); Codecov.submit(res);'
+  - julia -e 'using Pkg; Pkg.add("Documenter")'
+    && julia docs/make.jl
