@@ -2,7 +2,7 @@ using Test: @testset, @test
 using SymPy: @syms
 using PowerDynamics: RLCLoad, construct_vertex, symbolsof
 
-include("NodeTestBase.jl")
+include("../NodeTestBase.jl")
 
 @testset "RLCLoad" begin
     @syms R L C positive=true
