@@ -12,21 +12,11 @@ notifications:
 
 env:
   global:
-    - PYTHON=conda
+    - PYTHON=conda # necessary for SymPy
 
-after_success:
-  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())';
-
-jobs:
-  include:
-    - script:
-        - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-        - julia --project -e 'using Pkg; Pkg.build(); Pkg.test(; coverage=true)';
-    - stage: "Documentation"
-      julia: 1.1
-      os: linux
-      script:
-        - julia --project=docs/ -e 'using Pkg; Pkg.add("Documenter"); Pkg.update(); Pkg.instantiate();
-                                    Pkg.develop(PackageSpec(path=pwd()))'
-        - julia --project=docs/ docs/make.jl
-      after_success: skip
+script:
+  - julia --check-bounds=yes --color=yes --inline=no -e "using Pkg; Pkg.test(coverage=true)"
+    && julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; res=Codecov.process_folder(); Codecov.submit(res) end;
+          covered_lines, total_lines =  get_summary(res); println("covered_lines/total_lines = $covered_lines/$total_lines = $(covered_lines/total_lines)");'
+  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="Documenter", version="0.19"))'
+    && julia docs/make.jl
