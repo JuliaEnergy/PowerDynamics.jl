@@ -22,10 +22,10 @@ input–output relationship between powers (real and reactive) and voltage.
 
 # Mathematical Representation
 ```math
-	\dfrac{dx_p}{dt} = \dfrac{1}{T_p}(-x_p + P_0(\dfrac{abs(u)}{V_0})^{N_{ps}} - P_0(\dfrac{abs(u)}{V_0})^{N_{pt}}) \\
-    \dfrac{dx_q}{dt} = \dfrac{1}{T_q}(-x_q + Q_0(\dfrac{abs(u)}{V_0})^{N_{qs}} - Q_0(\dfrac{abs(u)}{V_0})^{N_{qt}}) \\
-    P = x_p + P_0(\dfrac{abs(u)}{V_0})^{N_{pt}} \\
-    Q = x_q - Q_0(\dfrac{abs(u)}{V_0})^{N_{qt}} \\
+	\dfrac{dx_p}{dt} = \dfrac{1}{T_p}(-x_p + P_0(\dfrac{|u|}{V_0})^{N_{ps}} - P_0(\dfrac{|u|}{V_0})^{N_{pt}}) \\
+    \dfrac{dx_q}{dt} = \dfrac{1}{T_q}(-x_q + Q_0(\dfrac{|u|}{V_0})^{N_{qs}} - Q_0(\dfrac{|u|}{V_0})^{N_{qt}}) \\
+    P = x_p + P_0(\dfrac{|u|}{V_0})^{N_{pt}} \\
+    Q = x_q - Q_0(\dfrac{|u|}{V_0})^{N_{qt}} \\
 ```
 
 IEEE TRANSACTIONS ON POWER SYSTEMS, VOL. 21, NO. 3, AUGUST 2006
