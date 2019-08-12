@@ -19,9 +19,9 @@ after_success:
 
 jobs:
   include:
-    script:
-      - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-      - julia --project -e 'using Pkg; Pkg.build(); Pkg.test(; coverage=true)';
+    - script:
+        - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+        - julia --project -e 'using Pkg; Pkg.build(); Pkg.test(; coverage=true)';
     - stage: "Documentation"
       julia: 1.1
       os: linux
