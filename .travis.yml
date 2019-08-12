@@ -1,12 +1,15 @@
 ## Documentation: http://docs.travis-ci.com/user/languages/julia/
 language: julia
+
 os:
   - linux
+
 julia:
   - 1.1
+
 notifications:
   email: true
-  
+
 env:
   global:
     - PYTHON=conda
@@ -20,6 +23,7 @@ script: # the default script is equivalent to the following
 
 jobs:
   include:
+    - # line needed for default test stage
     - stage: "Documentation"
       julia: 1.1
       os: linux
