@@ -38,6 +38,7 @@ include("operationpoint/operationpoint.jl")
 
 include("simulations/PowerGridSolutions.jl")
 include("simulations/simulations.jl")
+include("simulations/PowerDrop.jl")
 
 
 # export of the main types and functions
