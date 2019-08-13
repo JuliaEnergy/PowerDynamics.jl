@@ -11,7 +11,9 @@ end
 function (pd::PowerDrop)(powergrid)
     #TODO: check if node type supported for power drop
     node_list_power_drop = copy(powergrid.nodes)
-    node_list_power_drop = @set node_list_power_drop[pd.node_number].P *= pd.fraction
+    node_for_drop = node_list_power_drop[pd.node_number]
+    node_for_drop = @set node_for_drop.P *= pd.fraction
+    node_list_power_drop[pd.node_number] = node_for_drop
     PowerGrid(powergrid.graph, node_list_power_drop, powergrid.lines)
 end
 
