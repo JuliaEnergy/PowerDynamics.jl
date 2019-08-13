@@ -1,11 +1,10 @@
-using OrdinaryDiffEq: ODEProblem, Rodas4, init, solve!, reinit!, savevalues!
+using OrdinaryDiffEq: ODEProblem, Rodas4, init, solve!, step!
 using Setfield
 
 @Base.kwdef struct PowerDrop
     node_number
     fraction
-    t_fault
-    t_clearing
+    tspan_fault
 end
 
 function (pd::PowerDrop)(powergrid)
@@ -18,36 +17,26 @@ function (pd::PowerDrop)(powergrid)
 end
 
 function simulate(pd::PowerDrop, powergrid, x0, timespan)
-    @assert first(timespan) <= pd.t_fault "fault cannot begin in the past"
-    @assert pd.t_clearing <= last(timespan) "fault cannot end in the future"
+    @assert first(timespan) <= pd.tspan_fault[1] "fault cannot begin in the past"
+    @assert pd.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
 
-    problem = ODEProblem{iipfunc}(rhs(pd(powergrid)), x0.vec, (first(timespan), pd.t_clearing))
-    fault_integrator = init(problem, Rodas4(autodiff=false))
-
-    reinit!(fault_integrator, x0.vec, t0=pd.t_fault, tf=pd.t_clearing, erase_sol=false)
-    savevalues!(fault_integrator)
-    solve!(fault_integrator)
-
-    problem = ODEProblem{iipfunc}(rhs(powergrid), fault_integrator.u, (pd.t_clearing, last(timespan)))
+    problem = ODEProblem{true}(rhs(powergrid), x0.vec, timespan)
     integrator = init(problem, Rodas4(autodiff=false))
 
-    # Now the trick: copy solution object to new integrator and
-    # make sure the counters are updated, otherwise sol is overwritten in the
-    # next step.
-    integrator.sol = fault_integrator.sol
-    integrator.saveiter = fault_integrator.saveiter
-    integrator.saveiter_dense = fault_integrator.saveiter_dense
-    integrator.success_iter = fault_integrator.success_iter
+    step!(integrator, pd.tspan_fault[1], true)
+
+    # update integrator with error
+    integrator.f = rhs(pd(powergrid))
+
+    step!(integrator, pd.tspan_fault[2], true)
+
+    # update integrator, clear error
+    integrator.f = rhs(powergrid)
 
     solve!(integrator)
 
     return PowerGridSolution(integrator.sol, powergrid)
-
-
 end
-
-simulate(pd::PowerDrop, powergrid, x0) = simulate(pd, powergrid, x0, (0., pd.t_clearing))
-
 
 export PowerDrop
 export simulate

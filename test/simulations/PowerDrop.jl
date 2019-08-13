@@ -10,8 +10,8 @@ using PowerDynamics: PowerDrop, simulate, SwingEqLVS, StaticLine, PowerGrid, Sta
     sol = simulate(PowerDrop(
         fraction = 0.9,
         node_number = 1,
-        t_fault = 2.,
-        t_clearing=3.),
+        tspan_fault = (2.,3.)),
         grid, state, (0., 5.))
     @test sol != nothing
+    @test sol.dqsol.retcode == :Success
 end
