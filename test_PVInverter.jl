@@ -15,6 +15,9 @@ append!(line_list,[StaticLine(from=2,to=3,Y=-1im/0.2)])
 
 powergrid = PowerGrid(node_list,line_list)
 
+#vertices = map(construct_vertex, powergrid.nodes)
+#println(v.mass_matrix for v in vertices)
+
 operationpoint = find_operationpoint(powergrid)
 
 result = simulate(Perturbation(2, :ω, Inc(0.5)), powergrid, operationpoint, timespan = (0.0,1.))
