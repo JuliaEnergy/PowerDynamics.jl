@@ -4,6 +4,7 @@ authors = ["Tim Kittel <tim.kittel@elena-international.com>"]
 version = "2.1.0"
 
 [deps]
+CSTParser = "00ebfdb7-1f24-5e51-bd34-a7502290713f"
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
