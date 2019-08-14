@@ -1,24 +1,19 @@
-## Documentation: http://docs.travis-ci.com/user/languages/julia/
 language: julia
-
 os:
-  - linux
-
+- linux
 julia:
-  - 1.1
-
+- 1.1
 notifications:
-  email: true
+  email: false
   slack:
-    rooms:
-      - secure: PGKfUNOfa0VAxwAPXnUOTe/IIWXn7KxK3vWlfZo6B4q+MqiLQ9yAr33vNlGOiu/duUvEkCGEL9pcl4
-
+    on_success: always
+    on_failure: always
+    secure: f+N33cSE6/ahPL3SPryOsGqJ10OV5gh6+oa/Me+CPHoQW1Xlod1kJjfdV79Jopc1KvzmKQO13y01eLblpghZFwqQ8idxhtTBRLTDM+LVW4mI8h/+cc8DCmsbMXDmegFwVSyLT/fY8pPVX4X05axPQqthV0G3Rb8ccTKLWQ0RkaNiz8v6RexsV/jSDo/O9XOgnXdudPqKhbVfhtVahuy41v6uBjU1pAQApTc38OjFVXtZaZMFbI4z1WSKokL+9jF4VFXGtbNokKjh+j+myI+YXtSPB/Am7Tj79aSiOM7vt/5klUo9veM3NWxy2yXl/mfqOeEu+OVNNUtHKYeodrOxYaejnBPJq+VCZVpPUtVs8ZGY+QjNM45b9Uk7OJqylYr8l0Y/BnM05DSrNXT1Jd46xjM272tJ+d2guxs/Dfgs1UD1by0FhULqdcsBJxy7gIAkNIgFXR/JCODQrCntX+3EmEnYxbT64+G1da9NgMuezNOFsYL5BBJxnQ5wN5FJ4h5B2i+695v4SR3B46kcTDoqhdSFXIfq0RKG8fEN2YwgM1sFAnEFlK1x/JX5XNM6Q9NDO9Epl4VRd6sXVc3o2OeXsvLeuQPF8gdoivZqhRCettQscVQrvv0xp5jDmMpcQsLnR4syDmm8Gm3QeE1U1XkhCtsOJILALg+GDeOFf3d5/+A=
 env:
   global:
-    - PYTHON=conda # necessary for SymPy
-
+  - PYTHON=conda
 script:
-  - julia --check-bounds=yes --color=yes --inline=no -e "using Pkg; Pkg.test(coverage=true)"
-    && julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; res=Codecov.process_folder(); Codecov.submit(res);'
-  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="Documenter", version="0.23"))'
-    && julia docs/make.jl
+- julia --check-bounds=yes --color=yes --inline=no -e "using Pkg; Pkg.test(coverage=true)"
+  && julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; res=Codecov.process_folder(); Codecov.submit(res);'
+- julia -e 'using Pkg; Pkg.add(PackageSpec(name="Documenter", version="0.23"))' &&
+  julia docs/make.jl
