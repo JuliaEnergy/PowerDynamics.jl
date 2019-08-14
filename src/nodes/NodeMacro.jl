@@ -12,8 +12,7 @@ function cndfunction_builder!(
     internals,
     massmatrix,
     func_body,
-    cndfunction,
-    )
+    cndfunction)
     rhscall = :(rhs!(
         dx,
         x,
@@ -61,7 +60,6 @@ function buildparameterstruct(name, parameters)
     struct_def = Expr(
         :struct, false,
         :($name),
-        # TODO: challenge, how to set default parameters
         Expr(:block, parameters..., # set all the parmeters as fields in the struct
             Expr(:(=), # define the constructor
                 Expr(:call, name, Expr(:parameters, parameters..., Expr(:kw, :Y_n, 0))),
@@ -108,8 +106,7 @@ function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
         internals,
         massmatrix,
         func_body,
-        cndfunction,
-        )
+        cndfunction)
 
     fct_symbolsof = generate_symbolsof_fct(name, internals)
     fct_dimension = generate_dimension_fct(name, internals)
