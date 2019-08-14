@@ -13,7 +13,6 @@ function cndfunction_builder!(
     massmatrix,
     func_body,
     cndfunction,
-    Y_n
     )
     rhscall = :(rhs!(
         dx,
@@ -58,19 +57,15 @@ function cndfunction_builder!(
 end
 
 
-function buildparameterstruct(name, parameters,Y_n)
-    # TODO: check if Y_n dabei, it not Y_n =0
-    if !(:Y_n ∈ parameters)
-        append!(parameters,[:Y_n])
-    end
+function buildparameterstruct(name, parameters)
     struct_def = Expr(
         :struct, false,
-        :($name), # define the struct as a subtype of AbstractNodeParameters
+        :($name),
         # TODO: challenge, how to set default parameters
         Expr(:block, parameters..., # set all the parmeters as fields in the struct
             Expr(:(=), # define the constructor
-                Expr(:call, name, Expr(:parameters, parameters... )),
-                Expr(:call, :new,  parameters...)
+                Expr(:call, name, Expr(:parameters, parameters..., Expr(:kw, :Y_n, 0))),
+                Expr(:call, :new,  (push!(parameters, :Y_n))...)
             )
         )
     )
@@ -95,13 +90,8 @@ end
 function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
     @capture(typedef, name_(parameters__))
     internals = getinternalvars(internalsdef)
-    if :Y_n ∈ parameters
-        Y_n = parameters[findfirst(parameters.==:Y_n)]
-    else
-        Y_n =0.
-    end
     # build parameters struct
-    struct_def = buildparameterstruct(name, parameters,Y_n)
+    struct_def = buildparameterstruct(name, parameters)
 
     massmatrix = massmatrix === nothing ? I : massmatrix
 
@@ -119,7 +109,6 @@ function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
         massmatrix,
         func_body,
         cndfunction,
-        Y_n
         )
 
     fct_symbolsof = generate_symbolsof_fct(name, internals)
