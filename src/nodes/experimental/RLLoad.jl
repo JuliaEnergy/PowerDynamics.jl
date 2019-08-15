@@ -21,7 +21,7 @@ A node type that represents the RL load model
     dfrac{di}{dt} = 1/L(i \omega_r L i + R i - u)
 ```
 """
-@DynamicNode LRNode(L, R, ω_r) begin
+@DynamicNode RLNode(L, R, ω_r) begin
     MassMatrix(m_u = false, m_int = [true, true])
 end  begin
     Y = (im * ω_r * L + R)/L
