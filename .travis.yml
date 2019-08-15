@@ -6,8 +6,8 @@ julia:
 notifications:
   email: false
   slack:
-    on_success: always
-    on_failure: always
+    on_success: change
+    on_failure: change
     rooms:
       secure: mx+YwhzmW+wOnia5QJbt2vt9z55CxJ7EhuEe0VLjsKFaYM87m8KI7vSm9VS3VbItqL6owF5bONS3pGJ82pJUvlF64i+jdgBNX4K2KtPUefPjZEI/O5zNaXwDKmOkDbNEZqGBdf2RRNwaNLHxEF3A45qBBodPl2uiMp/n8q4xWxdZbdWT4bi92IOHcWicLq8GTAxEqrNA5L++IZc+LQ7WS75uAHuRMCEUUFgYE3jo5hbXA21nblg/tK+bcgv/2G6nWOhxsTjCLrhjI0qznssBC80sPiGBTgdLAfpaqPK8z9iXWN1Gz6Px+80KR1CJAvhxU8qbtPm2y883cXVFSbjTRfwhMdDxSYFwjIZbKIB+kvEIxFVwDf755K7Uf5ygqh1SdzhdgidxPnOzVLqFCJ9noc0GTXYJ9FFTY7qTAekJYkzcKngF7FYjackVlDEEfX50dZ8qWIgWOUHGSzrew85wBq/f3YYqRwoYiY1RFGQm5/0ftGKfhlTQAMqXU8TE5xer2WX85hraB8I9YlCAVLjghdF8ufH/3uCggBa9N+BYY7hrV+nzB8oMMjgxohNI85bkHUuBeYsXLnbzKeLSVZET8eZCTnx13Uy6WPNHTdObGPtNKscTtWvuPK07KCHIeXzhhlHlPCrcFyWqkIrinw1QceAYcuhwdJhDCyauQwlDR1s=
 env:
