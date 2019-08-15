@@ -16,6 +16,7 @@ function (pd::PowerDrop)(powergrid)
     PowerGrid(node_list_power_drop, powergrid.lines)
 end
 
+# this doesn't work & hangs in an infinite loop
 function simulate(pd::PowerDrop, powergrid, x0, timespan)
     @assert first(timespan) <= pd.tspan_fault[1] "fault cannot begin in the past"
     @assert pd.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
@@ -38,6 +39,7 @@ function simulate(pd::PowerDrop, powergrid, x0, timespan)
     return PowerGridSolution(integrator.sol, powergrid)
 end
 
+# this works, but leads to 3 seaprate solutions that need to be combined later
 function simulate2(pd::PowerDrop, powergrid, x0, timespan)
     @assert first(timespan) <= pd.tspan_fault[1] "fault cannot begin in the past"
     @assert pd.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
@@ -55,18 +57,19 @@ function simulate2(pd::PowerDrop, powergrid, x0, timespan)
     return (sol1, sol2, sol3)
 end
 
+# this works, but the code looks hacky. Can't we do any better?
 function simulate3(pd::PowerDrop, powergrid, x0, timespan)
     @assert first(timespan) <= pd.tspan_fault[1] "fault cannot begin in the past"
     @assert pd.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
 
-    problem = ODEProblem{iipfunc}(rhs(pd(powergrid)), x0.vec, (first(timespan), pd.tspan_fault[2]))
+    problem = ODEProblem{true}(rhs(pd(powergrid)), x0.vec, (first(timespan), pd.tspan_fault[2]))
     fault_integrator = init(problem, Rodas4(autodiff=false))
 
     reinit!(fault_integrator, x0.vec, t0=pd.tspan_fault[1], tf=pd.tspan_fault[2], erase_sol=false)
     savevalues!(fault_integrator)
     solve!(fault_integrator)
 
-    problem = ODEProblem{iipfunc}(rhs(powergrid), fault_integrator.u, (pd.tspan_fault[2], last(timespan)))
+    problem = ODEProblem{true}(rhs(powergrid), fault_integrator.u, (pd.tspan_fault[2], last(timespan)))
     integrator = init(problem, Rodas4(autodiff=false))
 
     # Now the trick: copy solution object to new integrator and
@@ -80,8 +83,6 @@ function simulate3(pd::PowerDrop, powergrid, x0, timespan)
     solve!(integrator)
 
     return PowerGridSolution(integrator.sol, powergrid)
-
-
 end
 
 export PowerDrop
