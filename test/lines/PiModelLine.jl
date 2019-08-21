@@ -1,5 +1,5 @@
 using Test: @testset, @test
-using PowerDynamics: PiModelLine, PiModel, construct_edge
+using PowerDynamics: PiModelLine, construct_edge
 using NetworkDynamics: StaticEdge
 
 line = PiModelLine(from=1, to=2, y=10*im, y_shunt_km = 10, y_shunt_mk= 100)
