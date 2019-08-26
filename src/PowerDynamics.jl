@@ -14,6 +14,7 @@ include("parsers/Format.jl")
 include("parsers/JsonParser.jl")
 
 # all possible node dynamics
+include("nodes/AbstractNode.jl")
 include("nodes/NodeMacro.jl")
 include("nodes/PQAlgebraic.jl")
 include("nodes/PVAlgebraic.jl")
@@ -29,6 +30,7 @@ include("nodes/experimental/RLCLoad.jl")
 
 
 # all line types
+include("lines/AbstractLine.jl")
 include("lines/LineMacro.jl")
 include("lines/StaticLine.jl")
 include("lines/PiModelLine.jl")

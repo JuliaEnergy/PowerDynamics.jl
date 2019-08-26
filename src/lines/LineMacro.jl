@@ -48,7 +48,7 @@ end
 function create_struct(name, parameters)
     struct_def = Expr(
         :struct, false,
-        :($name),
+        :($name <: AbstractLine),
         Expr(:block, parameters..., # set all the parmeters as fields in the struct
             Expr(:(=), # define the constructor
                 Expr(:call, name, Expr(:parameters, parameters... )),

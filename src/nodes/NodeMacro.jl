@@ -59,7 +59,7 @@ end
 function buildparameterstruct(name, parameters)
     struct_def = Expr(
         :struct, false,
-        :($name), # define the struct as a subtype of AbstractNodeParameters
+        :($name <: AbstractNode),
         Expr(:block, parameters..., # set all the parmeters as fields in the struct
             Expr(:(=), # define the constructor
                 Expr(:call, name, Expr(:parameters, parameters... )),
