@@ -5,7 +5,7 @@ we defined two data structures [`PowerDynamics.State`] and [`PowerDynamics.Power
 
 ## States
 ```@docs
-State
+PowerDynamics.State
 ```
 
 ## Solutions & Plotting
