@@ -22,6 +22,7 @@ struct OperationPointError <: PowerDynamicsError
     msg::String
 end
 
+"Error to be thrown if something goes wrong during power grid solving"
 struct GridSolutionError <: PowerDynamicsError
     msg::String
 end
