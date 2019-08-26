@@ -21,22 +21,6 @@ end
 ```@example documentationbuildtime
 printBuiltTime() # hide
 ```
-with the following version of the sub-packages:
-```@setup versions
-using Pkg
-env = Pkg.Types.EnvCache()
-subpackages = copy(env.project["deps"])
-uuids = map(Base.UUID, values(subpackages))
-function printversions()
-  for uuid in uuids
-    pkg = Pkg.Types.manifest_info(env, uuid)
-    println(rpad(" * $(pkg["name"]) ", 30, "."), " $(pkg["version"])")
-  end
-end
-```
-```@example versions
-printversions() # hide
-```
 
 ## Installation
 
