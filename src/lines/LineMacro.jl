@@ -1,5 +1,7 @@
 using MacroTools
 
+import Base: @__doc__
+
 macro Line(typedef, prep, func_body)
     return create(typedef, prep, func_body)
 end
@@ -39,7 +41,7 @@ function create_line(name, prep, parameters, func_body)
     append!(cl_function.args[2].args, [rhs_function_exp, edge_exp])
 
     ret = quote
-        $(struct_exp)
+        @__doc__ $(struct_exp)
         $(cl_function)
     end
     return ret
