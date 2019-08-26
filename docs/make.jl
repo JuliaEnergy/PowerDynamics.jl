@@ -5,7 +5,7 @@ using PowerDynamics
 makedocs(
     modules = [PowerDynamics],
     authors = "Tim Kittel and contributors.",
-    linkcheck=true,
+    linkcheck=false,
     sitename = "PowerDynamics.jl",
     pages = [
         "General" => "index.md",
@@ -13,6 +13,7 @@ makedocs(
         "node_dynamics_types.md",
         "node_types.md",
         "custom_node_types.md",
+        "line_types.md",
         "states_solutions.md",
         "error_types.md",
         "fullindex.md",
