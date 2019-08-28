@@ -5,3 +5,7 @@ To define your own Node Types, use the [`PowerDynamics.@DynamicNode`](@ref) macr
 ```@docs
 @DynamicNode
 ```
+
+```@docs
+PowerDynamics.MassMatrix
+```
