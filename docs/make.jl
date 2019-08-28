@@ -15,6 +15,7 @@ makedocs(
         "custom_node_types.md",
         "line_types.md",
         "states_solutions.md",
+        "simulations.md",
         "error_types.md",
         "import_export.md",
         "fullindex.md",
