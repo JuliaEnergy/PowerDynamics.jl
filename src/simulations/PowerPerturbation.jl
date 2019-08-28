@@ -1,13 +1,13 @@
 using OrdinaryDiffEq: ODEProblem, Rodas4, init, solve!, step!
 using Setfield
 
-@Base.kwdef struct PowerDrop
+@Base.kwdef struct PowerPerturbation
     node_number
     fraction
     tspan_fault
 end
 
-function (pd::PowerDrop)(powergrid)
+function (pd::PowerPerturbation)(powergrid)
     #TODO: check if node type supported for power drop
     node_list_power_drop = copy(powergrid.nodes)
     node_for_drop = node_list_power_drop[pd.node_number]
@@ -17,7 +17,7 @@ function (pd::PowerDrop)(powergrid)
 end
 
 # this works, but the code looks hacky. Can't we do any better?
-function simulate(pd::PowerDrop, powergrid, x0, timespan)
+function simulate(pd::PowerPerturbation, powergrid, x0, timespan)
     @assert first(timespan) <= pd.tspan_fault[1] "fault cannot begin in the past"
     @assert pd.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
 
@@ -44,5 +44,5 @@ function simulate(pd::PowerDrop, powergrid, x0, timespan)
     return PowerGridSolution(integrator.sol, powergrid)
 end
 
-export PowerDrop
+export PowerPerturbation
 export simulate, simulate2, simulate3
