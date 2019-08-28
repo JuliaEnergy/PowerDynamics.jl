@@ -1,5 +1,5 @@
 using Test: @testset, @test
-using PowerDynamics: PiModelLine, PiModel, construct_edge
+using PowerDynamics: PiModelLine, StaticLine, PiModel, construct_edge
 using NetworkDynamics: StaticEdge
 
 line = PiModelLine(from=1, to=2, y=10*im, y_shunt_km = 10, y_shunt_mk= 100)
@@ -16,8 +16,23 @@ end
         # assure function call does not explode!
         edge.f!(e, v_s, v_d, 0, 0)
 
-        @test e[1] == 50
-        @test e[2] == -50
+        @test e[1] == -50
+        @test e[2] == 50
         @test e[3] == 1000
         @test e[4] == 50
+end
+
+@testset "PiModelLine should return the same result as StaticLine" begin
+        sl = StaticLine(;from=1, to=4, Y = 1/(0.1152 + im*0.0458))
+        pml = PiModelLine(;from=1, to=4, y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.)
+
+        arr = zeros(4)
+        ed = construct_edge(sl)
+        ed.f!(arr, [0.1,0.2], [0.3,0.4], 0, 0)
+
+        arr2 = zeros(4)
+        ed2 = construct_edge(pml)
+        ed2.f!(arr2, [0.1,0.2], [0.3,0.4], 0, 0)
+
+        @test isapprox(arr,arr2)
 end

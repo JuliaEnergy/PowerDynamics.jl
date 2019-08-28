@@ -25,6 +25,8 @@ include("nodes/VoltageSourceInverterMinimal.jl")
 include("nodes/VoltageSourceInverterVoltagePT1.jl")
 include("nodes/CurrentSourceInverterMinimal.jl")
 include("nodes/ExponentialRecoveryLoad.jl")
+include("nodes/experimental/RLCLoad.jl")
+
 
 # all line types
 include("lines/PiModel.jl")
@@ -39,6 +41,7 @@ include("operationpoint/operationpoint.jl")
 include("simulations/PowerGridSolutions.jl")
 include("simulations/simulations.jl")
 include("simulations/PowerPerturbation.jl")
+include("simulations/NodeShortCircuit.jl")
 
 
 # export of the main types and functions

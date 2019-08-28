@@ -4,19 +4,20 @@ VSIMinimal(;τ_P,τ_Q,K_P,K_Q,E_r,P,Q)
 ```
 
 A node type that applies the frequency and voltage droop control to control the frequency and
-voltage dynamics.
+voltage dynamics. Implemented according to  Schiffer et. al., "Conditions for stability of
+droop-controlled inverter-based microgrids", Automatica, 2014.
 
 `VSIMinimal` models an inverters as AC voltage source which means the amplitude and
 frequency can defined by the designer (often called grid-forming inverter mode).
 The frequency and voltage regulation is assumed to be instantaneous.
 In addition simple proportional controllers are implemented for frequency and voltage such that the frequency `ω` and
 voltage amplitudes `v` of the inverters are modified depending on the deviations (with respect to a desired value) of the active and reactive powers, respectively.
-ift is assumed that active and reactive power are measured via low pass fileters with time constant `τ_P` and `τ_Q`, respectively.
+it is assumed that active and reactive power are measured via low pass filters with time constant `τ_P` and `τ_Q`, respectively.
 `VSIMinimal` can be derived from `VSIVoltagePT1` by assuming an instantaneous voltage regulation without delay.
 
 Additionally to ``u``, it has the internal dynamic variable ``ω`` representing
-the frequency of the rotator relative to the grid frequency ``Ω``, i.e. the
-real frequency ``ω_r`` of the rotator is given as ``ω_r = Ω + ω``.
+the frequency of the inverter frequency relative to the grid frequency ``Ω=2π50``Hz, i.e. the
+real frequency ``ω_r`` of the inverter frequency is given as ``ω_r = Ω + ω``.
 
 
 # Keyword Arguments

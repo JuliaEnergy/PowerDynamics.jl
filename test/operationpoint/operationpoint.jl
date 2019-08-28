@@ -1,4 +1,4 @@
-using PowerDynamics: OperationPointError, find_operationpoint, rhs, RootRhs, SlackAlgebraic, SwingEqLVS, PQAlgebraic, StaticLine, 
+using PowerDynamics: OperationPointError, find_operationpoint, rhs, RootRhs, SlackAlgebraic, SwingEqLVS, PQAlgebraic, StaticLine,
 PowerGrid, find_operationpoint, RootRhs, rhs, systemsize
 using Test: @test, @testset
 
@@ -43,14 +43,6 @@ end
     @test all(root(convert(AbstractVector{Float64}, op)) .- zeros(systemsize(grid)) .< 1e-8)
     @test V2 ≈ op[2, :v]
     @test P2 ≈ op[2, :p]
-end
-
-@testset "error that slack bus is missing" begin
-    nodes = [PQAlgebraic(S=2), PQAlgebraic(S=-2)]
-    graph = SimpleGraph(2)
-    grid = PowerGrid(graph, nodes, [])
-
-    @test_throws OperationPointError find_operationpoint(grid)
 end
 
 @testset "error that SwingEqLVS should be used instead of SwingEq" begin

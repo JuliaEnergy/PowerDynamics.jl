@@ -23,7 +23,7 @@ Additionally to ``u``, it has the internal dynamic variables
 - `H`: shaft inertia constant (given in [s]), defined according to P. Sauer, p. 33, eq. (3.60)
 - `P`: active (real) power output, also called the mechanical torque applied to the shaft, given in [pu]
 - `D`: damping coefficient (given in [s], see P. Sauer, eq. (5.156) where the damping torque is equal `Dω`)
-- `Ω`: rated frequency of the power grid, often 50Hz
+- `Ω`: rated frequency of the power grid, often ``2π⋅50Hz``
 - `T_d_dash`: time constant of d-axis, given in [s], see P. Sauer, chapter 3.7, p. 54 for a general explanation on time constants
 - `T_q_dash`: time constant of q-axis, given in [s]
 - `X_d_dash`: transient reactance of d-axis, given in [pu]
@@ -69,8 +69,8 @@ With the PowerDynamics.jl naming conventions of ``i`` and ``u`` they read as
     @assert X_d >= 0 "reactance of d-axis (X_d_dash) should be >=0"
     @assert X_q >= 0 "reactance of q-axis (X_q_dash) should be >=0"
 
-    Ω_H = Ω * 2pi / H #    norm = 2 * H / (2 * np.pi * 50)  # normalize the parameters as done for coupling_const, input_power, damping_const
-
+    Ω_H = Ω / (2*H)
+    
 end [[θ,dθ],[ω, dω]] begin
     i_c = 1im*i*exp(-1im*θ)
     e_c = 1im*u*exp(-1im*θ)
