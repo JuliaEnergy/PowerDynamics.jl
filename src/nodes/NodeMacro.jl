@@ -59,13 +59,8 @@ end
 function buildparameterstruct(name, parameters)
     struct_def = Expr(
         :struct, false,
-        :($name), # define the struct as a subtype of AbstractNodeParameters
-        Expr(:block, parameters..., # set all the parmeters as fields in the struct
-            Expr(:(=), # define the constructor
-                Expr(:call, name, Expr(:parameters, parameters... )),
-                Expr(:call, :new,  parameters...)
-            )
-        )
+        :($name),
+        Expr(:block, parameters...) # set all the parmeters as fields in the struct
     )
 end
 
@@ -91,6 +86,11 @@ function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
     # build parameters struct
     struct_def = buildparameterstruct(name, parameters)
 
+    kw_constructor = Expr(:(=), # define the constructor
+        Expr(:call, name, Expr(:parameters, parameters... )),
+        Expr(:call, name,  parameters...)
+    )
+
     massmatrix = massmatrix === nothing ? I : massmatrix
 
     # build `construct_vertex`
@@ -114,6 +114,7 @@ function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
 
     ret = quote
         @__doc__ $(struct_def)
+        $(kw_constructor)
         $(cndfunction)
         $(fct_symbolsof)
         $(fct_dimension)

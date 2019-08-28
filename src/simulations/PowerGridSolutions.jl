@@ -9,7 +9,7 @@ using NetworkDynamics: StaticEdgeFunction
         dqsol::AbstractTimeseriesSolution
         powergrid::PowerGrid
     end
-The data structure interfacing to the solution of the differntial equations of a power grid.
+The data structure interfacing to the solution of the differential equations of a power grid.
 Normally, it is not created by hand but return from `PowerDynSolve.solve`.
 # Accessing the solution in a similar interface as [`State`](@ref).
 For some grid solution `sol`, one can access the variables as
@@ -85,7 +85,6 @@ end
 (sol::PowerGridSolution)(t, n, ::Type{Val{:int}}, i) = @>> TimeSeries(sol)(t, idxs=variable_index(sol.powergrid.nodes, n, i)) convert(Array)
 (sol::PowerGridSolution)(t::Number, n::Number, ::Type{Val{:int}}, i::S) where {S <: Union{Number,Symbol}} = TimeSeries(sol)(t, idxs=variable_index(sol.powergrid.nodes, n, i))
 (sol::PowerGridSolution)(t, n, ::Type{Val{sym}}) where sym = sol(t, n, Val{:int}, sym)
-
 
 variable_index(nodes, n::AbstractArray, s) = map(n -> variable_index(nodes, n, s), n)
 

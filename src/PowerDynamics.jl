@@ -29,6 +29,7 @@ include("nodes/experimental/RLCLoad.jl")
 
 
 # all line types
+include("lines/PiModel.jl")
 include("lines/LineMacro.jl")
 include("lines/StaticLine.jl")
 include("lines/PiModelLine.jl")
@@ -39,6 +40,7 @@ include("operationpoint/operationpoint.jl")
 
 include("simulations/PowerGridSolutions.jl")
 include("simulations/simulations.jl")
+include("simulations/PowerPerturbation.jl")
 include("simulations/NodeShortCircuit.jl")
 
 
