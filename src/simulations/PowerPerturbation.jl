@@ -1,4 +1,4 @@
-using OrdinaryDiffEq: ODEProblem, Rodas4, init, solve!, step!
+using OrdinaryDiffEq: ODEProblem, Rodas4, init, solve!, step!, reinit!, savevalues!
 using Setfield
 
 @Base.kwdef struct PowerPerturbation

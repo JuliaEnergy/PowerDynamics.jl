@@ -1,5 +1,4 @@
-using OrdinaryDiffEq: ODEProblem, Rodas4, init, solve!, reinit!, savevalues!
-using LightGraphs: rem_edge!, edges, Edge
+using OrdinaryDiffEq: ODEProblem, Rodas4
 import DiffEqBase: solve
 
 @Base.kwdef struct Perturbation
