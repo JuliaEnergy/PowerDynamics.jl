@@ -1,15 +1,11 @@
 using Test: @test
-using LightGraphs: SimpleGraph, add_edge!, edges, Edge
-using PowerDynamics: SlackAlgebraic, SwingEqLVS, StaticLine, Perturbation, Inc, Dec, LineFault
+using LightGraphs: edges, Edge
+using PowerDynamics: SlackAlgebraic, SwingEqLVS, StaticLine, Perturbation, Inc, Dec, LineFault, PowerPerturbation, simulate
 
 Y = 0 + 5*im
-graph = SimpleGraph(3)
 nodes = [SlackAlgebraic(U=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1)]
-
-add_edge!(graph, 1, 2)
-add_edge!(graph, 1, 3)
 lines = [StaticLine(from=e.src, to=e.dst, Y=Y) for e in edges(graph)]
-grid = PowerGrid(graph, nodes, lines)
+grid = PowerGrid(nodes, lines)
 @syms u_Sl u_Sw1 u_Sw2
 omega1 = 0.01
 omega1_delta = 0.2
