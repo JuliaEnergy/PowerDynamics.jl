@@ -5,6 +5,11 @@ using Logging: @warn
 
 abstract type Json <: Format end
 
+"""
+    read_powergrid(file, Json)
+
+Parses an existing model in JSON format into a [`PowerGrid`](@ref)
+"""
 function read_powergrid(file, ::Type{Json})
     json = parsefile(file; dicttype=Dict, inttype=Int64, use_mmap=true)
     nodes = get(json, "nodes", []) |> convert_nodes
@@ -12,6 +17,11 @@ function read_powergrid(file, ::Type{Json})
     PowerGrid(nodes, lines)
 end
 
+"""
+    write_powergrid(powergrid, file, Json)
+
+Writes a [`PowerGrid`](@ref) model into a file as JSON.
+"""
 function write_powergrid(pg::PowerGrid, file, ::Type{Json})
     json_nodes = map(write_type, pg.nodes)
     json_lines = map(write_type, pg.lines)

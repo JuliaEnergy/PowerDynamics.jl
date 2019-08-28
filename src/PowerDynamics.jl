@@ -45,7 +45,7 @@ include("simulations/NodeShortCircuit.jl")
 
 
 # export of the main types and functions
-export GridDynamicsError, NodeDynamicsError, MissingParameterError, StateError
+export PowerDynamicsError,NodeDynamicsError,StateError,GridSolutionError,OperationPointError
 export no_internal_masses
 export @DynamicNode, showdefinition
 export construct_vertex
@@ -60,6 +60,7 @@ export convert, promote_rule # only so the autodocs work properly
 export find_operationpoint
 
 export PowerGrid
+export PowerGridSolution
 export rhs
 export systemsize
 export symbolsof

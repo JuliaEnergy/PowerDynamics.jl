@@ -1,4 +1,6 @@
 """
+Transformer(from, to, y, t_ratio)
+
 A transformer representation uses the Π model,
 assuming an ideal transformer in series with an admittance.
 The admittance is here taken to be on the high-voltage side.

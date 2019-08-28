@@ -1,4 +1,7 @@
 """
+```Julia
+StaticLine(from, to, Y)
+```
 A static model that represents a line with an admittance Y.
 """
 @Line StaticLine(from, to, Y) begin
