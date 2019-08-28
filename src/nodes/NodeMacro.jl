@@ -122,11 +122,13 @@ function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
 end
 
 """
-Macro for creating a new type of dynmic nodes.
+Macro for creating a new type of dynamic nodes.
 
 Syntax Description:
 ```Julia
-@DynamicNode MyNewNodeName(Par1, Par2, ...) <: NodeDynamicsType(N1, N2, ...) begin
+@DynamicNode MyNewNodeName(Par1, Par2, ...) begin
+    [MassMatrix definition]
+end begin
     [all prepratory things that need to be run just once]
 end [[x1, dx1], [x2, dx2]] begin
     [the actual dynamics equation]
@@ -134,21 +136,22 @@ end [[x1, dx1], [x2, dx2]] begin
 end
 ```
 where `MyNewNodeName` is the name of the new type of dynamic node, `Par1, Par2, ...`
-are the names of the parameters, `NodeDynamicsType` the the node dynamics type
-(e.g. `OrdinaryNodeDynamics` or `OrdinaryNodeDynamicsWithMass`), `N1, N1, ...`
-the parameters of the dynamics type, `x1, x2, ...` the internal variables of the
+are the names of the parameters, `x1, x2, ...` the internal variables of the
 node and `dx1, dx2, ...` the corresponding differentials.
 
-In the first block, the preparation code that needs to be run only once is inserted.
-Finally, the second block contains the dynamics description, where it's important
-that the output variables need to be set. In case of `OrdinaryNodeDynamics` and
-`OrdinaryNodeDynamicsWithMass`, these are `du` and the differentials of the
+In the first block a MassMatrix may be specified. Using the [`MassMatrix`](@ref)
+helper function here is recommended.
+The whole block can be omitted and the identity matrix I is then used as default.
+
+In the second block, the preparation code that needs to be run only once is inserted.
+Finally, the third block contains the dynamics description, where it's important
+that the output variables need to be set. These are `du` and the differentials of the
 internal variables (here `dx1, dx2`).
 
 Below are two examples:
 
 ```Julia
-@DynamicNode SwingEqParameters(H, P, D, Ω) <: OrdinaryNodeDynamics() begin
+@DynamicNode SwingEqParameters(H, P, D, Ω) begin
     @assert D > 0 "damping (D) should be >0"
     @assert H > 0 "inertia (H) should be >0"
     Ω_H = Ω * 2pi / H
@@ -161,7 +164,10 @@ end
 ```
 
 ```Julia
-@DynamicNode SlackAlgebraicParameters(U) <: OrdinaryNodeDynamicsWithMass(m_u=false, m_int=no_internal_masses) begin
+@DynamicNode SlackAlgebraicParameters(U) begin
+    MassMatrix() # no masses
+end begin
+    # empty prep block
 end [] begin
         du = u - U
 end
@@ -193,6 +199,21 @@ showdefinition(x) = showdefinition(stdout, x)
 "A variable to be used when no internal masses are present for a node dynamics type."
 const no_internal_masses = Vector{Bool}()
 
+"""
+    MassMatrix(;m_u::Bool = false, m_int = no_internal_masses)
+
+Creates a massmatrix.
+Calling:
+```Julia
+MassMatrix()
+```
+creates a mass matrix with all masses turned off.
+
+# Keyword Arguments
+- `m_u::Bool=false`: Mass matrix value for the complex voltage u.
+- `m_int::Vector{Bool}=Vector{Bool}()`: A vector representing the diagonal of the mass matrix. Specifies the masses for the remaining/internal variables.
+
+"""
 function MassMatrix(;m_u::Bool = false, m_int = no_internal_masses)
     mm = [m_u, m_u] # double mass for u, because it is a complex variable
     append!(mm, m_int)
