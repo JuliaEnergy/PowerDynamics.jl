@@ -1,5 +1,4 @@
 using OrdinaryDiffEq: ODEProblem, Rodas4
-using LightGraphs: rem_edge!
 import DiffEqBase: solve
 
 """
@@ -62,6 +61,9 @@ function (p::Perturbation)(op)
     x0
 end
 
+
+const iipfunc = true # is in-place function
+
 """
 ```Julia
 simulate(p::Perturbation, powergrid, x0; timespan)
@@ -81,8 +83,6 @@ Simulates a [`LineFault`](@ref)
 function simulate(lf::LineFault, powergrid, x0; timespan)
     solve(lf(powergrid), x0, timespan);
 end
-
-const iipfunc = true # is in-place function
 
 function solve(pg::PowerGrid, x0, timespan)
     problem = ODEProblem{iipfunc}(rhs(pg),x0.vec,timespan)

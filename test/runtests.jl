@@ -21,6 +21,7 @@ testlist = [
     ("common/States.jl", "States Tests"),
     ("simulations/PowerGridSolutions.jl", "PowerGridSolutions Tests"),
     ("simulations/simulations.jl", "Simulation Tests"),
+    ("simulations/PowerPerturbation.jl", "PowerPerturbation Simulation Tests"),
     ("operationpoint/operationpoint.jl", "operationpoint Tests"),
     ("parsers/JsonParser.jl", "JsonParser Tests")
 ]
