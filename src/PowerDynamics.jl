@@ -14,6 +14,7 @@ include("parsers/Format.jl")
 include("parsers/JsonParser.jl")
 
 # all possible node dynamics
+include("nodes/AbstractNode.jl")
 include("nodes/NodeMacro.jl")
 include("nodes/PQAlgebraic.jl")
 include("nodes/PVAlgebraic.jl")
@@ -29,21 +30,24 @@ include("nodes/experimental/RLCLoad.jl")
 
 
 # all line types
+
+include("lines/AbstractLine.jl")
+include("lines/PiModel.jl")
 include("lines/LineMacro.jl")
 include("lines/StaticLine.jl")
 include("lines/PiModelLine.jl")
-include("lines/PiModel.jl")
 include("lines/Transformer.jl")
 
 include("operationpoint/operationpoint.jl")
 
 include("simulations/PowerGridSolutions.jl")
 include("simulations/simulations.jl")
+include("simulations/PowerPerturbation.jl")
 include("simulations/NodeShortCircuit.jl")
 
 
 # export of the main types and functions
-export GridDynamicsError, NodeDynamicsError, MissingParameterError, StateError
+export PowerDynamicsError,NodeDynamicsError,StateError,GridSolutionError,OperationPointError
 export no_internal_masses
 export @DynamicNode, showdefinition
 export construct_vertex
@@ -58,6 +62,7 @@ export convert, promote_rule # only so the autodocs work properly
 export find_operationpoint
 
 export PowerGrid
+export PowerGridSolution
 export rhs
 export systemsize
 export symbolsof

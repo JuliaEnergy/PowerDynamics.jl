@@ -13,5 +13,3 @@ function PiModel(y, y_shunt_km, y_shunt_mk, t_km, t_mk)
     Π[2, 2] = abs2(t_mk) * (y + y_shunt_mk)
     Π
 end
-
-export PiModel
