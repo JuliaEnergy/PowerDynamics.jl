@@ -1,5 +1,7 @@
 # PowerGrid model
 
-```@docs
-PowerGrid
+```@autodocs
+Modules = [PowerDynamics]
+Pages   = ["PowerGrid.jl"]
+Order   = [:function, :type]
 ```
