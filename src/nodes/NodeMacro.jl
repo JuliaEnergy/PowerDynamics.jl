@@ -12,8 +12,7 @@ function cndfunction_builder!(
     internals,
     massmatrix,
     func_body,
-    cndfunction
-    )
+    cndfunction)
     rhscall = :(rhs!(
         dx,
         x,
@@ -24,7 +23,7 @@ function cndfunction_builder!(
         )
     rhsbody = quote end
     rhsbody.args[1] = func_body.args[1]
-    append!(rhsbody.args, [:(i = total_current(e_s, e_d))])
+    append!(rhsbody.args, [:(i = total_current(e_s, e_d)+Y_n*(x[1] + x[2] * im))])
     append!(rhsbody.args, [:(u = x[1] + x[2] * im)])
 
     extracted_vars =  [:($sym = x[$(index+2)] ) for (index, sym) in enumerate(internals.vars)]
@@ -44,6 +43,7 @@ function cndfunction_builder!(
     # That way a user is not confused (hopefully)
     deleteat!(errorif.args[1].args[2].args, 1)
     catchdef = Expr(:try, Expr(:block), :e, errorif)
+
     append!(catchdef.args[1].args, [du_real; du_imag ; extracted_dvars; :(return nothing)])
     append!(rhsbody.args, [catchdef])
     rhsfunction = Expr(:function, rhscall, rhsbody)
@@ -83,19 +83,19 @@ end
 function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
     @capture(typedef, name_(parameters__))
     internals = getinternalvars(internalsdef)
-    # build parameters struct
-    struct_def = buildparameterstruct(name, parameters)
+    full_params = push!(copy(parameters), :Y_n)
+    struct_def = buildparameterstruct(name, full_params)
 
     kw_constructor = Expr(:(=), # define the constructor
-        Expr(:call, name, Expr(:parameters, parameters... )),
-        Expr(:call, name,  parameters...)
+        Expr(:call, name, Expr(:parameters, parameters..., Expr(:kw, :Y_n, 0))),
+        Expr(:call, name,  (full_params)...)
     )
 
     massmatrix = massmatrix === nothing ? I : massmatrix
 
     # build `construct_vertex`
     cndcall = :(construct_vertex(par::$(name)))
-    extracted_parameters = map(sym -> :( $sym = par.$sym ), parameters)
+    extracted_parameters = map(sym -> :( $sym = par.$sym ), full_params)
     cndbody = quote end
     append!(cndbody.args, extracted_parameters)
     append!(cndbody.args, prep.args)
@@ -106,8 +106,7 @@ function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
         internals,
         massmatrix,
         func_body,
-        cndfunction
-        )
+        cndfunction)
 
     fct_symbolsof = generate_symbolsof_fct(name, internals)
     fct_dimension = generate_dimension_fct(name, internals)
