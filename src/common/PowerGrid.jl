@@ -17,6 +17,15 @@ struct PowerGrid
     lines
 end
 
+"""
+```Julia
+Powergrid(nodes, lines)
+```
+
+creates a [`PowerGrid`](@ref) from nodes and lines. The underlying graph
+is created automatically.
+
+"""
 function PowerGrid(nodes, lines)
     graph = SimpleGraph(length(nodes))
     [add_edge!(graph, l.from, l.to) for l in lines]

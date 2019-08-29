@@ -7,5 +7,3 @@
 # Contact
 
 In case of questions, please submit an [issue on github](https://github.com/JuliaEnergy/PowerDynamics.jl) or ask on [our slack channel](https://julialang.slack.com/messages/CDAGL4T09/) (get [your invitation here](https://slackinvite.julialang.org/)).
-
-If you don't want to contact us publicly, send an email to Tim Kittel (`tim.kittel@elena-international.com`) or Sabine Auer (`sabine.auer@elena-international.com`).

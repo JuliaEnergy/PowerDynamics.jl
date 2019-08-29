@@ -4,7 +4,7 @@ using PowerDynamics
 
 makedocs(
     modules = [PowerDynamics],
-    authors = "Tim Kittel and contributors.",
+    authors = "Tim Kittel, Jan Liße, Sabine Auer and further contributors.",
     linkcheck=false,
     sitename = "PowerDynamics.jl",
     pages = [
