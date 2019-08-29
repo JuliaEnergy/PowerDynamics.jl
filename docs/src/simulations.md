@@ -6,10 +6,10 @@ Currently PowerDynamics supports the following simulations:
 - [`Perturbation`](@ref)
 - [`LineFault`](@ref)
 - [`NodeShortCircuit`](@ref)
-- PowerPerturbation (power scale down/up of a generator node)
+- [`PowerPerturbation`](@ref)
 
 ```@autodocs
 Modules = [PowerDynamics]
-Pages   = ["simulations.jl","NodeShortCircuit.jl"]
+Pages   = ["simulations.jl","NodeShortCircuit.jl","PowerPerturbation.jl"]
 Order   = [:function, :type]
 ```
