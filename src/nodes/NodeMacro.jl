@@ -83,19 +83,19 @@ end
 function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
     @capture(typedef, name_(parameters__))
     internals = getinternalvars(internalsdef)
-    # build parameters struct
-    struct_def = buildparameterstruct(name, parameters)
+    full_params = push!(copy(parameters), :Y_n)
+    struct_def = buildparameterstruct(name, full_params)
 
     kw_constructor = Expr(:(=), # define the constructor
         Expr(:call, name, Expr(:parameters, parameters..., Expr(:kw, :Y_n, 0))),
-        Expr(:call, :new,  (push!(parameters, :Y_n))...)
+        Expr(:call, name,  (full_params)...)
     )
 
     massmatrix = massmatrix === nothing ? I : massmatrix
 
     # build `construct_vertex`
     cndcall = :(construct_vertex(par::$(name)))
-    extracted_parameters = map(sym -> :( $sym = par.$sym ), parameters)
+    extracted_parameters = map(sym -> :( $sym = par.$sym ), full_params)
     cndbody = quote end
     append!(cndbody.args, extracted_parameters)
     append!(cndbody.args, prep.args)
