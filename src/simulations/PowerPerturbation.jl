@@ -1,11 +1,21 @@
 using OrdinaryDiffEq: ODEProblem, Rodas4, init, solve!, step!, reinit!, savevalues!
 using Setfield
 
-@Base.kwdef struct PowerPerturbation
+"""
+```Julia
+PowerPerturbation(;node_number,fraction,tspan_fault)
+```
+# Keyword Arguments
+- `node_number`: number  of the node
+- `fraction`: percentage factor to be applied to the active power P
+- `tspan_fault`: PowerPerturbation timespan
+"""
+struct PowerPerturbation
     node_number
     fraction
     tspan_fault
 end
+PowerPerturbation(;node_number,fraction,tspan_fault) = PowerPerturbation(node_number,fraction,tspan_fault)
 
 function (pd::PowerPerturbation)(powergrid)
     #TODO: check if node type supported for power drop
@@ -16,7 +26,12 @@ function (pd::PowerPerturbation)(powergrid)
     PowerGrid(node_list_power_drop, powergrid.lines)
 end
 
-# this works, but the code looks hacky. Can't we do any better?
+"""
+```Julia
+simulate(nsc::PowerPerturbation, powergrid, x0, timespan)
+```
+Simulates a [`PowerPerturbation`](@ref)
+"""
 function simulate(pd::PowerPerturbation, powergrid, x0, timespan)
     @assert first(timespan) <= pd.tspan_fault[1] "fault cannot begin in the past"
     @assert pd.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
@@ -45,4 +60,4 @@ function simulate(pd::PowerPerturbation, powergrid, x0, timespan)
 end
 
 export PowerPerturbation
-export simulate, simulate2, simulate3
+export simulate
