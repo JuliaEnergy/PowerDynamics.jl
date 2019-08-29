@@ -1,3 +1,9 @@
+"""
+```Julia
+PiModelLine(from, to, y, y_shunt_km, y_shunt_mk)
+```
+A line modelled according to the PI-Model.
+"""
 @Line PiModelLine(from, to, y, y_shunt_km, y_shunt_mk) begin
     Y = PiModel(y, y_shunt_km, y_shunt_mk, 1, 1)
 end begin
