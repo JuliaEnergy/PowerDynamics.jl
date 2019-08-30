@@ -21,22 +21,6 @@ end
 ```@example documentationbuildtime
 printBuiltTime() # hide
 ```
-with the following version of the sub-packages:
-```@setup versions
-using Pkg
-env = Pkg.Types.EnvCache()
-subpackages = copy(env.project["deps"])
-uuids = map(Base.UUID, values(subpackages))
-function printversions()
-  for uuid in uuids
-    pkg = Pkg.Types.manifest_info(env, uuid)
-    println(rpad(" * $(pkg["name"]) ", 30, "."), " $(pkg["version"])")
-  end
-end
-```
-```@example versions
-printversions() # hide
-```
 
 ## Installation
 
@@ -82,7 +66,7 @@ have any questions, [contact us](@ref Contact).
 new descriptions of synchronous machines.
 
 After going through the introduction for a [Grid Modeler](@ref), we recommend that you read
-through [Dynamics Types](@ref) and [Custom Node Types](@ref) and try to implement
+through [PowerGrid model](@ref) and [Custom Node Types](@ref) and try to implement
 a new node type for an example grid. With that, you should have all the tools you need.
 If you have any questions, [contact us](@ref Contact).
 

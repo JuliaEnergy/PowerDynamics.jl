@@ -1,7 +1,7 @@
 site_name:        PowerDynamics.jl
 repo_url:         https://github.com/JuliaEnergy/PowerDynamics.jl
 site_description: Package for dynamical modeling of power grids
-site_author:      Tim Kittel <tim.kittel@elena-international.com>
+site_author:      Tim Kittel, Jan Liße, Sabine Auer
 
 theme: readthedocs
 

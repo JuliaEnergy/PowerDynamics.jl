@@ -5,6 +5,7 @@
 ```Julia
 RLCLoad(R,L,C)
 ```
+EXPERIMENTAL
 A node type that represents the RLC load model according to
 "Power Systems Electromagnetic Transients Simulation",
 Neville Watson and Jos Arrillaga, IET 2007, p.59, eq. (3.47)

@@ -14,13 +14,14 @@ testlist = [
     ("nodes/CurrentSourceInverterMinimal.jl", "CurrentSourceInverterMinimal Node Tests"),
     ("nodes/ExponentialRecoveryLoad.jl", "ExponentialRecoveryLoad Node Tests"),
     ("nodes/FourthOrderEqGovernorExciterAVR.jl", "FourthOrderEqGovernorExciterAVR Node Tests"),
-    ("nodes/RLCLoad.jl", "RLCLoad Node Tests"),
+    ("nodes/experimental/RLCLoad.jl", "RLCLoad Node Tests"),
     ("lines/StaticLine.jl", "StaticLine tests"),
     ("lines/PiModelLine.jl", "PiModelLine tests"),
     ("common/PowerGrid.jl", "PowerGrid Tests"),
     ("common/States.jl", "States Tests"),
     ("simulations/PowerGridSolutions.jl", "PowerGridSolutions Tests"),
     ("simulations/simulations.jl", "Simulation Tests"),
+    ("simulations/PowerPerturbation.jl", "PowerPerturbation Simulation Tests"),
     ("operationpoint/operationpoint.jl", "operationpoint Tests"),
     ("parsers/JsonParser.jl", "JsonParser Tests")
 ]

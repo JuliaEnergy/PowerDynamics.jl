@@ -4,11 +4,21 @@ using NetworkDynamics
 using OrdinaryDiffEq: ODEProblem, Rodas4
 import DiffEqBase: solve
 
-@Base.kwdef struct NodeShortCircuit
-    R
+"""
+```Julia
+NodeShortCircuit(;node,var,f)
+```
+# Keyword Arguments
+- `node`: number  of the node
+- `R`: resistance of the shortcircuit
+- `sc_timespan`: shortcircuit timespan
+"""
+struct NodeShortCircuit
     node
+    R
     sc_timespan
 end
+NodeShortCircuit(;R,node,sc_timespan) = NodeShortCircuit(R,node,sc_timespan)
 
 function (nsc::NodeShortCircuit)(powergrid)
     # Currently this assumes that the lines are PiModels...
@@ -28,7 +38,12 @@ function (nsc::NodeShortCircuit)(powergrid)
     PowerGrid(powergrid.nodes, lines)
 end
 
-
+"""
+```Julia
+simulate(nsc::NodeShortCircuit, powergrid, x1, timespan)
+```
+Simulates a [`NodeShortCircuit`](@ref)
+"""
 function simulate(nsc::NodeShortCircuit, powergrid, x1, timespan)
     sc_timespan = nsc.sc_timespan
     @assert timespan[1] < sc_timespan[1]

@@ -40,7 +40,9 @@ end [[θ_PLL,dθ_PLL],[v_xm,dv_xm],[v_ym,dv_ym],[P,dP]] begin
     println("P: ",P)
     println("p: ",p)
     #P=p
-    dP =-k_P*(f_m-f_s)/f*p
+
+    println('f_m: ',f_m)
+    dP =-k_P*(f_m-f_s)/f*(v_d*I_n)
     I_P = P/v_d
     println("I_P: ",I_P)
     I_Q = 0.

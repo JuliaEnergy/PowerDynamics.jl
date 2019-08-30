@@ -30,7 +30,7 @@ Additionally to ``u``, it has the internal dynamic variables
 - `H`: shaft inertia constant (given in [s]), defined according to P. Sauer, p. 33, eq. (3.60)
 - `P`: active (real) power output, also called the mechanical torque applied to the shaft, given in [pu]
 - `D`: damping coefficient (given in [s], see P. Sauer, eq. (5.156) where the damping torque is equal `Dω`)
-- `Ω`: rated frequency of the power grid, often 50Hz
+- `Ω`: rated frequency of the power grid, often ``2π⋅50Hz``
 - `T_d_dash`: time constant of d-axis, given in [s], see P. Sauer, chapter 3.7, p. 54 for a general explanation on time constants
 - `T_q_dash`: time constant of q-axis, given in [s]
 - `X_d_dash`: transient reactance of d-axis, given in [pu]
@@ -38,17 +38,17 @@ Additionally to ``u``, it has the internal dynamic variables
 - `X_d`: reactance of d-, given in [pu]
 - `X_d`: reactance of q-axis, given in [pu]
 
-- 'T_e' : Exciter time constant, integration rate associated with exciter control [s]
-- 'T_a' : Maximum voltage regulator output [s]
-- 'T_f' : Excitation control system stabilizer time constant [s]
-- 'K_e' : Exciter constant related to self-excited field [pu]
-- 'K_a' : Voltage Regulator gain [pu]
-- 'K_f' : Excitation control system stabilizer gains [pu]
-- 'V_ref' : Reference voltage for the AVR [pu]
+- `T_e` : Exciter time constant, integration rate associated with exciter control [s]
+- `T_a` : Maximum voltage regulator output [s]
+- `T_f` : Excitation control system stabilizer time constant [s]
+- `K_e` : Exciter constant related to self-excited field [pu]
+- `K_a` : Voltage Regulator gain [pu]
+- `K_f` : Excitation control system stabilizer gains [pu]
+- `V_ref` : Reference voltage for the AVR [pu]
 
-- 'R_d' : Speed regulation [2πdroop/ω_s]
-- 'T_sv' : Steam Valve time constant [s]
-- 'T_ch' : Steam Chest time constant [s]
+- `R_d` : Speed regulation ``R_d=2π droop/Ω`` [s]
+- `T_sv` : Steam Valve time constant [s]
+- `T_ch` : Steam Chest time constant [s]
 
 
 # Mathematical Representation Synchronous Machine
@@ -74,17 +74,17 @@ The fourth-order equations read (according to P. Sauer, "Power System Dynamics a
 # Exciter and AVR equations
 ```math
 	u_{terminal} = e'_c - j X'_d i \\
-	S_{e}(e_{fd}) = 0.098e^{0.55 e_{fd}} (according to P. Sauer, p. 70) \\
+	S_{e}(e_{fd}) = 0.098e^{0.55 e_{fd}} \text{(according to P. Sauer, p. 70)} \\
 	\dfrac{dR_f}{dt} = \dfrac{1}{T_f} (-R_f + \dfrac{K_f}{T_f} e_f) \\
-	\dfrac{dv_r}{dt} = \dfrac{1}{T_a} (-v_r + (K_a R_f) -\dfrac{K_a K_f}{T_f}e_{fd} + K_a (V_{ref} - abs(u_{terminal}))) \\
+	\dfrac{dv_r}{dt} = \dfrac{1}{T_a} (-v_r + (K_a R_f) -\dfrac{K_a K_f}{T_f}e_{fd} + K_a (V_{ref} - |u_{terminal}|)) \\
 	\dfrac{de_{fd}}{dt} = \dfrac{1}{T_e} (-K_e + S_{e}(e_{fd})e_{fd} + v_r) \\
 ```
 
 # Governor equations
 ```math
     \dfrac{dP_m}{dt} = \dfrac{1}{T_{ch}} (-P_m + P_{sv}) \\
-    Assumption: T_m = P_m \\
-    \dfrac{dP_{sv}}{dt} = \dfrac{1}{T_{sv}} (-P_{sv} + P_c -\dfrac{1}{R_d} (\dfrac{\omega}{\omega_s} - 1)) \\
+    \text{Assumption}: T_m = P_m \\
+    \dfrac{dP_{sv}}{dt} = \dfrac{1}{T_{sv}} (-P_{sv} + P_c -\dfrac{1}{R_d} (\dfrac{\omega}{Ω} - 1)) \\
 ```
 
 The equations for frequency and phase represent energy conservation and phase shift.
@@ -115,7 +115,7 @@ With the PowerDynamics.jl naming conventions of ``i`` and ``u`` they read as
     @assert T_sv > 0 "Steam Valve time constant should be >0"
     @assert T_ch > 0 "T_ch' : Steam Chest time constant should be >0"
 
-    Ω_H = (Ω * 2pi) / H #    norm = 2 * H / (2 * np.pi * 50)  # normalize the parameters as done for coupling_const, input_power, damping_const
+    Ω_H = Ω  / (2*H)
 
 end [[θ, dθ],[ω, dω],[e_f, de_f],[v_r, dv_r],[r_f,dr_f],[P_sv, dP_sv],[P_m, dP_m]] begin
     ##### Model R1 #####
@@ -134,7 +134,7 @@ end [[θ, dθ],[ω, dω],[e_f, de_f],[v_r, dv_r],[r_f,dr_f],[P_sv, dP_sv],[P_m, 
     de_f = (1 / T_e) * ((- (K_e + (0.098*exp(0.55*e_f))) * e_f) + v_r) #S_e_fd, Sauer p70
 
     #Governor
-    dP_sv = (1 / T_sv) * (-P_sv + P - (1/R_d)*(((ω+(Ω*2pi))/(Ω*2pi))-1))
+    dP_sv = (1 / T_sv) * (-P_sv + P - (1/R_d)*(((ω+Ω)/Ω)-1))
     dP_m  = (1 / T_ch) * (-P_m  + P_sv)
 
     #Synchronous machine
