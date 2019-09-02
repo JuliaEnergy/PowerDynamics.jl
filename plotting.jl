@@ -11,7 +11,7 @@ function plot_res(result, powergrid,disturbed_node)
     p_labels = reshape([latexstring(string(raw"p", "_{$i}")) for i=1:length(powergrid.nodes)], (1, length(powergrid.nodes)))
     pl_p = plot(result, :, :p, legend = (0.8, 0.95), ylabel=L"p [p.u.]", label=p_labels)
     pl_ω = plot(result, ω_indices, :ω, legend = (0.8, 0.7), ylabel=L"\omega \left[rad/s\right]", label=ω_labels, color=ω_colors)
-    pl_ϕ = 
+    pl_ϕ =
     pl = plot(
         pl_p,pl_ω;
         layout=(2,1),
