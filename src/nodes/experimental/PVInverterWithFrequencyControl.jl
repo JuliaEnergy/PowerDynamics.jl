@@ -93,6 +93,7 @@ end  begin
     @assert f_s>=0
     @assert T_m >=0
     @assert k_P >=0
+    @assert τ_ω >0
 end [[θ_PLL,dθ_PLL],[v_xm,dv_xm],[v_ym,dv_ym],[P,dP],[ω,dω]] begin
     v_x = real(u)
     v_y = imag(u)
@@ -101,13 +102,8 @@ end [[θ_PLL,dθ_PLL],[v_xm,dv_xm],[v_ym,dv_ym],[P,dP],[ω,dω]] begin
     dv_xm = 1/T_m*(v_x-v_xm)
     dv_ym = 1/T_m*(v_y-v_ym)
 
-    #println("v_ym/v_xm: ",v_ym/v_xm)
-
     v_d = v_xm*cos(θ_PLL)+v_ym*sin(θ_PLL)
     v_q = v_xm*sin(θ_PLL)-v_ym*cos(θ_PLL)
-
-    #println("v_d: ",v_d)
-    #println("v_q: ",v_q)
 
     dθ_PLL = -v_q*(k_PLL)
 
@@ -117,26 +113,20 @@ end [[θ_PLL,dθ_PLL],[v_xm,dv_xm],[v_ym,dv_ym],[P,dP],[ω,dω]] begin
     # term fault since PV frequency regulation are generally expected to occur within seconds.
     dω = 1/τ_ω*(-ω + dθ_PLL*f*2*π)
 
-    println("f_m: ",f_m)
     if (f_m>f_s)
         dP = k_P*dω*(v_d*I_n)
         #dP =k_P*(f_m-f_s)/f*(v_d*I_n)
-        #println("f_m: ",f_m)
     else
         dP=0
     end
     #if (P<v_d*I_n)
-    #    I_P = P/v_d
+    I_P = P/v_d
     #else
     #    I_P = I_n
     #end
-    #println("I_P: ",I_P)
-    #println("v_d*I_n: ",v_d*I_n)
-    #println("P: ",P)
     I_Q = 0.
     i_x = I_P*cos(θ_PLL) + I_Q*sin(θ_PLL)
     i_y = I_P*sin(θ_PLL) - I_Q*cos(θ_PLL)
-    #println("i: ",i)
     du = i-(i_x+1im*i_y)
 end
 
