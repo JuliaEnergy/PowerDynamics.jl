@@ -31,8 +31,6 @@ nsc = NodeShortCircuit(node = 1, R = 0.1, sc_timespan=(1.,2.))
 pg_static = PowerGrid(busses, stat_lines)
 pg = PowerGrid(busses, lines)
 
-#@test nsc(pg_static) == nothing
-
 ic_guess = ones(systemsize(pg)) + 0. * randn(systemsize(pg))
 ic_guess[[3,6,9]] .= 0.
 ic_guess = find_valid_initial_condition(pg,ic_guess)
