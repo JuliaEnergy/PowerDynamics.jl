@@ -1,4 +1,4 @@
-using OrdinaryDiffEq: ODEProblem, Rodas4, init, solve!, step!, reinit!, savevalues!
+using OrdinaryDiffEq: ODEProblem, Rodas4, init, solve!, step!, reinit!, savevalues!, u_modified!
 using Setfield
 
 """
@@ -36,23 +36,19 @@ function simulate(pd::PowerPerturbation, powergrid, x0, timespan)
     @assert first(timespan) <= pd.tspan_fault[1] "fault cannot begin in the past"
     @assert pd.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
 
-    problem = ODEProblem{true}(rhs(pd(powergrid)), x0.vec, (first(timespan), pd.tspan_fault[2]))
-    fault_integrator = init(problem, Rodas4(autodiff=false))
-
-    reinit!(fault_integrator, x0.vec, t0=pd.tspan_fault[1], tf=pd.tspan_fault[2], erase_sol=false)
-    savevalues!(fault_integrator)
-    solve!(fault_integrator)
-
-    problem = ODEProblem{true}(rhs(powergrid), fault_integrator.u, (pd.tspan_fault[2], last(timespan)))
+    problem = ODEProblem{true}(rhs(powergrid), x0.vec, timespan)
     integrator = init(problem, Rodas4(autodiff=false))
 
-    # Now the trick: copy solution object to new integrator and
-    # make sure the counters are updated, otherwise sol is overwritten in the
-    # next step.
-    integrator.sol = fault_integrator.sol
-    integrator.saveiter = fault_integrator.saveiter
-    integrator.saveiter_dense = fault_integrator.saveiter_dense
-    integrator.success_iter = fault_integrator.success_iter
+    step!(integrator, pd.tspan_fault[1], true)
+
+    # update integrator with error
+    integrator.f = rhs(pd(powergrid))
+    u_modified!(integrator,true)
+
+    step!(integrator, pd.tspan_fault[2], true)
+
+    # update integrator, clear error
+    integrator.f = rhs(powergrid)
 
     solve!(integrator)
 
