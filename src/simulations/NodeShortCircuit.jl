@@ -1,6 +1,4 @@
 export NodeShortCircuit
-
-using NetworkDynamics
 using OrdinaryDiffEq: ODEProblem, Rodas4
 import DiffEqBase: solve
 
@@ -18,7 +16,7 @@ struct NodeShortCircuit
     R
     sc_timespan
 end
-NodeShortCircuit(;R,node,sc_timespan) = NodeShortCircuit(R,node,sc_timespan)
+NodeShortCircuit(;node,R,sc_timespan) = NodeShortCircuit(node,R,sc_timespan)
 
 function (nsc::NodeShortCircuit)(powergrid)
     # Currently this assumes that the lines are PiModels...
@@ -55,12 +53,12 @@ function simulate(nsc::NodeShortCircuit, powergrid, x1, timespan)
     sol1 = solve(prob1, Rodas4(autodiff=false))
 
     # Integrate the fault state
-    x2 = find_valid_ic(rhs(nsc_powergrid), sol1[end]) # Jump the state to be valid for the new system.
+    x2 = find_valid_initial_condition(nsc_powergrid, sol1[end]) # Jump the state to be valid for the new system.
     prob2 = ODEProblem(rhs(nsc_powergrid), x2, sc_timespan)
     sol2 = solve(prob2, Rodas4(autodiff=false))
 
     # Integrate after fault
-    x3 = find_valid_ic(rhs(powergrid), sol2[end]) # Jump the state to be valid for the new system.
+    x3 = find_valid_initial_condition(powergrid, sol2[end]) # Jump the state to be valid for the new system.
     prob3 = ODEProblem(rhs(powergrid), x3, (sc_timespan[2], timespan[2]))
     sol3 = solve(prob3, Rodas4(autodiff=false))
 

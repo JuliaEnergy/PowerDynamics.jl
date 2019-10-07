@@ -1,7 +1,6 @@
 using Test: @test
-using PowerDynamics: simulate, PowerGrid, systemsize, rhs, PiModelLine, PQAlgebraic, VSIMinimal, StaticLine, NodeShortCircuit
+using PowerDynamics: simulate, PowerGrid, systemsize, rhs, PiModelLine, PQAlgebraic, VSIMinimal, StaticLine, NodeShortCircuit, find_valid_initial_condition
 using OrdinaryDiffEq: ODEProblem, Rodas4
-using NetworkDynamics: find_valid_ic
 import DiffEqBase: solve
 
 busses = [VSIMinimal(;τ_P=1.0,τ_Q=0.0001,K_P=0.2,K_Q=0.002,V_r=1.0,P=1.0,Q=0.5),
@@ -27,18 +26,14 @@ stat_lines = [
   StaticLine(;from=2, to=3, Y = 1/(0.1152 + im*0.0458)),
   StaticLine(;from=1, to=2, Y = 1/(0.1152 + im*0.0458))]
 
-nsc = NodeShortCircuit(R = 0.1, node = 1, sc_timespan=(1.,2.))
+nsc = NodeShortCircuit(node = 1, R = 0.1, sc_timespan=(1.,2.))
 
 pg_static = PowerGrid(busses, stat_lines)
 pg = PowerGrid(busses, lines)
 
-@test nsc(pg_static) == nothing
-
 ic_guess = ones(systemsize(pg)) + 0. * randn(systemsize(pg))
 ic_guess[[3,6,9]] .= 0.
-ic_guess = find_valid_ic(rhs(pg),ic_guess)
-problem = ODEProblem(rhs(pg),ic_guess,(0.,200.))
-sol = solve(problem, Rodas4(autodiff=false))
-op_point = sol[end]
+ic_guess = find_valid_initial_condition(pg,ic_guess)
 
-s1, s2, s3 = simulate(nsc, pg, op_point, (0.,30.));
+
+s1, s2, s3 = simulate(nsc, pg, ic_guess, (0.,30.));
