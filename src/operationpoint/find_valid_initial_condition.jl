@@ -1,4 +1,4 @@
-using DifferentialEquations: ODEFunction
+using OrdinaryDiffEq: ODEFunction
 using NLsolve: nlsolve, converged
 
 
