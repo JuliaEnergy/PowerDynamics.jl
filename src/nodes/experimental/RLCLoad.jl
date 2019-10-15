@@ -27,13 +27,14 @@ end begin
     @assert R > 0 "Resistance should be >0"
     @assert L > 0 "Inductance should be >0"
     @assert C > 0 "Capacitance should be >0"
-end [[x,dx]] begin
-    dx = i -1/(R*C)*x -u/(L*C)
+end [[y,dy]] begin
+    dy = i -1/(R*C)*y -u/(L*C)
     #    du_C = 1/C *i_L
     #    di_L = -R/L*i_L+1/L*abs(u) -1/L*u_C
     #    println(i_L)
     #    du = i_L - abs(i) # = enforcing current conservation
-    du = x
+    println(u)
+    du = y
 end
 
 export RLCLoad
