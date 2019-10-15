@@ -7,7 +7,7 @@ include("../NodeTestBase.jl")
 @testset "RLCLoad" begin
     @syms R L C positive=true
     #@syms u_C i_L omega domega du_C di_L real=true
-    @syms x dx real=true
+    @syms x dx complex=true
 
     pv = RLCLoad(R=R, L=L, C=C)
     pv_vertex = construct_vertex(pv)
