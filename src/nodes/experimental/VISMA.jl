@@ -84,7 +84,25 @@ Rotor Mechanics:
 """
 @DynamicNode VISMA(P_m,Ω,u_e,R_e,L_e,R_d,R_q,L_d,L_q,R_D,R_Q,L_D,L_Q,M_Dd,M_Qq,M_ed,M_eD,Z_p,H) begin
 end  begin
-    MassMatrix(m_int=[1,1,1,1,1,1,1])
+    MassMatrix(m_u = false,m_int=[true,true,true,true,true,true,true])
+end begin
+    @assert Ω>=0
+    @assert R_e>=0
+    @assert L_e>=0
+    @assert R_d >=0
+    @assert R_q >=0
+    @assert L_d >=0
+    @assert L_q >=0
+    @assert R_D >=0
+    @assert R_Q >=0
+    @assert L_D >=0
+    @assert L_Q >=0
+    @assert M_Dd>=0 
+    @assert M_Qq>=0
+    @assert M_ed>=0
+    @assert M_eD>=0
+    @assert Z_p>0
+    @assert H>0
 end [[θ,dθ],[Ψ_d,dΨ_d],[Ψ_q,dΨ_q],[Ψ_D,dΨ_D],[Ψ_Q,dΨ_Q],[Ψ_e,dΨ_e],[ω,dω]] begin
     e_c = 1im*u*exp(-1im*θ)
     #p = real(u * conj(i))
