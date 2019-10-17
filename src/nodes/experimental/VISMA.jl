@@ -82,11 +82,10 @@ Rotor Mechanics:
 ```
 
 """
-@DynamicNode VISMA(P_m,Ω,u_e,R_e,L_e,R_d,R_q,L_d,L_q,R_D,R_Q,L_D,L_Q,M_Dd,M_Qq,M_ed,M_eD,Z_p,H) begin
-end  begin
+@DynamicNode VISMA(P_m,Ω,u_e,R_e,L_e,R_d,R_q,L_d,L_q,R_D,R_Q,L_D,L_Q,M_Dd,M_Qq,M_ed,M_eD,Z_p,H)   begin
     MassMatrix(m_u = false,m_int=[true,true,true,true,true,true,true])
-end begin
-    @assert Ω>=0
+end   begin
+    @assert Ω>0
     @assert R_e>=0
     @assert L_e>=0
     @assert R_d >=0
@@ -97,7 +96,7 @@ end begin
     @assert R_Q >=0
     @assert L_D >=0
     @assert L_Q >=0
-    @assert M_Dd>=0 
+    @assert M_Dd>=0
     @assert M_Qq>=0
     @assert M_ed>=0
     @assert M_eD>=0

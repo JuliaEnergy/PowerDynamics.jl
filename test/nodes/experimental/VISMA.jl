@@ -19,8 +19,7 @@ include("../NodeTestBase.jl")
     visma_vertex = construct_vertex(visma)
 
     @test symbolsof(visma) == [:u_r, :u_i,:θ,:Ψ_d,:Ψ_q,:Ψ_D,:Ψ_Q,:Ψ_e,:ω]
-    println(visma_vertex.mass_matrix)
     @test visma_vertex.mass_matrix == [0,0,1,1,1,1,1,1,1]
 
-    smoketest_rhs(visma_vertex, int_x=[ω,θ,Ψ_d,Ψ_q,Ψ_e,Ψ_D,Ψ_Q], int_dx=[dω,dθ,dΨ_d,dΨ_q,dΨ_e,dΨ_D,dΨ_Q])
+    smoketest_rhs(visma_vertex, int_x=[θ,Ψ_d,Ψ_q,Ψ_D,Ψ_Q,Ψ_e,ω], int_dx=[dθ,dΨ_d,dΨ_q,dΨ_D,dΨ_Q,dΨ_e,dω])
 end
