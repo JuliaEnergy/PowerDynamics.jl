@@ -125,7 +125,8 @@ end [[θ,dθ],[Ψ_d,dΨ_d],[Ψ_q,dΨ_q],[Ψ_D,dΨ_D],[Ψ_Q,dΨ_Q],[Ψ_e,dΨ_e],[
     dω=1/H*(P_el-P_m)
     dθ=ω
 
-    du = i_d+1im*i_q*exp(1im*θ)- 1im*i
+    #du = -1im*de_c*exp(1im*θ)+ u*1im*ω
+    du = (i_d+1im*i_q)*exp(1im*θ)- 1im*i
 end
 
 export VISMA
