@@ -138,10 +138,10 @@ end [[θ,dθ],[Ψ_d,dΨ_d],[Ψ_q,dΨ_q],[Ψ_D,dΨ_D],[Ψ_Q,dΨ_Q],[Ψ_e,dΨ_e],[
     #Ψ_D = L_D*i_D+M_Dd*i_d+M_eD*i_e
     #Ψ_Q = L_Q*i_Q+M_Qq*i_q
 
-    P_el = 3/2*Z_p*(Ψ_d*i_q-Ψ_q*i_d)*Ω
-    dω=1/H*(P_el-P_m)
+    P_el = 3/2*Z_p*(Ψ_d*i_q-Ψ_q*i_d)
+    dω=Ω/H*(P_el-P_m)
     dθ=ω
-
+    println(u)
     #du = -1im*de_c*exp(1im*θ)+ u*1im*ω
     du = (i_d+1im*i_q)*exp(1im*θ)- 1im*i
 end
