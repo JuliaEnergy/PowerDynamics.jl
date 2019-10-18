@@ -1,5 +1,5 @@
 export NodeShortCircuit
-using OrdinaryDiffEq: ODEProblem, Rodas4
+using OrdinaryDiffEq: ODEProblem, Rodas4, set_u!,init, solve!, step!, reinit!, savevalues!, u_modified!
 import DiffEqBase: solve
 
 """
@@ -14,7 +14,7 @@ NodeShortCircuit(;node,var,f)
 struct NodeShortCircuit
     node
     R
-    sc_timespan
+    tspan_fault
 end
 NodeShortCircuit(;node,R,sc_timespan) = NodeShortCircuit(node,R,sc_timespan)
 
@@ -42,7 +42,7 @@ simulate(nsc::NodeShortCircuit, powergrid, x1, timespan)
 ```
 Simulates a [`NodeShortCircuit`](@ref)
 """
-function simulate(nsc::NodeShortCircuit, powergrid, x1, timespan)
+function simulateOld(nsc::NodeShortCircuit, powergrid, x1, timespan)
     sc_timespan = nsc.sc_timespan
     @assert timespan[1] < sc_timespan[1]
     @assert timespan[2] > sc_timespan[2]
@@ -63,4 +63,34 @@ function simulate(nsc::NodeShortCircuit, powergrid, x1, timespan)
     sol3 = solve(prob3, Rodas4(autodiff=false))
 
     sol1, sol2, sol3
+end
+
+function simulate(nsc::NodeShortCircuit, powergrid, x1, timespan)
+    @assert first(timespan) <= pd.tspan_fault[1] "fault cannot begin in the past"
+    @assert pd.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
+    nsc_powergrid = nsc(powergrid)
+
+    problem = ODEProblem{true}(rhs(powergrid), x1.vec, timespan)
+    integrator = init(problem, Rodas4(autodiff=false))
+
+    step!(integrator, nsc.tspan_fault[1], true)
+    sol1 = integrator.sol
+
+    # update integrator with error
+    x2 = find_valid_initial_condition(rhs(nsc_powergrid), sol1[end]) # Jump the state to be valid for the new system.
+    set_u!(integrator, x2)
+    integrator.f = rhs(nsc_powergrid)
+    u_modified!(integrator,true)
+
+    step!(integrator, nsc.tspan_fault[2], true)
+    sol2 = integrator.sol
+
+    # update integrator, clear error
+    integrator.f = rhs(powergrid)
+    x3 = find_valid_initial_condition(powergrid, sol2[end])
+    set_u!(integrator, x3)
+    u_modified!(integrator,true)
+    solve!(integrator)
+
+    return PowerGridSolution(integrator.sol, powergrid)
 end
