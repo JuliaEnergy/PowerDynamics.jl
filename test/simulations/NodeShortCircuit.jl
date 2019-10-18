@@ -6,9 +6,9 @@ import DiffEqBase: solve
 busses = [VSIMinimal(;τ_P=1.0,τ_Q=0.0001,K_P=0.2,K_Q=0.002,V_r=1.0,P=1.0,Q=0.5),
   VSIMinimal(;τ_P=1.0,τ_Q=0.0001,K_P=0.2,K_Q=0.002,V_r=1.0,P=1.0,Q=0.5),
   VSIMinimal(;τ_P=1.0,τ_Q=0.0001,K_P=0.2,K_Q=0.002,V_r=1.0,P=1.0,Q=0.5),
-  PQAlgebraic(S=-1.0-im*0.5),
-  PQAlgebraic(S=-1.0-im*0.5),
-  PQAlgebraic(S=-1.0-im*0.5)]
+  PQAlgebraic(P=-1.0,Q=-im*0.5),
+  PQAlgebraic(P=-1.0,Q=-im*0.5),
+  PQAlgebraic(P=-1.0,Q=-im*0.5)]
   #RLC_Load(R,L,C),RLC_Load(R,L,C),RLC_Load(R,L,C)]
 
 
