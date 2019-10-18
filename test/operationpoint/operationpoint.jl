@@ -6,7 +6,7 @@ using Test: @test, @testset
 @testset "algebraic only" begin
     U1 = 1+5im
     P2 = -2
-    Q2= 3im
+    Q2= 3
     Y = 2+1.5im
     nodes = [SlackAlgebraic(U=U1), PQAlgebraic(P=P2,Q=Q2)]
     graph = SimpleGraph(2)
