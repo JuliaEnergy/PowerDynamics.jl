@@ -16,7 +16,8 @@ using Test: @test, @testset
     op = find_operationpoint(grid)
     root = RootRhs(rhs(grid))
     @test all(root(convert(AbstractVector{Float64}, op)) .- zeros(systemsize(grid)) .< 1e-8)
-    @test S2 ≈ op[2, :s]
+    @test P2 ≈ op[2, :p]
+    @test Q2 ≈ op[2, :q]
 end
 
 @testset "no convergence" begin
