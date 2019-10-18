@@ -23,7 +23,7 @@ end  begin
     # no prep
 end [] begin
     s = u*conj(i)
-    du = (P+i*Q) - s
+    du = (P+1im*Q) - s
 end
 
 export PQAlgebraic
