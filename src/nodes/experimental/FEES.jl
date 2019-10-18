@@ -39,6 +39,22 @@ Using `FESS` applies the equations for the stator circuit:
 @DynamicNode FESS(u_dc_ref,C,J,ω_m_ref,k_PLL,f,L_g,L_m,P_n,Ψ_m,R_m,R_g,K_m1,K_m2,K_m3,K_m4,K_g1,K_g2,K_g3,K_g4) begin
     MassMatrix(m_u = false,m_int = [true,true,true,true,true,true,true,true,true,true,true,true])
 end  begin
+    @assert k_PLL>=0
+    @assert f>=0
+    @assert C>=0
+    @assert L_g >=0
+    @assert L_m >=0
+    @assert P_n >0
+    @assert R_m >=0
+    @assert R_g >=0
+    @assert K_m1 >=0
+    @assert K_m2 >=0
+    @assert K_m3 >=0
+    @assert K_m4 >=0
+    @assert K_g1 >=0
+    @assert K_g2 >=0
+    @assert K_g3 >=0
+    @assert K_g4 >=0
 end [[θ_PLL,dθ_PLL],[i_dm,di_dm],[i_qm,di_qm],[ω_m,dω_m],[v_qm,dv_qm],[i_qm_ref,di_qm_ref],[i_dg,di_dg],[i_qg,di_qg],[u_dc,du_dc],[u_dg,du_dg],[u_qg,du_qg],[i_dg_ref,di_dg_ref]] begin
 
     i_dm_ref=0#??
