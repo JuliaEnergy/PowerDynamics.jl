@@ -51,10 +51,8 @@
       "type": "PQAlgebraic",
       "params":
         {
-          "S": {
-            "re": 0,
-            "im": 10
-          }
+          "P":  0,
+          "Q": 10
         }
     },
     {
