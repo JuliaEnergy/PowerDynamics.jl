@@ -28,7 +28,7 @@ include("nodes/CurrentSourceInverterMinimal.jl")
 include("nodes/ExponentialRecoveryLoad.jl")
 include("nodes/experimental/RLCLoad.jl")
 include("nodes/experimental/PVInverterWithFrequencyControl.jl")
-include("nodes/experimental/VISMA.jl")
+include("nodes/experimental/FEES.jl")
 
 
 # all line types

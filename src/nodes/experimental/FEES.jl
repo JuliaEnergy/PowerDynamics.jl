@@ -36,7 +36,8 @@ Using `FESS` applies the equations for the stator circuit:
     i_q = 1/R_q*(u_q+\frac{dΨ_q}{dt}-ω*Ψ_d)
 ```
 """
-@DynamicNode FESS(u_dc_ref,J,ω_m_ref,k_PLL,f,L_g,L_m,P_n,Ψ_m,R_m,R_g,K_m1,K_m2,K_m3,K_m4,K_g1,K_g2,K_g3,K_g4) begin
+@DynamicNode FESS(u_dc_ref,C,J,ω_m_ref,k_PLL,f,L_g,L_m,P_n,Ψ_m,R_m,R_g,K_m1,K_m2,K_m3,K_m4,K_g1,K_g2,K_g3,K_g4) begin
+    MassMatrix(m_u = false,m_int = [true,true,true,true,true,true,true,true,true,true,true,true])
 end  begin
 end [[θ_PLL,dθ_PLL],[i_dm,di_dm],[i_qm,di_qm],[ω_m,dω_m],[v_qm,dv_qm],[i_qm_ref,di_qm_ref],[i_dg,di_dg],[i_qg,di_qg],[u_dc,du_dc],[u_dg,du_dg],[u_qg,du_qg],[i_dg_ref,di_dg_ref]] begin
 
@@ -53,8 +54,8 @@ end [[θ_PLL,dθ_PLL],[i_dm,di_dm],[i_qm,di_qm],[ω_m,dω_m],[v_qm,dv_qm],[i_qm_
     ω = (1+dθ_PLL)*2*π*f
 
     # simplifications
-    u_dg = L_g*ω*i_qg+v_d-v_dg
-    u_qg = -L_g*ω*i_dg+v_q-v_qg
+    u_dg = L_g*ω*i_qg+v_d#-v_dg
+    u_qg = -L_g*ω*i_dg+v_q#-v_qg
     v_dm = L_m*P_n*ω_m*i_qm +v_d
     v_qm = -L_m*P_n*ω_m*i_dm - P_n*Ψ_m +v_q
 
@@ -62,21 +63,22 @@ end [[θ_PLL,dθ_PLL],[i_dm,di_dm],[i_qm,di_qm],[ω_m,dω_m],[v_qm,dv_qm],[i_qm_
     di_dm = 1/L_m*(-R_m*i_dm+v_dm)
     di_qm = 1/L_m*(-R_m*i_qm+v_qm)
     dω_m = 3*P_n/(2*J)*Ψ_m*i_qm
+    # PI outer speed controller
+    di_qm_ref = K_m3*dω_m+K_m4*(ω_m-ω_m_ref)
     # PI inner current controller
     dv_qm = K_m1*(di_qm_ref-di_qm)+K_m2*(i_qm_ref-i_qm) # _ref?
     dv_dm = K_m1*(-di_dm)+K_m2*(i_dm_ref-i_dm) #_ref?
-    # PI outer speed controller
-    di_qm_ref = K_m3*dω_m+K_m4*(ω_m-ω_m_ref)
 
     # grid-side converter
     di_dg = 1/L_g*(-R_g*i_dg+u_dg)
     di_qg = 1/L_g*(-R_g*i_qg+u_qg)
-    duc = 3/(2*C)*(i_dg+i_qg)
+    du_dc = 3/(2*C)*(i_dg+i_qg)
+    # PI outer speed controller
+    di_dg_ref = K_g3*(-du_dc)+K_m4*(u_dc_ref-u_dc)
     # PI inner current controller
     du_dg = K_g1*(di_dg_ref-di_dg)+K_g2*(i_dg_ref-i_dg)
     du_qg = K_g1*(-di_qg)+K_g2*(i_qg_ref-i_qg)
-    # PI outer speed controller
-    di_dg_ref = K_g3*(-du_dc)+K_m4*(u_dc_ref-u_dc)
+
 
     i_x = i_dg*cos(θ_PLL) + i_qg*sin(θ_PLL)
     i_y = i_dg*sin(θ_PLL) - i_qg*cos(θ_PLL)
