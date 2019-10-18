@@ -5,9 +5,10 @@ using Test: @test, @testset
 
 @testset "algebraic only" begin
     U1 = 1+5im
-    S2 = -2+3im
+    P2 = -2
+    Q2= 3im
     Y = 2+1.5im
-    nodes = [SlackAlgebraic(U=U1), PQAlgebraic(S=S2)]
+    nodes = [SlackAlgebraic(U=U1), PQAlgebraic(P=P2,Q=Q2)]
     graph = SimpleGraph(2)
     add_edge!(graph, 1, 2);
     lines = [StaticLine(from=1, to=2, Y=Y)]
@@ -19,9 +20,10 @@ using Test: @test, @testset
 end
 
 @testset "no convergence" begin
-    S2 = -2+3im
+    P2 = -2
+    Q2= 3im
     Y = 2+1.5im
-    nodes = [PQAlgebraic(S=S2), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=2)]
+    nodes = [PQAlgebraic(P=P2,Q=Q2), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=2)]
     graph = SimpleGraph(2)
     add_edge!(graph, 1, 2);
     lines = [StaticLine(from=1, to=2, Y=Y)]
