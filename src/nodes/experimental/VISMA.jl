@@ -103,10 +103,13 @@ end   begin
     @assert Z_p>0
     @assert H>0
 end [[θ,dθ],[Ψ_d,dΨ_d],[Ψ_q,dΨ_q],[Ψ_D,dΨ_D],[Ψ_Q,dΨ_Q],[Ψ_e,dΨ_e],[ω,dω]] begin
-    e_c = 1im*u*exp(-1im*θ)
+    #e_c = 1im*u*exp(-1im*θ)
     #p = real(u * conj(i))
-    u_d = real(e_c)
-    u_q = imag(e_c)
+    u_α = imag(u)
+    u_β = -real(u)
+    T=[cos(θ) sin(θ);-sin(θ) cos(θ)]
+    T_inv = [cos(θ) -sin(θ);sin(θ) cos(θ)]
+    (u_d,u_q)=T*[u_α;u_β]
 
     # introducing helper parameters
     δ = L_e+M_eD^2/L_D
@@ -142,8 +145,9 @@ end [[θ,dθ],[Ψ_d,dΨ_d],[Ψ_q,dΨ_q],[Ψ_D,dΨ_D],[Ψ_Q,dΨ_Q],[Ψ_e,dΨ_e],[
     dω=Ω/H*(P_el-P_m)
     dθ=ω
     println(u)
+    (i_α,i_β)=T_inv*[i_d;i_q]
     #du = -1im*de_c*exp(1im*θ)+ u*1im*ω
-    du = (i_d+1im*i_q)*exp(1im*θ)- 1im*i
+    du = (-i_β+1im*i_α)-i
 end
 
 export VISMA
