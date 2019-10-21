@@ -66,18 +66,18 @@ function simulateOld(nsc::NodeShortCircuit, powergrid, x1, timespan)
 end
 
 function simulate(nsc::NodeShortCircuit, powergrid, x1, timespan)
-    @assert first(timespan) <= pd.tspan_fault[1] "fault cannot begin in the past"
-    @assert pd.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
+    @assert first(timespan) <= nsc.tspan_fault[1] "fault cannot begin in the past"
+    @assert nsc.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
     nsc_powergrid = nsc(powergrid)
 
-    problem = ODEProblem{true}(rhs(powergrid), x1.vec, timespan)
+    problem = ODEProblem{true}(rhs(powergrid), x1, timespan)
     integrator = init(problem, Rodas4(autodiff=false))
 
     step!(integrator, nsc.tspan_fault[1], true)
     sol1 = integrator.sol
 
     # update integrator with error
-    x2 = find_valid_initial_condition(rhs(nsc_powergrid), sol1[end]) # Jump the state to be valid for the new system.
+    x2 = find_valid_initial_condition(nsc_powergrid, sol1[end]) # Jump the state to be valid for the new system.
     set_u!(integrator, x2)
     integrator.f = rhs(nsc_powergrid)
     u_modified!(integrator,true)

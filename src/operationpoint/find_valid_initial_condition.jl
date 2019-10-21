@@ -21,6 +21,8 @@ end
 
 
 function find_valid_initial_condition(pg::PowerGrid, ic_guess)
+    println(pg)
+    println(rhs(pg))
     rr = RootRhs_ic(rhs(pg))
     nl_res = nlsolve(rr, ic_guess)
     if converged(nl_res) == true
