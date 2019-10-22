@@ -71,7 +71,7 @@ function simulate(nsc::NodeShortCircuit, powergrid, x1, timespan)
     nsc_powergrid = nsc(powergrid)
 
     problem = ODEProblem{true}(rhs(powergrid), x1, timespan)
-    integrator = init(problem, Rodas4(autodiff=false))
+    integrator = init(problem, Rodas4(autodiff=false),save_everystep=false)
 
     step!(integrator, nsc.tspan_fault[1], true)
     sol1 = integrator.sol
