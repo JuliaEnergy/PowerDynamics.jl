@@ -103,13 +103,15 @@ end   begin
     @assert Z_p>0
     @assert H>0
 end [[θ,dθ],[Ψ_d,dΨ_d],[Ψ_q,dΨ_q],[Ψ_D,dΨ_D],[Ψ_Q,dΨ_Q],[Ψ_e,dΨ_e],[ω,dω]] begin
-    #e_c = 1im*u*exp(-1im*θ)
-    #p = real(u * conj(i))
-    u_α = imag(u)
-    u_β = -real(u)
-    T=[cos(θ) sin(θ);-sin(θ) cos(θ)]
-    T_inv = [cos(θ) -sin(θ);sin(θ) cos(θ)]
-    (u_d,u_q)=T*[u_α;u_β]
+    e_c = 1im*u*exp(-1im*θ)
+    #u_α = imag(u)
+    #u_β = -real(u)
+    #T=[cos(θ) sin(θ);-sin(θ) cos(θ)]
+    #T_inv = [cos(θ) -sin(θ);sin(θ) cos(θ)]
+    #(u_d,u_q)=T*[u_α;u_β]
+
+    u_d = real(e_c)
+    u_q = imag(e_c)
 
     # introducing helper parameters
     δ = L_e+M_eD^2/L_D
@@ -118,7 +120,7 @@ end [[θ,dθ],[Ψ_d,dΨ_d],[Ψ_q,dΨ_q],[Ψ_D,dΨ_D],[Ψ_Q,dΨ_Q],[Ψ_e,dΨ_e],[
     γ = -M_ed-M_eD*M_Dd/L_D
 
     i_d = (Ψ_d*L_D-Ψ_D*M_Dd+(Ψ_e-M_eD/L_D*Ψ_D)*β)/(α-γ*β)
-    i_q=(Ψ_q*L_Q-Ψ_Q*M_Qq)/(L_q*L_Q -M_Qq^2)
+    i_q = (Ψ_q*L_Q-Ψ_Q*M_Qq)/(L_q*L_Q -M_Qq^2)
 
     i_e = (Ψ_e - M_ed*i_d- M_eD/L_D*Ψ_D-M_eD*M_Dd/L_D*i_d)/δ
 
@@ -140,14 +142,18 @@ end [[θ,dθ],[Ψ_d,dΨ_d],[Ψ_q,dΨ_q],[Ψ_D,dΨ_D],[Ψ_Q,dΨ_Q],[Ψ_e,dΨ_e],[
 
     #Ψ_D = L_D*i_D+M_Dd*i_d+M_eD*i_e
     #Ψ_Q = L_Q*i_Q+M_Qq*i_q
-
-    P_el = 3/2*Z_p*(Ψ_d*i_q-Ψ_q*i_d)
-    dω=Ω/H*(P_el-P_m)
+    P_el = real(u * conj(i))
+    #P_el = -1/2*Z_p*(Ψ_d*i_q-Ψ_q*i_d)#3/2*
+    println("P_el: ",P_el)
+    dω=Ω/H*(P_m-P_el)
     dθ=ω
-    println(u)
-    (i_α,i_β)=T_inv*[i_d;i_q]
+    println("u:",u)
+    println("abs(i):",abs(i))
+    println("abs(i_c):",abs(i_d+1im*i_q))
+    #(i_α,i_β)=T_inv*[i_d;i_q]
+    #du = (-i_β+1im*i_α)-i
     #du = -1im*de_c*exp(1im*θ)+ u*1im*ω
-    du = (-i_β+1im*i_α)-i
+    du = -1im*(i_d+1im*i_q)*exp(1im*θ)-i
 end
 
 export VISMA
