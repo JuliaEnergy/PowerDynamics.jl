@@ -24,6 +24,7 @@ function find_operationpoint(pg::PowerGrid, ic_guess = nothing)
 
     rr = RootRhs(rhs(pg))
     nl_res = nlsolve(rr, ic_guess)
+    println(nl_res)
     if converged(nl_res) == true
         return State(pg, nl_res.zero)
     else

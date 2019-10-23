@@ -55,19 +55,19 @@ end  begin
     @assert K_g2 >=0
     @assert K_g3 >=0
     @assert K_g4 >=0
+    @assert ω_m_ref>=0
 end [[θ_PLL,dθ_PLL],[i_dm,di_dm],[i_qm,di_qm],[ω_m,dω_m],[v_qm,dv_qm],[i_qm_ref,di_qm_ref],[i_dg,di_dg],[i_qg,di_qg],[u_dc,du_dc],[u_dg,du_dg],[u_qg,du_qg],[i_dg_ref,di_dg_ref]] begin
 
     i_dm_ref=0#??
     i_qg_ref=0#???
 
-    u_x = real(u)
-    u_y = imag(u)
+    u_xy = u*exp(-1im*θ_PLL)
 
-    v_d = u_x*cos(θ_PLL)+u_y*sin(θ_PLL)
-    v_q = u_x*sin(θ_PLL)-u_y*cos(θ_PLL)
+    v_d = real(u_xy)
+    v_q = imag(u_xy)
 
-    dθ_PLL = -v_q*k_PLL
-    ω = (1+dθ_PLL)*2*π*f
+    dθ_PLL = -i_qg*k_PLL # TODO check: v_d is increased with decreasing θ which means i_qg is decreased with increasing θ
+    ω = dθ_PLL# TODO or is it not the frequency deviation but (1+dθ_PLL)*2*π*f?
 
     # simplifications
     u_dg = L_g*ω*i_qg+v_d#-v_dg
@@ -78,7 +78,7 @@ end [[θ_PLL,dθ_PLL],[i_dm,di_dm],[i_qm,di_qm],[ω_m,dω_m],[v_qm,dv_qm],[i_qm_
     #machine-side converter equations:
     di_dm = 1/L_m*(-R_m*i_dm+v_dm)
     di_qm = 1/L_m*(-R_m*i_qm+v_qm)
-    dω_m = 3*P_n/(2*J)*Ψ_m*i_qm
+    dω_m = 1/J*Ψ_m*i_qm
     # PI outer speed controller
     di_qm_ref = K_m3*dω_m+K_m4*(ω_m-ω_m_ref)
     # PI inner current controller
@@ -95,10 +95,7 @@ end [[θ_PLL,dθ_PLL],[i_dm,di_dm],[i_qm,di_qm],[ω_m,dω_m],[v_qm,dv_qm],[i_qm_
     du_dg = K_g1*(di_dg_ref-di_dg)+K_g2*(i_dg_ref-i_dg)
     du_qg = K_g1*(-di_qg)+K_g2*(i_qg_ref-i_qg)
 
-
-    i_x = i_dg*cos(θ_PLL) + i_qg*sin(θ_PLL)
-    i_y = i_dg*sin(θ_PLL) - i_qg*cos(θ_PLL)
-    du = i-(i_x+1im*i_y)
+    du = i-(i_dg+1im*i_qg)*exp(1im*θ_PLL)
 end
 
 export FESS
