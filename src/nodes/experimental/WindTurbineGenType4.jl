@@ -26,12 +26,13 @@ end [[θ,dθ],[t_e,dt_e],[u_dc,du_dc],[i_dref,di_dref],[i_qref,di_qref],[u_tref,
 
     dt_e = K_r1*dω_r+K_r2*(ω_r-ω_rref)
     p_in = t_e*ω_r
-    s_e = u*conj(i)
+    s_e = u*conj(i)# s=(v_d*i_d+v_q*i_q)+j(v_q*i_d-v_d*i_q)
     p_e = real(s_e)
     q_e = imag(s_e)
 
     du_dc = 1/C*(p_in-p_e)
 
+    u_t=v_d#TODO: discuss!!!
     di_dref = K_g1*du_dc + K_g2*(u_dc-u_dcref)
     du_tref = K_Q*(Q_ref-q_e)
     di_qref = K_v*(u_tref-u_t)
