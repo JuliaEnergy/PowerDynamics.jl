@@ -32,5 +32,7 @@ problem = ODEProblem(rhs(pg),ic_guess,(0.,200.))
 sol = solve(problem, Rodas4(autodiff=false))
 op_point = sol[end];
 
-sol_nc = simulate(nsc,pg,op_point,(0.,100.))
+sol_2 = simulate2(nsc,pg,op_point,(0.,10.))
+sol_nc = simulate(nsc,pg,op_point,(0.,10.))
 plot_res(sol_nc,pg,2)
+plot_res(sol_2,pg,2)

@@ -118,3 +118,5 @@ function simulate(nsc::NodeShortCircuit, powergrid, x1, timespan)
     cb2 = DiscreteCallback(((u,t,integrator) -> t in nsc.tspan_fault[2]), regularState)
     sol = solve(problem, Rodas4(autodiff=false), callback = CallbackSet(cb1, cb2), tstops=[nsc.tspan_fault[1];nsc.tspan_fault[2]])
 end
+export simulate
+export simulate2
