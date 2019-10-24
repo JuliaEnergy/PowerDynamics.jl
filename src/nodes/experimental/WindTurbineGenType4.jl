@@ -53,6 +53,7 @@ end [[θ,dθ],[e_IP,de_IP],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,du_tref]
 
     du_tref = K_Q*(Q_ref-q_e)
     di_q = K_v*(u_tref-u_t)
+    println("v_d: ",v_d)
 
     du = i - (i_d+1im*i_q)*exp(1im*θ)
 end
