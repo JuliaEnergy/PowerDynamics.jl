@@ -25,14 +25,14 @@ lines = [
 
 
 pg = PowerGrid(busses, lines);
-nsc = NodeShortCircuit(node = 2, R = 0.1, sc_timespan=(1.,2.));
+nsc = NodeShortCircuit(node = 2, R = 0.3, sc_timespan=(1.,2.));
 ic_guess = ones(systemsize(pg)) + 0. * randn(systemsize(pg))
 ic_guess = find_valid_initial_condition(pg,ic_guess)
 problem = ODEProblem(rhs(pg),ic_guess,(0.,200.))
 sol = solve(problem, Rodas4(autodiff=false))
 op_point = sol[end];
 
-sol_2 = simulate2(nsc,pg,op_point,(0.,10.))
+#sol_2 = simulate2(nsc,pg,op_point,(0.,10.))
 sol_nc = simulate(nsc,pg,op_point,(0.,10.))
 plot_res(sol_nc,pg,2)
-plot_res(sol_2,pg,2)
+#plot_res(sol_2,pg,2)
