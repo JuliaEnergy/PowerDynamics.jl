@@ -5,6 +5,8 @@ WindTurbineGenType4(;I_n,k_PLL,f,f_s,T_m,k_P,τ_ω)
 
 ```
 """
+PI_control(e,u)
+
 @DynamicNode WindTurbineGenType4(K_PLL,Q_ref,C,J,P,ω_rref,u_dcref,K_Q,K_v,K_g1,K_g2,K_r1,K_r2) begin
     MassMatrix(m_u = false,m_int = [true,true,true,true,true,true, true])
 end  begin
@@ -18,7 +20,7 @@ end  begin
 end [[θ,dθ],[t_e,dt_e],[u_dc,du_dc],[i_dref,di_dref],[i_qref,di_qref],[u_tref,du_tref],[ω_r,dω_r]] begin
     u_dq = u*exp(-1im*θ)
     v_d = real(u_dq)
-    v_q = real(u_dq)
+    v_q = imag(u_dq)
     dθ = v_q*K_PLL
 
     t_m = P/ω_r
