@@ -36,4 +36,4 @@ ic_guess[[3,6,9]] .= 0.
 ic_guess = find_valid_initial_condition(pg,ic_guess)
 
 
-s1, s2, s3 = simulate(nsc, pg, ic_guess, (0.,30.));
+s = simulate(nsc, pg, ic_guess, (0.,30.));
