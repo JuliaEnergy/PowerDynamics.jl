@@ -1,10 +1,4 @@
-<<<<<<< HEAD
-export NodeShortCircuit, simulate
-using OrdinaryDiffEq: ODEProblem, Rodas4, set_u!,init,reinit!, solve!, step!, reinit!, savevalues!, u_modified!, DiscreteCallback, CallbackSet
-=======
-export NodeShortCircuit
 using OrdinaryDiffEq: ODEProblem, Rodas4, solve!, DiscreteCallback, CallbackSet
->>>>>>> cleanup
 import DiffEqBase: solve
 
 """
@@ -47,10 +41,6 @@ simulate(nsc::NodeShortCircuit, powergrid, x1, timespan)
 ```
 Simulates a [`NodeShortCircuit`](@ref)
 """
-<<<<<<< HEAD
-
-=======
->>>>>>> cleanup
 function simulate(nsc::NodeShortCircuit, powergrid, x1, timespan)
     @assert first(timespan) <= nsc.tspan_fault[1] "fault cannot begin in the past"
     @assert nsc.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
@@ -77,7 +67,6 @@ function simulate(nsc::NodeShortCircuit, powergrid, x1, timespan)
     sol = solve(problem, Rodas4(autodiff=false), callback = CallbackSet(cb1, cb2), tstops=[nsc.tspan_fault[1];nsc.tspan_fault[2]])
     return PowerGridSolution(sol, powergrid)
 end
-<<<<<<< HEAD
-=======
+
 export simulate
->>>>>>> cleanup
+export NodeShortCircuit
