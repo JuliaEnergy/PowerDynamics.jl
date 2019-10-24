@@ -47,13 +47,14 @@ The nominal current of the PV inverter, ``I_n``, is completely active current (w
 
 Since PowerDynamics is working with phasor units, this model has two d-q-systems (for the power plant and for the grid), $I_p/v_d$ and $I_q/v_q$ are the local coordinates and $i_x/v_x$ and $i_y/v_y$ are the global (grid) coordinates.
 ```math
-    v_d = v_{xm}\cos(\theta_{PLL})+v_{ym}\sin(\theta_{PLL})\\
-    v_q = v_{xm}\sin(\theta_{PLL})-v_{ym}\cos(\theta_{PLL})
+    u_dq = (v_{xm}+j v_{ym})e^{-j\theta_{PLL}}
+    v_d = real(u_dq)\\
+    v_q = imag(u_dq)
 ```
 
 The local coordinates are chosen such that ``v_q=0``:
 ```math
-    \dot{\theta}_{PLL} = -v_q(k_{PLL})
+    \dot{\theta}_{PLL} = v_q(k_{PLL})
 ```
 The frequency deviation, ``\dot{\theta}_{PLL}``,  is obtained thanks to the PLL controller of the units. Therefore, the measured frequency in Hz is given by
 ```math
@@ -80,9 +81,7 @@ where ``f_s`` is the frequency at which the active power output starts decreasin
 ```
 
 ```math
-    i_x = I_P\cos\theta_{PLL} + I_Q\sin\theta_{PLL}\\
-    i_y= I_P\sin\theta_{PLL}- I_Q\cos\theta_{PLL}\\
-    0\cdot \dot{u} =i - (i_x+ j i_y)
+    0\cdot \dot{u} =i - (I_P+ j I_Q)e^{j\theta_{PLL}}
 ```
 """
 @DynamicNode PVInverterWithFrequencyControl(I_n,k_PLL,f,f_s,T_m,k_P,τ_ω) begin
@@ -95,17 +94,21 @@ end  begin
     @assert k_P >=0
     @assert τ_ω >0
 end [[θ_PLL,dθ_PLL],[v_xm,dv_xm],[v_ym,dv_ym],[P,dP],[ω,dω]] begin
+    p = real(u * conj(i))
+
     v_x = real(u)
     v_y = imag(u)
-    p = real(u * conj(i))
 
     dv_xm = 1/T_m*(v_x-v_xm)
     dv_ym = 1/T_m*(v_y-v_ym)
 
-    v_d = v_xm*cos(θ_PLL)+v_ym*sin(θ_PLL)
-    v_q = v_xm*sin(θ_PLL)-v_ym*cos(θ_PLL)
+    u_dq = (v_xm+1im*v_ym)*exp(-1im*θ_PLL)
+    v_d = real(u_dq)
+    v_q = imag(u_dq)
+    #v_d = v_xm*cos(θ_PLL)+v_ym*sin(θ_PLL)
+    #v_q = v_xm*sin(θ_PLL)-v_ym*cos(θ_PLL)
 
-    dθ_PLL = -v_q*(k_PLL)
+    dθ_PLL = v_q*(k_PLL)
 
     f_m = (1+dθ_PLL)*f
 
@@ -125,9 +128,7 @@ end [[θ_PLL,dθ_PLL],[v_xm,dv_xm],[v_ym,dv_ym],[P,dP],[ω,dω]] begin
     #    I_P = I_n
     #end
     I_Q = 0.
-    i_x = I_P*cos(θ_PLL) + I_Q*sin(θ_PLL)
-    i_y = I_P*sin(θ_PLL) - I_Q*cos(θ_PLL)
-    du = i-(i_x+1im*i_y)
+    du = i-(I_P+1im*I_Q)*exp(1im*θ_PLL)
 end
 
 export PVInverterWithFrequencyControl
