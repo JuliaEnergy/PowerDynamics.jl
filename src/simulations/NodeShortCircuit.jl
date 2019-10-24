@@ -1,5 +1,5 @@
 export NodeShortCircuit
-using OrdinaryDiffEq: ODEProblem, Rodas4, set_u!,init, solve!, step!, reinit!, savevalues!, u_modified!
+using OrdinaryDiffEq: ODEProblem, Rodas4, set_u!,init,reinit!, solve!, step!, reinit!, savevalues!, u_modified!, DiscreteCallback, CallbackSet
 import DiffEqBase: solve
 
 """
@@ -65,22 +65,21 @@ function simulateOld(nsc::NodeShortCircuit, powergrid, x1, timespan)
     sol1, sol2, sol3
 end
 
-function simulate(nsc::NodeShortCircuit, powergrid, x1, timespan)
+function simulate2(nsc::NodeShortCircuit, powergrid, x1, timespan)
     @assert first(timespan) <= nsc.tspan_fault[1] "fault cannot begin in the past"
     @assert nsc.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
     nsc_powergrid = nsc(powergrid)
 
     problem = ODEProblem{true}(rhs(powergrid), x1, timespan)
-    integrator = init(problem, Rodas4(autodiff=false),save_everystep=false)
+    integrator = init(problem, Rodas4(autodiff=false))
 
     step!(integrator, nsc.tspan_fault[1], true)
     sol1 = integrator.sol
 
     # update integrator with error
     x2 = find_valid_initial_condition(nsc_powergrid, sol1[end]) # Jump the state to be valid for the new system.
-    set_u!(integrator, x2)
     integrator.f = rhs(nsc_powergrid)
-    u_modified!(integrator,true)
+    reinit!(integrator, x2; t0 = nsc.tspan_fault[1], tf = nsc.tspan_fault[2], erase_sol = false)
 
     step!(integrator, nsc.tspan_fault[2], true)
     sol2 = integrator.sol
@@ -88,9 +87,34 @@ function simulate(nsc::NodeShortCircuit, powergrid, x1, timespan)
     # update integrator, clear error
     integrator.f = rhs(powergrid)
     x3 = find_valid_initial_condition(powergrid, sol2[end])
-    set_u!(integrator, x3)
-    u_modified!(integrator,true)
+    reinit!(integrator, x2; t0 = nsc.tspan_fault[2], tf = last(timespan), erase_sol = false)
     solve!(integrator)
 
     return PowerGridSolution(integrator.sol, powergrid)
+end
+
+function simulate(nsc::NodeShortCircuit, powergrid, x1, timespan)
+    @assert first(timespan) <= nsc.tspan_fault[1] "fault cannot begin in the past"
+    @assert nsc.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
+    nsc_powergrid = nsc(powergrid)
+
+    problem = ODEProblem{true}(rhs(powergrid), x1, timespan)
+
+    function errorState(integrator)
+        sol1 = integrator.sol
+        x2 = find_valid_initial_condition(nsc_powergrid, sol1[end]) # Jump the state to be valid for the new system.
+        integrator.f = rhs(nsc_powergrid)
+        integrator.u = x2
+    end
+
+    function regularState(integrator)
+        sol2 = integrator.sol
+        x3 = find_valid_initial_condition(nsc_powergrid, sol2[end]) # Jump the state to be valid for the new system.
+        integrator.f = rhs(powergrid)
+        integrator.u = x3
+    end
+
+    cb1 = DiscreteCallback(((u,t,integrator) -> t in nsc.tspan_fault[1]), errorState)
+    cb2 = DiscreteCallback(((u,t,integrator) -> t in nsc.tspan_fault[2]), regularState)
+    sol = solve(problem, Rodas4(autodiff=false), callback = CallbackSet(cb1, cb2), tstops=[nsc.tspan_fault[1];nsc.tspan_fault[2]])
 end
