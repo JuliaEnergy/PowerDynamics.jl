@@ -17,13 +17,13 @@ Using `PQAlgebraic` for node ``a`` applies the equation
 0 = S_a - u_a \cdot i_a^*.
 ```
 """
-@DynamicNode PQAlgebraic(S) begin
+@DynamicNode PQAlgebraic(P,Q) begin
     MassMatrix()
 end  begin
     # no prep
 end [] begin
     s = u*conj(i)
-    du = S - s
+    du = (P+1im*Q) - s
 end
 
 export PQAlgebraic
