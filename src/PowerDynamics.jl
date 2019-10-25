@@ -29,6 +29,7 @@ include("nodes/ExponentialRecoveryLoad.jl")
 include("nodes/experimental/RLCLoad.jl")
 include("nodes/experimental/PVInverterWithFrequencyControl.jl")
 include("nodes/experimental/VISMA.jl")
+include("nodes/experimental/VISMA_simple.jl")
 
 
 # all line types
