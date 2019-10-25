@@ -13,7 +13,7 @@ function PI_control(e,u,K_P,K_I)
     return [de_I,u]
 end
 
-@DynamicNode WindTurbineGenType4(K_PLL,Q_ref,C,J,P,ω_rref,u_dcref,K_Q,K_v,K_g1,K_g2,K_r1,K_r2) begin
+@DynamicNode WindTurbineGenType4_inertia(K_PLL,Q_ref,C,J,P,ω_rref,u_dcref,K_Q,K_v,K_g1,K_g2,K_r1,K_r2) begin
     MassMatrix(m_u = false,m_int = [true,true,true,true,true,true,true])
 end  begin
     @assert J>=0
@@ -31,6 +31,12 @@ end [[θ,dθ],[e_IP,de_IP],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,du_tref]
     dθ = v_d*K_PLL
     ω = dθ
     println("ω: ",ω)
+    Δt=-ω
+    #if abs(ω)>1e-5
+    #    Δt=-2*ω
+    #else Δt=0
+    #end
+    println("Δt: ",Δt)
 
     s_e = u*conj(i)# s=(v_d*i_d+v_q*i_q)+j(v_q*i_d-v_d*i_q)
     p_e = real(s_e)
@@ -40,7 +46,8 @@ end [[θ,dθ],[e_IP,de_IP],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,du_tref]
     e_P = -(ω_rref-ω_r)
     de_IP = e_P
     t_e = K_r1*e_P+K_r2*e_IP
-    p_in =t_e/ω_r
+    t_e+=Δt
+    p_in =t_e*ω_r
     #println("(ω_rref-ω_r): ",(ω_rref-ω_r))
     #println("e_IP: ",e_IP)
     println("ω_r:",ω_r)
@@ -70,4 +77,4 @@ end [[θ,dθ],[e_IP,de_IP],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,du_tref]
     du = i - (i_d+1im*i_q)*exp(1im*θ)
 end
 
-export WindTurbineGenType4
+export WindTurbineGenType4_inertia
