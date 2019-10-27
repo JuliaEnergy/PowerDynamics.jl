@@ -36,8 +36,8 @@ Using `FESS` applies the equations for the stator circuit:
     i_q = 1/R_q*(u_q+\frac{dΨ_q}{dt}-ω*Ψ_d)
 ```
 """
-@DynamicNode FESS(u_dc_ref,C,J,ω_m_ref,k_PLL,f,L_g,L_m,P_n,Ψ_m,R_m,R_g,K_m1,K_m2,K_m3,K_m4,K_g1,K_g2,K_g3,K_g4) begin
-    MassMatrix(m_u = false,m_int = [true,true,true,true,true,true,true,true,true,true,true,true])
+@DynamicNode FESS(u_dc_ref,B,C,J,ω_m_ref,k_PLL,f,L_g,L_m,P_n,Ψ_m,R_m,R_g,K_m1,K_m2,K_m3,K_m4,K_g1,K_g2,K_g3,K_g4) begin
+    MassMatrix(m_u = false,m_int = [true,true,true,true,true,true,true,true,true,true,true,true,true,true])
 end  begin
     @assert k_PLL>=0
     @assert f>=0
@@ -56,46 +56,65 @@ end  begin
     @assert K_g3 >=0
     @assert K_g4 >=0
     @assert ω_m_ref>=0
-end [[θ_PLL,dθ_PLL],[i_dm,di_dm],[i_qm,di_qm],[ω_m,dω_m],[v_qm,dv_qm],[i_qm_ref,di_qm_ref],[i_dg,di_dg],[i_qg,di_qg],[u_dc,du_dc],[u_dg,du_dg],[u_qg,du_qg],[i_dg_ref,di_dg_ref]] begin
+end [[θ_m,dθ_m],[θ_g,dθ_g],[ω_m,dω_m],[i_dm,di_dm],[i_qm,di_qm],[e_I_idm,de_I_idm],[e_I_iqm,de_I_iqm],[e_Iω,de_Iω],[i_dg,di_dg],[i_qg,di_qg],[e_I_idg,de_I_idg],[e_I_iqg,de_I_iqg],[u_Iudc,du_Iudc],[u_dc,du_dc]] begin
+
+    u_m = u*exp(-1im*θ_m)
+    dθ_m = ω_m-ω_m_ref #v_q*k_PLL # TODO check: v_d is increased with decreasing θ which means i_qg is decreased with increasing θ
+    #ω = dθ_PLL# TODO or is it not the frequency deviation but (1+dθ_PLL)*2*π*f?
+
+    u_g = u*exp(-1im*θ_g)
+    dθ_g = imag(u_g)*k_PLL
+    ω=dθ_g
 
     i_dm_ref=0#??
     i_qg_ref=0#???
 
-    u_xy = u*exp(-1im*θ_PLL)
-
-    v_d = real(u_xy)
-    v_q = imag(u_xy)
-
-    dθ_PLL = -i_qg*k_PLL # TODO check: v_d is increased with decreasing θ which means i_qg is decreased with increasing θ
-    ω = dθ_PLL# TODO or is it not the frequency deviation but (1+dθ_PLL)*2*π*f?
-
     # simplifications
-    u_dg = L_g*ω*i_qg+v_d#-v_dg
-    u_qg = -L_g*ω*i_dg+v_q#-v_qg
-    v_dm = L_m*P_n*ω_m*i_qm +v_d
-    v_qm = -L_m*P_n*ω_m*i_dm - P_n*Ψ_m +v_q
+    v_g = -1im*L_g*ω*(i_dg+1im*i_qg)+u_m-u_g
+    v_m = -1im*L_m*P_n*ω_m*(i_dm+1im*i_qm)+u_m-1im*P_n*Ψ_m*ω_m
+
 
     #machine-side converter equations:
-    di_dm = 1/L_m*(-R_m*i_dm+v_dm)
-    di_qm = 1/L_m*(-R_m*i_qm+v_qm)
-    dω_m = 1/J*Ψ_m*i_qm
+    di_dm = 1/L_m*(-R_m*i_dm+real(v_m))
+    di_qm = 1/L_m*(-R_m*i_qm+imag(v_m))
+
+    dω_m = 1/J*(Ψ_m*i_qm-D*ω_m)
     # PI outer speed controller
-    di_qm_ref = K_m3*dω_m+K_m4*(ω_m-ω_m_ref)
+    e_ω = ω_m-ω_m_ref
+    de_Iω = e_ω
+    i_qm_ref = K_m3*e_ω+K_m4*e_Iω
     # PI inner current controller
-    dv_qm = K_m1*(di_qm_ref-di_qm)+K_m2*(i_qm_ref-i_qm) # _ref?
-    dv_dm = K_m1*(-di_dm)+K_m2*(i_dm_ref-i_dm) #_ref?
+    e_idm = i_dm_ref-i_dm
+    de_I_idm = e_idm
+    e_iqm = i_qm_ref-i_qm
+    de_I_iqm = e_iqm
+    v_m = (K_m1*e_idm + K_m2*e_I_idm)+1im*(K_m1*e_iqm + K_m2*e_I_iqm) # _ref?
 
     # grid-side converter
-    di_dg = 1/L_g*(-R_g*i_dg+u_dg)
-    di_qg = 1/L_g*(-R_g*i_qg+u_qg)
-    du_dc = 3/(2*C)*(i_dg+i_qg)
-    # PI outer speed controller
-    di_dg_ref = K_g3*(-du_dc)+K_m4*(u_dc_ref-u_dc)
-    # PI inner current controller
-    du_dg = K_g1*(di_dg_ref-di_dg)+K_g2*(i_dg_ref-i_dg)
-    du_qg = K_g1*(-di_qg)+K_g2*(i_qg_ref-i_qg)
+    di_dg = 1/L_g*(-R_g*i_dg+ω*L_g*i_qg+real(u_m)-real(u_g))
+    di_qg = 1/L_g*(-R_g*i_q-ω*L_g*i_dg+imag(u_m)-imag(u_g))
 
-    du = i-(i_dg+1im*i_qg)*exp(1im*θ_PLL)
+    du_dc = 3/(2*C)*abs(i_dg+1im*i_dg)
+    # PI outer speed controller
+    e_udc = u_dc_ref-u_dc
+    du_Iudc = e_udc
+    i_dg_ref = K_g3*e_udc+K_m4*u_Iudc
+    # PI inner current controller
+    e_iqg = i_qg_ref-i_qg
+    de_I_iqg = e_iqg
+    e_idg = i_dg_ref-i_dg
+    de_I_idg = e_idg
+    u_g = (K_g1*e_idg+K_g2*e_I_idg)+1im*(K_g1*e_iqg+K_g2*e_I_iqg)
+
+    println("i: ",i)
+    println("i_dg: ",i_dg)
+
+    du = i-(i_dg+1im*i_qg)*exp(1im*θ_g)
 end
 
 export FESS
+
+#function PIControl(e)
+#    deI = e
+#    [e,eI]
+#end
