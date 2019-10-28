@@ -25,6 +25,7 @@ end  begin
     @assert C>=0
     @assert K_PLL>=0
 end [[θ,dθ],[e_IP,de_IP],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,du_tref],[ω_r,dω_r]] begin
+    Ω=2*π*50
     u_dq = u*exp(-1im*θ)
     v_d = real(u_dq)
     v_q = imag(u_dq)
@@ -47,12 +48,14 @@ end [[θ,dθ],[e_IP,de_IP],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,du_tref]
     de_IP = e_P
     t_e = K_r1*e_P+K_r2*e_IP
     t_e+=Δt
-    p_in =t_e*ω_r
+    p_in =t_e*Ω
     #println("(ω_rref-ω_r): ",(ω_rref-ω_r))
     #println("e_IP: ",e_IP)
     println("ω_r:",ω_r)
+    println("t_m: ",t_m)
+    println("t_e: ",t_e)
 
-    t_m = P/ω_r
+    t_m = P/Ω
     dω_r = 1/J*(t_m-t_e)
     #println("p_e: ",p_e)
     #println("p_in: ",p_in)

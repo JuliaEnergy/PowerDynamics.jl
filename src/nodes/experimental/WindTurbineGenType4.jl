@@ -5,7 +5,7 @@ WindTurbineGenType4(;I_n,k_PLL,f,f_s,T_m,k_P,τ_ω)
 
 ```
 """
-function PI_control(e,u,K_P,K_I)
+function PI_control(e,K_P,K_I)
     @assert K_P>=0
     @assert K_I>=0
     de_I=e
@@ -13,7 +13,7 @@ function PI_control(e,u,K_P,K_I)
     return [de_I,u]
 end
 
-@DynamicNode WindTurbineGenType4(K_PLL,Q_ref,C,J,P,ω_rref,u_dcref,K_Q,K_v,K_g1,K_g2,K_r1,K_r2) begin
+@DynamicNode WindTurbineGenType4(D,K_PLL,Q_ref,C,J,P,ω_rref,u_dcref,K_Q,K_v,K_g1,K_g2,K_r1,K_r2) begin
     MassMatrix(m_u = false,m_int = [true,true,true,true,true,true,true])
 end  begin
     @assert J>=0
@@ -21,16 +21,23 @@ end  begin
     @assert K_g2>=0
     @assert K_r1 >=0
     @assert K_r2 >=0
-    @assert ω_rref>0
+    @assert ω_rref>=0
     @assert C>=0
     @assert K_PLL>=0
-end [[θ,dθ],[e_IP,de_IP],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,du_tref],[ω_r,dω_r]] begin
-    u_dq = u*exp(-1im*θ)
+end [[θ_PLL,dθ_PLL],[e_IP,de_IP],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,du_tref],[ω_r,dω_r]] begin
+    u_dq = u*exp(-1im*θ_PLL)
     v_d = real(u_dq)
     v_q = imag(u_dq)
-    dθ = v_d*K_PLL
-    ω = dθ
-    println("ω: ",ω)
+    dθ_PLL=v_d*K_PLL
+    #println("dθ_PLL: ", dθ_PLL)
+
+    ω = ω_r-1-dθ_PLL
+    Δt = -2*ω
+
+    #u_dq = u*exp(-1im*θ)
+    #dθ = v_d*K_PLL
+    #ω = dθ_PLL
+    #println("ω: ",ω)
 
     s_e = u*conj(i)# s=(v_d*i_d+v_q*i_q)+j(v_q*i_d-v_d*i_q)
     p_e = real(s_e)
@@ -39,23 +46,29 @@ end [[θ,dθ],[e_IP,de_IP],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,du_tref]
     # PI speed control:
     e_P = -(ω_rref-ω_r)
     de_IP = e_P
+    #println("e_IP: ",e_IP)
     t_e = K_r1*e_P+K_r2*e_IP
-    p_in =t_e/ω_r
+    #p_in +=ΔP
+    p_in =(t_e+Δt)/ω_r
     #println("(ω_rref-ω_r): ",(ω_rref-ω_r))
     #println("e_IP: ",e_IP)
-    println("ω_r:",ω_r)
+    #println("ω_r:",ω_r)
+    #println(p_e," ",abs(u)," ",abs(i),";")
+    #println("i: ",i)
 
     t_m = P/ω_r
-    dω_r = 1/J*(t_m-t_e)
+    dω_r = 1/J*(t_m-t_e)#-D*ω_r)
+    #println("t_m-t_e: ",t_m-t_e)
     #println("p_e: ",p_e)
     #println("p_in: ",p_in)
 
     du_dc = 1/C*(p_in-p_e)
+    #println("p_e: ",p_e)
 
-    u_t=abs(u)#TODO: discuss!!!
+    u_t=v_q#abs(u)#TODO: discuss!!!
 
     # PI voltage control:
-    e_V = (u_dcref-u_dc)
+    e_V = -(u_dcref-u_dc)
     de_IV = e_V
     i_d = K_g1*e_V + K_g2*de_IV
     #println("u_tref: ",u_tref)
@@ -67,7 +80,7 @@ end [[θ,dθ],[e_IP,de_IP],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,du_tref]
     #println("v_q: ",v_q)
     #println("abs(u)",abs(u))
 
-    du = i - (i_d+1im*i_q)*exp(1im*θ)
+    du = i - (i_d+1im*i_q)*exp(1im*θ_PLL)
 end
 
 export WindTurbineGenType4
