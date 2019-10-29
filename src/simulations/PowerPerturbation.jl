@@ -59,33 +59,5 @@ function simulate(pd::PowerPerturbation, powergrid, x0, timespan)
     return PowerGridSolution(integrator.sol, powergrid)
 end
 
-function simulate2(pd::PowerPerturbation, powergrid, x1, timespan)
-    @assert first(timespan) <= pd.tspan_fault[1] "fault cannot begin in the past"
-    @assert pd.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
-    pd_powergrid = pd(powergrid)
-
-    problem = ODEProblem{true}(rhs(powergrid), x1, timespan)
-
-    function errorState(integrator)
-        sol1 = integrator.sol
-        x2 = operationpoint = find_operationpoint(pd_powergrid)
-        integrator.f = rhs(pd_powergrid)
-        integrator.u = x2
-    end
-
-    function regularState(integrator)
-        sol2 = integrator.sol
-        x3 = find_operationpoint(pd_powergrid) # Jump the state to be valid for the new system.
-        integrator.f = rhs(powergrid)
-        integrator.u = x3
-    end
-
-    cb1 = DiscreteCallback(((u,t,integrator) -> t in pd.tspan_fault[1]), errorState)
-    cb2 = DiscreteCallback(((u,t,integrator) -> t in pd.tspan_fault[2]), regularState)
-    sol = solve(problem, Rodas4(autodiff=false), callback = CallbackSet(cb1, cb2), tstops=[pd.tspan_fault[1];pd.tspan_fault[2]])
-    return PowerGridSolution(sol, powergrid)
-end
-
 export PowerPerturbation
-export simulate2
 export simulate
