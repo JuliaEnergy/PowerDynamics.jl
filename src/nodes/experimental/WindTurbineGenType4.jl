@@ -44,7 +44,7 @@ end [[θ_PLL,dθ_PLL],[e_IP,de_IP],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,
     q_e = imag(s_e)
 
     # PI speed control:
-    e_P = -(ω_rref-ω_r)
+    e_P = (ω_rref-ω_r)
     de_IP = e_P
     #println("e_IP: ",e_IP)
     t_e = K_r1*e_P+K_r2*e_IP
@@ -68,7 +68,7 @@ end [[θ_PLL,dθ_PLL],[e_IP,de_IP],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,
     u_t=v_q#abs(u)#TODO: discuss!!!
 
     # PI voltage control:
-    e_V = -(u_dcref-u_dc)
+    e_V = (u_dcref-u_dc)
     de_IV = e_V
     i_d = K_g1*e_V + K_g2*de_IV
     #println("u_tref: ",u_tref)
