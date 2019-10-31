@@ -7,7 +7,7 @@ WindTurbineGenType4(;I_n,k_PLL,f,f_s,T_m,k_P,τ_ω)
 """
 
 @DynamicNode WindTurbineGenType4(D,K_PLL,Q_ref,C,J,P,ω_rref,u_dcref,K_Q,K_v,K_g1,K_g2,K_r1,K_r2) begin
-    MassMatrix(m_u = false,m_int = [true,true,true,true,true,true])#,true,true])
+    MassMatrix(m_u = false,m_int = [true,true,true,true,true,true,true,true])
 end  begin
     @assert J>=0
     @assert K_g1>=0
@@ -17,7 +17,7 @@ end  begin
     @assert ω_rref>=0
     @assert C>=0
     @assert K_PLL>=0
-end [[θ_PLL,dθ_PLL],[e_Idθ,de_Idθ],[e_IP,de_IP],[e_IV,de_IV],[u_dc,du_dc],[ω_r,dω_r]] begin#,[i_q,di_q],[u_tref,du_tref]] begin
+end [[θ_PLL,dθ_PLL],[e_Idθ,de_Idθ],[e_IP,de_IP],[e_IV,de_IV],[u_dc,du_dc],[ω_r,dω_r],[i_q,di_q],[u_tref,du_tref]] begin
     function PI_control(e_I,e,K_P,K_I)
         @assert K_P>=0
         @assert K_I>=0
@@ -64,9 +64,9 @@ end [[θ_PLL,dθ_PLL],[e_Idθ,de_Idθ],[e_IP,de_IP],[e_IV,de_IV],[u_dc,du_dc],[�
 
 
     # reactive power control
-    #u_t=abs(u)#TODO: discuss!!!
-    #du_tref = K_Q*(Q_ref-q_e)
-    #di_q = K_v*(u_tref-u_t)
+    u_t=abs(u)#TODO: discuss!!!
+    du_tref = K_Q*(Q_ref-q_e)
+    di_q = K_v*(u_tref-u_t)
 
     println("id: ",i_d)
     println("i_q: ",i_q)
