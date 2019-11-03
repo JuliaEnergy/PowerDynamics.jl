@@ -17,29 +17,29 @@ end  begin
     @assert ω_rref>=0
     @assert C>=0
     @assert K_PLL>=0
-end [[θ_PLL,dθ_PLL],[e_IP,de_IP],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,du_tref],[ω_r,dω_r]] begin
+end [[θ_PLL,dθ_PLL],[e_Idθ,de_Idθ],[e_IP,de_IP],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,du_tref],[ω_r,dω_r]] begin
     u_dq = u*exp(-1im*θ_PLL)
     v_d = real(u_dq)
     v_q = imag(u_dq)
 
-    e_Idθ,ω_PLL=PI_control(e_Idθ,v_q,K_PLL,1)
+    de_Idθ,ω_PLL=PI_control(e_Idθ,v_q,K_PLL,1)
     dθ_PLL=ω_PLL
 
     dθ_r = ω_r
     #println("dθ_PLL: ", dθ_PLL)
-    
+
     if abs(f_m)>f_trigger
         ΔP =-k_P*(f_m-sign(f_m)*f_trigger)*P
-        p_in_ref = (P + ΔP)#/ω_r
+        t_e_ref = (P + ΔP)/ω_r
         #ΔP =-k_P*ω*P
         #dP_inertia = (f_trigger-f_m)*0.1*P
         if abs(ΔP)>(ΔP_max)*P
-            ΔP=(ΔP_max)*P
-            p_in_ref = (P + ΔP)
+            ΔP=-sign(f_m)*(ΔP_max)*P
+            t_e_ref = (P + ΔP)/ω_r
         end
     else
         ΔP=0
-        p_in_ref = P
+        t_e_ref = P/ω_r
     end
     println("ΔP:",ΔP)
 
@@ -76,7 +76,7 @@ end [[θ_PLL,dθ_PLL],[e_IP,de_IP],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,
     du_dc = 1/C*(p_in-p_e)
     #println("p_e: ",p_e)
 
-    u_t=v_q#abs(u)#TODO: discuss!!!
+    u_t=abs(u)#TODO: discuss!!!
 
     # PI voltage control:
     de_IV,i_d=PI_control(e_IV,(u_dcref-u_dc),K_g1,K_g2)
