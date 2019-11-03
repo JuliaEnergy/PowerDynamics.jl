@@ -29,7 +29,7 @@ include("nodes/ExponentialRecoveryLoad.jl")
 include("nodes/experimental/RLCLoad.jl")
 include("nodes/experimental/PVInverterWithFrequencyControl.jl")
 include("nodes/experimental/WindTurbineGenType4.jl")
-include("nodes/experimental/WindTurbineGenType4_inertia.jl")
+include("nodes/experimental/WindTurbineGenType4_RotorControl.jl")
 
 
 # all line types
