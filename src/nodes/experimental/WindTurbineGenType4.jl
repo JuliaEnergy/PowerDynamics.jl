@@ -7,7 +7,7 @@ WindTurbineGenType4(;I_n,k_PLL,f,f_s,T_m,k_P,τ_ω)
 """
 
 @DynamicNode WindTurbineGenType4(ΔP_max,k_P,K_PLL,Q_ref,C,J,P,ω_rref,K_Q,K_v,K_g1,K_g2,K_r1,K_r2) begin
-    MassMatrix(m_u = false,m_int = [true,true,true])#,true,true,true,true
+    MassMatrix(m_u = false,m_int = [true,true,true,true])#,true,true,true,true
 end  begin
     @assert J>=0
     @assert K_g1>=0
@@ -17,25 +17,15 @@ end  begin
     @assert ω_rref>=0
     @assert C>=0
     @assert K_PLL>=0
-end [[θ_PLL,dθ_PLL],[e_Idθ,de_Idθ],[i_d,di_d]] begin#[i_q,di_q],[u_tref,du_tref],[e_IV,de_IV],[u_dc,du_dc],[ω_r,dω_r]
-    function PI_control(e_I,e,K_P,K_I)
-        @assert K_P>=0
-        @assert K_I>=0
-        de_I=e
-        u = K_P*e+K_I*e_I
-        return [de_I,u]
-    end
+end [[θ_PLL,dθ_PLL],[ω,dω],[e_Idθ,de_Idθ],[i_d,di_d]] begin#[i_q,di_q],[u_tref,du_tref],[e_IV,de_IV],[u_dc,du_dc],[ω_r,dω_r]
     u_dq = u*exp(-1im*θ_PLL)
     v_d = real(u_dq)
     v_q = imag(u_dq)
-    #i_q = 0.
-    #t_m = P/ω_r
     u_dc_ref=1
 
-    de_Idθ,ω_PLL=PI_control(e_Idθ,v_q,K_PLL,1)
-    #dθ_PLL=v_q*K_PLL
+    de_Idθ,ω_PLL=PIControl(e_Idθ,v_q,K_PLL,1)
     dθ_PLL=ω_PLL
-    #dω = (-ω + ω_PLL)
+    dω = (-ω + ω_PLL)
 
     f_m = ω_PLL*2π
     #dω = (-ω + dθ_PLL)#*f*2*π)
@@ -46,7 +36,7 @@ end [[θ_PLL,dθ_PLL],[e_Idθ,de_Idθ],[i_d,di_d]] begin#[i_q,di_q],[u_tref,du_t
     #dt_Iω = t_ω
 
     # speed control:
-    #de_IP,t_e=PI_control(e_IP,(ω_rref-ω_r),K_r1,K_r2
+
     ω_r=1
 
     f_trigger=0.1

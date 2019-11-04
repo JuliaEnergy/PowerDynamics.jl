@@ -14,6 +14,7 @@ include("parsers/Format.jl")
 include("parsers/JsonParser.jl")
 
 # all possible node dynamics
+include("nodes/controller/PIControl.jl")
 include("nodes/AbstractNode.jl")
 include("nodes/NodeMacro.jl")
 include("nodes/PQAlgebraic.jl")
