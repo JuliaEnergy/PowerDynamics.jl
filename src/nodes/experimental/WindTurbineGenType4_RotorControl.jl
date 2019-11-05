@@ -6,7 +6,7 @@ WindTurbineGenType4(;I_n,k_PLL,f,f_s,T_m,k_P,τ_ω)
 ```
 """
 
-@DynamicNode WindTurbineGenType4_RotorControl(T_L,T_H,K_P,ΔP_max,K_PLL,Q_ref,C,J,P,ω_rref,u_dcref,K_Q,K_v,K_g1,K_g2,K_r1,K_r2) begin
+@DynamicNode WindTurbineGenType4_RotorControl(T_L,T_H,K_P,K_PLL,Q_ref,C,J,P,ω_rref,u_dcref,K_Q,K_v,K_g1,K_g2,K_r1,K_r2) begin
     MassMatrix(m_u = false,m_int = [true,true,true,true,true,true,true,true,true,true])
 end  begin
     @assert J>=0
@@ -16,6 +16,7 @@ end  begin
     @assert K_r2 >=0
     @assert C>=0
     @assert K_PLL>=0
+    @assert K_P>=0
 end [[θ_PLL,dθ_PLL],[e_Idθ,de_Idθ],[ω,dω],[e_IP,de_IP],[z,dz],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,du_tref],[ω_r,dω_r]] begin
     function PI_control(e_I,e,K_P,K_I)
         @assert K_P>=0
