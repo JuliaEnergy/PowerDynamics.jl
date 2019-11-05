@@ -14,7 +14,6 @@ end  begin
     @assert K_g2>=0
     @assert K_r1 >=0
     @assert K_r2 >=0
-    @assert ω_rref>=0
     @assert C>=0
     @assert K_PLL>=0
 end [[θ_PLL,dθ_PLL],[e_Idθ,de_Idθ],[ω,dω],[e_IP,de_IP],[z,dz],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,du_tref],[ω_r,dω_r]] begin
@@ -50,7 +49,7 @@ end [[θ_PLL,dθ_PLL],[e_Idθ,de_Idθ],[ω,dω],[e_IP,de_IP],[z,dz],[e_IV,de_IV]
     p_in = t_e*ω_r
     dω_r = 1/J*(t_m-t_e)#-D*ω_r)
 
-    # DC voltage control 
+    # DC voltage control
     de_IV,i_d=PI_control(e_IV,(u_dcref-u_dc),K_g1,K_g2)
     i_dq = i_d+1im*i_q
     s_e = u_dq*conj(i_dq)# s=(v_d*i_d+v_q*i_q)+j(v_q*i_d-v_d*i_q)
