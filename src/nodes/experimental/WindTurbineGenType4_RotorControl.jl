@@ -37,7 +37,7 @@ end [[θ_PLL,dθ_PLL],[e_Idθ,de_Idθ],[ω,dω],[e_IP,de_IP],[z,dz],[e_IV,de_IV]
 
     # PI speed control:
     ##k_pp=150, kip=25
-    de_IP,t_eref=PI_control(e_IP,ω_rref-ω_PLL-ω_r,K_r1,K_r2)
+    de_IP,t_eref=PI_control(e_IP,ω_rref-ω-ω_r,K_r1,K_r2)
 
     # inertial respons emulation
     dω=1/T_L*(ω_PLL-ω)
