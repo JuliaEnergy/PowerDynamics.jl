@@ -16,6 +16,8 @@ testlist = [
     ("nodes/FourthOrderEqGovernorExciterAVR.jl", "FourthOrderEqGovernorExciterAVR Node Tests"),
     ("nodes/experimental/RLCLoad.jl", "RLCLoad Node Tests"),
     ("nodes/experimental/PVInverterWithFrequencyControl.jl","PVInverter Tests"),
+    ("nodes/experimental/WindTurbineGenType4.jl","WindGenType 4 Tests"),
+    ("nodes/experimental/WindTurbineGenType4_RotorControl.jl","WindGenType 4 with Rotor Control Tests"),
     ("lines/StaticLine.jl", "StaticLine tests"),
     ("lines/PiModelLine.jl", "PiModelLine tests"),
     ("common/PowerGrid.jl", "PowerGrid Tests"),
