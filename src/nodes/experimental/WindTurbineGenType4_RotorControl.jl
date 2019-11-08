@@ -6,7 +6,7 @@ WindTurbineGenType4(;I_n,k_PLL,f,f_s,T_m,k_P,τ_ω)
 ```
 """
 
-@DynamicNode WindTurbineGenType4_RotorControl(T_L,K_dbr,T_H,K_ω,K_PLL,Q_ref,C,J,P,ω_rref,u_dcref,K_Q,K_v,K_pv,K_iv,K_ptrq,K_itrq) begin
+@DynamicNode WindTurbineGenType4_RotorControl(T_L,K_dbr,T_H,K_ω,K_PPLL,K_IPLL,Q_ref,C,J,P,ω_rref,u_dcref,K_Q,K_v,K_pv,K_iv,K_ptrq,K_itrq) begin
     MassMatrix(m_u = false,m_int = [true,true,true,true,true,true,true,true,true,true])
 end  begin
     @assert J>=0
@@ -15,7 +15,8 @@ end  begin
     @assert K_ptrq >=0
     @assert K_itrq >=0
     @assert C>=0
-    @assert K_PLL>=0
+    @assert K_PPLL>=0
+    @assert K_IPLL>=0
     @assert K_ω>=0
 end [[θ_PLL,dθ_PLL],[e_Idθ,de_Idθ],[ω,dω],[e_IP,de_IP],[z,dz],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,du_tref],[ω_r,dω_r]] begin
     function PI_control(e_I,e,K_P,K_I)
@@ -32,8 +33,10 @@ end [[θ_PLL,dθ_PLL],[e_Idθ,de_Idθ],[ω,dω],[e_IP,de_IP],[z,dz],[e_IV,de_IV]
     v_q = imag(u_dq)
 
     # PLL dynamics for frequency measurement
-    de_Idθ,ω_PLL=PI_control(e_Idθ,v_q,K_PLL,1)
+    de_Idθ,ω_PLL=PI_control(e_Idθ,-v_q,K_PPLL,K_IPLL)
     dθ_PLL=ω_PLL
+
+    println(ω_PLL)
 
     # PI speed control:
     ##k_pp=150, kip=25
