@@ -20,13 +20,12 @@ end  begin
     @assert K_ω>=0
 end [[θ_PLL,dθ_PLL],[e_Idθ,de_Idθ],[ω,dω],[e_IP,de_IP],[z,dz],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,du_tref],[ω_r,dω_r]] begin
     function PI_control(e_I,e,K_P,K_I)
-        @assert K_P>=0
-        @assert K_I>=0
-        de_I=e
-        u = K_P*e+K_I*e_I
-        return [de_I,u]
+      @assert K_P>=0
+      @assert K_I>=0
+      de_I=e
+      u = K_P*e+K_I*e_I
+      return [de_I,u]
     end
-
     # transformation from global to local dq-coordinates with θ_PLL
     u_dq = u*exp(-1im*θ_PLL)
     v_d = real(u_dq)
@@ -36,7 +35,7 @@ end [[θ_PLL,dθ_PLL],[e_Idθ,de_Idθ],[ω,dω],[e_IP,de_IP],[z,dz],[e_IV,de_IV]
     de_Idθ,ω_PLL=PI_control(e_Idθ,-v_q,K_PPLL,K_IPLL)
     dθ_PLL=ω_PLL
 
-    println(ω_PLL)
+    #println(ω_PLL)
 
     # PI speed control:
     ##k_pp=150, kip=25
