@@ -45,7 +45,7 @@ using OrdinaryDiffEq: ODEProblem, Rodas4, init, solve, step!, reinit!, savevalue
 p = Perturbation(disturbed_node, :ω, Dec(0.5));
 x1 = p(operationpoint)
 problem = ODEProblem{true}(rhs(powergrid),x1.vec,simulation_time)
-sol = solve(problem,Rodas4(autodiff=false),saveat=1e-5)#,callback=cb)
+sol = solve(problem,Rodas4(autodiff=false),saveat=1e-4)#,callback=cb)
 result=PowerGridSolution(sol, powergrid)
 plot_res(result,powergrid,disturbed_node,simulation_time)
 

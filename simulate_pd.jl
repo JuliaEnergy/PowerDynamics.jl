@@ -4,7 +4,7 @@ using OrdinaryDiffEq: ODEProblem, Rodas4, init, solve!, step!, reinit!, savevalu
 function simulate_pd(pd,powergrid,operationpoint,timespan)
     x0 = operationpoint;
     problem = ODEProblem{true}(rhs(powergrid), x0.vec, timespan)
-    integrator = init(problem, Rodas4(autodiff=false))
+    integrator = init(problem, Rodas4(autodiff=false),saveat=1e-4)
 
     step!(integrator, pd.tspan_fault[1], true)
 
