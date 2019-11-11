@@ -36,7 +36,7 @@ final_time=2
 simulation_time = (0.0,final_time);
 pd = PowerPerturbation(node_number=disturbed_node,fraction=0.9, tspan_fault=(0.5,2));
 
-include("simulate_pd.jl")
+#include("simulate_pd.jl")
 include("plotting2.jl")
 #sol_pd,result_pd = simulate_pd(pd,powergrid,operationpoint,simulation_time)
 #plot_res(result_pd,powergrid,disturbed_node)
