@@ -33,7 +33,6 @@ include("nodes/experimental/WindTurbineGenType4.jl")
 include("nodes/experimental/WindTurbineGenType4_RotorControl.jl")
 include("nodes/experimental/CurtailedPowerPlantWithInertia.jl")
 
-
 # all line types
 
 include("lines/AbstractLine.jl")
