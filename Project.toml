@@ -22,6 +22,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
 julia = "1"
+DiffEqBase = "^v6.3.4"
 OrdinaryDiffEq= "^5.17.2"
 JSON= "^v0.21.0"
 Lazy ="^v0.14.0"
