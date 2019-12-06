@@ -21,7 +21,7 @@ function (pd::PowerPerturbation)(powergrid)
     #TODO: check if node type supported for power drop
     node_list_power_drop = copy(powergrid.nodes)
     node_for_drop = node_list_power_drop[pd.node_number]
-    node_for_drop = @set node_for_drop.P *= pd.fraction
+    node_for_drop = @set node_for_drop.P = round(Int64, node_for_drop.P*pd.fraction)
     node_list_power_drop[pd.node_number] = node_for_drop
     PowerGrid(node_list_power_drop, powergrid.lines)
 end
