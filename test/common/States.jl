@@ -64,7 +64,7 @@ state[2:3, :ω] = [omega1, omega2]
 v = rand(1:10)
 state[1, :u] = u_Sw1
 state[:, :v] = v
-@test state[1, :v] == v
+@test state[1, :v] ≈ v
 
 ## getindex for angle (numerically) ##
 v_Sl = rand()
