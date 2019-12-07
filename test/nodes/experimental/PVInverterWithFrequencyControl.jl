@@ -1,15 +1,14 @@
 using Test: @testset, @test
-using SymPy: @syms
 using PowerDynamics: PVInverterWithFrequencyControl, construct_vertex, symbolsof
 using LinearAlgebra: I
 
 include("../NodeTestBase.jl")
 
 @testset "PVInverter Tests" begin
-    @syms k_PLL f f_s T_m k_P τ_ω positive=true
-    @syms I_n real=true
-    @syms omega domega theta_PLL dtheta_PLL v_xm dvx_m v_ym dv_ym P dP ω dω real=true
-    @syms f_INVALID k_PLL_INVALID negative=true
+    k_PLL,f,f_s,T_m,k_P,τ_ω = rand_positive(6)
+    I_n = rand_real()
+    omega,domega,theta_PLL,dtheta_PLL,v_xm,dvx_m,v_ym,dv_ym,P,dP,ω,dω = rand_real(12)
+    f_INVALID,k_PLL_INVALID = rand_negative(2)
 
     @test_throws AssertionError construct_vertex(PVInverterWithFrequencyControl(I_n=I_n,k_PLL=k_PLL_INVALID,f=f,f_s=f_s,T_m=T_m,k_P=k_P,τ_ω=τ_ω))
     @test_throws AssertionError construct_vertex(PVInverterWithFrequencyControl(I_n=I_n,k_PLL=k_PLL,f=f_INVALID,f_s=f_s,T_m=T_m,k_P=k_P,τ_ω=τ_ω))

@@ -14,7 +14,7 @@ testlist = [
     ("nodes/CurrentSourceInverterMinimal.jl", "CurrentSourceInverterMinimal Node Tests"),
     ("nodes/ExponentialRecoveryLoad.jl", "ExponentialRecoveryLoad Node Tests"),
     ("nodes/FourthOrderEqGovernorExciterAVR.jl", "FourthOrderEqGovernorExciterAVR Node Tests"),
-    ("nodes/experimental/RLCLoad.jl", "RLCLoad Node Tests"),
+    #("nodes/experimental/RLCLoad.jl", "RLCLoad Node Tests"),
     ("nodes/experimental/PVInverterWithFrequencyControl.jl","PVInverter Tests"),
     ("nodes/experimental/WindTurbineGenType4.jl","WindGenType 4 Tests"),
     ("nodes/experimental/WindTurbineGenType4_RotorControl.jl","WindGenType 4 with Rotor Control Tests"),

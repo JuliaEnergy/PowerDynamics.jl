@@ -1,6 +1,5 @@
 using Test: @test, @testset
 using PowerDynamics: SlackAlgebraic, SwingEqLVS, PowerGrid, State, startindex, StateError
-using SymPy: @syms, simplify
 using LightGraphs: SimpleGraph, add_edge!, edges
 
 
@@ -11,8 +10,8 @@ add_edge!(graph, 1, 2)
 add_edge!(graph, 1, 3)
 lines = [StaticLine(from=e.src, to=e.dst, Y=Y) for e in edges(graph)]
 grid = PowerGrid(graph, nodes, lines)
-@syms u_Sl u_Sw1 u_Sw2
-@syms omega1 omega2 real=true
+u_Sl,u_Sw1,u_Sw2 = rand(ComplexF64, 3)
+omega1,omega2 = rand(1.0:10.0, 2)
 state = State(grid, [real(u_Sl), imag(u_Sl), real(u_Sw1), imag(u_Sw1), omega1, real(u_Sw2), imag(u_Sw2), omega2])
 
 @test startindex(nodes, 1) == 0
@@ -62,10 +61,10 @@ state[2:3, :ω] = [omega1, omega2]
 @test state[2:3, :ω] == [omega1, omega2]
 
 # modify the v as test
-@syms v positive=true
+v = rand(1:10)
 state[1, :u] = u_Sw1
 state[:, :v] = v
-@test state[1, :v] |> simplify == v
+@test state[1, :v] == v
 
 ## getindex for angle (numerically) ##
 v_Sl = rand()

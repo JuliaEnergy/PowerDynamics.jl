@@ -1,5 +1,6 @@
 using PowerDynamics: OperationPointError, find_operationpoint, rhs, RootRhs, SlackAlgebraic, SwingEqLVS, PQAlgebraic, StaticLine,
 PowerGrid, find_operationpoint, RootRhs, rhs, systemsize
+using LightGraphs: SimpleGraph
 using Test: @test, @testset
 
 
