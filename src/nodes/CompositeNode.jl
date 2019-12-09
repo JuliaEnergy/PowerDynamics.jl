@@ -1,20 +1,29 @@
-
+using LinearAlgebra
 @doc doc"""
 ```julia
 CompositeNode(CurrentNodes)
 ```
 
-A composite node consisting of current sources provided. This assumes that the
+A composite node consisting of current and power sources provided, as well as up to one
+optional voltage controling node. This assumes that the
 current nodes are implemented as
 
 ```julia
 du = i - I_node
 ```
 
-with MassMatrix.
+and the power nodes are implemented with
 
-In principle we could build a composite node that incorporates power sources,
-current sources, and one voltage regulator.
+```julia
+du = u*conj(i) - P_node
+```
+
+*Important!!* The individual nodes are given the current that is arriving from
+the grid into the bus, _not_ the current they themself inject! Check the definitions
+of the nodes going into the CompositeType to make sure they have the right dynamics.
+
+*Experimental!!* This node has not been sufficiently tested for correctness yet.
+
 """
 
 struct _IPU end
@@ -49,6 +58,11 @@ CompositionTypes = Dict(["IPU" => _IPU,
         symbols = [:u_r, :u_i]
         internaldims = Array{Int,1}()
         mix = ""
+
+        # The key implementation detail is that we stack the internal variables
+        # of all nodes in the order I, P and U. The array of indices makes sure
+        # that these are combined correctly with the first to indices that represent
+        # the voltage or the current constraints.
 
         if CurrentNodes != nothing
             mix *= "I"
@@ -103,12 +117,14 @@ function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IPU, _IU, _PU}
     power_vertices = [construct_vertex(n) for n in cn.PowerNodes]
     voltage_vertex = construct_vertex(cn.VoltageNode)
 
-    all_vertices = vcat(current_nodes, power_nodes, voltage_vertex)
+    all_vertices = vcat(current_vertices, power_vertices, voltage_vertex)
+
+    mms = [vert.mass_matrix == I ? vert.mass_matrix * ones(Int, vert.dim) : vert.mass_matrix for vert in all_vertices]
 
     cfs = [n.f! for n in current_vertices]
     pfs = [n.f! for n in power_vertices]
 
-    mass_matrix = vcat(voltage_vertex.mass_matrix[1:2], [cn.mass_matrix[3:end] for cn in all_vertices]...)
+    mass_matrix = vcat(mms[end][1:2], [mm[3:end] for mm in mms]...)
 
     num_cv = length(current_vertices)
     num_pv = length(power_vertices)
@@ -116,7 +132,7 @@ function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IPU, _IU, _PU}
     function rhs!(dx, x, e_s, e_d, p, t)
         i = total_current(e_s, e_d)
         u = x[1] + x[2] * im
-        # p = u*conj(i)
+        po = u*conj(i)
 
         i_injected = 0.0 + 0.0im
         p_injected = 0.0 + 0.0im
@@ -133,12 +149,12 @@ function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IPU, _IU, _PU}
             for (pf, idx) in zip(pfs, cn.idxs[num_cv+1:num_cv+num_pv])
                 pf(dx[idx], x[idx], e_s, e_d, p, t)
                 # The current nodes are assumed to have du = p - P_node
-                p_injected += p - complex(dx[1], dx[2])
+                p_injected += po - complex(dx[1], dx[2])
             end
 
             total_i = i_injected + p_injected / u
 
-            voltage_vertex.f!(dx[cn.idxs[end]], x[cn.idxs[end]], [e_s;[real(total_i), imag(total_i), 0., 0.]], e_d, p, t)
+            voltage_vertex.f!(dx[cn.idxs[end]], x[cn.idxs[end]], [e_s;[[real(total_i), imag(total_i), 0., 0.]]], e_d, p, t)
 
         end # views
 
@@ -151,16 +167,17 @@ end
 
 function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IP, _I, _P}
 
-    # first collect the information
     current_vertices = [construct_vertex(n) for n in cn.CurrentNodes]
     power_vertices = [construct_vertex(n) for n in cn.PowerNodes]
 
-    all_vertices = vcat(current_nodes, power_nodes)
+    all_vertices = vcat(current_vertices, power_vertices)
+
+    mms = [vert.mass_matrix == I ? vert.mass_matrix * ones(Int, vert.dim) : vert.mass_matrix for vert in all_vertices]
 
     cfs = [n.f! for n in current_vertices]
     pfs = [n.f! for n in power_vertices]
 
-    mass_matrix = vcat([0,0], [cn.mass_matrix[3:end] for cn in all_vertices]...)
+    mass_matrix = vcat(mms[end][1:2], [mm[3:end] for mm in mms]...)
 
     num_cv = length(current_vertices)
     num_pv = length(power_vertices)
@@ -168,7 +185,7 @@ function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IP, _I, _P}
     function rhs!(dx, x, e_s, e_d, p, t)
         i = total_current(e_s, e_d)
         u = x[1] + x[2] * im
-        # p = u*conj(i)
+        po = u*conj(i)
 
         i_injected = 0.0 + 0.0im
         p_injected = 0.0 + 0.0im
@@ -182,13 +199,14 @@ function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IP, _I, _P}
                 i_injected += i - complex(dx[1], dx[2])
             end
 
+            #constant powers
             for (pf, idx) in zip(pfs, cn.idxs[num_cv+1:num_cv+num_pv])
                 pf(dx[idx], x[idx], e_s, e_d, p, t)
                 # The current nodes are assumed to have du = p - P_node
-                p_injected += p - complex(dx[1], dx[2])
+                p_injected += po - complex(dx[1], dx[2])
             end
 
-            total_p = u * conj(i_injected - i) + p_injected # Check signs
+            total_p = u * conj(i_injected) + p_injected - po # Check signs
 
             dx[1] = real(total_p)
             dx[2] = imag(total_p)
