@@ -91,7 +91,7 @@ CompositionTypes = Dict(["IPU" => _IPU,
         idxs = Array{Array{Int,1},1}([])
         offset = 2
         for idim in internaldims
-            println([[[1,2]; (offset + 1):(offset + idim)]])
+            # println([[[1,2]; (offset + 1):(offset + idim)]])
             append!(idxs, [[[1,2]; (offset + 1):(offset + idim)]])
             offset += idim
         end

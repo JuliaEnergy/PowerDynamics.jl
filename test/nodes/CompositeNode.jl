@@ -20,7 +20,8 @@ using PowerDynamics#: CompositeNode, CSIMinimal, VSIMinimal, PQAlgebraic, constr
     @test symbolsof(comp_node) == [:u_r, :u_i, :ω]
     @test comp_vertex.mass_matrix == [1,1,1]
 
-    smoketest_rhs(comp_vertex)
+    # smoketest not compatible with internal variables?
+    comp_vertex.f!(ones(3), ones(3), [], [], nothing, 0.)
 
     # Test vertex without voltage dynamic
     comp_node_2 = CompositeNode(CurrentNodes=[CSI, CSI2], PowerNodes=[PQ, PQ2])
