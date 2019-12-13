@@ -1,12 +1,11 @@
 using Test: @testset, @test
-using SymPy: @syms
 using PowerDynamics: VSIMinimal, construct_vertex, symbolsof
 using LinearAlgebra: I
 
 @testset "VoltageSourceInverterMinimal" begin
-    @syms τ_P τ_Q K_P K_Q positive=true
-    @syms P Q V_r real=true
-    @syms omega domega real=true
+    τ_P,τ_Q,K_P,K_Q = rand_positive(4)
+    P,Q,V_r = rand_real(3)
+    omega,domega = rand_real(2)
     VSI = VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P,Q=Q)
     VSI_vertex = construct_vertex(VSI)
 
