@@ -1,11 +1,12 @@
 using Test: @testset, @test
-using SymPy: @syms
 using PowerDynamics: ExponentialRecoveryLoad, construct_vertex, symbolsof
 
+include("NodeTestBase.jl")
+
 @testset "ExponentialRecoveryLoad" begin
-    @syms V0 Nps Npt Nqs Nqt Tp Tq positive=true
-    @syms P0 Q0 Pd Qd real=true
-    @syms x_p dx_p x_q dx_q real=true
+    V0,Nps,Npt,Nqs,Nqt,Tp,Tq = rand_positive(7)
+    P0,Q0,Pd,Qd = rand_real(4)
+    x_p,dx_p,x_q,dx_q = rand_real(4)
 
     exponentialRecoveryLoad = ExponentialRecoveryLoad(P0=P0, Q0=Q0, Nps=Nps, Npt=Npt, Nqs=Nqs, Nqt=Nqt, Tp=Tp, Tq=Tq, V0=V0)
     exprec_vertex= construct_vertex(exponentialRecoveryLoad)

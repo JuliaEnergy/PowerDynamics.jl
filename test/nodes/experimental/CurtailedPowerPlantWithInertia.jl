@@ -1,17 +1,15 @@
 using Test: @testset, @test
-using SymPy: @syms
 using PowerDynamics: CurtailedPowerPlantWithInertia, construct_vertex, symbolsof
 using LinearAlgebra: I
 
 include("../NodeTestBase.jl")
 
 @testset "CurtailedPowerPlantWithInertia Tests" begin
-    #T_L,T_H,K_P,K_PLL,Q_ref,C,J,P,ω_rref,u_dcref,K_Q,K_v,K_g1,K_g2,K_r1,K_r2
-    #[θ_PLL,dθ_PLL],[e_Idθ,de_Idθ],[ω,dω],[e_IP,de_IP],[z,dz],[e_IV,de_IV],[u_dc,du_dc],[i_q,di_q],[u_tref,du_tref],[ω_r,dω_r]
-    @syms ω_0 T_AI K_PPLL K_IPLL T_d T_f K_PV K_IV positive=true
-    @syms P real=true
-    @syms θ_PLL dθ_PLL e_Iω de_Iω ω dω y dy e_Iiq de_Iiq e_Iid de_Iid real=true
-    @syms K_PPLL_invalid K_PV_INVALID negative=true
+
+    ω_0,T_AI, K_PPLL, K_IPLL, T_d, T_f, K_PV, K_IV = rand_positive(8)
+    P = rand_real()
+    θ_PLL, dθ_PLL, e_Iω, de_Iω, ω, dω, y, dy, e_Iiq, de_Iiq, e_Iid, de_Iid = rand_real(12)
+    K_PPLL_invalid, K_PV_INVALID = rand_negative(3)
 
     @test_throws AssertionError construct_vertex(CurtailedPowerPlantWithInertia(P=P,ω_0=ω_0,T_AI=T_AI,K_PPLL=K_PPLL_invalid,K_IPLL=K_IPLL,T_d=T_d,T_f=T_f,K_PV=K_PV,K_IV=K_IV))
     @test_throws AssertionError construct_vertex(CurtailedPowerPlantWithInertia(P=P,ω_0=ω_0,T_AI=T_AI,K_PPLL=K_PPLL,K_IPLL=K_IPLL,T_d=T_d,T_f=T_f,K_PV=K_PV_INVALID,K_IV=K_IV))
