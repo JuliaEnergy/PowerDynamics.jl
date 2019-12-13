@@ -9,12 +9,13 @@ PowerPerturbation(;node_number,fraction,tspan_fault)
 - `node_number`: number  of the node
 - `fraction`: percentage factor to be applied to the active power P
 - `tspan_fault`: PowerPerturbation timespan
+- `power_symbol`: parameter symbol on the node that represents Power, default is :P
 """
-struct PowerPerturbation
+Base.@kwdef struct PowerPerturbation
     node_number
     fraction
     tspan_fault
-    power_symbol
+    power_symbol = :P
 end
 
 "Error to be thrown if something goes wrong during power perturbation"
@@ -22,26 +23,20 @@ struct PowerPerturbationError <: PowerDynamicsError
     msg::String
 end
 
-PowerPerturbation(;node_number,fraction,tspan_fault,power_symbol) = PowerPerturbation(node_number,fraction,tspan_fault,power_symbol)
-
 function (pd::PowerPerturbation)(powergrid)
+    mapPowerField(powergrid, pd, p -> p * pd.fraction)
+end
+
+function mapPowerField(powergrid, pd, f)
     node_list_power_drop = copy(powergrid.nodes)
     node_for_drop = node_list_power_drop[pd.node_number]
-    if !(pd.power_symbol in fieldnames(typeof(node_for_drop)))
-        throw(PowerPerturbationError("Node number: $(pd.node_number) must have a power parameter: $(pd.power_symbol)"))
+    if !(hasproperty(node_for_drop,pd.power_symbol))
+        throw(PowerPerturbationError("Node number: $(pd.node_number) must have a power parameter $(pd.power_symbol)"))
     end
-    try
-        new_P = typeof(node_for_drop.P)(node_for_drop.P * pd.fraction)
-        node_for_drop = @set node_for_drop.P = new_P
-        node_list_power_drop[pd.node_number] = node_for_drop
-        PowerGrid(node_list_power_drop, powergrid.lines)
-    catch e
-        if isa(e, InexactError)
-            throw(PowerPerturbationError("Node number: $(pd.node_number) must have a $(pd.power_symbol) parameter of type Float64 for PowerPerturbation, but was of type $(typeof(node_for_drop.P))"))
-        else
-            throw(x) #handle every other error
-        end
-    end
+    lens = Setfield.compose(Setfield.PropertyLens{pd.power_symbol}())
+    node_for_drop = Setfield.set(node_for_drop, lens, f(Setfield.get(node_for_drop, lens)))
+    node_list_power_drop[pd.node_number] = node_for_drop
+    PowerGrid(node_list_power_drop, powergrid.lines)
 end
 
 """
@@ -54,23 +49,25 @@ function simulate(pd::PowerPerturbation, powergrid, x0, timespan)
     @assert first(timespan) <= pd.tspan_fault[1] "fault cannot begin in the past"
     @assert pd.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
 
-    problem = ODEProblem{true}(rhs(powergrid), x0.vec, timespan)
+    typeStablePowerGrid = mapPowerField(powergrid, pd, p -> convert(Float64, p))
+    normal_rhs = rhs(typeStablePowerGrid)
+
+    problem = ODEProblem{true}(normal_rhs, x0.vec, timespan)
     integrator = init(problem, Rodas4(autodiff=false))
 
     step!(integrator, pd.tspan_fault[1], true)
 
     # update integrator with error
-    integrator.f = rhs(pd(powergrid))
+    integrator.f = rhs(pd(typeStablePowerGrid))
     u_modified!(integrator,true)
 
     step!(integrator, pd.tspan_fault[2]-pd.tspan_fault[1], true)
 
     # update integrator, clear error
-    integrator.f = rhs(powergrid)
+    integrator.f = normal_rhs
     u_modified!(integrator,true)
 
     step!(integrator, timespan[2]-pd.tspan_fault[2], true)
-
 
     solve!(integrator)
 
