@@ -1,15 +1,14 @@
 using Test: @testset, @test
-using SymPy: @syms
 using PowerDynamics: WindTurbineGenType4, construct_vertex, symbolsof
 using LinearAlgebra: I
 
 include("../NodeTestBase.jl")
 
 @testset "WindGenType 4 Tests" begin
-    @syms ΔP_max K_P K_PLL positive=true
-    @syms P real=true
-    @syms θ_PLL dθ_PLL e_Idθ de_Idθ i_d di_d ω dω real=true
-    @syms k_P_invalid k_PLL_INVALID negative=true
+    ΔP_max,K_P,K_PLL = rand_positive(3)
+    P = rand_real()
+    θ_PLL,dθ_PLL,e_Idθ,de_Idθ,i_d,di_d,ω,dω = rand_real(8)
+    k_P_invalid,k_PLL_INVALID = rand_negative(2)
 
     @test_throws AssertionError construct_vertex(WindTurbineGenType4(ΔP_max=ΔP_max,K_P=K_P,K_PLL=k_PLL_INVALID,P=P))
     @test_throws AssertionError construct_vertex(WindTurbineGenType4(ΔP_max=ΔP_max,K_P=k_P_invalid,K_PLL=K_PLL,P=P))
