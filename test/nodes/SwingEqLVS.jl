@@ -1,16 +1,15 @@
 using Test: @testset, @test
-using SymPy: @syms
 using PowerDynamics: SwingEqLVS, construct_vertex, symbolsof
 using LinearAlgebra: I
 
 include("NodeTestBase.jl")
 
 @testset "Swing Eq LVS" begin
-    @syms H D positive=true
-    @syms P Ω real=true
-    @syms omega domega real=true
-    @syms V Γ positive=true
-    @syms H_INVALID D_INVALID Γ_INVALID negative=true
+    H,D = rand_positive(2)
+    P,Ω = rand_real(2)
+    omega,domega = rand_real(2)
+    V,Γ = rand_positive(2)
+    H_INVALID,D_INVALID,Γ_INVALID = rand_negative(3)
     swing_lvs = SwingEqLVS(H=H, P=P, D=D, Ω=Ω, Γ=Γ, V=V)
     swing_lvs_vertex = construct_vertex(swing_lvs)
 

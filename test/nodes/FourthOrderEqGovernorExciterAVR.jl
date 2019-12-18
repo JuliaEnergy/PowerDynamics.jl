@@ -1,12 +1,11 @@
 using Test: @testset, @test
-using SymPy: @syms
 using PowerDynamics: FourthOrderEqGovernorExciterAVR, construct_vertex, symbolsof
 using LinearAlgebra: I
 
 @testset "FourthOrderEqGovernorExciterAVR" begin
-    @syms H  D  Ω  T_d_dash T_q_dash X_q_dash X_d_dash X_d X_q T_e T_a T_f K_a K_f V_ref R_d T_sv T_ch positive=true
-    @syms P K_e real=true
-    @syms omega domega theta dtheta e_f de_f v_r dv_r r_f dr_f P_sv dP_sv P_m dP_m real=true
+    H,D,Ω,T_d_dash,T_q_dash,X_q_dash,X_d_dash,X_d,X_q,T_e,T_a,T_f,K_a,K_f,V_ref,R_d,T_sv,T_ch = rand_positive(18)
+    P,K_e = rand_real(2)
+    omega,domega,theta,dtheta,e_f,de_f,v_r,dv_r,r_f,dr_f,P_sv,dP_sv,P_m,dP_m = rand_real(14)
     fourth = FourthOrderEqGovernorExciterAVR(
     H=H, P=P, D=D, Ω=Ω, T_d_dash=T_d_dash ,T_q_dash=T_q_dash,
     X_q_dash=X_q_dash ,X_d_dash=X_d_dash,X_d=X_d, X_q=X_q, T_e=T_e, T_a=T_a, T_f=T_f, K_e=K_e, K_a=K_a,
