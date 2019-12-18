@@ -1,10 +1,10 @@
 using PowerDynamics
-import Base: @__doc__ #-> LoadError: UndefVarError: @__doc__ not defined
-import PowerDynamics: AbstractNode #-> UndefVarError: AbstractNode not defined
+using NetworkDynamics
+import PowerDynamics: dimension, symbolsof, construct_vertex
 
 
 @DynamicNode MySwingEq(P, H, D, Ω) begin
-PowerDynamics.MassMatrix(;m_u = true, m_int = [1, 0])
+MassMatrix(;m_u = true, m_int = [true])
 end begin
 @assert D > 0 "damping (D) should be >0"
 @assert H > 0 "inertia (H) should be >0"
@@ -16,7 +16,7 @@ du = u * im * dϕ
 dω = (P - D*ω - p)*Ω_H
 end
 
-showdefinition(stdout, MySwingEq) |> println
+#showdefinition(stdout, MySwingEq) |> println
 
 swing_node = MySwingEq(P=1., H=1., D=0.1, Ω=50.)
 slack = SlackAlgebraic(U=1.)
@@ -31,9 +31,5 @@ pg = PowerGrid(nodes, lines)
 
 dimension(swing_node)
 symbolsof(swing_node)
-
-# The following two lines both fail with:
-#   MethodError: no method matching dimension(::MySwingEq)
-# This leads to subsequent errors e.g. in find_operationpoint or find_valid_initial_condition.
 
 systemsize(pg)
