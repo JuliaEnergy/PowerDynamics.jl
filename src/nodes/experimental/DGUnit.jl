@@ -5,7 +5,7 @@ DGUnit(;I_r)
 
 
 """
-@DynamicNode DGUnit(; Pref, Qref) begin
+@DynamicNode DGUnit(Pref, Qref) begin
     MassMatrix()
 end  begin
 end [[Pmeas, dPmeas], [Qmeas, dQmeas]] begin
@@ -19,4 +19,4 @@ end [[Pmeas, dPmeas], [Qmeas, dQmeas]] begin
     dPmeas = 0.
 end
 
-export CSIMinimal
+export DGUnit
