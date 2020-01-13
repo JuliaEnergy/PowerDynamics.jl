@@ -5,7 +5,7 @@ DGUnit(;I_r)
 
 
 """
-@DynamicNode DGUnit(; Pref, Qref) begin
+@DynamicNode DGUnit(Pref, Qref) begin
     MassMatrix()
 end  begin
 end [[Pmeas, dPmeas], [Qmeas, dQmeas]] begin
@@ -135,6 +135,7 @@ function PT1Limiter(var,max,min,gain)
     end
     (var, inp)
 end
+
 
 function DynamicRateLimiter(u)#,u_hold_in)
 
@@ -340,9 +341,6 @@ function DGIntegralController(e,power_lim_reach,quantyn,dPQ)
         end
     (e_out,reset)
 end
-
-
-
 
 
 export DGUnit
