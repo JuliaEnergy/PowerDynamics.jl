@@ -85,7 +85,7 @@ function simulate(lf::LineFault, powergrid, x0; timespan)
 end
 
 function solve(pg::PowerGrid, x0, timespan)
-    problem = ODEProblem{iipfunc}(rhs(pg),x0.vec,timespan)
+    problem = ODEProblem{iipfunc}(rhs(pg),x0,timespan)
     solution = solve(problem, Rodas4(autodiff=false))
     PowerGridSolution(solution, pg)
 end
