@@ -14,6 +14,7 @@ include("parsers/Format.jl")
 include("parsers/JsonParser.jl")
 
 # all possible node dynamics
+include("nodes/controller/PIControl.jl")
 include("nodes/AbstractNode.jl")
 include("nodes/NodeMacro.jl")
 include("nodes/PQAlgebraic.jl")
@@ -28,7 +29,9 @@ include("nodes/CurrentSourceInverterMinimal.jl")
 include("nodes/ExponentialRecoveryLoad.jl")
 include("nodes/experimental/RLCLoad.jl")
 include("nodes/experimental/PVInverterWithFrequencyControl.jl")
-
+include("nodes/experimental/WindTurbineGenType4.jl")
+include("nodes/experimental/WindTurbineGenType4_RotorControl.jl")
+include("nodes/experimental/CurtailedPowerPlantWithInertia.jl")
 
 # all line types
 

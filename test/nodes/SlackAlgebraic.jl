@@ -1,11 +1,10 @@
 using Test: @testset, @test
-using SymPy: @syms
 using PowerDynamics: SlackAlgebraic, construct_vertex, symbolsof
 
 include("NodeTestBase.jl")
 
 @testset "SlackAlgebraic" begin
-    @syms U
+    U = rand(ComplexF64)
     slack = SlackAlgebraic(U=U)
     slack_vertex = construct_vertex(slack)
 

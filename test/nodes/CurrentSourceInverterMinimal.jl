@@ -1,9 +1,8 @@
 using Test: @testset, @test
-using SymPy: @syms
 using PowerDynamics: CSIMinimal, construct_vertex, symbolsof
 
 @testset "CSIMinimal" begin
-    @syms I_r real=true
+    I_r = rand(1.0:10.0)
     CSI_min = CSIMinimal(I_r=I_r)
     CSI_min_vertex= construct_vertex(CSI_min)
 

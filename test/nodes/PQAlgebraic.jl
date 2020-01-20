@@ -1,11 +1,10 @@
 using Test: @testset, @test
-using SymPy: @syms
 using PowerDynamics: PQAlgebraic, construct_vertex, symbolsof
 
 include("NodeTestBase.jl")
 
 @testset "PQAlgebraic" begin
-    @syms P Q
+    P,Q = rand_real(2)
     pq = PQAlgebraic(P=P,Q=Q)
     pq_vertex = construct_vertex(pq)
     @test symbolsof(pq) == [:u_r, :u_i]
