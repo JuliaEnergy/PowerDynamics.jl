@@ -1,5 +1,6 @@
-using OrdinaryDiffEq: ODEProblem, Rodas4, init, solve!, step!, reinit!, savevalues!, u_modified!
+using OrdinaryDiffEq: ODEProblem, Rodas4, init, solve!, step!, reinit!, savevalues!, u_modified!,add_saveat!
 using Setfield
+using PowerDynamics:get_current,State
 
 """
 ```Julia
@@ -53,7 +54,15 @@ function simulate(pd::PowerPerturbation, powergrid, x0, timespan)
     normal_rhs = rhs(typeStablePowerGrid)
 
     problem = ODEProblem{true}(normal_rhs, x0.vec, timespan)
-    integrator = init(problem, Rodas4(autodiff=false))
+    # the fault times need to be added as t_stops values to the integrator so
+    # it makes extra small steps around the discontinuities
+    dt_fault = 1e-7
+    t1=pd.tspan_fault[1]-dt_fault
+    t2=pd.tspan_fault[1]+dt_fault
+    t3=pd.tspan_fault[2]-dt_fault
+    t4=pd.tspan_fault[2]+dt_fault
+
+    integrator = init(problem, Rodas4(autodiff=false),tstops=[t1,t2,t3,t4])
 
     step!(integrator, pd.tspan_fault[1], true)
 
