@@ -1,6 +1,5 @@
 using OrdinaryDiffEq: ODEProblem, Rodas4, init, solve!, step!, reinit!, savevalues!, u_modified!,add_saveat!
 using Setfield
-using PowerDynamics:get_current,State
 
 """
 ```Julia
