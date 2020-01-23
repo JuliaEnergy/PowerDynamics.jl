@@ -1,4 +1,4 @@
-@DynamicNode GridFormingTecnalia(τ_U, τ_I, τ_P, τ_Q, n_P, n_Q, K_P, K_Q, P, Q, V_r, R_f, X_f) begin
+@DynamicNode GridFormingTecnalia(ω_r,τ_U, τ_I, τ_P, τ_Q, n_P, n_Q, K_P, K_Q, P, Q, V_r, R_f, X_f) begin
     MassMatrix(m_u = false, m_int = [true,true,true,true,true,true,true,true,true])
 end begin
     @assert τ_U >= 0
@@ -33,9 +33,13 @@ end [[u_fil_r,du_fil_r],[u_fil_i,du_fil_i],[i_fil_r,di_fil_r],[i_fil_i,di_fil_i]
     dp = real(u_fil * conj(di_fil) + du_fil * conj(i_fil))
     dq = imag(u_fil * conj(di_fil) + du_fil * conj(i_fil))
 
-    dθ = ω
-    dω = -1/τ_P*ω + K_P/τ_P*(P-p) - K_P/n_P*dp
+    dθ = ω-ω_r
+    dω = -1/τ_P*(ω-ω_r) + K_P/τ_P*(P-p) - K_P/n_P*dp
+    #println(ω)
+    #println("p:",p)
+    #println("P:",P)
     dv = 1/τ_Q*(V_r - v) + K_Q/τ_Q*(Q-q) - K_Q/n_Q*dq
+    println(dv)
 
     v_out = v - R_f*(i_dq - i_fil) - 1im*X_f*i_fil
     du = u - v_out*exp(1im*θ)
