@@ -5,11 +5,20 @@ using Revise
 
 perturbed_node=2
 
+# per unit transformation base values
+V_base_kV = 0.4
+S_base_kW = 1
+Y_base = S_base_kW/V_base_kV^2
+
+# line paramterization
+Y_12 = 1/((0.25+1im*0.98*1e-6)/Y_base)
+
+
 node_list=[]
     append!(node_list,[SlackAlgebraic(U=1.)])
-    append!(node_list,[PQAlgebraic(P=-0.5,Q=0.)])
+    append!(node_list,[PQAlgebraic(P=-16.67/S_base_kW,Q=0./S_base_kW)])
 line_list=[]
-    append!(line_list,[StaticLine(from=1,to=2,Y=-1im/0.02)])
+    append!(line_list,[StaticLine(from=1,to=2,Y=Y_12)])
 
 powergrid = PowerGrid(node_list,line_list)
 operationpoint = find_operationpoint(powergrid)

@@ -1,5 +1,5 @@
 @DynamicNode GridFormingTecnalia(τ_U, τ_I, τ_P, τ_Q, n_P, n_Q, k_P, k_Q, P, Q, V_r, R_f, X_f) begin
-    MassMatrix(m_u = false, m_int = [true,true,true,true,true])
+    MassMatrix(m_u = false, m_int = [true,true,true,true,true,true,true])
 end begin
     @assert τ_U >= 0
     @assert τ_I >= 0
@@ -27,7 +27,7 @@ end [[u_fil,du_fil],[i_fil,di_fil],[p,dp],[q,dq],[θ,dθ],[ω, dω],[v,dv]] begi
 
     dθ = ω
     dω = -1/τ_P*ω + k_P/τ_P*(P-p) - k_P/n_P*dp
-    dv = 1/τ_Q*(V_r - v) + k_Q/τ_Q*(Q-q)) - k_Q/n_Q*dq
+    dv = 1/τ_Q*(V_r - v) + k_Q/τ_Q*(Q-q) - k_Q/n_Q*dq
 
     v_out = v - R_f*(i_dq - i_fil) - 1im*X_f*i_fil
     du = u - v_out*exp(1im*θ)

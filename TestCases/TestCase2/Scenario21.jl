@@ -8,6 +8,7 @@ perturbed_node=2
 node_list=[]
     append!(node_list,[SlackAlgebraic(U=1.)])
     append!(node_list,[PQAlgebraic(P=-0.5,Q=0.)])
+    append!(node_list,[GridFormingTecnalia(τ_U, τ_I, τ_P, τ_Q, n_P, n_Q, k_P, k_Q, P, Q, V_r, R_f, X_)])
 line_list=[]
     append!(line_list,[StaticLine(from=1,to=2,Y=-1im/0.02)])
 
