@@ -1,9 +1,28 @@
-@DynamicNode GridFollowingTecnalia() begin
-    #MassMatrix(m_u = false, m_int = [true,true,true,true,true])
+@DynamicNode GridFollowingTecnalia(τ_u,ω_ini,K_pω,K_iω,K_ω,K_v,ω_r,V_r,P_r,Q_r) begin
+    MassMatrix(m_u = false, m_int = [true,true,true,true])
 end begin
-    #@assert τ_U >= 0
-end [[u_fil,du_fil],[i_fil,di_fil],[p,dp],[q,dq],[θ,dθ],[ω, dω],[v,dv]] begin
+    @assert τ_u >= 0
+    @assert ω_ini >= 0
+    @assert K_pω >= 0
+    @assert K_iω >= 0
+    @assert K_ω >= 0
+    @assert K_v >= 0
+end [[u_fil_d,du_fil_d],[u_fil_q,du_fil_q],[e_Iω,de_Iω],[θ,dθ]] begin
 
-    #u_dq = exp(-1im*θ)*u
-    
+    u_dq = exp(-im*θ)*u
+    du_fil_d = 1/τ_u*(-u_fil_d + real(u_dq))
+    du_fil_q = 1/τ_u*(-u_fil_q + imag(u_dq))
+    u_fil_dq = u_fil_d + im*u_fil_q
+
+    e_ω = -u_fil_q
+    de_Iω= e_ω
+    ω = ω_ini - K_pω*e_ω - K_iω*e_Iω
+    dθ = ω
+
+    P = -K_ω*(ω-ω_r) + P_r
+    Q = -K_v*(abs(u_fil_dq)-V_r) + Q_r
+    i_fil_dq = (p-im*q)/u_fil_dq
+    du = i - i_fil_dq*exp(im*θ)
 end
+
+export GridFollowingTecnalia
