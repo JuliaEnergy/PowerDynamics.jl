@@ -1,7 +1,6 @@
 # (C) 2018 Potsdam Institute for Climate Impact Research, authors and contributors (see AUTHORS file)
 # Licensed under GNU GPL v3 (see LICENSE file)
 
-import Base: @__doc__
 using Base.Meta
 using Base.Iterators
 using MacroTools
@@ -112,7 +111,7 @@ function DynamicNode(typedef, massmatrix, prep, internalsdef, func_body)
     fct_dimension = generate_dimension_fct(name, internals)
 
     ret = quote
-        @__doc__ $(struct_def)
+        Base.@__doc__($(struct_def))
         $(kw_constructor)
         $(cndfunction)
         $(fct_symbolsof)
