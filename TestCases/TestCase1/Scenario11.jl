@@ -8,15 +8,18 @@ perturbed_node=2
 # per unit transformation base values
 V_base_kV = 0.4
 S_base_kW = 1
-Y_base = S_base_kW/V_base_kV^2
+Y_base = S_base_kW*1000/(V_base_kV*1000)^2
 
 # line paramterization
-Y_12 = 1/((0.25+1im*0.98*1e-6)/Y_base)
+Y_12 = (1/(0.25+1im*0.98*1e-6))/Y_base
+# node paramterization
+P_2 = -16.67/S_base_kW
+Q_2 = 0/S_base_kW
 
 
 node_list=[]
     append!(node_list,[SlackAlgebraic(U=1.)])
-    append!(node_list,[PQAlgebraic(P=-16.67/S_base_kW,Q=0./S_base_kW)])
+    append!(node_list,[PQAlgebraic(P=P_2,Q=Q_2)])
 line_list=[]
     append!(line_list,[StaticLine(from=1,to=2,Y=Y_12)])
 
