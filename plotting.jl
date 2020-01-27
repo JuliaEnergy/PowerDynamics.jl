@@ -8,6 +8,8 @@ function plot_res(result, powergrid,disturbed_node)
     append!(ω_indices,findall(n -> isa(n, PVInverterWithFrequencyControl), powergrid.nodes))
     append!(ω_indices,findall(n -> isa(n, WindTurbineGenType4_RotorControl), powergrid.nodes))
     append!(ω_indices,findall(n -> isa(n, FourthOrderEq), powergrid.nodes))
+    append!(ω_indices,findall(n -> isa(n, GridFormingTecnalia), powergrid.nodes))
+
     ω_colors = reshape(Plots.get_color_palette(:auto, plot_color(:white), 8)[ω_indices], (1,length(ω_indices)))
     ω_labels = reshape([latexstring(string(raw"\omega", "_{$i}")) for i=ω_indices], (1, length(ω_indices)))
     p_labels = reshape([latexstring(string(raw"p", "_{$i}")) for i=1:length(powergrid.nodes)], (1, length(powergrid.nodes)))
