@@ -33,6 +33,7 @@ include("nodes/experimental/WindTurbineGenType4.jl")
 include("nodes/experimental/WindTurbineGenType4_RotorControl.jl")
 include("nodes/experimental/CurtailedPowerPlantWithInertia.jl")
 include("nodes/experimental/GridFormingTecnalia.jl")
+include("nodes/experimental/Connector.jl")
 
 # all line types
 
@@ -42,6 +43,7 @@ include("lines/LineMacro.jl")
 include("lines/StaticLine.jl")
 include("lines/PiModelLine.jl")
 include("lines/Transformer.jl")
+include("lines/ConnectorLine.jl")
 
 include("operationpoint/operationpoint.jl")
 include("operationpoint/find_valid_initial_condition.jl")
