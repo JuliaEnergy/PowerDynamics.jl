@@ -3,18 +3,21 @@
 
 @doc doc"""
 ```Julia
-PQAlgebraic(;S)
+Connector(;)
 ```
 
-A node type that locally fixes the active (``P``) and reactive power (``Q``) output of the node.
+A dummy node type that represents a connector node without any dynamics or load.
+
+It locally fixes the active (``P``) and reactive power (``Q``) to zero but due to numeric
+reasons, P and Q are set to -1e-8.
 
 # Keyword Arguments
-- `S = P + Q*im`: the complex power output
+- none
 
 # Mathematical Representation
-Using `PQAlgebraic` for node ``a`` applies the equation
+Using `Connector` for node ``a`` applies the equation
 ```math
-0 = S_a - u_a \cdot i_a^*.
+0 = (-1e-8-1e-8*1im) - u_a \cdot i_a^*.
 ```
 """
 @DynamicNode Connector() begin

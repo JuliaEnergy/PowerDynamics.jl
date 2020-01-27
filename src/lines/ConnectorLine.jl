@@ -1,6 +1,6 @@
 """
 ```Julia
-StaticLine(from, to, Y)
+ConnectorLine(from, to)
 ```
 A dummy line that represents a static line with an admittance of Y=0.
 For numeric reasons the line is not exactly zero but Z=1e-8+1e-8*j
