@@ -19,8 +19,8 @@ end [[u_fil_d,du_fil_d],[u_fil_q,du_fil_q],[e_Iω,de_Iω],[θ,dθ]] begin
     ω = ω_ini - K_pω*e_ω - K_iω*e_Iω
     dθ = ω
 
-    P = -K_ω*(ω-ω_r) + P_r
-    Q = -K_v*(abs(u_fil_dq)-V_r) + Q_r
+    p = -K_ω*(ω-ω_r) + P_r
+    q = -K_v*(abs(u_fil_dq)-V_r) + Q_r
     i_fil_dq = (p-im*q)/u_fil_dq
     du = i - i_fil_dq*exp(im*θ)
 end
