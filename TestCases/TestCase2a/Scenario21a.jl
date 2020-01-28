@@ -44,12 +44,14 @@ K_Q=0.916*(transformer_ratio)*398*(1.1-0.9)/(40000- (-40000)) # Q-U droop consta
 R_f=0.6*ω #Vitual resistance
 X_f=0.8*ω #Vitual reactance
 V_r =1
+P=-P_2
+Q=-Q_2
 
 
 node_list=[]
     #append!(node_list,[SlackAlgebraic(U=1.)])
     append!(node_list,[PQAlgebraic(P=P_2,Q=Q_2)])
-    append!(node_list,[GridFormingTecnalia(ω_r=ω_r,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_1, Q=Q_1, V_r=V_r, R_f=R_f, X_f=X_f)])
+    append!(node_list,[GridFormingTecnalia_modifiedLowPass(ω_r=ω_r,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_1, Q=Q_1, V_r=V_r, R_f=R_f, X_f=X_f)])
 line_list=[]
     append!(line_list,[PiModelLine(from=1,to=2,y=0-200*1im, y_shunt_km=Y_12_shunt, y_shunt_mk=Y_12_shunt)])
     #append!(line_list,[StaticLine(from=1,to=3,Y=Y_13)])
@@ -60,7 +62,7 @@ operationpoint = find_operationpoint(powergrid)
 
 timespan = (0., 20.)
 pd = PowerPerturbation(
-    fraction = 1,#11.11/16.67,
+    fraction = 1.,#11.11/16.67,
     node_number = perturbed_node,
     tspan_fault = (1.,10.))
 
