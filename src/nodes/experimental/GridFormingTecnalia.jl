@@ -1,5 +1,5 @@
 @DynamicNode GridFormingTecnalia(ω_r,τ_U, τ_I, τ_P, τ_Q, n_P, n_Q, K_P, K_Q, P, Q, V_r, R_f, X_f) begin
-    MassMatrix(m_u = false, m_int = [true,true,true,true,true,true,true,true,true])
+    MassMatrix(m_u = true, m_int = [true,true,true,true,true,true,true,true,true])
 end begin
     @assert τ_U >= 0
     @assert τ_I >= 0
@@ -23,29 +23,39 @@ end [[u_fil_r,du_fil_r],[u_fil_i,du_fil_i],[i_fil_r,di_fil_r],[i_fil_i,di_fil_i]
     di_fil_r = 1/τ_I*(-i_fil_r + real(i_dq))
     di_fil_i = 1/τ_I*(-i_fil_i + imag(i_dq))
 
+    # testing
+    I_fil_r = di_fil_r
+    i_dq_r = di_fil_r*τ_I+i_fil_r
+
     u_fil = u_fil_r +1im*u_fil_i
     i_fil = i_fil_r +1im*i_fil_i
     du_fil = du_fil_r +1im*du_fil_i
     di_fil = di_fil_r +1im*di_fil_i
 
+    # s = (u_fil_r+1im*u_fil_i)*(i_fil_r-1im*i_fil_i)
     # p = real(u_fil * conj(i_fil)) = u_filr*i_filr-u_fili*i_fili
     # q = imag(u_fil * conj(i_fil)) = -u_fil_r*i_fil_i+u_fil_i*i_fil_r
     #dp = real(u_fil * conj(di_fil) + du_fil * conj(i_fil))
-    dp =  du_fil_r*i_fil_r+u_fil_r*di_fil_r-du_fil_i*i_fil_i-du_fil_i*di_fil_i
+    dp =  du_fil_r*i_fil_r+u_fil_r*di_fil_r+du_fil_i*i_fil_i+du_fil_i*di_fil_i
 
     #dq = imag(u_fil * conj(di_fil) + du_fil * conj(i_fil))
     dq = -du_fil_r*i_fil_i-u_fil_r*di_fil_i+du_fil_i*i_fil_r+u_fil_i*di_fil_r
 
     dθ = ω-ω_r
     dω = 1/τ_P*(ω_r-ω) + K_P/τ_P*(P-p) - K_P/n_P*dp
-    #println(ω)
-    #println("p:",p)
+    println(dω)
+    #println("dp:",dp)
     #println("P:",P)
     dv = 1/τ_Q*(V_r - v) + K_Q/τ_Q*(Q-q) - K_Q/n_Q*dq
-    #println(dv)
 
-    v_out = v - R_f*(i_dq - i_fil) - 1im*X_f*i_fil
-    du = u - v_out*exp(1im*θ)
+    v_out = v #- R_f*(i_dq - i_fil) - 1im*X_f*i_fil
+    dv_out = dv #-(R_f+1im*X_f)*di_fil #-R_f*dqi_dq
+    #du = u * 1im * dϕ + dv*(u/v)
+    #u = v_out*exp(1im*θ)
+    du = u*1im*dθ+dv_out*exp(1im*θ)
+    #du = u - v_out*exp(1im*θ)
+    #println(du_fil)
+    #println(di_fil)
 end
 
 export GridFormingTecnalia

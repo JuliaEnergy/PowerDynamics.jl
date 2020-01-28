@@ -26,7 +26,7 @@ end  begin
     # no prep
 end [] begin
     s = u*conj(i)
-    du = s-(-1e-8-1e-8*1im)
+    du = s-(-0-1im)*1e-10
 end
 
 export Connector
