@@ -3,7 +3,7 @@ Pkg.instantiate()
 using PowerDynamics
 using Revise
 
-perturbed_node=2
+perturbed_node=1
 
 
 #grid frequency
@@ -17,17 +17,12 @@ Y_base = S_base_kW*1000/(V_base_kV*1000)^2
 # line paramterization
 Y_12 = (1/(0.25+1im*0.98*ω*1e-6))/Y_base
 Y_13 = (1/(0.0474069+1im*0.0645069))/Y_base
-Y_all = Y_12+Y_13
-Y_12_shunt = (1/((536.8837037+125.25700254999994*1im)))/Y_base
-
-# node powers
+# node paramterization
 P_2 = -16.67/S_base_kW
 Q_2 = 0/S_base_kW
-P_1=16.67/S_base_kW
-Q_1=0/S_base_kW
 
 # paramterization of grid-forming inverter
-ω_r = 0#-0.25
+
 w_cU=198.019802 #Hz: Voltage low pass filter cutoff frequency
 τ_U = 1/w_cU
 w_cI=198.019802 #Hz: Current low pass filter cutoff frequency
@@ -44,17 +39,20 @@ K_Q=0.916*(transformer_ratio)*398*(1.1-0.9)/(40000- (-40000)) # Q-U droop consta
 R_f=0.6*ω #Vitual resistance
 X_f=0.8*ω #Vitual reactance
 V_r =1
-P=-P_2
+P=20
 Q=-Q_2
-
 
 node_list=[]
     #append!(node_list,[SlackAlgebraic(U=1.)])
     append!(node_list,[PQAlgebraic(P=P_2,Q=Q_2)])
-    append!(node_list,[GridFormingTecnalia_islanded(ω_r=ω_r,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_1, Q=Q_1, V_r=V_r, R_f=R_f, X_f=X_f)])
+    #append!(node_list,[GridFormingTecnalia_islanded(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P, Q=Q, V_r=V_r, R_f=0, X_f=0)])
+    append!(node_list,[VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=τ_P,K_Q=K_Q,V_r=1.0,P=20,Q=0.)])
+    #append!(node_list,[VSIMinimal()])
+    #append!(node_list,[Connector()])
 line_list=[]
-    append!(line_list,[PiModelLine(from=1,to=2,y=0-200*1im, y_shunt_km=Y_12_shunt, y_shunt_mk=Y_12_shunt)])
-    #append!(line_list,[StaticLine(from=1,to=3,Y=Y_13)])
+    #append!(line_list,[ConnectorLine(from=1,to=2)])
+    append!(line_list,[StaticLine(from=1,to=2,Y=-2000*1im)])
+    #append!(line_list,[StaticLine(from=2,to=4,Y=Y_12)])
 
 
 powergrid = PowerGrid(node_list,line_list)
@@ -62,7 +60,7 @@ operationpoint = find_operationpoint(powergrid)
 
 timespan = (0., 20.)
 pd = PowerPerturbation(
-    fraction = 1.,#11.11/16.67,
+    fraction = 1,#11.11/16.67,
     node_number = perturbed_node,
     tspan_fault = (1.,10.))
 
