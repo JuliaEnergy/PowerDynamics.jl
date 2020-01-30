@@ -34,8 +34,8 @@ w_cQ=0.999000999 #Hz: Reactive power low pass filter cutoff
 n_P=10 # Inverse of the active power low pass filter
 n_Q=10 #Inverse of the reactive power low pass filter
 K_P=2π*(50.5-49.5)/(40000) # P-f droop constant
-transformer_ratio = 1.08686
-K_Q=0.916*(transformer_ratio)*398*(1.1-0.9)/(40000- (-40000)) # Q-U droop constant
+#transformer_ratio = 1.08686
+K_Q=0.916*398*(1.1-0.9)/(40000- (-40000)) # Q-U droop constant
 R_f=0.6*ω #Vitual resistance
 X_f=0.8*ω #Vitual reactance
 V_r =1
@@ -45,8 +45,8 @@ Q=-Q_2
 node_list=[]
     #append!(node_list,[SlackAlgebraic(U=1.)])
     append!(node_list,[PQAlgebraic(P=P_2,Q=Q_2)])
-    #append!(node_list,[GridFormingTecnalia_islanded(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P, Q=Q, V_r=V_r, R_f=0, X_f=0)])
-    append!(node_list,[VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=τ_P,K_Q=K_Q,V_r=1.0,P=20,Q=0.)])
+    append!(node_list,[GridFormingTecnalia_islanded(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P, Q=Q, V_r=V_r, R_f=0, X_f=0)])
+    #append!(node_list,[VSIMinimal_islanded(τ_P=0.01*τ_P,τ_Q=τ_Q,K_P=τ_P,K_Q=K_Q,V_r=1.0,P=P,Q=0.)])
     #append!(node_list,[VSIMinimal()])
     #append!(node_list,[Connector()])
 line_list=[]
@@ -60,7 +60,7 @@ operationpoint = find_operationpoint(powergrid)
 
 timespan = (0., 20.)
 pd = PowerPerturbation(
-    fraction = 1,#11.11/16.67,
+    fraction = 11.11/16.67,
     node_number = perturbed_node,
     tspan_fault = (1.,10.))
 

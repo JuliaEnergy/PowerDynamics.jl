@@ -5,6 +5,7 @@ using Plots
 function plot_res(result, powergrid,disturbed_node)
     ω_indices = findall(n -> isa(n, SwingEqLVS), powergrid.nodes)
     append!(ω_indices,findall(n -> isa(n, VSIMinimal), powergrid.nodes))
+    append!(ω_indices,findall(n -> isa(n, VSIMinimal_islanded), powergrid.nodes))
     append!(ω_indices,findall(n -> isa(n, PVInverterWithFrequencyControl), powergrid.nodes))
     append!(ω_indices,findall(n -> isa(n, WindTurbineGenType4_RotorControl), powergrid.nodes))
     append!(ω_indices,findall(n -> isa(n, FourthOrderEq), powergrid.nodes))
