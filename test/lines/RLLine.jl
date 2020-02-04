@@ -45,7 +45,7 @@ include("LineTestBase.jl")
 end
 
 @testset "RLLine have the right fixed point" begin
-        line = RLLine(from = 1, to = 2, R = 0.01, L = 0.1, ω0 = 50.0)
+        line = RLLine(from = 1, to = 2, R = 0.01, L = 0.1, ω0 = 100π)
         edge = construct_edge(line)
 
         # construct steady state
@@ -68,7 +68,7 @@ end
 end
 
 @testset "The steady state of RLLine should return the same result as StaticLine" begin
-        line = RLLine(from = 1, to = 2, R = 0.01, L = 0.1, ω0 = 50.0)
+        line = RLLine(from = 1, to = 2, R = 0.01, L = 0.1, ω0 = 100π)
         edge = construct_edge(line)
 
         sl = StaticLine(
@@ -98,7 +98,7 @@ using PowerDynamics: PowerGrid,
                      dimension,
                      rhs,
                      State,
-                     solve,
+                     simulate,
                      SlackAlgebraic,
                      SwingEqLVS,
                      PowerPerturbation
@@ -114,17 +114,15 @@ systemsize(pg::PowerGrid) =
 
 # "Simulate power drop"
 
-line = RLLine(from = 1, to = 2, R = 0.1, L = 0.01, ω0 = 50.0)
+line = RLLine(from = 1, to = 2, R = 0.1, L = 0.01, ω0 = 100π)
 sl = StaticLine(
         from = line.from,
         to = line.to,
-        Y = inv(complex(line.R, line.ω0 * line.L)),
-)
+        Y = inv(complex(line.R, line.ω0 * line.L)),)
 
 busses = [
         SlackAlgebraic(U = complex(1.0, 0.0)),
-        SwingEqLVS(H = 1.0, P = 1.0, D = 1.0, Ω = 2π * 50.0, Γ = 100, V = 1.0),
-]
+        SwingEqLVS(H = 1.0, P = 1.0, D = 1.0, Ω = 100π, Γ = 10., V = 1.0),]
 pg = PowerGrid(busses, [line,])
 pg_sl = PowerGrid(busses, [sl,])
 
@@ -143,31 +141,28 @@ ic_guess = [
         e_star[1],
         e_star[2],
         e_star[1],
-        e_star[2],
-]
+        e_star[2],]
 ic = find_valid_ic(rhs(pg_sl), ic_guess[1:5])
 sol_sl = simulate(
         PowerPerturbation(
-                fraction = 0.75,
+                fraction = 0.5,
                 node_number = 2,
-                tspan_fault = (0.1, 0.25),
+                tspan_fault = (0.1, 0.2),
         ),
         pg_sl,
         State(pg_sl, ic),
-        (0.0, 1.0),
-)
+        (0.0, 1),)
 
 ic = find_valid_ic(rhs(pg), ic_guess)
 sol = simulate(
         PowerPerturbation(
-                fraction = 0.75,
+                fraction = 0.5,
                 node_number = 2,
-                tspan_fault = (0.1, 0.25),
+                tspan_fault = (0.1, 0.2),
         ),
         pg,
         State(pg, ic),
-        (0.0, 1.0),
-)
+        (0.0, 1),)
 
 p = plot(sol.dqsol, vars = 1:4)
 plot!(sol.dqsol, vars = 6:7, ylims = (-.01, 1))
