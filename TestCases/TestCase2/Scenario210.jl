@@ -3,7 +3,7 @@ Pkg.instantiate()
 using PowerDynamics
 using Revise
 
-perturbed_node=1
+perturbed_node=2
 
 
 #grid frequency
@@ -43,16 +43,16 @@ P=20
 Q=-Q_2
 
 node_list=[]
-    #append!(node_list,[SlackAlgebraic(U=1.)])
-    append!(node_list,[PQAlgebraic(P=P_2,Q=Q_2)])
-    append!(node_list,[GridFormingTecnalia_islanded(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P, Q=Q, V_r=V_r, R_f=0, X_f=0)])
-    #append!(node_list,[VSIMinimal_islanded(τ_P=0.01*τ_P,τ_Q=τ_Q,K_P=τ_P,K_Q=K_Q,V_r=1.0,P=P,Q=0.)])
+    append!(node_list,[SlackAlgebraic(U=1.)])
+    #append!(node_list,[PQAlgebraic(P=P_2,Q=Q_2)])
+    #append!(node_list,[GridFormingTecnalia_islanded(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P, Q=Q, V_r=V_r, R_f=0, X_f=0)])
+    append!(node_list,[VSIMinimal_islanded(τ_P=0.01*τ_P,τ_Q=τ_Q,K_P=τ_P,K_Q=K_Q,V_r=1.0,P=P,Q=0.)])
     #append!(node_list,[VSIMinimal()])
     #append!(node_list,[Connector()])
 line_list=[]
-    #append!(line_list,[ConnectorLine(from=1,to=2)])
-    append!(line_list,[StaticLine(from=1,to=2,Y=-2000*1im)])
-    #append!(line_list,[StaticLine(from=2,to=4,Y=Y_12)])
+    #append!(line_list,[ConnectorLine(from=1,to=4)])
+    append!(line_list,[StaticLine(from=1,to=2,Y=Y_12)])
+    #append!(line_list,[StaticLine(from=3,to=4,Y=Y_13)])
 
 
 powergrid = PowerGrid(node_list,line_list)
@@ -60,7 +60,7 @@ operationpoint = find_operationpoint(powergrid)
 
 timespan = (0., 20.)
 pd = PowerPerturbation(
-    fraction = 11.11/16.67,
+    fraction = 1.,#11.11/16.67,
     node_number = perturbed_node,
     tspan_fault = (1.,10.))
 

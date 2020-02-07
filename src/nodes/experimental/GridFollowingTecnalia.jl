@@ -1,4 +1,4 @@
-@DynamicNode GridFollowingTecnalia(τ_u,ω_ini,K_pω,K_iω,K_ω,K_v,ω_r,V_r,P_r,Q_r) begin
+@DynamicNode GridFollowingTecnalia(τ_u,ω_ini,K_pω,K_iω,K_ω,K_v,ω_r,V_r,P,Q_r) begin
     MassMatrix(m_u = false, m_int = [true,true,true,true])
 end begin
     @assert τ_u >= 0
@@ -19,7 +19,7 @@ end [[u_fil_d,du_fil_d],[u_fil_q,du_fil_q],[e_Iω,de_Iω],[θ,dθ]] begin
     ω = ω_ini - K_pω*e_ω - K_iω*e_Iω
     dθ = ω
 
-    p = -K_ω*(ω-ω_r) + P_r
+    p = -K_ω*(ω-ω_r) + P
     q = -K_v*(abs(u_fil_dq)-V_r) + Q_r
     i_fil_dq = (p-im*q)/u_fil_dq
     du = i - i_fil_dq*exp(im*θ)

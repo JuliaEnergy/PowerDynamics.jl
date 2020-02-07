@@ -45,18 +45,14 @@ Using `VSIMinimal` for node ``a`` (according to J. Schiffer et. al., eq. (7)) gi
     @assert τ_Q > 0 "time constant reactive power measurement should be >0"
     @assert K_Q > 0 "reactive power droop constant should be >0"
     @assert K_P > 0 "active power droop constant reactive power measurement should be >0"
-end [[ω, dω],[Ω,dΩ],[e_Iω,de_Iω]] begin
+end [[ω, dω],[θ,dθ],[Ω,dΩ]] begin
     p = real(u * conj(i))
     q = imag(u * conj(i))
-    dϕ = ω-Ω
-    #dΩ = (ω-Ω)*100
-    e_ω= (ω-Ω)
-    de_Iω= e_ω
-    dΩ=e_ω+e_Iω*100
-
+    dθ = ω-Ω
+    dΩ = (ω-Ω)
     v = abs(u)
     dv = 1/τ_Q*(-v + V_r- K_Q *(q-Q))
-    du = u * 1im * dϕ + dv*(u/v)
+    du = dv*(u/v) + u* 1im*dθ
     dω = 1/τ_P*(-ω-K_P*(p-P))
 end
 
