@@ -40,7 +40,7 @@ end [[u_fil_r,du_fil_r],[u_fil_i,du_fil_i],[i_fil_r,di_fil_r],[i_fil_i,di_fil_i]
 
     #dθ = ω-ω_r
     dω = 1/τ_P*(ω_r-ω) + K_P/τ_P*(P-p) #- K_P/n_P*dp
-    println(dω)
+    #println(dω)
     #println("dp:",dp)
     #println("P:",P)
     v = abs(u_fil)
