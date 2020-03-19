@@ -40,21 +40,22 @@ Using `VSIMinimal` for node ``a`` (according to J. Schiffer et. al., eq. (7)) gi
 ```
 ```
 """
-@DynamicNode VSIMinimal_islanded(τ_P,τ_Q,K_P,K_Q,V_r,P,Q) begin
+@DynamicNode VSIMinimal(τ_P,τ_Q,K_P,K_Q,V_r,P,Q) begin
+    MassMatrix(m_u = false, m_int = [true,true,true])
+end begin
     @assert τ_P > 0 "time constant active power measurement should be >0"
     @assert τ_Q > 0 "time constant reactive power measurement should be >0"
     @assert K_Q > 0 "reactive power droop constant should be >0"
     @assert K_P > 0 "active power droop constant reactive power measurement should be >0"
-end [[ω, dω],[v,dv]] begin
+end [[ω, dω],[v,dv],[ϕ,dϕ]] begin
     p = real(u * conj(i))
     q = imag(u * conj(i))
-
-    Ω = K_P*(p-P)
-    dφ = ω + Ω
-
+    dϕ = ω
+    #v = abs(u)
     dv = 1/τ_Q*(-v + V_r- K_Q *(q-Q))
-    du = dv*(u/v) + u*1im*dφ
-    dω = 1/τ_P*(-ω-K_P*(p-P))
+    #du = u * 1im * dϕ + dv*(u/v)
+    dω = 1/τ_P*(+ω-K_P*(p-P))
+    du = u - v*exp(-1im*ϕ)
 end
 
-export VSIMinimal_islanded
+export VSIMinimal_experimental
