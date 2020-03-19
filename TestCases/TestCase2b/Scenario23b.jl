@@ -63,7 +63,7 @@ operationpoint = find_operationpoint(powergrid)
 
 timespan = (0., 20.)
 pd = PowerPerturbation_abs(
-    P_new =<P3_new,
+    P_new =P3_new,
     node_number = perturbed_node,
     tspan_fault = (1.,10.))
 
