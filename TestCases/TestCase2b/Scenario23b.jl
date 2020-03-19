@@ -3,7 +3,7 @@ Pkg.instantiate()
 using PowerDynamics
 using Revise
 
-perturbed_node=2
+perturbed_node=3
 
 #grid frequency
 ω = 2π*50
@@ -20,8 +20,7 @@ Y_34 = (1/(0.0474069+1im*0.0645069))/Y_base
 Y_34_shunt = (1/((536.8837037+125.25700254999994*1im)))/Y_base
 
 # node powers
-P_2 = 0
-P_2_sc = -37.4/S_base_kW
+P_2 = -16.67/S_base_kW
 Q_2 = 0/S_base_kW
 P_3=20/S_base_kW
 Q_3=0/S_base_kW
@@ -45,6 +44,9 @@ R_f=0.6 #in Ω #Vitual resistance
 X_f=0.8 # in Ω #Vitual reactance
 V_r =1
 
+P3_new = P_3-0.25/K_P
+println(P3_new)
+
 
 node_list=[]
     append!(node_list,[SlackAlgebraic(U=1.)])
@@ -61,7 +63,7 @@ operationpoint = find_operationpoint(powergrid)
 
 timespan = (0., 20.)
 pd = PowerPerturbation_abs(
-    P_new =P_2_sc,
+    P_new =<P3_new,
     node_number = perturbed_node,
     tspan_fault = (1.,10.))
 
