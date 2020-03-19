@@ -37,4 +37,4 @@ end [[u_fil_r,du_fil_r],[u_fil_i,du_fil_i],[i_fil_r,di_fil_r],[i_fil_i,di_fil_i]
     du = u*1im*(ω-ω_r)+dv*(u/v)
 end
 
-export GridFormingTecnalia
+export GridFormingTecnalia_modifiedLowPass

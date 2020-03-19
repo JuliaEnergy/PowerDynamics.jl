@@ -40,7 +40,7 @@ Using `VSIMinimal` for node ``a`` (according to J. Schiffer et. al., eq. (7)) gi
 ```
 ```
 """
-@DynamicNode VSIMinimal(τ_P,τ_Q,K_P,K_Q,V_r,P,Q) begin
+@DynamicNode VSIMinimal_experimental(τ_P,τ_Q,K_P,K_Q,V_r,P,Q) begin
     MassMatrix(m_u = false, m_int = [true,true,true])
 end begin
     @assert τ_P > 0 "time constant active power measurement should be >0"
