@@ -13,7 +13,7 @@ Y_base = S_base_kW*1000/(V_base_kV*1000)^2
 # line paramterization
 Y_12 = (1/(0.25+1im*0.98*1e-6))/Y_base
 # node paramterization
-P_2 = -16.67/S_base_kW
+P_2 = 0.#-16.67/S_base_kW
 Q_2 = 0/S_base_kW
 
 
@@ -27,8 +27,8 @@ powergrid = PowerGrid(node_list,line_list)
 operationpoint = find_operationpoint(powergrid)
 
 timespan = (0., 20.)
-pd = PowerPerturbation(
-    fraction = 11.11/16.67,
+pd = PowerPerturbation_abs(
+    P_new = -16.67/S_base_kW,
     node_number = perturbed_node,
     tspan_fault = (1.,10.))
 

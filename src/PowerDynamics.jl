@@ -36,7 +36,7 @@ include("nodes/experimental/WindTurbineGenType4_RotorControl.jl")
 include("nodes/experimental/CurtailedPowerPlantWithInertia.jl")
 include("nodes/experimental/GridFormingTecnalia.jl")
 include("nodes/experimental/GridFormingTecnalia_modifiedLowPass.jl")
-include("nodes/experimental/GridFormingTecnalia_islanded.jl")
+#include("nodes/experimental/GridFormingTecnalia_islanded.jl")
 include("nodes/experimental/GridFollowingTecnalia.jl")
 include("nodes/experimental/Connector.jl")
 
@@ -56,6 +56,7 @@ include("operationpoint/find_valid_initial_condition.jl")
 include("simulations/PowerGridSolutions.jl")
 include("simulations/simulations.jl")
 include("simulations/PowerPerturbation.jl")
+include("simulations/PowerPerturbation_absolute.jl")
 include("simulations/NodeShortCircuit.jl")
 
 export AbstractNode
