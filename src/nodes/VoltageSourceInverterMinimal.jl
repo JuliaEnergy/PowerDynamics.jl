@@ -49,7 +49,7 @@ end [[ω, dω]] begin
     p = real(u * conj(i))
     q = imag(u * conj(i))
     dϕ = ω
-    v = abs(u)
+    zv = abs(u)
     dv = 1/τ_Q*(-v + V_r- K_Q *(q-Q))
     du = u * 1im * dϕ + dv*(u/v)
     dω = 1/τ_P*(-ω-K_P*(p-P))

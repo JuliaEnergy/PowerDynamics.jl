@@ -48,16 +48,13 @@ V_r =1
 node_list=[]
     append!(node_list,[SlackAlgebraic(U=1.)])
     append!(node_list,[PQAlgebraic(P=P_2,Q=Q_2)])
-    append!(node_list,[GridFormingTecnalia(ω_r=ω_r,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=R_f, X_f=X_f)])
-    append!(node_list,[PQAlgebraic(P=-1e-8,Q=-1e-8)])
-    #append!(node_list,[Connector()])
-
+    append!(node_list,[GridFormingTecnalia(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P, Q=Q, V_r=V_r, R_f=R_f, X_f=X_f)])
+    #append!(node_list,[VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P,Q=Q)])
+    append!(node_list,[Connector()])
 line_list=[]
-    append!(line_list,[PiModelLine(from=3,to=4,y=Y_34, y_shunt_km=Y_12_shunt, y_shunt_mk=Y_12_shunt)])
-    append!(line_list,[StaticLine(from=1,to=4,Y=Y_14)])
-    append!(line_list,[StaticLine(from=2,to=4,Y=Y_34)])
-    #append!(line_list,[ConnectorLine(from=2,to=4)])
-
+    append!(line_list,[ConnectorLine(from=2,to=4)])
+    append!(line_list,[StaticLine(from=3,to=4,Y=Y_13)])
+    append!(line_list,[StaticLine(from=1,to=4,Y=Y_12)])
 
 powergrid = PowerGrid(node_list,line_list)
 operationpoint = find_operationpoint(powergrid)
