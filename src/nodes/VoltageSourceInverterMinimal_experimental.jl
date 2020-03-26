@@ -54,8 +54,8 @@ end [[ω, dω],[v,dv],[ϕ,dϕ]] begin
     #v = abs(u)
     dv = 1/τ_Q*(-v + V_r- K_Q *(q-Q))
     #du = u * 1im * dϕ + dv*(u/v)
-    dω = 1/τ_P*(+ω-K_P*(p-P))
-    du = u - v*exp(-1im*ϕ)
+    dω = 1/τ_P*(-ω) + K_P/ τ_P*(P-p)
+    du = u - v*exp(1im*ϕ)
 end
 
 export VSIMinimal_experimental
