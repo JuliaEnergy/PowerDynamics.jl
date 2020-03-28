@@ -48,6 +48,10 @@ K_Q=transformer_ratio*(398/(1000*V_base_kV)*(1.1-0.9)/(40/S_base_kW- (-40/S_base
 R_f=0.6 #in Ω #Vitual resistance
 X_f=0.8 # in Ω #Vitual reactance
 V_r =1
+w_cV = 0.999000999
+τ_V = 1/w_cV
+w_cω = 0.999000999
+τ_ω = 1/w_cV
 
 # paramterization of grid-following inverter
 
@@ -62,12 +66,12 @@ K_v=1/(transformer_ratio*398/(1000*V_base_kV)*(1.1-0.9)/(40/S_base_kW- (-40/S_ba
 node_list=[]
     append!(node_list,[SlackAlgebraic(U=1.)])
     append!(node_list,[PQAlgebraic(P=P_2,Q=Q_2)])
-    append!(node_list,[GridFormingTecnalia_modifiedLowPass(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=R_f, X_f=X_f)])
+    append!(node_list,[GridFormingTecnalia(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=R_f, X_f=X_f,τ_V=τ_V,τ_ω=τ_ω)])
     append!(node_list,[GridFollowingTecnalia(τ_u=τ_U2,ω_ini=0,K_pω=K_pω,K_iω=K_iω,K_ω=K_ω,K_v=K_v,ω_r=0,V_r=V_r,P=P_4,Q_r=Q_4)])
     #append!(node_list,[Connector()])
 
 line_list=[]
-    append!(line_list,[StaticLine(from=1,to=2,Y=Y_25)])
+    append!(line_list,[StaticLine(from=2,to=1,Y=Y_25)])
     append!(line_list,[PiModelLine(from=3,to=1,Y=Y_35, Y_shunt_km=Y_35_shunt/2, Y_shunt_mk=Y_35_shunt/2)])
     append!(line_list,[PiModelLine(from=4,to=1,Y=Y_45, Y_shunt_km=Y_45_shunt/2, Y_shunt_mk=Y_45_shunt/2)])
     #append!(line_list,[ConnectorLine(from=1,to=5)])
