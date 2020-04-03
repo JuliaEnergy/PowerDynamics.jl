@@ -10,11 +10,12 @@ end begin
 end [[u_fil_d,du_fil_d],[u_fil_q,du_fil_q],[e_Iω,de_Iω],[θ,dθ]] begin
 
     u_dq = exp(-im*θ)*u
+    u_q = imag(u_dq)
     du_fil_d = 1/τ_u*(-u_fil_d + real(u_dq))
     du_fil_q = 1/τ_u*(-u_fil_q + imag(u_dq))
     u_fil_dq = u_fil_d + im*u_fil_q
 
-    e_ω = -u_fil_q
+    e_ω = -u_q
     de_Iω= e_ω
     ω = ω_ini - K_pω*e_ω - K_iω*e_Iω
     dθ = ω
