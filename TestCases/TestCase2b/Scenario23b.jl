@@ -48,7 +48,7 @@ R_f=0.6 #in Ω #Vitual resistance
 X_f=0.8 # in Ω #Vitual reactance
 V_r =1
 
-P3_new = P_3-0.25/K_P
+P3_new = P_3-0.25/K_P*2*pi
 println(P3_new)
 
 
