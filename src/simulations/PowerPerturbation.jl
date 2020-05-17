@@ -82,8 +82,6 @@ function simulate(pd::PowerPerturbation, powergrid, x0, timespan)
     return PowerGridSolution(integrator.sol, powergrid)
 end
 
-simulate(pd::PowerPerturbation, x0::State, timespan) = simulate(pd, x0.grid, x0.vec, timespan)
-
 export PowerPerturbation
 export PowerPerturbationError
 export simulate

@@ -92,4 +92,9 @@ end
     shunt_current = - nsc.Y * sol(0.6, 2, :u)
     @test abs(fault_current) > abs(normal_current)
     @test fault_current - shunt_current ≈ normal_current
+
+    # test alternative call signature
+    sol = simulate(nsc, op.grid, op.vec, (0., 1.));
+    @test sol != nothing
+    @test sol.dqsol.retcode == :Success
 end
