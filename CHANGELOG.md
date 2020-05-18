@@ -1,5 +1,9 @@
 # PowerDynBase.jl Changelog
 
+## Version 2.2.0
+
+* ![bugfix](https://img.shields.io/badge/PD-bugfix-%23d73a4a.svg) [corrected function signature of Transformer](https://github.com/JuliaEnergy/PowerDynBase.jl/pull/81)
+
 ## Version 0.8
 
 * ![bugfix](https://img.shields.io/badge/PD-bugfix-%23d73a4a.svg) [fixed state conversion](https://github.com/JuliaEnergy/PowerDynBase.jl/pull/62)
