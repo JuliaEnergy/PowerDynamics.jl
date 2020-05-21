@@ -29,6 +29,7 @@ PL = PiModelLine(;
     y_shunt_mk = 0.0,
   )
 
+
 @testset "test NodeShortCircuit construction" begin
     pg = PowerGrid(nodes, [SL,])
 
@@ -56,7 +57,7 @@ end
     op = find_operationpoint(pg)
 
     # make sure we obtain the right operating point
-    @test op[2, :v] == 1.0024169204096718
+    @test op[2, :v] ≈ 1.0024169204096718
 
     # a short circuit at the slack should have no effect
     nsc = NodeShortCircuit(;
@@ -83,8 +84,8 @@ end
     sol = simulate(nsc, op, (0., 1.))
 
     # observe voltage drop
-    @test sol(0.6, 1, :v) == op[1, :v]
-    @test sol(0.6, 2, :v) == 0.7918311818509268
+    @test sol(0.6, 1, :v) ≈ op[1, :v]
+    @test sol(0.6, 2, :v) ≈ 0.7918311818509268
 
     # test whether currents are determined correctly
     normal_current = op[2, :i]
