@@ -2,9 +2,20 @@ using LinearAlgebra: I
 
 """
 ```Julia
-RLLine(from, to, R, L, ω0)
+    RLLine(; from, to, R, L, ω0)
 ```
-A dynamic line with series resistance and series inductance.
+dynamic line with series resistance R and series inductance L.
+
+# Keyword Arguments
+- `from`: inertia constant (given in [s]), defined according to P. Sauer, p. 33, eq. (3.60)
+- `to`: active (real) power output, also called the mechanical torque applied to the shaft, given in [pu]
+- `R`: damping coefficient, (given in [s], see P. Sauer, eq. (5.156) where the damping torque is equal `Dω`)
+- `L`:
+- `ω0`: rated frequency in [rad/s] of the power grid, often ``2\pi⋅50``Hz
+
+# Mathematical Representation
+Using `RLLine` for the line `from`--`to` applies the equations
+
 """
 begin
     @__doc__ struct RLLine <: AbstractLine
