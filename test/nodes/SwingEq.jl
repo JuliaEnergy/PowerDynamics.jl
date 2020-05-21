@@ -1,15 +1,14 @@
 using Test: @testset, @test
-using SymPy: @syms
 using PowerDynamics: SwingEq, construct_vertex, symbolsof
 using LinearAlgebra: I
 
 include("NodeTestBase.jl")
 
 @testset "Swing Eq" begin
-    @syms H D positive=true
-    @syms P Ω real=true
-    @syms omega domega real=true
-    @syms H_INVALID D_INVALID negative=true
+    H,D = rand_positive(2)
+    P,Ω = rand_real(2)
+    omega,domega = rand_real(2)
+    H_INVALID,D_INVALID = rand_negative(2)
 
     @test_throws AssertionError construct_vertex(SwingEq(H=H, P=P, D=D_INVALID, Ω=Ω))
     @test_throws AssertionError construct_vertex(SwingEq(H=H_INVALID, P=P, D=D, Ω=Ω))

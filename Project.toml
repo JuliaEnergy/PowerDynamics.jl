@@ -23,14 +23,13 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 SymPy = "24249f21-da20-56a4-8eb1-6a02cf4ae2e6"
 
 [compat]
-DiffEqBase = "^v6.3.4"
-DifferentialEquations = "^6.8.0"
 JSON = "^v0.21.0"
 Lazy = "^v0.14.0"
 LightGraphs = "^v1.3.0"
 MacroTools = "^v0.5.1"
 NLsolve = "^v4.1.0"
-NetworkDynamics = "^v0.1.0"
+NetworkDynamics = "^0.2.0"
+DiffEqBase = "^6.9.4"
 OrdinaryDiffEq = "^5.17.2"
 Parameters = "^v0.12.0"
 RecipesBase = "^v0.7.0"
@@ -41,8 +40,7 @@ julia = "1"
 [extras]
 Crayons = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
-SymPy = "24249f21-da20-56a4-8eb1-6a02cf4ae2e6"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "Random", "Crayons", "SymPy"]
+test = ["Test", "Random", "Crayons"]

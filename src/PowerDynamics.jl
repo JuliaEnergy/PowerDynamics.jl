@@ -51,6 +51,7 @@ include("simulations/simulations.jl")
 include("simulations/PowerPerturbation.jl")
 include("simulations/NodeShortCircuit.jl")
 
+export AbstractNode
 
 # export of the main types and functions
 export PowerDynamicsError,NodeDynamicsError,StateError,GridSolutionError,OperationPointError

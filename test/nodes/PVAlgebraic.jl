@@ -1,12 +1,11 @@
 using Test: @testset, @test
-using SymPy: @syms
 using PowerDynamics: PVAlgebraic, construct_vertex, symbolsof
 
 include("NodeTestBase.jl")
 
 @testset "PVAlgebraic" begin
-    @syms P real=true
-    @syms V positive=true
+    P = rand_real()
+    V = rand_positive()
 
     pv = PVAlgebraic(P=P, V=V)
     pv_vertex = construct_vertex(pv)
