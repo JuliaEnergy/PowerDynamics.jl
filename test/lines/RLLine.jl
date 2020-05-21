@@ -93,78 +93,78 @@ end
 
         @test arr ≈ e
 end
-
-using PowerDynamics: PowerGrid,
-                     dimension,
-                     rhs,
-                     State,
-                     simulate,
-                     SlackAlgebraic,
-                     SwingEqLVS,
-                     PowerPerturbation
-using NetworkDynamics: find_valid_ic
-using Plots
-
-# extend to account for line variables
-import PowerDynamics: systemsize, dimension
-dimension(::StaticLine) = 0
-systemsize(pg::PowerGrid) =
-        sum(map(n -> dimension(n), pg.nodes)) +
-        sum(map(n -> dimension(n), pg.lines))
-
-# "Simulate power drop"
-
-line = RLLine(from = 1, to = 2, R = 0.1, L = 0.01, ω0 = 100π)
-sl = StaticLine(
-        from = line.from,
-        to = line.to,
-        Y = inv(complex(line.R, line.ω0 * line.L)),)
-
-busses = [
-        SlackAlgebraic(U = complex(1.0, 0.0)),
-        SwingEqLVS(H = 1.0, P = 1.0, D = 1.0, Ω = 100π, Γ = 10., V = 1.0),]
-pg = PowerGrid(busses, [line,])
-pg_sl = PowerGrid(busses, [sl,])
-
-v_s = [1.0; 0.0]
-v_d = [0.9; 0.5]
-Zinv = [line.R line.ω0 * line.L; -line.ω0 * line.L line.R] ./
-       (line.R^2 + line.ω0^2 * line.L^2)
-e_star = -Zinv * (v_s .- v_d)
-
-ic_guess = [
-        v_s[1],
-        v_s[2],
-        v_d[1],
-        v_d[2],
-        0.0,
-        e_star[1],
-        e_star[2],
-        e_star[1],
-        e_star[2],]
-ic = find_valid_ic(rhs(pg_sl), ic_guess[1:5])
-sol_sl = simulate(
-        PowerPerturbation(
-                fraction = 0.5,
-                node_number = 2,
-                tspan_fault = (0.1, 0.2),
-        ),
-        pg_sl,
-        State(pg_sl, ic),
-        (0.0, 1),)
-
-ic = find_valid_ic(rhs(pg), ic_guess)
-sol = simulate(
-        PowerPerturbation(
-                fraction = 0.5,
-                node_number = 2,
-                tspan_fault = (0.1, 0.2),
-        ),
-        pg,
-        State(pg, ic),
-        (0.0, 1),)
-
-p = plot(sol.dqsol, vars = 1:4)
-plot!(sol.dqsol, vars = 6:7, ylims = (-.01, 1))
-plot!(sol.dqsol, vars = 8:9, ylims = (-.01, 1))
-plot!(sol_sl.dqsol, vars = 1:4, c = "black", linestyle = :dash)
+#
+# using PowerDynamics: PowerGrid,
+#                      dimension,
+#                      rhs,
+#                      State,
+#                      simulate,
+#                      SlackAlgebraic,
+#                      SwingEqLVS,
+#                      PowerPerturbation
+# using NetworkDynamics: find_valid_ic
+# using Plots
+#
+# # extend to account for line variables
+# import PowerDynamics: systemsize, dimension
+# dimension(::StaticLine) = 0
+# systemsize(pg::PowerGrid) =
+#         sum(map(n -> dimension(n), pg.nodes)) +
+#         sum(map(n -> dimension(n), pg.lines))
+#
+# # "Simulate power drop"
+#
+# line = RLLine(from = 1, to = 2, R = 0.1, L = 0.01, ω0 = 100π)
+# sl = StaticLine(
+#         from = line.from,
+#         to = line.to,
+#         Y = inv(complex(line.R, line.ω0 * line.L)),)
+#
+# busses = [
+#         SlackAlgebraic(U = complex(1.0, 0.0)),
+#         SwingEqLVS(H = 1.0, P = 1.0, D = 1.0, Ω = 100π, Γ = 10., V = 1.0),]
+# pg = PowerGrid(busses, [line,])
+# pg_sl = PowerGrid(busses, [sl,])
+#
+# v_s = [1.0; 0.0]
+# v_d = [0.9; 0.5]
+# Zinv = [line.R line.ω0 * line.L; -line.ω0 * line.L line.R] ./
+#        (line.R^2 + line.ω0^2 * line.L^2)
+# e_star = -Zinv * (v_s .- v_d)
+#
+# ic_guess = [
+#         v_s[1],
+#         v_s[2],
+#         v_d[1],
+#         v_d[2],
+#         0.0,
+#         e_star[1],
+#         e_star[2],
+#         e_star[1],
+#         e_star[2],]
+# ic = find_valid_ic(rhs(pg_sl), ic_guess[1:5])
+# sol_sl = simulate(
+#         PowerPerturbation(
+#                 fraction = 0.5,
+#                 node_number = 2,
+#                 tspan_fault = (0.1, 0.2),
+#         ),
+#         pg_sl,
+#         State(pg_sl, ic),
+#         (0.0, 1),)
+#
+# ic = find_valid_ic(rhs(pg), ic_guess)
+# sol = simulate(
+#         PowerPerturbation(
+#                 fraction = 0.5,
+#                 node_number = 2,
+#                 tspan_fault = (0.1, 0.2),
+#         ),
+#         pg,
+#         State(pg, ic),
+#         (0.0, 1),)
+#
+# p = plot(sol.dqsol, vars = 1:4)
+# plot!(sol.dqsol, vars = 6:7, ylims = (-.01, 1))
+# plot!(sol.dqsol, vars = 8:9, ylims = (-.01, 1))
+# plot!(sol_sl.dqsol, vars = 1:4, c = "black", linestyle = :dash)
