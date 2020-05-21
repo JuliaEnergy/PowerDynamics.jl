@@ -35,10 +35,10 @@ begin
             v_right_left = (- Z * i_right_left .+ v_right .- v_left) ./ L
             de .= [v_left_right; v_right_left]
         end
-        return ODEEdge(f! = rhs!, dim=4, mass_matrix=I, sym=Symbol[:i_r, :i_i, :ir_r, :ir_i])
+        return ODEEdge(f! = rhs!, dim=4, mass_matrix=I, sym=Symbol[:id, :iq, :id_r, :iq_r])
     end
     symbolsof(::RLLine) = begin
-            [:i_r, :i_i, :ir_r, :ir_i]
+            [:id, :iq, :id_r, :iq_r]
     end
     dimension(::RLLine) = begin
             4

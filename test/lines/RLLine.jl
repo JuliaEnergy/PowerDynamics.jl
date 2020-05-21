@@ -37,14 +37,14 @@ include("LineTestBase.jl")
         ))
 
         @test isa(edge, ODEEdge)
-        @test symbolsof(line) == [:i_r, :i_i, :ir_r, :ir_i]
+        @test symbolsof(line) == [:id, :iq, :id_r, :iq_r]
         @test edge.mass_matrix == I
 
     # assure function call does not explode!
         smoketest_rhs(edge, int_x = [], int_dx = [])
 end
 
-@testset "RLLine have the right fixed point" begin
+@testset "RLLine should have the right fixed point" begin
         line = RLLine(from = 1, to = 2, R = 0.01, L = 0.1, ω0 = 100π)
         edge = construct_edge(line)
 
@@ -63,11 +63,11 @@ end
 
         @test de[1] == 0
         @test de[2] == 0
-        @test de[3] == 0.0
+        @test de[3] == 0
         @test de[4] == 0
 end
 
-@testset "The steady state of RLLine should return the same result as StaticLine" begin
+@testset "The steady state of RLLine should coincide with StaticLine" begin
         line = RLLine(from = 1, to = 2, R = 0.01, L = 0.1, ω0 = 100π)
         edge = construct_edge(line)
 
