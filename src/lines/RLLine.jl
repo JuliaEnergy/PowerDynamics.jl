@@ -1,24 +1,25 @@
 using LinearAlgebra: I
 
-"""
-```Julia
-    RLLine(; from, to, R, L, ω0)
-```
-dynamic line with series resistance R and series inductance L.
 
-# Keyword Arguments
-- `from`: inertia constant (given in [s]), defined according to P. Sauer, p. 33, eq. (3.60)
-- `to`: active (real) power output, also called the mechanical torque applied to the shaft, given in [pu]
-- `R`: damping coefficient, (given in [s], see P. Sauer, eq. (5.156) where the damping torque is equal `Dω`)
-- `L`:
-- `ω0`: rated frequency in [rad/s] of the power grid, often ``2\pi⋅50``Hz
-
-# Mathematical Representation
-Using `RLLine` for the line `from`--`to` applies the equations
-
-"""
 begin
-    @__doc__ struct RLLine <: AbstractLine
+    @doc """
+    ```Julia
+    RLLine(; from, to, R, L, ω0)
+    ```
+    dynamic line with series resistance R and series inductance L.
+
+    # Keyword Arguments
+    - `from`: start node of the line
+    - `to`: end node of the line
+    - `R`: series resistance R
+    - `L`: series inductance L
+    - `ω0`: rated frequency in [rad/s] of the power grid, often ``2π50``Hz
+
+    # Mathematical Representation
+    Using `RLLine` for the line `from`--`to` applies Eqn. (2) from
+    __Brouillon, J. S., Colombino, M., Groß, D., & Dörfler, F. (2018). The effect of transmission-line dynamics on a globally synchronizing controller for power inverters. In 2018 European Control Conference (ECC) (pp. 2242-2247). IEEE.__
+    """
+    struct RLLine <: AbstractLine
             from
             to
             R
