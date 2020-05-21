@@ -1,5 +1,5 @@
 using Test: @testset, @test, @test_throws
-using PowerDynamics: RLLine, StaticLine, construct_edge, symbolsof
+using PowerDynamics: RLLine, StaticLine, construct_edge, symbolsof, dimension
 using NetworkDynamics: ODEEdge
 using LinearAlgebra: I
 
@@ -38,6 +38,7 @@ include("LineTestBase.jl")
 
         @test isa(edge, ODEEdge)
         @test symbolsof(line) == [:id, :iq, :id_r, :iq_r]
+        @test dimension(line) == 4
         @test edge.mass_matrix == I
 
     # assure function call does not explode!
@@ -93,7 +94,7 @@ end
 
         @test arr ≈ e
 end
-#
+
 # using PowerDynamics: PowerGrid,
 #                      dimension,
 #                      rhs,
