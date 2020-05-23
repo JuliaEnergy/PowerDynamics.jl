@@ -31,5 +31,4 @@ The admittance is here taken to be on the high-voltage side.
     current_vector = Y * voltage_vector
 end
 
-
 export Transformer
