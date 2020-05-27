@@ -1,32 +1,146 @@
 using NLsolve: nlsolve, converged
 
-struct RootRhs
-    rhs
-end
-function (rr::RootRhs)(x)
-    dx = similar(x)
-    rr.rhs(dx, x, nothing, 0.)
-    dx
+"""
+```Julia
+initial_guess(pg)
+```
+makes a type-specific initial guess to help the operation point search
+
+# Arguments
+- `pg`: a [`PowerGrid`](@ref) instance
+
+
+The voltage of all nodes is guessed as the slack voltage in the system.
+See also the documentation of [`guess`](@ref).
+"""
+function initial_guess(pg)
+    if SlackAlgebraic ∉ pg.nodes .|> typeof
+        @warn "There is no slack bus in the system to balance powers. Default voltage guess: u = 1 + 0j [pu]."
+        voltage_guess = complex(1.0, 0.0)
+    else
+        sl = findfirst(SlackAlgebraic ∈ pg.nodes .|> typeof)
+        slack = pg.nodes[sl]
+        voltage_guess = slack.U
+    end
+
+    return initial_guess(pg, voltage_guess)
 end
 
-function find_operationpoint(pg::PowerGrid, ic_guess = nothing)
+"""
+```Julia
+initial_guess(pg, complex_voltages)
+```
+makes a type-specific initial guess to help the operation point search
+
+# Arguments
+- `pg`: a [`PowerGrid`](@ref) instance
+- `complex_voltages`: voltage guess, either scalar or vector of `length(pg.nodes)`
+
+
+The voltage of all nodes is guessed as the respective entry in `complex_voltages`,
+the latter can e.g. be the result of a power flow solution.
+See also the documentation of [`guess`](@ref).
+"""
+function initial_guess(pg, complex_voltages)
+    type_guesses = guess.(pg.nodes, complex_voltages)
+    return vcat(type_guesses...)
+end
+
+
+"""
+```Julia
+guess(node, voltage_guess)
+```
+
+creates an initial guess for an operation point
+
+# Arguments
+- `node`: a node in a [`PowerGrid`](@ref), subtype of [`AbstractNode`](@ref)
+- `voltage_guess`: guess for the node's voltage, defaults to slack set point
+
+The guesses are specific to the node types. In the default case, the
+node voltage set to the `voltage_guess` while internal variables are
+initialised at 0.
+
+It is possible to add methods for user-defined node types.
+
+# Examples
+
++ guess(::Type{SlackAlgebraic}, U) = [real(U), imag(U)]         #[:u_r, :u_i]
++ guess(::Type{PQAlgebraic}, U) = [real(U), imag(U)]            #[:u_r, :u_i]
++ guess(::Type{ThirdOrderEq}, U) = [real(U), imag(U), 0., 0.]   #[:u_r, :u_i, :θ, :ω]
++ guess(::Type{<:AbstractNode}, U) = [real(U), imag(U), 0., ..., 0.]   #[:u_r, :u_i, ...]
+"""
+function guess end
+
+# the default case
+function guess(n::AbstractNode, voltage_guess)
+    state = zeros(dimension(n))
+    state[1] = real(voltage_guess)
+    state[2] = imag(voltage_guess)
+    return state
+end
+
+# In case the system has a slack bus, make sure the voltage_guess is compatible.
+function guess(n::SlackAlgebraic, voltage_guess)
+    @assert n.U ≈ voltage_guess
+    return n.U
+end
+
+"""
+```Julia
+find_operationpoint(pg, ic_guess, p0, t0)
+```
+returns an operation point
+
+# Arguments
+- `pg`: a [`PowerGrid`](@ref) instance
+
+# Optional Arguments
+- `ic_guess`: initial guess for the operation point
+- `p0`: possibility to pass parameters to `rhs(pg)`
+- `t0`: specify evaluation time point for non-autonomus dynamics (defaults to t0 = 0)
+"""
+function find_operationpoint(
+    pg::PowerGrid,
+    ic_guess = nothing,
+    p0 = nothing,
+    t0 = 0.0;
+    method = :rootfind,
+    kwargs...
+)
     if SlackAlgebraic ∉ pg.nodes .|> typeof
-        @warn "There is no slack bus in the system to balance powers. Currently not making any checks concerning assumptions of whether its possible to find the fixed point"
+        @warn "There is no slack bus in the system to balance powers. Currently not making any checks concerning assumptions of whether its possible to find an operation point."
     end
     if SwingEq ∈ pg.nodes .|> typeof
-        throw(OperationPointError("found SwingEq node but these should be SwingEqLVS (just SwingEq is not yet supported for operation point search)"))
+        throw(OperationPointError("Found SwingEq node but these should be SwingEqLVS (just SwingEq is not yet supported for operation point search)."))
     end
 
     if ic_guess === nothing
-        system_size = systemsize(pg)
-        ic_guess = ones(system_size)
+        ic_guess = initial_guess(pg)
     end
 
-    rr = RootRhs(rhs(pg))
-    nl_res = nlsolve(rr, ic_guess)
+    if method == :rootfind
+        return _find_operationpoint_nlsolve(pg, ic_guess; kwargs...)
+    elseif method == :steadystate
+        return _find_operationpoint_steadystate(pg, ic_guess; kwargs...)
+    else
+        throw(OperationPointError("$method is not supported. Pass either `:rootfind` or `:steadystate`"))
+    end
+end
+
+function _find_operationpoint_steadystate(pg, ic_guess; kwargs...) end
+
+function _find_operationpoint_nlsolve(pg, ic_guess; kwargs...)
+    # construct rhs for rootfinding
+    rhs_pg = rhs(pg)
+    rr = (dx, x) -> rhs_pg(dx, x, p0, t0)
+
+    nl_res = nlsolve(rr, ic_guess; kwargs...)
+
     if converged(nl_res) == true
         return State(pg, nl_res.zero)
     else
-        throw(OperationPointError("Failed to find initial conditions on the constraint manifold!"))
+        throw(OperationPointError("The operation point search did not converge."))
     end
 end
