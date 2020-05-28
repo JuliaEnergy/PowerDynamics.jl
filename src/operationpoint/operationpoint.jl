@@ -1,4 +1,5 @@
 using NLsolve: nlsolve, converged
+using SteadyStateDiffEq
 
 """
 ```Julia
