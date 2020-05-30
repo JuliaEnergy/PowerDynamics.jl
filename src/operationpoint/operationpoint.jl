@@ -1,5 +1,6 @@
 using NLsolve: nlsolve, converged
 using SteadyStateDiffEq
+using OrdinaryDiffEq: ODEProblem, Rodas5
 
 """
 ```Julia
@@ -85,7 +86,7 @@ end
 # In case the system has a slack bus, make sure the voltage_guess is compatible.
 function guess(n::SlackAlgebraic, voltage_guess)
     @assert n.U ≈ voltage_guess
-    return n.U
+    return [real(n.U), imag(n.U)]
 end
 
 """
@@ -104,11 +105,11 @@ returns an operation point
 """
 function find_operationpoint(
     pg::PowerGrid,
-    ic_guess = nothing,
+    ic_guess = nothing;
     p0 = nothing,
-    t0 = 0.0;
-    method = :rootfind,
-    kwargs...
+    t0 = 0.0,
+    method = :nlsolve,
+    solver_kwargs...
 )
     if SlackAlgebraic ∉ pg.nodes .|> typeof
         @warn "There is no slack bus in the system to balance powers. Currently not making any checks concerning assumptions of whether its possible to find an operation point."
@@ -121,18 +122,46 @@ function find_operationpoint(
         ic_guess = initial_guess(pg)
     end
 
-    if method == :rootfind
-        return _find_operationpoint_nlsolve(pg, ic_guess; kwargs...)
+    if method == :nlsolve
+        return _find_operationpoint_nlsolve(pg, ic_guess, p0, t0; solver_kwargs...)
+    elseif method == :rootfind
+        return _find_operationpoint_rootfind(pg, ic_guess, p0, t0; solver_kwargs...)
     elseif method == :steadystate
-        return _find_operationpoint_steadystate(pg, ic_guess; kwargs...)
+        return _find_operationpoint_steadystate(pg, ic_guess, p0, t0; solver_kwargs...)
     else
-        throw(OperationPointError("$method is not supported. Pass either `:rootfind` or `:steadystate`"))
+        throw(OperationPointError("$method is not supported. Pass either `:nlsolve`, `:rootfind` or `:steadystate`"))
     end
 end
 
-function _find_operationpoint_steadystate(pg, ic_guess; kwargs...) end
+function _find_operationpoint_steadystate(pg, ic_guess, p0, t0; kwargs...) #solver=Rodas5(), abstol = 1e-8, reltol = 1e-6, tspan = Inf)
+    ode = rhs(pg)
+    op_prob = ODEProblem(ode, ic_guess, Inf)
+    sol = solve(
+        SteadyStateProblem(op_prob),
+        DynamicSS(Rodas5(); kwargs...),
+    )
+    if sol.retcode == :Success
+        return State(pg, sol.u)
+    else
+        throw(OperationPointError("The operation point search did not converge."))
+    end
+end
 
-function _find_operationpoint_nlsolve(pg, ic_guess; kwargs...)
+function _find_operationpoint_rootfind(pg, ic_guess, p0, t0; kwargs...) #solver=Rodas5(), abstol = 1e-8, reltol = 1e-6, tspan = Inf)
+    ode = rhs(pg)
+    op_prob = ODEProblem(ode, ic_guess, Inf)
+    sol = solve(
+        SteadyStateProblem(op_prob),
+        SSRootfind(kwargs...),
+    )
+    if sol.retcode == :Success
+        return State(pg, sol.u)
+    else
+        throw(OperationPointError("The operation point search did not converge."))
+    end
+end
+
+function _find_operationpoint_nlsolve(pg, ic_guess, p0, t0; kwargs...)
     # construct rhs for rootfinding
     rhs_pg = rhs(pg)
     rr = (dx, x) -> rhs_pg(dx, x, p0, t0)
