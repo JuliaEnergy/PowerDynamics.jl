@@ -108,7 +108,7 @@ function find_operationpoint(
     ic_guess = nothing;
     p0 = nothing,
     t0 = 0.0,
-    method = :nlsolve,
+    method = :rootfind,
     solver_kwargs...
 )
     if SlackAlgebraic ∉ pg.nodes .|> typeof
