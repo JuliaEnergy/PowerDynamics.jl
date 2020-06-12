@@ -108,11 +108,11 @@ function find_operationpoint(
     ic_guess = nothing;
     p0 = nothing,
     t0 = 0.0,
-    method = :rootfind,
+    sol_method = :rootfind,
     solver_kwargs...
 )
     if SlackAlgebraic ∉ pg.nodes .|> typeof
-        @warn "There is no slack bus in the system to balance powers. Currently not making any checks concerning assumptions of whether its possible to find an operation point."
+        @warn "There is no slack bus in the system to balance powers. Currently not making any checks concerning assumptions of whether its possible to find a operation point."
     end
     if SwingEq ∈ pg.nodes .|> typeof
         throw(OperationPointError("Found SwingEq node but these should be SwingEqLVS (just SwingEq is not yet supported for operation point search)."))
@@ -122,18 +122,18 @@ function find_operationpoint(
         ic_guess = initial_guess(pg)
     end
 
-    if method == :nlsolve
+    if sol_method == :nlsolve
         return _find_operationpoint_nlsolve(pg, ic_guess, p0, t0; solver_kwargs...)
-    elseif method == :rootfind
+    elseif sol_method == :rootfind
         return _find_operationpoint_rootfind(pg, ic_guess, p0, t0; solver_kwargs...)
-    elseif method == :steadystate
+    elseif sol_method == :steadystate
         return _find_operationpoint_steadystate(pg, ic_guess, p0, t0; solver_kwargs...)
     else
-        throw(OperationPointError("$method is not supported. Pass either `:nlsolve`, `:rootfind` or `:steadystate`"))
+        throw(OperationPointError("$sol_method is not supported. Pass either `:nlsolve`, `:rootfind` or `:steadystate`"))
     end
 end
 
-function _find_operationpoint_steadystate(pg, ic_guess, p0, t0; kwargs...) #solver=Rodas5(), abstol = 1e-8, reltol = 1e-6, tspan = Inf)
+function _find_operationpoint_steadystate(pg, ic_guess, p0, t0; kwargs...)
     ode = rhs(pg)
     op_prob = ODEProblem(ode, ic_guess, Inf)
     sol = solve(
@@ -152,7 +152,7 @@ function _find_operationpoint_rootfind(pg, ic_guess, p0, t0; kwargs...) #solver=
     op_prob = ODEProblem(ode, ic_guess, Inf)
     sol = solve(
         SteadyStateProblem(op_prob),
-        SSRootfind(kwargs...),
+        SSRootfind(;kwargs...),
     )
     if sol.retcode == :Success
         return State(pg, sol.u)

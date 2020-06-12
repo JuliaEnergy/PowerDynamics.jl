@@ -1,6 +1,6 @@
 using PowerDynamics
-#using PowerDynamics: OperationPointError, find_operationpoint, rhs, RootRhs, SlackAlgebraic, SwingEqLVS, PQAlgebraic, StaticLine, PowerGrid, find_operationpoint, RootRhs, rhs, systemsize, find_operationpoint
-using Test: @test, @testset, @test_throws, @test_logs, FallbackTestSetException
+using NLsolve: nlsolve
+using Test: @test, @testset, @test_throws, @test_logs, @test_nowarn
 
 # define small test system
 begin
@@ -74,14 +74,9 @@ end
 @testset "check found operationpoint" begin
 
     # test default
-    @test find_operationpoint(grid) == find_operationpoint(grid; method = :rootfind)
+    @test find_operationpoint(grid) == find_operationpoint(grid; sol_method = :rootfind)
 
-    # test case that should not converge
-    should_fail = copy(nodes)
-    should_fail[1] = PQAlgebraic(P=-10., Q=-10.)
-    @test_throws OperationPointError find_operationpoint(PowerGrid(should_fail, lines); method = :nlsolve)
-
-    op = find_operationpoint(grid; method = :nlsolve)
+    op = find_operationpoint(grid; sol_method = :nlsolve)
 
     @test op isa State
 
@@ -97,16 +92,12 @@ end
     @test isapprox(U1, op[1, :u], atol=1e-8)
     @test isapprox(V, op[4, :v], atol=1e-8)
 
-    op_rf = find_operationpoint(grid; method = :rootfind)
+    op_rf = find_operationpoint(grid; sol_method = :rootfind)
 
     # check that rootfind in the SteadyStateProblem is consistent with manual call to NLsolve
     @test op_rf.vec == op.vec
 
-    # the following should not throw an OperationPointError since the SteadyStateProblem
-    # still finds a solution where nlsolve fails in the current setup
-    @test find_operationpoint(PowerGrid(should_fail, lines); method = :rootfind) isa State
-
-    op_st = find_operationpoint(grid, PowerDynamics.initial_guess(grid); method = :steadystate)
+    op_st = find_operationpoint(grid; sol_method = :steadystate)
 
     @test op_st.vec !== op.vec
 
@@ -122,4 +113,26 @@ end
 
     # the voltage solution, however, is out of reasonable bounds
     @test any(0.9 .> op_st[:, :v]) | any(op_st[:, :v] .> 1.1)
+end
+
+@testset "check solution after slack removal" begin
+    # test case that should not converge
+    should_fail = copy(nodes)
+    should_fail[1] = PQAlgebraic(P=-10., Q=-10.)
+    @test_throws OperationPointError find_operationpoint(PowerGrid(should_fail, lines); sol_method = :nlsolve)
+
+    # the following should not throw an OperationPointError since the SteadyStateProblem
+    # still finds a solution where nlsolve fails in the current setup
+    @test_nowarn find_operationpoint(PowerGrid(should_fail, lines); sol_method = :rootfind)
+end
+
+@testset "passing of keyword arguments to the solvers" begin
+    # pass nlsolve arguments
+    @test_nowarn find_operationpoint(grid; sol_method = :nlsolve, method=:newton, autodiff = :forward, show_trace=true);
+
+    # pass nlsolve arguments to SSRootfind
+    @test_nowarn find_operationpoint(grid; sol_method = :rootfind, nlsolve=(f,u0,abstol) -> (res=nlsolve(f,u0,method=:newton, autodiff = :forward, show_trace=true);res.zero));
+
+    # pass SteadyStateDiffEq arguments to DynamicSS
+    @test_nowarn find_operationpoint(grid; sol_method = :steadystate, abstol=1e-1, reltol=1e-1, tspan=Inf);
 end
