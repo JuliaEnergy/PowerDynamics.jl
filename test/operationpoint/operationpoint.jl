@@ -97,7 +97,7 @@ end
     # check that rootfind in the SteadyStateProblem is consistent with manual call to NLsolve
     @test op_rf.vec == op.vec
 
-    op_st = find_operationpoint(grid; sol_method = :steadystate)
+    op_st = find_operationpoint(grid; sol_method = :dynamic)
 
     @test op_st.vec !== op.vec
 
@@ -134,5 +134,5 @@ end
     @test_nowarn find_operationpoint(grid; sol_method = :rootfind, nlsolve=(f,u0,abstol) -> (res=nlsolve(f,u0,method=:newton, autodiff = :forward, show_trace=true);res.zero));
 
     # pass SteadyStateDiffEq arguments to DynamicSS
-    @test_nowarn find_operationpoint(grid; sol_method = :steadystate, abstol=1e-1, reltol=1e-1, tspan=Inf);
+    @test_nowarn find_operationpoint(grid; sol_method = :dynamic, abstol=1e-1, reltol=1e-1, tspan=Inf);
 end

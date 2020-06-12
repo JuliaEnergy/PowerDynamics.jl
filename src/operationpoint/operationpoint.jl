@@ -95,13 +95,26 @@ find_operationpoint(pg, ic_guess, p0, t0)
 ```
 returns an operation point
 
-# Arguments
+# Argument
 - `pg`: a [`PowerGrid`](@ref) instance
 
 # Optional Arguments
-- `ic_guess`: initial guess for the operation point
-- `p0`: possibility to pass parameters to `rhs(pg)`
+- `ic_guess`: custom initial guess for the operation point
+
+# Optional Keyword Arguments
+- `p0`: possibility to pass parameters to `rhs(pg) (defaults to p0 = nothing)`
 - `t0`: specify evaluation time point for non-autonomus dynamics (defaults to t0 = 0)
+- `sol_method` : method used to locate an operation point, see comment below
+- `sol_kwargs` : optional arguments passed to the solver
+
+# Operation Point Solvers
+- `:nlsolve` : uses `nlsolve` from `NLsolve` to find a root of the RHS with the trust region method (others can be selected)
+- `:rootfind` : (default) uses `SSRootfind` from `SteadyStateDiffEq` to perform a NLsolve-based rootfind
+- `:dynamic` : uses `DynamicSS` from `SteadyStateDiffEq` to integrate the dynamical equations until a steady state is reached
+
+See also the documentation of the packages `SteadyStateDiffEq` and `NLsolve` to
+see further finetuning options that can be passed via the `sol_kwargs` argument.
+
 """
 function find_operationpoint(
     pg::PowerGrid,
@@ -109,7 +122,7 @@ function find_operationpoint(
     p0 = nothing,
     t0 = 0.0,
     sol_method = :rootfind,
-    solver_kwargs...
+    sol_kwargs...
 )
     if SlackAlgebraic ∉ pg.nodes .|> typeof
         @warn "There is no slack bus in the system to balance powers. Currently not making any checks concerning assumptions of whether its possible to find a operation point."
@@ -123,19 +136,19 @@ function find_operationpoint(
     end
 
     if sol_method == :nlsolve
-        return _find_operationpoint_nlsolve(pg, ic_guess, p0, t0; solver_kwargs...)
+        return _find_operationpoint_nlsolve(pg, ic_guess, p0, t0; sol_kwargs...)
     elseif sol_method == :rootfind
-        return _find_operationpoint_rootfind(pg, ic_guess, p0, t0; solver_kwargs...)
-    elseif sol_method == :steadystate
-        return _find_operationpoint_steadystate(pg, ic_guess, p0, t0; solver_kwargs...)
+        return _find_operationpoint_rootfind(pg, ic_guess, p0, t0; sol_kwargs...)
+    elseif sol_method == :dynamic
+        return _find_operationpoint_steadystate(pg, ic_guess, p0, t0; sol_kwargs...)
     else
-        throw(OperationPointError("$sol_method is not supported. Pass either `:nlsolve`, `:rootfind` or `:steadystate`"))
+        throw(OperationPointError("$sol_method is not supported. Pass either `:nlsolve`, `:rootfind` or `:dynamic`"))
     end
 end
 
 function _find_operationpoint_steadystate(pg, ic_guess, p0, t0; kwargs...)
     ode = rhs(pg)
-    op_prob = ODEProblem(ode, ic_guess, Inf)
+    op_prob = ODEProblem(ode, ic_guess, (t0, Inf), p0)
     sol = solve(
         SteadyStateProblem(op_prob),
         DynamicSS(Rodas5(); kwargs...),
@@ -147,9 +160,9 @@ function _find_operationpoint_steadystate(pg, ic_guess, p0, t0; kwargs...)
     end
 end
 
-function _find_operationpoint_rootfind(pg, ic_guess, p0, t0; kwargs...) #solver=Rodas5(), abstol = 1e-8, reltol = 1e-6, tspan = Inf)
+function _find_operationpoint_rootfind(pg, ic_guess, p0, t0; kwargs...)
     ode = rhs(pg)
-    op_prob = ODEProblem(ode, ic_guess, Inf)
+    op_prob = ODEProblem(ode, ic_guess, (t0, Inf), p0)
     sol = solve(
         SteadyStateProblem(op_prob),
         SSRootfind(;kwargs...),
