@@ -43,6 +43,7 @@ end
     v[1] *= 0.9
 
     @test_throws AssertionError PowerDynamics.initial_guess(grid, v)
+end
 
 @testset "test for slack warning and SwingEq" begin
     no_slack = copy(nodes)
@@ -113,6 +114,11 @@ end
     @test isapprox(op_st[4, :ω], 0., atol=1e-8)
     # Kirchhoff current law
     @test op_st[:, :i] |> sum == 0.
+    # check set points
+    @test isapprox(P2, op[2, :p], atol=1e-8)
+    @test isapprox(Q2, op[2, :q], atol=1e-8)
+    @test isapprox(U1, op[1, :u], atol=1e-8)
+    @test isapprox(V, op[4, :v], atol=1e-8)
 
     # the voltage solution, however, is out of reasonable bounds
     @test any(0.9 .> op_st[:, :v]) | any(op_st[:, :v] .> 1.1)
