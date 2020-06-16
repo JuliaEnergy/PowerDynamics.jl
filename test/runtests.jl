@@ -20,6 +20,8 @@ testlist = [
     ("nodes/experimental/CurtailedPowerPlantWithInertia.jl","CurtailedPowerPlantWithInertia Tests"),
     ("lines/StaticLine.jl", "StaticLine tests"),
     ("lines/PiModelLine.jl", "PiModelLine tests"),
+    ("lines/RLLine.jl", "RLLine tests"),
+    ("lines/Transformer.jl", "Transformer tests"),
     ("common/PowerGrid.jl", "PowerGrid Tests"),
     ("common/States.jl", "States Tests"),
     ("simulations/PowerGridSolutions.jl", "PowerGridSolutions Tests"),
