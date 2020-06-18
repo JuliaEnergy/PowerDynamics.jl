@@ -111,9 +111,11 @@ end
     @test isapprox(U1, op[1, :u], atol=1e-8)
     @test isapprox(V, op[4, :v], atol=1e-8)
 
-    # the voltage solution, however, is out of reasonable bounds
-    op_st[:, :v] |> println
-    #@test any(0.9 .> op_st[:, :v]) | any(op_st[:, :v] .> 1.1)
+
+    # the following test is likely to fail when the fallback to nlsolve happens:
+
+    # # the voltage solution, however, is out of reasonable bounds
+    # @test any(0.9 .> op_st[:, :v]) | any(op_st[:, :v] .> 1.1)
 end
 
 @testset "check solution after slack removal" begin
