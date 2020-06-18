@@ -33,8 +33,8 @@ function mapPowerField(powergrid, pd, f)
     if !(hasproperty(node_for_drop,pd.power_symbol))
         throw(PowerPerturbationError("Node number: $(pd.node_number) must have a power parameter $(pd.power_symbol)"))
     end
-    lens = Setfield.compose(Setfield.PropertyLens{pd.power_symbol}())
-    node_for_drop = Setfield.set(node_for_drop, lens, f(Setfield.get(node_for_drop, lens)))
+    lens = Setfield.PropertyLens{pd.power_symbol}()
+    node_for_drop = Setfield.modify(f, node_for_drop, lens)
     node_list_power_drop[pd.node_number] = node_for_drop
     PowerGrid(node_list_power_drop, powergrid.lines)
 end
