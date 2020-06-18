@@ -42,6 +42,7 @@ include("lines/LineMacro.jl")
 include("lines/StaticLine.jl")
 include("lines/PiModelLine.jl")
 include("lines/Transformer.jl")
+include("lines/RLLine.jl")
 
 include("operationpoint/operationpoint.jl")
 include("operationpoint/find_valid_initial_condition.jl")
