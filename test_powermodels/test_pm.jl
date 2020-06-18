@@ -43,9 +43,10 @@ node_list=[]
     append!(node_list, [SlackAlgebraic(U=network_raw_data["gen"]["1"]["vg"])]) # bus 1 is of type 3 which is a slack bus?
     #append!(node_list, [SwingEqLVS(H=5., P=network_raw_data["gen"]["1"]["pg"], D=0.1, Ω=50,Γ=0.1,V=network_raw_data["gen"]["1"]["vg"])]) # is of type 2 which is a PV bus?
     #append!(node_list, [PQAlgebraic(P=network_raw_data["gen"]["3"]["pg"],Q=network_raw_data["gen"]["3"]["qg"])]) # is of type 2 which is a PV bus?
+    #append!(node_list, [VSIMinimal(τ_P=1.,τ_Q=1.,K_P=1.,K_Q=1.,P=network_raw_data["gen"]["3"]["pg"],Q=network_raw_data["gen"]["3"]["qg"],V_r=network_raw_data["gen"]["3"]["vg"])])
     append!(node_list, [SwingEqLVS(H=5., P=network_raw_data["gen"]["3"]["pg"], D=0.1, Ω=50,Γ=0.1,V=network_raw_data["gen"]["3"]["vg"])]) # is of type 2 which is a PV bus?
     #append!(node_list, [PQAlgebraic(P=network_raw_data["gen"]["5"]["pg"],Q=network_raw_data["gen"]["5"]["qg"])]) # is of type 2 which is a PV bus?
-    append!(node_list, [SwingEqLVS(H=5., P=network_raw_data["gen"]["5"]["pg"], D=0.1, Ω=50,Γ=0.1,V=network_raw_data["gen"]["3"]["vg"])]) # is of type 2 which is a PV bus?
+    append!(node_list, [SwingEqLVS(H=5., P=network_raw_data["gen"]["5"]["pg"], D=0.1, Ω=50,Γ=0.1,V=network_raw_data["gen"]["5"]["vg"])]) # is of type 2 which is a PV bus?
 
 line_list=[]
     append!(line_list,[StaticLine(from=1,to=2,Y=Y.matrix[1,2])])
