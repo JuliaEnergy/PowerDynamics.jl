@@ -152,10 +152,7 @@ function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IPU, _IU, _PU}
 
             # constant current
             for (cf, idx) in zip(cfs, cn.idxs[1:num_cv])
-                println(dx)
-                println(x)
                 cf(dx[idx], x[idx], e_s, e_d, p, t)
-                println(cf(dx[idx], x[idx], e_s, e_d, p, t))
                 # The current nodes are assumed to have du = i - I_node
                 i_injected += i - complex(dx[1], dx[2])
             end
