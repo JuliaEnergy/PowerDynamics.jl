@@ -156,7 +156,7 @@ function _find_operationpoint_steadystate(pg, ic_guess, p0, t0; kwargs...)
     if sol.retcode == :Success
         return State(pg, sol.u)
     else
-        @warn "The operation point search did not converge. (steady state method, $(sol.retcode))\n Fallback to rootfinding."
+        @warn "The operation point search did not converge. (dynamic method, $(sol.retcode))\n Fallback to rootfinding."
         _find_operationpoint_nlsolve(pg, ic_guess, p0, t0)
     end
 end
