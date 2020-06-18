@@ -156,7 +156,7 @@ function _find_operationpoint_steadystate(pg, ic_guess, p0, t0; kwargs...)
     if sol.retcode == :Success
         return State(pg, sol.u)
     else
-        throw(OperationPointError("The operation point search did not converge."))
+        throw(OperationPointError("The operation point search did not converge. (steady state method, $(sol.retcode))"))
     end
 end
 
@@ -170,7 +170,7 @@ function _find_operationpoint_rootfind(pg, ic_guess, p0, t0; kwargs...)
     if sol.retcode == :Success
         return State(pg, sol.u)
     else
-        throw(OperationPointError("The operation point search did not converge."))
+        throw(OperationPointError("The operation point search did not converge. (rootfind method, $(sol.retcode))"))
     end
 end
 
@@ -184,6 +184,6 @@ function _find_operationpoint_nlsolve(pg, ic_guess, p0, t0; kwargs...)
     if converged(nl_res) == true
         return State(pg, nl_res.zero)
     else
-        throw(OperationPointError("The operation point search did not converge."))
+        throw(OperationPointError("The operation point search did not converge. (nlsolve method)"))
     end
 end

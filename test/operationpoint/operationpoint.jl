@@ -85,7 +85,7 @@ end
     # frequency should be 0
     @test isapprox(op[4, :ω], 0., atol=1e-8)
     # Kirchhoff current law
-    @test op[:, :i] |> sum == 0.
+    @test isapprox(op[:, :i] |> sum, 0., atol=1e-8)
     # check set points
     @test isapprox(P2, op[2, :p], atol=1e-8)
     @test isapprox(Q2, op[2, :q], atol=1e-8)
