@@ -55,12 +55,14 @@ end
 
 (sol::PowerGridSolution)(t, ::Colon, sym::Symbol, args...; kwargs...) = sol(t, eachindex(sol.powergrid.nodes), sym, args...; kwargs...)
 (sol::PowerGridSolution)(t, n, sym::Symbol, args...) = begin
-    #if ~all( 1 .<= n .<= length(sol.powergrid.nodes) )
-    #else
-    sol(t, n, Val{sym}, args...)
-    #end
+    bus_array=collect(keys(sol.powergrid.nodes))
+    ni=findfirst(x->x==n, bus_array)
+    if ~all( 1 .<= ni .<= length(sol.powergrid.nodes) )
+    else
+        sol(t, n, Val{sym}, args...)
+    end
 end
-(sol::PowerGridSolution)(t::Number, n::Number, ::Type{Val{:u}}) = begin
+(sol::PowerGridSolution)(t::Number, n::String, ::Type{Val{:u}}) = begin
     u_real = TimeSeries(sol)(t, idxs= variable_index(sol.powergrid.nodes, n, :u_r))
     u_imag = TimeSeries(sol)(t, idxs= variable_index(sol.powergrid.nodes, n, :u_i))
     u_real + im * u_imag
@@ -68,6 +70,13 @@ end
 (sol::PowerGridSolution)(t, n::AbstractArray, ::Type{Val{:u}}) = begin
     u_real = @>> TimeSeries(sol)(t, idxs= variable_index(sol.powergrid.nodes, n, :u_r)) convert(Array)
     u_imag = @>> TimeSeries(sol)(t, idxs= variable_index(sol.powergrid.nodes, n, :u_i)) convert(Array)
+    println("Got here")
+    u_real .+ im .* u_imag
+end
+(sol::PowerGridSolution)(t, n::String, ::Type{Val{:u}}) = begin
+    u_real = @>> TimeSeries(sol)(t, idxs= variable_index(sol.powergrid.nodes, n, :u_r)) convert(Array)
+    u_imag = @>> TimeSeries(sol)(t, idxs= variable_index(sol.powergrid.nodes, n, :u_i)) convert(Array)
+    println("Got here")
     u_real .+ im .* u_imag
 end
 (sol::PowerGridSolution)(t, n, ::Type{Val{:v}}) = sol(t, n, :u) .|> abs
@@ -92,26 +101,30 @@ startindex(nodes, n::AbstractArray) = map(n -> startindex(nodes, n), n)
 
 # current for a timeseries t
 get_current(sol, t, n) = begin
-    vertices = map(construct_vertex, sol.powergrid.nodes)
-    edges = map(construct_edge, sol.powergrid.lines)
+    vertices = map(construct_vertex, collect(values(sol.powergrid.nodes)))
+    edges = map(construct_edge, collect(values(sol.powergrid.lines)))
+    bus_array=collect(keys(sol.powergrid.nodes))
+    ni=findfirst(x->x==n, bus_array)
     sef = StaticEdgeFunction(vertices, edges, sol.powergrid.graph)
     xt = sol.dqsol(t)
-    hcat([get_current_internal(sef, x, n) for x in xt]...)
+    hcat([get_current_internal(sef, x, ni) for x in xt]...)
 end
 
 # current for a single point in time
 get_current(sol, t::Number, n) = begin
-    vertices = map(construct_vertex, sol.powergrid.nodes)
-    edges = map(construct_edge, sol.powergrid.lines)
+    vertices = map(construct_vertex, collect(values(sol.powergrid.nodes)))
+    edges = map(construct_edge, collect(values(sol.powergrid.lines)))
+    bus_array=collect(keys(sol.powergrid.nodes))
+    ni=findfirst(x->x==n, bus_array)
     sef = StaticEdgeFunction(vertices,edges,sol.powergrid.graph)
     x = sol.dqsol(t)
     (e_s, e_d) = sef(x, Nothing, 0)
-    total_current(e_s[n], e_d[n])
+    total_current(e_s[ni], e_d[ni])
 end
 
 get_current_internal(sef, x, nodes) = begin
     (e_s, e_d) = sef(x, Nothing, 0)
-    [total_current(e_s[n], e_d[n]) for n in nodes]
+    [total_current(e_s[n], e_d[n]) for n in collect(values(nodes))]
 end
 
 
@@ -139,5 +152,6 @@ end
     end
     xlabel --> "t"
     t = tspan(sol, tres)
+    println(t)
     t, tstransform(sol(t, n, sym, args...))
 end

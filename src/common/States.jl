@@ -105,6 +105,7 @@ internalindex(s, n::Integer, sym::Symbol) = variable_index(s.grid.nodes, n, sym)
 internalindex(s, n::Integer, i) = variable_index(s.grid.nodes, n, i)
 
 variable_index(nodes, n::String, s::Symbol) = begin
+    println(symbolsof(nodes[n]))
     first_idx = findfirst(ns -> ns == s, symbolsof(nodes[n]))
     if first_idx == nothing
         throw(StateError("Variable: $s not defined for node: $n"))
@@ -114,7 +115,9 @@ variable_index(nodes, n::String, s::Symbol) = begin
 end
 
 variable_index(nodes, n, i) = begin
-    num_vars = dimension(nodes[n])
+    num_vars = sum([dimension(nodes[ni]) for ni in n])
+    println(num_vars)
+    println(i)
     if i <= num_vars
         startindex(nodes, n) + i
     else
@@ -123,10 +126,13 @@ variable_index(nodes, n, i) = begin
 end
 
 @views startindex(nodes, n) = begin
-    if n == 1
+    bus_array=collect(keys(nodes))
+    values_array=collect(values(nodes))
+    ni=findfirst(x->x==n, bus_array)
+    if ni == 1
         0
     else
-        sum(map(node -> dimension(node), nodes[1:n-1]))
+        sum(map(node -> dimension(node), nodes[1:ni-1]))
     end
 end
 
