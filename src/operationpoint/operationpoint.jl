@@ -10,10 +10,10 @@ function (rr::RootRhs)(x)
 end
 
 function find_operationpoint(pg::PowerGrid, ic_guess = nothing)
-    if SlackAlgebraic ∉ pg.nodes .|> typeof
+    if SlackAlgebraic ∉ collect(values(pg.nodes)) .|> typeof
         @warn "There is no slack bus in the system to balance powers. Currently not making any checks concerning assumptions of whether its possible to find the fixed point"
     end
-    if SwingEq ∈ pg.nodes .|> typeof
+    if SwingEq ∈ collect(values(pg.nodes)).|> typeof
         throw(OperationPointError("found SwingEq node but these should be SwingEqLVS (just SwingEq is not yet supported for operation point search)"))
     end
 

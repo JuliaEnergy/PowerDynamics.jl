@@ -28,15 +28,16 @@ is created automatically.
 """
 function PowerGrid(nodes, lines)
     graph = SimpleGraph(length(nodes))
-    [add_edge!(graph, l.from, l.to) for l in lines]
+    bus_array=collect(keys(nodes))
+    [add_edge!(graph, findfirst(x->x==l.from, bus_array), findfirst(x->x==l.to, bus_array)) for (key,l) in lines]
     PowerGrid(graph, nodes, lines)
 end
 
 function rhs(pg::PowerGrid)
-    network_dynamics(map(construct_vertex, pg.nodes), map(construct_edge, pg.lines), pg.graph)
+    network_dynamics(map(construct_vertex, collect(values(pg.nodes))), map(construct_edge, collect(values(pg.lines))), pg.graph)
 end
 
 """
 Returns the total size of dynamical variables of the whole powergrid
 """
-@views systemsize(pg::PowerGrid) = sum(map(n -> dimension(n), pg.nodes))
+@views systemsize(pg::PowerGrid) = sum(map(n -> dimension(n), collect(values(pg.nodes))))

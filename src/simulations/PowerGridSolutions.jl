@@ -55,11 +55,10 @@ end
 
 (sol::PowerGridSolution)(t, ::Colon, sym::Symbol, args...; kwargs...) = sol(t, eachindex(sol.powergrid.nodes), sym, args...; kwargs...)
 (sol::PowerGridSolution)(t, n, sym::Symbol, args...) = begin
-    if ~all( 1 .<= n .<= length(sol.powergrid.nodes) )
-        throw(BoundsError(sol, n))
-    else
-        sol(t, n, Val{sym}, args...)
-    end
+    #if ~all( 1 .<= n .<= length(sol.powergrid.nodes) )
+    #else
+    sol(t, n, Val{sym}, args...)
+    #end
 end
 (sol::PowerGridSolution)(t::Number, n::Number, ::Type{Val{:u}}) = begin
     u_real = TimeSeries(sol)(t, idxs= variable_index(sol.powergrid.nodes, n, :u_r))
@@ -83,7 +82,7 @@ end
 (sol::PowerGridSolution)(t, n, ::Type{Val{:p}}) = sol(t, n, :s) .|> real
 (sol::PowerGridSolution)(t, n, ::Type{Val{:q}}) = sol(t, n, :s) .|> imag
 (sol::PowerGridSolution)(t, n, ::Type{Val{:int}}, i) = @>> TimeSeries(sol)(t, idxs=variable_index(sol.powergrid.nodes, n, i)) convert(Array)
-(sol::PowerGridSolution)(t::Number, n::Number, ::Type{Val{:int}}, i::S) where {S <: Union{Number,Symbol}} = TimeSeries(sol)(t, idxs=variable_index(sol.powergrid.nodes, n, i))
+(sol::PowerGridSolution)(t::Number, n::String, ::Type{Val{:int}}, i::S) where {S <: Union{Number,Symbol}} = TimeSeries(sol)(t, idxs=variable_index(sol.powergrid.nodes, n, i))
 (sol::PowerGridSolution)(t, n, ::Type{Val{sym}}) where sym = sol(t, n, Val{:int}, sym)
 
 variable_index(nodes, n::AbstractArray, s) = map(n -> variable_index(nodes, n, s), n)

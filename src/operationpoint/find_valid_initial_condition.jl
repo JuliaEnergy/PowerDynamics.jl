@@ -1,6 +1,6 @@
 using OrdinaryDiffEq: ODEFunction
 using NLsolve: nlsolve, converged
-
+using LinearAlgebra:pinv
 
 struct RootRhs_ic
     rhs
@@ -15,6 +15,7 @@ end
 function RootRhs_ic(of::ODEFunction)
     mm = of.mass_matrix
     @assert mm != nothing
+    println(mm)
     mpm = pinv(mm) * mm
     RootRhs_ic(of.f, mpm)
 end
@@ -23,6 +24,7 @@ end
 function find_valid_initial_condition(pg::PowerGrid, ic_guess)
     rr = RootRhs_ic(rhs(pg))
     nl_res = nlsolve(rr, ic_guess)
+    println(nl_res)
     if converged(nl_res) == true
         return nl_res.zero #State(pg, nl_res.zero)
     else

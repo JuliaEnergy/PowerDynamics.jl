@@ -19,6 +19,7 @@ NodeShortCircuit(;node,R,sc_timespan) = NodeShortCircuit(node,R,sc_timespan)
 
 function (nsc::NodeShortCircuit)(powergrid)
     # Currently this assumes that the lines are PiModels...
+    println(powergrid.lines)
     lines = copy(powergrid.lines)
     l_idx = findfirst(l -> (l.from == nsc.node || l.to == nsc.node) && l isa PiModelLine, lines)
 
