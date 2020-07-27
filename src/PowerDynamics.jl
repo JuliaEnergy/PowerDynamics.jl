@@ -24,7 +24,6 @@ include("nodes/SwingEquation.jl")
 include("nodes/FourthOrderEq.jl")
 include("nodes/FourthOrderEqGovernorExciterAVR.jl")
 include("nodes/VoltageSourceInverterMinimal.jl")
-include("nodes/CompositeNode.jl")
 include("nodes/VoltageSourceInverterVoltagePT1.jl")
 include("nodes/CurrentSourceInverterMinimal.jl")
 include("nodes/ExponentialRecoveryLoad.jl")
@@ -33,6 +32,7 @@ include("nodes/experimental/PVInverterWithFrequencyControl.jl")
 include("nodes/experimental/WindTurbineGenType4.jl")
 include("nodes/experimental/WindTurbineGenType4_RotorControl.jl")
 include("nodes/experimental/CurtailedPowerPlantWithInertia.jl")
+include("nodes/experimental/CompositeNode.jl")
 
 # all line types
 
