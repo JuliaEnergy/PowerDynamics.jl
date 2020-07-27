@@ -1,7 +1,7 @@
 name = "PowerDynamics"
 uuid = "cc46b21f-1b17-51c2-b642-af74c3d3a8be"
 authors = ["Tim Kittel", "Jan Liße", "Sabine Auer"]
-version = "2.3.0"
+version = "2.3.1"
 
 [deps]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
