@@ -1,7 +1,7 @@
 using Test: @testset, @test
 using PowerDynamics: CompositeNode, CSIMinimal, VSIMinimal, PQAlgebraic, construct_vertex, symbolsof
 
-include("NodeTestBase.jl")
+include("../NodeTestBase.jl")
 
 @testset "CompositeNode" begin
     # constant voltage
