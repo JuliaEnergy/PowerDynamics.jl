@@ -1,38 +1,41 @@
 using OrdinaryDiffEq: ODEProblem, Rodas4, solve!, DiscreteCallback, CallbackSet
 import DiffEqBase: solve
+using Setfield
 
 """
 ```Julia
-NodeShortCircuit(;node,var,f)
+    NodeShortCircuit(;node_number,Y,tspan_fault)
 ```
 # Keyword Arguments
-- `node`: number  of the node
-- `R`: resistance of the shortcircuit
-- `sc_timespan`: shortcircuit timespan
+- `node_number`: number  of the node
+- `Y`: admittance of the short circuit
+- `tspan_fault`: short circuit timespan
 """
-struct NodeShortCircuit
-    node
-    R
+Base.@kwdef struct NodeShortCircuit
+    node_number
+    Y
     tspan_fault
+    shunt_symbol = :Y_n
 end
-NodeShortCircuit(;node,R,sc_timespan) = NodeShortCircuit(node,R,sc_timespan)
+
+"Error to be thrown if something goes wrong during short circuit"
+struct NodeShortCircuitError <: PowerDynamicsError
+    msg::String
+end
 
 function (nsc::NodeShortCircuit)(powergrid)
-    # Currently this assumes that the lines are PiModels...
-    lines = copy(powergrid.lines)
-    l_idx = findfirst(l -> (l.from == nsc.node || l.to == nsc.node) && l isa PiModelLine, lines)
+    nodes = copy(powergrid.nodes)
+    sc_node = powergrid.nodes[nsc.node_number]
 
-    if l_idx == nothing
-        @warn "Node needs to be connected to a PiModelLine to implement NodeShortCircuit"
-        return nothing
+    # add shunt to the node component at the fault location
+    if !(hasproperty(sc_node, nsc.shunt_symbol))
+        throw(NodeShortCircuitError("Node number: $(nsc.node_number) must have a shunt field called $(nsc.shunt_symbol)."))
     end
+    lens = Setfield.compose(Setfield.PropertyLens{nsc.shunt_symbol}())
+    faulted_component = Setfield.set(sc_node, lens, nsc.Y)
 
-    if lines[l_idx].from == nsc.node
-        lines[l_idx] = PiModelLine(;from=lines[l_idx].from, to=lines[l_idx].to, y = lines[l_idx].y, y_shunt_km = 1/nsc.R,  y_shunt_mk = lines[l_idx].y_shunt_mk)
-    elseif lines[l_idx].to == nsc.node
-        lines[l_idx] = PiModelLine(;from=lines[l_idx].from, to=lines[l_idx].to, y = lines[l_idx].y, y_shunt_km = lines[l_idx].y_shunt_km,  y_shunt_mk = 1/nsc.R)
-    end
-    PowerGrid(powergrid.nodes, lines)
+    nodes[nsc.node_number] = faulted_component
+    PowerGrid(nodes, powergrid.lines)
 end
 
 """
@@ -44,6 +47,7 @@ Simulates a [`NodeShortCircuit`](@ref)
 function simulate(nsc::NodeShortCircuit, powergrid, x1, timespan)
     @assert first(timespan) <= nsc.tspan_fault[1] "fault cannot begin in the past"
     @assert nsc.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
+
     nsc_powergrid = nsc(powergrid)
 
     problem = ODEProblem{true}(rhs(powergrid), x1, timespan)
@@ -57,16 +61,22 @@ function simulate(nsc::NodeShortCircuit, powergrid, x1, timespan)
 
     function regularState(integrator)
         sol2 = integrator.sol
-        x3 = find_valid_initial_condition(nsc_powergrid, sol2[end]) # Jump the state to be valid for the new system.
+        x3 = find_valid_initial_condition(powergrid, sol2[end]) # Jump the state to be valid for the new system.
         integrator.f = rhs(powergrid)
         integrator.u = x3
     end
 
+    t1 = nsc.tspan_fault[1]
+    t2 = nsc.tspan_fault[2]
+
     cb1 = DiscreteCallback(((u,t,integrator) -> t in nsc.tspan_fault[1]), errorState)
     cb2 = DiscreteCallback(((u,t,integrator) -> t in nsc.tspan_fault[2]), regularState)
-    sol = solve(problem, Rodas4(autodiff=false), callback = CallbackSet(cb1, cb2), tstops=[nsc.tspan_fault[1];nsc.tspan_fault[2]])
+    sol = solve(problem, Rodas4(autodiff=false), force_dtmin = true, callback = CallbackSet(cb1, cb2), tstops=[t1, t2])
     return PowerGridSolution(sol, powergrid)
 end
 
-export simulate
+simulate(nsc::NodeShortCircuit, op::State, timespan) = simulate(nsc, op.grid, op.vec, timespan)
+
 export NodeShortCircuit
+export NodeShortCircuitError
+export simulate
