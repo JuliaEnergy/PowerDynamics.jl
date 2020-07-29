@@ -1,4 +1,4 @@
-using PowerDynamics: CompositeNode, CSIMinimal, VSIMinimal, PQAlgebraic, construct_vertex, symbolsof, SlackAlgebraic,PiModelLine,PowerGrid,find_operationpoint
+using PowerDynamics: CompositeNode, CSIMinimal, VSIMinimal, PQAlgebraic, construct_vertex, symbolsof, simulate,SlackAlgebraic,PiModelLine,PowerGrid,find_operationpoint
 using PowerDynamics: PowerPerturbation,PQAlgebraic
 # constant voltage
 #VSI = VSIMinimal(τ_P=1.,τ_Q=1.,K_P=1.,K_Q=1.,V_r=1.,P=1.,Q=1.)
