@@ -40,6 +40,6 @@ pd = PowerPerturbation(node_number="bus2",fraction=0.1,tspan_fault=[0.1,0.2])
 op_dict = find_operationpoint(pg_dict)
 #sol_2 = simulate2(nsc,pg,op_point,(0.,10.))
 sol_nc = simulate(pd,pg_dict,op_dict,(0.,5.))
-include("plotting0.jl");
+include("plotting.jl");
 plot_res(sol_nc,pg_dict,"bus2")
 #plot_res(sol_2,pg,2)
