@@ -3,17 +3,17 @@ using PowerDynamics: PowerPerturbation,PQAlgebraic
 # constant voltage
 #VSI = VSIMinimal(τ_P=1.,τ_Q=1.,K_P=1.,K_Q=1.,V_r=1.,P=1.,Q=1.)
 
-τ_P, τ_Q, K_P, K_Q = rand_real(4)
-P,Q,V_r =rand_real(3)
+τ_P, τ_Q, K_P, K_Q,V_r = ones(5)
+P,Q = rand(2)
 VSI = VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P,Q=Q)
 
 # constant current
-I_r =rand(1.0:10.0)+1im*rand(1.0:10.0)
+I_r = rand(ComplexF64)
 CSI = CSIMinimal(I_r=I_r)
 CSI2 = CSIMinimal(I_r=I_r)
 
 # constant power
-P,Q=rand_real(2)
+P,Q=rand(2)
 PQ = PQAlgebraic(P=P,Q=Q)
 PQ2 = PQAlgebraic(P=P,Q=Q)
 
@@ -35,7 +35,7 @@ timespan= (0.,final_time);
 disturbed_node=2;
 powergrid = PowerGrid(node_list, line_list);
 operationpoint = find_operationpoint(powergrid);
-pd = PowerPerturbation(node_number=disturbed_node,fraction=0.5, tspan_fault=(0.5,5));
+pd = PowerPerturbation(node_number=disturbed_node, fraction=1.1, tspan_fault=(0.01,0.5));
 #include("plotting2.jl");
 
-sol_pd,result_pd = simulate(pd,powergrid,operationpoint,timespan)
+sol_pd = simulate(pd, powergrid, operationpoint, timespan)

@@ -40,7 +40,7 @@ CompositionTypes = Dict(["IPU" => _IPU,
     "P" => _P,
     "IP" => _IP])
 
-mutable struct CompositeNode{T}
+struct CompositeNode{T} <: AbstractNode 
     CurrentNodes # constant current nodes
     VoltageNode # constant voltage nodes
     PowerNodes # constant power nodes
