@@ -2,13 +2,12 @@ using Pkg;
 Pkg.instantiate();
 cd(@__DIR__);
 using PowerDynamics;
-using OrdinaryDiffEq: ODEProblem, Rodas4, solve;
+#using OrdinaryDiffEq: ODEProblem, Rodas4, solve;
 using Revise
 
 #include("helpers.jl");
 
 busses_dict = Dict(
-#"bus1"=>VSIMinimal(;τ_P=1.0,τ_Q=0.0001,K_P=0.2,K_Q=0.002,V_r=1.0,P=1.0,Q=0.5),
   "bus1"=>SlackAlgebraic(U=1.),
   "bus2"=>SwingEqLVS(H=1, P=0, D=1, Ω=2π*50,Γ=0.1,V=1.))
 
@@ -19,7 +18,7 @@ lines= [PiModelLine(;from=1, to=2, y = 1/(0.1152 + im*0.0458), y_shunt_km = 0., 
 lines_dict = Dict("line1"=> PiModelLine(;from="bus1", to="bus2", y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.))
 #,"line2"=>  PiModelLine(;from=2, to=3, y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.))
 
-#pg = PowerGrid(busses, lines);
+pg = PowerGrid(busses, lines);
 #pg_dict = PowerGrid(collect(values(busses_dict)), collect(values(lines_dict)));
 pg_dict = PowerGrid(busses_dict, lines_dict);
 

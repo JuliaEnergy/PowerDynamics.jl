@@ -2,6 +2,7 @@ using Test
 using Crayons
 
 testlist = [
+    ("common/PowerGrid.jl", "PowerGrid Tests"),
     ("nodes/PQAlgebraic.jl", "PQAlgebraic Node Tests"),
     ("nodes/PVAlgebraic.jl", "PVAlgebraic Node Tests"),
     ("nodes/SlackAlgebraic.jl", "SlackAlgebraic Node Tests"),
@@ -22,7 +23,6 @@ testlist = [
     ("lines/PiModelLine.jl", "PiModelLine tests"),
     ("lines/RLLine.jl", "RLLine tests"),
     ("lines/Transformer.jl", "Transformer tests"),
-    ("common/PowerGrid.jl", "PowerGrid Tests"),
     ("common/States.jl", "States Tests"),
     ("simulations/PowerGridSolutions.jl", "PowerGridSolutions Tests"),
     ("simulations/simulations.jl", "Simulation Tests"),

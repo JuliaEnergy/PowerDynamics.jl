@@ -1,5 +1,5 @@
 using Test: @test, @testset
-using PowerDynamics: SlackAlgebraic, SwingEqLVS, PowerGrid, State, startindex, StateError
+using PowerDynamics: SlackAlgebraic, SwingEqLVS, PowerGrid, State, startindex, StateError,StaticLine
 using LightGraphs: SimpleGraph, add_edge!, edges
 
 

@@ -26,10 +26,17 @@ creates a [`PowerGrid`](@ref) from nodes and lines. The underlying graph
 is created automatically.
 
 """
-function PowerGrid(nodes, lines)
+function PowerGrid(nodes::Dict, lines::Dict)
     graph = SimpleGraph(length(nodes))
     bus_array=collect(keys(nodes))
     [add_edge!(graph, findfirst(x->x==l.from, bus_array), findfirst(x->x==l.to, bus_array)) for (key,l) in lines]
+    PowerGrid(graph, nodes, lines)
+end
+
+function PowerGrid(nodes::Array, lines::Array)
+  
+    graph = SimpleGraph(length(nodes))
+    [add_edge!(graph, l.from, l.to) for l in lines]
     PowerGrid(graph, nodes, lines)
 end
 

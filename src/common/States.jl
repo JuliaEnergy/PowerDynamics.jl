@@ -115,7 +115,9 @@ variable_index(nodes, n::String, s::Symbol) = begin
 end
 
 variable_index(nodes, n, i) = begin
-    num_vars = sum([dimension(nodes[ni]) for ni in n])
+    #num_vars = sum([dimension(nodes[ni]) for ni in n])
+    num_vars = sum([dimension(nodes[n])
+
     println(num_vars)
     println(i)
     if i <= num_vars
