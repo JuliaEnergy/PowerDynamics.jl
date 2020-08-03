@@ -1,4 +1,4 @@
-using Test: @test, @testset
+using Test: @test, @testset, @test_throws
 using PowerDynamics: SlackAlgebraic, SwingEqLVS, PowerGrid, State, startindex, StateError,StaticLine
 using LightGraphs: SimpleGraph, add_edge!, edges
 
@@ -14,6 +14,16 @@ u_Sl,u_Sw1,u_Sw2 = rand(ComplexF64, 3)
 omega1,omega2 = rand(1.0:10.0, 2)
 state = State(grid, [real(u_Sl), imag(u_Sl), real(u_Sw1), imag(u_Sw1), omega1, real(u_Sw2), imag(u_Sw2), omega2])
 
+nodes_dict = Dict("bus1"=>SlackAlgebraic(U=1), "bus2"=> SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1), "bus3"=> SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1))
+lines_dict = Dict("line1"=>StaticLine(from="bus1", to="bus2", Y=Y),"line2"=>StaticLine(from="bus1", to="bus3",Y=Y))
+grid_fromdict = PowerGrid(graph, nodes_dict, lines_dict)
+state_fromdict = State(grid_fromdict, [real(u_Sl), imag(u_Sl), real(u_Sw1), imag(u_Sw1), omega1, real(u_Sw2), imag(u_Sw2), omega2])
+
+@test startindex(nodes_dict, "bus1") == 0
+@test startindex(nodes_dict, "bus2") == 2
+@test startindex(nodes_dict, "bus3") == 5
+
+
 @test startindex(nodes, 1) == 0
 @test startindex(nodes, 2) == 2
 @test startindex(nodes, 3) == 5
@@ -22,6 +32,11 @@ state = State(grid, [real(u_Sl), imag(u_Sl), real(u_Sw1), imag(u_Sw1), omega1, r
 @test state[2, :u] == complex(u_Sw1)
 @test state[1:2, :u] == [complex(u_Sl), complex(u_Sw1)]
 
+@test state_fromdict["bus1", :u] == complex(u_Sl)
+@test state_fromdict["bus2", :u] == complex(u_Sw1)
+@test state_fromdict[["bus1","bus2"], :u] == [complex(u_Sl), complex(u_Sw1)]
+
+@test state_fromdict[:, :u] == [complex(u_Sl), complex(u_Sw1),complex(u_Sw2)]
 @test state[:, :u] == [complex(u_Sl), complex(u_Sw1), complex(u_Sw2)]
 
 @test state[2, :v] == complex(u_Sw1) |> abs
@@ -33,6 +48,17 @@ state = State(grid, [real(u_Sl), imag(u_Sl), real(u_Sw1), imag(u_Sw1), omega1, r
 @test state[2:3, :var, 3] == [omega1, omega2]
 @test state[2:3, :ω] == [omega1, omega2]
 @test state[2:3, :var, [3, 3]] == [omega1, omega2]
+
+@test state_fromdict["bus2", :v] == complex(u_Sw1) |> abs
+@test state_fromdict["bus3", :v] == complex(u_Sw2) |> abs
+#@test state_fromdict["bus2", :var, 3] == omega1
+@test state_fromdict["bus2", :ω] == omega1
+#@test state_fromdict["bus3", :var, 3] == omega2
+@test state_fromdict["bus3", :ω] == omega2
+#@test state_fromdict[["bus2","bus3"], :var, 3] == [omega1, omega2]
+@test state_fromdict[["bus2","bus3"], :ω] == [omega1, omega2]
+@test state_fromdict[["bus2","bus3"], :var, [3, 3]] == [omega1, omega2]
+
 
 @test_throws BoundsError state[length(grid.nodes)+1, :u]
 @test_throws BoundsError state[2, :var, 4]

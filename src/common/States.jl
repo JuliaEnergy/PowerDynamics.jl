@@ -80,13 +80,26 @@ Base.copy(s::State) = State(s.grid, deepcopy(s.vec)) # grid should not be copied
 
 convert(::Type{A}, s::State) where {A<:AbstractArray} = convert(A, s.vec)
 
-Base.getindex(s::State, n::Colon, sym::Symbol, args...) = getindex(s, eachindex(s.grid.nodes), sym, args...)
+Base.getindex(s::State, n::Colon, sym::Symbol, args...) = [getindex(s, ni, sym, args...) for ni in collect(keys(s.grid.nodes))]
+Base.getindex(s::State, n::Array, sym::Symbol, args...) = [getindex(s, ni, sym, args...) for ni in n]
+
 Base.getindex(s::State, n, sym::Symbol, args...) = begin
     if ~all( 1 .<= n .<= length(s.grid.nodes)  )
         throw(BoundsError(s, n))
     end
     getindex(s, n, Val{sym}, args...)
 end
+
+Base.getindex(s::State, n::String, sym::Symbol, args...) = begin
+    bus_array=collect(keys(s.grid.nodes))
+    ni=findfirst(x->x==n, bus_array) #for nx in Array([n])]
+    #ni = ni[1]:ni[end]
+    if ~all( 1 .<= ni .<= length(s.grid.nodes)  )
+        throw(BoundsError(s, ni))
+    end
+    getindex(s, n, Val{sym}, args...)
+end
+
 Base.getindex(s::State, n, ::Type{Val{:u}}) = getindex(s, n, :u_r) + im .* getindex(s, n, :u_i)
 
 Base.getindex(s::State, n, ::Type{Val{:v}}) = abs.(s[n, :u])
@@ -103,9 +116,18 @@ internalindex(s, n::AbstractArray, i) = internalindex.(Ref(s), n, Ref(i))
 internalindex(s, n::AbstractArray, i::AbstractArray) = internalindex.(Ref(s), n, i)
 internalindex(s, n::Integer, sym::Symbol) = variable_index(s.grid.nodes, n, sym)
 internalindex(s, n::Integer, i) = variable_index(s.grid.nodes, n, i)
+internalindex(s, n::String, sym::Symbol) = variable_index(s.grid.nodes, n, sym)
 
 variable_index(nodes, n::String, s::Symbol) = begin
-    println(symbolsof(nodes[n]))
+    first_idx = findfirst(ns -> ns == s, symbolsof(nodes[n]))
+    if first_idx == nothing
+        throw(StateError("Variable: $s not defined for node: $n"))
+    else
+        startindex(nodes, n) + first_idx
+    end
+end
+
+variable_index(nodes, n::Integer, s::Symbol) = begin
     first_idx = findfirst(ns -> ns == s, symbolsof(nodes[n]))
     if first_idx == nothing
         throw(StateError("Variable: $s not defined for node: $n"))
@@ -115,11 +137,7 @@ variable_index(nodes, n::String, s::Symbol) = begin
 end
 
 variable_index(nodes, n, i) = begin
-    #num_vars = sum([dimension(nodes[ni]) for ni in n])
-    num_vars = sum([dimension(nodes[n])
-
-    println(num_vars)
-    println(i)
+    num_vars = dimension(nodes[n]) #    #num_vars = sum([dimension(nodes[ni]) for ni in n])
     if i <= num_vars
         startindex(nodes, n) + i
     else
@@ -134,7 +152,7 @@ end
     if ni == 1
         0
     else
-        sum(map(node -> dimension(node), nodes[1:ni-1]))
+        sum(map(node -> dimension(node), values_array[1:ni-1]))
     end
 end
 
