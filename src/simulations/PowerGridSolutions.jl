@@ -53,15 +53,35 @@ tspan(sol::PowerGridSolution, tres) = range(TimeSeries(sol).t[1], stop=TimeSerie
     State(sol.powergrid, convert(Array, TimeSeries(sol)(t)))
 end
 
-(sol::PowerGridSolution)(t, ::Colon, sym::Symbol, args...; kwargs...) = sol(t, eachindex(sol.powergrid.nodes), sym, args...; kwargs...)
+(sol::PowerGridSolution)(t, ::Colon, sym::Symbol, args...; kwargs...) = sol(t, collect(keys(sol.powergrid.nodes)), sym, args...; kwargs...)
 (sol::PowerGridSolution)(t, n, sym::Symbol, args...) = begin
-    bus_array=collect(keys(sol.powergrid.nodes))
-    ni=findfirst(x->x==n, bus_array)
-    if ~all( 1 .<= ni .<= length(sol.powergrid.nodes) )
+    if ~all( 1 .<= n .<= length(sol.powergrid.nodes) )
+        throw(StateError("Index: $n is outside of range of nodes."))
     else
         sol(t, n, Val{sym}, args...)
     end
 end
+
+(sol::PowerGridSolution)(t, n::String, sym::Symbol, args...) = begin
+    bus_array=collect(keys(sol.powergrid.nodes))
+    ni=findfirst(x->x==n, bus_array)
+    if ~all( 1 .<= ni .<= length(sol.powergrid.nodes) )
+        throw(StateError("Key: $n is not in bus dictionary."))
+    else
+        sol(t, n, Val{sym}, args...)
+    end
+end
+
+(sol::PowerGridSolution)(t, n::Array, sym::Symbol, args...) = begin
+    bus_array=collect(keys(sol.powergrid.nodes))
+    ni=[findfirst(x->x==nx, bus_array) for nx in n]
+    if ~all( 1 .<= ni .<= length(sol.powergrid.nodes) )
+        throw(StateError("Array: $n is not in bus dictionary."))
+    else
+        sol(t, n, Val{sym}, args...)
+    end
+end
+
 (sol::PowerGridSolution)(t::Number, n::String, ::Type{Val{:u}}) = begin
     u_real = TimeSeries(sol)(t, idxs= variable_index(sol.powergrid.nodes, n, :u_r))
     u_imag = TimeSeries(sol)(t, idxs= variable_index(sol.powergrid.nodes, n, :u_i))
