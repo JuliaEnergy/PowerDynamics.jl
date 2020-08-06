@@ -42,11 +42,11 @@ sol = solve(grid, state, (0.,10.))
 @test size(sol([sol.dqsol.t[1], sol.dqsol.t[end]], :, :u)) == (2,2)
 @test sol(0.1, 1, :int, 3) == sol(0.1, 1, :ω)
 
-@test_nowarn sol(0.1, 1, :u)
+#@test_nowarn sol(0.1, 1, :u)
 #@test_nowarn sol(0.1, 1, :i)
 #@test_nowarn sol(0.1, :, :i)
 @test_nowarn sol([sol.dqsol.t[1], sol.dqsol.t[end]], :, :int, 3)
 
-@test_throws BoundsError sol(0.1, 10, :u)
+@test_throws StateError() sol(0.1, 10, :u)
 @test sol(0.1) isa State
 #end
