@@ -34,7 +34,7 @@ OrdinaryDiffEq = "^5.17.2"
 Parameters = "^0.12.0"
 RecipesBase = "0.7.0,0.8.0, 1.0"
 Setfield = "0.4,0.5,0.6"
-StaticArrays = "^0.11.0"
+StaticArrays = "^0.11.0, 0.12"
 SteadyStateDiffEq = "^1.5.1"
 julia = "1"
 
