@@ -159,6 +159,18 @@ get_current(sol, t::Number, n::Array) = begin
     [total_current(e_s[nx], e_d[nx]) for nx in ni]
 end
 
+# current for array of nodes
+get_current(sol, t, n::Array) = begin
+    vertices = map(construct_vertex, collect(values(sol.powergrid.nodes)))
+    edges = map(construct_edge, collect(values(sol.powergrid.lines)))
+    bus_array=collect(keys(sol.powergrid.nodes))
+    ni=[findfirst(x->x==nx, bus_array) for nx in n]
+    sef = StaticEdgeFunction(vertices,edges,sol.powergrid.graph)
+    xt = sol.dqsol(t)
+    hcat([get_current_internal(sef, x, ni) for x in xt]...)
+end
+
+
 get_current_internal(sef, x, nodes) = begin
     (e_s, e_d) = sef(x, Nothing, 0)
     [total_current(e_s[n], e_d[n]) for n in collect(values(nodes))]
@@ -179,7 +191,8 @@ tstransform(arr::AbstractArray{T, 2}) where T = arr'
 const PLOT_TTIME_RESOLUTION = 10_000 # TODO:@sabine is this high resolution really needed?
 
 @recipe function f(sol::PowerGridSolution, ::Colon, sym::Symbol, args...)
-    sol, eachindex(sol.powergrid.nodes), sym, args...
+    #sol, eachindex(sol.powergrid.nodes), sym, args...
+    sol, collect(keys(sol.powergrid.nodes)), sym, args ...
 end
 @recipe function f(sol::PowerGridSolution, n, sym::Symbol, args...; tres = PLOT_TTIME_RESOLUTION)
     if sym == :int
