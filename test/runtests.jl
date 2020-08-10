@@ -2,7 +2,8 @@ using Test
 using Crayons
 
 testlist = [
-    ("nodes/PQAlgebraic.jl", "PQAlgebraic Node Tests"),
+    ("nodes/PQAlgebraic.jl", "PQAlgebraic Node Tests"), 
+    ("nodes/VoltageDependentLoad.jl", "VoltageDependentLoad Node Tests"),
     ("nodes/PVAlgebraic.jl", "PVAlgebraic Node Tests"),
     ("nodes/SlackAlgebraic.jl", "SlackAlgebraic Node Tests"),
     ("nodes/SwingEq.jl", "SwingEq Node Tests"),
