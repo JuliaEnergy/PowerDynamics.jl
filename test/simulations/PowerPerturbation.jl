@@ -12,7 +12,7 @@ using PowerDynamics: PowerPerturbation, simulate, SwingEqLVS, SlackAlgebraic, St
         node_number = 1,
         tspan_fault = (0.1,1)),
         grid, state, (0., 1.))
-    @test sol != nothing
+    @test sol !== nothing
     @test sol.dqsol.retcode == :Success
 end
 
@@ -28,7 +28,7 @@ end
         node_number = 1,
         tspan_fault = (0.1,1)),
         grid, state, (0., 1.))
-    @test sol != nothing
+    @test sol !== nothing
     @test sol.dqsol.retcode == :Success
 end
 
