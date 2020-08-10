@@ -4,7 +4,6 @@ authors = ["Tim Kittel", "Jan Liße", "Sabine Auer"]
 version = "2.3.1"
 
 [deps]
-Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 Lazy = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
@@ -23,7 +22,6 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 SteadyStateDiffEq = "9672c7b4-1e72-59bd-8a11-6ac3964bc41f"
 
 [compat]
-Aqua = "0.4"
 DiffEqBase = "^6.9.4"
 JSON = "^0.21.0"
 Lazy = "^0.14.0, 0.15"
