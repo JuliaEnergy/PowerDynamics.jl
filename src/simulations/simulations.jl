@@ -86,7 +86,7 @@ end
 
 function solve(pg::PowerGrid, x0, timespan)
     problem = ODEProblem{iipfunc}(rhs(pg),x0.vec,timespan)
-    solution = solve(problem, Rodas4(autodiff=false))
+    solution = solve(problem, Rodas4())
     PowerGridSolution(solution, pg)
 end
 
