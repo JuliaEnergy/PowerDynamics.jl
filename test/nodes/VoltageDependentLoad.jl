@@ -6,9 +6,9 @@ include("NodeTestBase.jl")
 @testset "VoltageDependentLoad" begin
     P, Q = rand_real(2)
     U = 1
-    q = 0.3
-    l = 0.3
-    load = VoltageDependentLoad(P = P, Q = Q, U = U, q = q, l = l)
+    A = 0.3
+    B = 0.3
+    load = VoltageDependentLoad(P = P, Q = Q, U = U, A = A, B = B)
     load_vertex = construct_vertex(load)
     @test symbolsof(load) == [:u_r, :u_i]
     @test load_vertex.mass_matrix == [0,0]
@@ -19,13 +19,13 @@ end
 @testset "PQAlgebraic as a corner case of VoltageDependentLoad" begin
     P, Q = rand_real(2)
     U = 1
-    q = 0.
-    l = 0.
+    A = 0.
+    B = 0.
 
     slack = SlackAlgebraic(U = U)
     line = StaticLine(;from = 1, to = 2, Y = 10 / (0.1152 + im * 0.0458))
 
-    load = VoltageDependentLoad(P = P, Q = Q, U = U, q = q, l = l)
+    load = VoltageDependentLoad(P = P, Q = Q, U = U, A = A, B = B)
     pq = PQAlgebraic(P = P, Q = Q)
 
     pg_pq = PowerGrid([slack, pq], [line,])
