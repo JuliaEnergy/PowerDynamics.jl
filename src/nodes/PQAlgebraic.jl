@@ -3,18 +3,19 @@
 
 @doc doc"""
 ```Julia
-PQAlgebraic(;S)
+    PQAlgebraic(; P,Q)
 ```
 
 A node type that locally fixes the active (``P``) and reactive power (``Q``) output of the node.
 
 # Keyword Arguments
-- `S = P + Q*im`: the complex power output
+- `P`: active power set point
+- `Q`: reactive power set point
 
 # Mathematical Representation
 Using `PQAlgebraic` for node ``a`` applies the equation
 ```math
-0 = S_a - u_a \cdot i_a^*.
+0 = (P_a + Q_a*im) - u_a \cdot i_a^*.
 ```
 """
 @DynamicNode PQAlgebraic(P,Q) begin
@@ -23,7 +24,7 @@ end  begin
     # no prep
 end [] begin
     s = u*conj(i)
-    du = (P+1im*Q) - s
+    du = complex(P, Q) - s
 end
 
 export PQAlgebraic
