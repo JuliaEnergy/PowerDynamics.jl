@@ -14,8 +14,7 @@ end
 
 function RootRhs_ic(of::ODEFunction)
     mm = of.mass_matrix
-    @assert mm != nothing
-    println(mm)
+    @assert mm !== nothing
     mpm = pinv(mm) * mm
     RootRhs_ic(of.f, mpm)
 end
