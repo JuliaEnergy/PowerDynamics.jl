@@ -33,6 +33,7 @@ include("nodes/experimental/PVInverterWithFrequencyControl.jl")
 include("nodes/experimental/WindTurbineGenType4.jl")
 include("nodes/experimental/WindTurbineGenType4_RotorControl.jl")
 include("nodes/experimental/CurtailedPowerPlantWithInertia.jl")
+include("nodes/experimental/CompositeNode.jl")
 
 # all line types
 
