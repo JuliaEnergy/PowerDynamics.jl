@@ -68,7 +68,7 @@ end
 
     sol = simulate(nsc, op, (0., 1.));
 
-    @test sol != nothing
+    @test sol !== nothing
     @test sol.dqsol.retcode == :Success
 
     # no voltage drop
@@ -96,6 +96,6 @@ end
 
     # test alternative call signature
     sol = simulate(nsc, op.grid, op.vec, (0., 1.));
-    @test sol != nothing
+    @test sol !== nothing
     @test sol.dqsol.retcode == :Success
 end
