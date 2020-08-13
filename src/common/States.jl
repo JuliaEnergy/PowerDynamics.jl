@@ -94,8 +94,8 @@ Base.getindex(s::State, n::String, sym::Symbol, args...) = begin
     bus_array=collect(keys(s.grid.nodes))
     ni=findfirst(x->x==n, bus_array) #for nx in Array([n])]
     #ni = ni[1]:ni[end]
-    if ~all( 1 .<= ni .<= length(s.grid.nodes)  )
-        throw(BoundsError(s, ni))
+    if ni === nothing
+        throw(StateError(""))
     end
     getindex(s, n, Val{sym}, args...)
 end
@@ -122,7 +122,7 @@ internalindex(s, n::String, i::AbstractArray) = internalindex.(Ref(s), n, i)
 
 variable_index(nodes, n::String, s::Symbol) = begin
     first_idx = findfirst(ns -> ns == s, symbolsof(nodes[n]))
-    if first_idx == nothing
+    if first_idx === nothing
         throw(StateError("Variable: $s not defined for node: $n"))
     else
         startindex(nodes, n) + first_idx

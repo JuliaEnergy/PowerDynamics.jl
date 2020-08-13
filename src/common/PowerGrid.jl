@@ -1,5 +1,6 @@
 using LightGraphs: edges, nv, AbstractGraph
 using NetworkDynamics: network_dynamics
+using OrderedCollections: OrderedDict
 
 """
 ```Julia
@@ -22,11 +23,11 @@ end
 Powergrid(nodes, lines)
 ```
 
-creates a [`PowerGrid`](@ref) from nodes and lines. The underlying graph
+creates a [`PowerGrid`](@ref) from nodes and lines (either given as a list or as a dictionay). The underlying graph
 is created automatically.
 
 """
-function PowerGrid(nodes::Dict, lines::Dict)
+function PowerGrid(nodes::OrderedDict, lines::OrderedDict)
     graph = SimpleGraph(length(nodes))
     bus_array=collect(keys(nodes))
     [add_edge!(graph, findfirst(x->x==l.from, bus_array), findfirst(x->x==l.to, bus_array)) for (key,l) in lines]

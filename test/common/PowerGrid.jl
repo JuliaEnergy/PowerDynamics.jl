@@ -2,12 +2,13 @@ using Test: @test, @testset
 using PowerDynamics: SlackAlgebraic,StaticLine, SwingEqLVS, PowerGrid, systemsize, rhs
 using LightGraphs: edges, Edge, nv, ne
 using OrdinaryDiffEq: ODEFunction
+using OrderedCollections: OrderedDict
 
 
-nodes_dict = Dict("bus1"=>SlackAlgebraic(U=1), "bus2"=> SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1))
+nodes_dict = OrderedDict("bus1"=>SlackAlgebraic(U=1), "bus2"=> SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1))
 nodes = [SlackAlgebraic(U=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1)]
 lines = [StaticLine(from=1, to=2, Y=0*5im)]
-lines_dict = Dict("line1"=>StaticLine(from="bus1", to="bus2", Y=0*5im))
+lines_dict = OrderedDict("line1"=>StaticLine(from="bus1", to="bus2", Y=0*5im))
 
 power_grid = PowerGrid(nodes, lines)
 power_grid_fromdict = PowerGrid(nodes_dict,lines_dict)

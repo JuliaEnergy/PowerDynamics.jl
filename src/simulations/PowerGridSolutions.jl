@@ -176,6 +176,10 @@ get_current_internal(sef, x, nodes) = begin
     [total_current(e_s[n], e_d[n]) for n in collect(values(nodes))]
 end
 
+get_current_internal(sef, x, n::Number) = begin
+    (e_s, e_d) = sef(x, Nothing, 0)
+    total_current(e_s[n], e_d[n])
+end
 
 # define the plotting recipes
 
@@ -191,7 +195,6 @@ tstransform(arr::AbstractArray{T, 2}) where T = arr'
 const PLOT_TTIME_RESOLUTION = 10_000 # TODO:@sabine is this high resolution really needed?
 
 @recipe function f(sol::PowerGridSolution, ::Colon, sym::Symbol, args...)
-    #sol, eachindex(sol.powergrid.nodes), sym, args...
     sol, collect(keys(sol.powergrid.nodes)), sym, args ...
 end
 @recipe function f(sol::PowerGridSolution, n, sym::Symbol, args...; tres = PLOT_TTIME_RESOLUTION)

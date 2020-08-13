@@ -3,12 +3,10 @@ using Pkg;
   Pkg.instantiate();
   cd(@__DIR__);
   using PowerDynamics;
-  #using OrdinaryDiffEq: ODEProblem, Rodas4, solve;
-  using Revise
+  using OrderedCollections: OrderedDict
 
-#include("helpers.jl");
 begin
-  busses_dict = Dict(
+  busses_dict = OrderedDict(
     "bus1"=>SlackAlgebraic(U=1.),
     "bus2"=>SwingEqLVS(H=1, P=1, D=1, Ω=2π*50,Γ=0.1,V=1.))
 
@@ -16,7 +14,7 @@ begin
   lines= [PiModelLine(;from=1, to=2, y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.)]
   #,"line2"=>  PiModelLine(;from=2, to=3, y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.))
 
-  lines_dict = Dict("line1"=> PiModelLine(;from="bus1", to="bus2", y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.))
+  lines_dict = OrderedDict("line1"=> PiModelLine(;from="bus1", to="bus2", y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.))
   #,"line2"=>  PiModelLine(;from=2, to=3, y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.))
 end#
 
@@ -48,6 +46,11 @@ end
 
 begin # plotting
   include("plotting.jl");
-  plot_res(sol_nc,pg_dict,"bus2")
+  p2=plot(sol_nc,"bus1",:p)
+  display(p2)
+  #p=plot_res(sol_nc,pg_dict,"bus2")
+  #display(p)
   #plot_res(sol_2,pg,2)
 end
+p2=plot(sol_nc,"bus1",:p)
+display(p2)
