@@ -46,11 +46,6 @@ end
 
 begin # plotting
   include("plotting.jl");
-  p2=plot(sol_nc,"bus1",:p)
-  display(p2)
-  #p=plot_res(sol_nc,pg_dict,"bus2")
-  #display(p)
-  #plot_res(sol_2,pg,2)
+  p=plot_res(sol_nc,pg_dict,"bus2")
+  display(p)
 end
-p2=plot(sol_nc,"bus1",:p)
-display(p2)
