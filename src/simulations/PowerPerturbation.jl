@@ -61,7 +61,7 @@ function simulate(pd::PowerPerturbation, powergrid, x0, timespan)
     t3=pd.tspan_fault[2]-dt_fault
     t4=pd.tspan_fault[2]+dt_fault
 
-    integrator = init(problem, Rodas4(autodiff=false),tstops=[t1,t2,t3,t4])
+    integrator = init(problem, Rodas4(),tstops=[t1,t2,t3,t4])
 
     step!(integrator, pd.tspan_fault[1], true)
 

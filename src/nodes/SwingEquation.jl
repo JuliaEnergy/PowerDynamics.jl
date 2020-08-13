@@ -97,7 +97,7 @@ end [[ω, dω]] begin
     dv = - Γ * (v - V)
     du =  u/v * dv + u * im * dϕ
 end
-convert(::Type{SwingEq}, p::SwingEqLVS) =
-    SwingEq(H=p.H, P=p.P, D=p.D, Ω=p.Ω)
+
+convert(::Type{SwingEq}, p::SwingEqLVS) = SwingEq(H=p.H, P=p.P, D=p.D, Ω=p.Ω)
 
 export SwingEqLVS
