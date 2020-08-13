@@ -106,7 +106,7 @@ internalindex(s, n::Integer, i) = variable_index(s.grid.nodes, n, i)
 
 variable_index(nodes, n::Integer, s::Symbol) = begin
     first_idx = findfirst(ns -> ns == s, symbolsof(nodes[n]))
-    if first_idx == nothing
+    if first_idx === nothing
         throw(StateError("Variable: $s not defined for node: $n"))
     else
         startindex(nodes, n) + first_idx
