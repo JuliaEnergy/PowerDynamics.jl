@@ -21,7 +21,8 @@ du = u*conj(i) - P_node
 the grid into the bus, _not_ the current they themself inject! Check the definitions
 of the nodes going into the CompositeType to make sure they have the right dynamics.
 
-*Experimental!!* This node has not been sufficiently tested for correctness yet.
+*Experimental!!* This node has not been sufficiently tested for correctness yet. For example
+the plotting recipe does not work with this node, yet!
 
 """
 
