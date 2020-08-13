@@ -4,7 +4,6 @@ authors = ["Tim Kittel", "Jan Liße", "Sabine Auer"]
 version = "2.3.1"
 
 [deps]
-Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
@@ -36,9 +35,10 @@ NLsolve = "^4.1.0"
 NetworkDynamics = "0.2,0.4"
 OrdinaryDiffEq = "^5.17.2"
 Parameters = "^0.12.0"
+
+Setfield = "0.4,0.5,0.6, 0.7"
 RecipesBase = "0.7.0,0.8.0, 1.0"
-Setfield = "0.4,0.5,0.6"
-StaticArrays = "^0.11.0"
+StaticArrays = "^0.11.0, 0.12"
 SteadyStateDiffEq = "^1.5.1"
 julia = "1"
 
