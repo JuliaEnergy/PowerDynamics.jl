@@ -95,7 +95,7 @@ Base.getindex(s::State, n::String, sym::Symbol, args...) = begin
     ni=findfirst(x->x==n, bus_array) #for nx in Array([n])]
     #ni = ni[1]:ni[end]
     if ni === nothing
-        throw(StateError(""))
+        throw(StateError("Node $n is not in bus dictionary."))
     end
     getindex(s, n, Val{sym}, args...)
 end
@@ -188,7 +188,7 @@ end
 Base.setindex!(s::State, v, n::String, sym::Symbol, args...) = begin
     bus_array=collect(keys(s.grid.nodes))
     ni=findfirst(x->x==n, bus_array)
-    if (ni == nothing)
+    if (ni === nothing)
         throw(StateError("Node with key: $n is not defined."))
     end
     setindex!(s, v,  n, Val{sym}, args...)

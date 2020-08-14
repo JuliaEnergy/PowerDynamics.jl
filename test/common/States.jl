@@ -68,11 +68,13 @@ state_fromdict = State(grid_fromdict, [real(u_Sl), imag(u_Sl), real(u_Sw1), imag
 @test_throws BoundsError state[1, :var, 3]
 @test_throws BoundsError state[length(grid.nodes)+1, :var, 3]
 @test_throws StateError state[1, :ω]
+@test_throws BoundsError state[1:length(grid.nodes)+1, :u]
 
 @test_throws BoundsError state_fromdict[length(grid.nodes)+1, :u]
 @test_throws BoundsError state_fromdict["bus2", :var, 4]
 @test_throws BoundsError state_fromdict["bus1", :var, 3]
 @test_throws StateError state_fromdict["bus1", :ω]
+@test_throws StateError state_fromdict["bus10", :u]
 
 # exchange the u as test
 state[1, :u] = u_Sw1

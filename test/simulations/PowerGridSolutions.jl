@@ -29,6 +29,7 @@ dimension(f::Foo) = 3
         @test startindex(nodes_dict, ["bus1", "bus2"]) == [0, 3]
 end
 
+
 @testset "PowerGridSolution index tests" begin
         nodes = [SwingEqLVS(H=1., P=-1, D=1, Ω=50, Γ=20, V=1), SwingEqLVS(H=1., P=-1, D=1, Ω=50, Γ=20, V=1)]
         nodes_dict = OrderedDict("bus1"=>SwingEqLVS(H=1., P=-1, D=1, Ω=50, Γ=20, V=1),"bus2"=> SwingEqLVS(H=1., P=-1, D=1, Ω=50, Γ=20, V=1))
@@ -42,6 +43,8 @@ end
         state_dict = State(grid_dict, rand(systemsize(grid_dict)))
         sol = solve(grid, state, (0.,10.))
         sol_dict = solve(grid_dict, state_dict, (0.,10.))
+
+
 
         @test (0., 10.) == tspan(sol)
         @test (0., 10.) == tspan(sol_dict)
@@ -74,5 +77,6 @@ end
         @test_throws StateError sol(0.1, 10, :u)
         @test sol(0.1) isa State
         @test_throws StateError sol_dict(0.1, "bus10", :u)
+        @test_throws StateError sol_dict(0.1,["bus1", "bus10"], :u)
         @test sol_dict(0.1) isa State
 end
