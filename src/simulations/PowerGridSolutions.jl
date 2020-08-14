@@ -65,7 +65,7 @@ end
 (sol::PowerGridSolution)(t, n::String, sym::Symbol, args...) = begin
     bus_array=collect(keys(sol.powergrid.nodes))
     ni=findfirst(x->x==n, bus_array)
-    if (ni == nothing)
+    if (ni === nothing)
         throw(StateError("Key: $n is not in bus dictionary."))
     else
         sol(t, n, Val{sym}, args...)
@@ -75,7 +75,7 @@ end
 (sol::PowerGridSolution)(t, n::Array, sym::Symbol, args...) = begin
     bus_array=collect(keys(sol.powergrid.nodes))
     ni=[findfirst(x->x==nx, bus_array) for nx in n]
-    if ~all( 1 .<= ni .<= length(sol.powergrid.nodes) )
+    if any(ni.===nothing)||(~all( 1 .<= ni .<= length(sol.powergrid.nodes) ))
         throw(StateError("Array: $n is not in bus dictionary."))
     else
         sol(t, n, Val{sym}, args...)
