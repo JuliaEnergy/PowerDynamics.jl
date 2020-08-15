@@ -23,6 +23,9 @@ function (nsc::NodeShortCircuit)(powergrid)
     mapField(powergrid, nsc, Y_n -> nsc.Y)
 end
 
+NodeShortCircuit(;node,Y,tspan_fault)=NodeShortCircuit(node,Y,tspan_fault)
+
+
 simulate(nsc::NodeShortCircuit, op::State, timespan) = simulate(nsc, op.grid, op.vec, timespan)
 
 export NodeShortCircuit

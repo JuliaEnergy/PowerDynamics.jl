@@ -1,6 +1,6 @@
 using Test: @test
 using LightGraphs: edges, Edge
-using PowerDynamics: SlackAlgebraic, SwingEqLVS, StaticLine, Perturbation, Inc, Dec, LineFault, PowerPerturbation, simulate
+using PowerDynamics: SlackAlgebraic, SwingEqLVS, StaticLine, Perturbation, Inc, Dec, simulate
 
 Y = 0 + 5*im
 nodes = [SlackAlgebraic(U=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1)]
@@ -16,9 +16,3 @@ state2 = Perturbation(2, :ω, Inc(omega1_delta))(state)
 
 state3 = Perturbation(2, :ω, Dec(omega1_delta))(state)
 @test state3[2, :ω] == omega1 - omega1_delta
-
-line_fault = LineFault(from=1, to=2)
-faulty_grid = line_fault(grid)
-
-@test length(faulty_grid.lines) == 1
-@test collect(edges(faulty_grid.graph)) == [Edge(1,3)]
