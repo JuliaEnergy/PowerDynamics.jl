@@ -34,7 +34,7 @@ PL = PiModelLine(;
     pg = PowerGrid(nodes, [SL,])
 
     nsc = NodeShortCircuit(;
-        node_number = 2,
+        node = 2,
         Y = complex(160., 0.),
         tspan_fault = (0.5, 0.65),
     )
@@ -45,7 +45,7 @@ PL = PiModelLine(;
     fault_pg = nsc(pg)
 
     # test if the shunt field is appropriately adjusted
-    @test getfield(fault_pg.nodes[nsc.node_number], nsc.shunt_symbol) == complex(160., 0.)
+    @test getfield(fault_pg.nodes[nsc.node], nsc.var) == complex(160., 0.)
 
     # test with PiModelLine or Transformer
     @test nsc(PowerGrid(nodes, [PL,])) isa PowerGrid
@@ -61,7 +61,7 @@ end
 
     # a short circuit at the slack should have no effect
     nsc = NodeShortCircuit(;
-        node_number = 1,
+        node = 1,
         Y = complex(160., 0.),
         tspan_fault = (0.5, 0.65),
     )
@@ -76,7 +76,7 @@ end
 
     # a short circuit at the non-slack node
     nsc = NodeShortCircuit(;
-        node_number = 2,
+        node = 2,
         Y = complex(160., 0.),
         tspan_fault = (0.5, 0.65),
     )

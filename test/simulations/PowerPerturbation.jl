@@ -24,8 +24,8 @@ end
     state = State(grid, rand(systemsize(grid)))
 
     sol = simulate(PowerPerturbation(
-        fraction = 0.9,
-        node_number = 1,
+        node = 1,
+        power_new = 0.9,
         tspan_fault = (0.1,1)),
         grid, state, (0., 1.))
     @test sol !== nothing
@@ -38,9 +38,9 @@ end
     grid = PowerGrid(nodes, lines)
     state = State(grid, rand(systemsize(grid)))
 
-    @test_throws PowerPerturbationError simulate(PowerPerturbation(
-        fraction = 0.9,
-        node_number = 1,
+    @test_throws NodePerturbationError simulate(PowerPerturbation(
+        node = 1,
+        power_new = 0.9,
         tspan_fault = (0.1,1)),
         grid, state, (0., 1.))
 end
