@@ -1,6 +1,6 @@
 using Test: @test
 using LightGraphs: edges, Edge
-using PowerDynamics: SlackAlgebraic, SwingEqLVS, StaticLine, Perturbation, Inc, Dec, simulate
+using PowerDynamics: SlackAlgebraic, SwingEqLVS, StaticLine, ChangeInitialConditions, Inc, Dec, simulate
 
 Y = 0 + 5*im
 nodes = [SlackAlgebraic(U=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1)]
@@ -11,8 +11,8 @@ omega1 = 0.01
 omega1_delta = 0.2
 state = State(grid, [real(u_Sl), imag(u_Sl), real(u_Sw1), imag(u_Sw1), omega1, real(u_Sw2), imag(u_Sw2), omega2])
 
-state2 = Perturbation(2, :ω, Inc(omega1_delta))(state)
+state2 = ChangeInitialConditions(2, :ω, Inc(omega1_delta))(state)
 @test state2[2, :ω] == omega1 + omega1_delta
 
-state3 = Perturbation(2, :ω, Dec(omega1_delta))(state)
+state3 = ChangeInitialConditions(2, :ω, Dec(omega1_delta))(state)
 @test state3[2, :ω] == omega1 - omega1_delta
