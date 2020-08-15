@@ -1,6 +1,6 @@
 using OrdinaryDiffEq: ODEFunction
 using NLsolve: nlsolve, converged
-
+using LinearAlgebra:pinv
 
 struct RootRhs_ic
     rhs
