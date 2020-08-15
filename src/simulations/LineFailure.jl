@@ -19,8 +19,16 @@ function (lf::LineFailure)(powergrid)
     PowerGrid(powergrid.nodes, filtered_lines)
 end
 
+function filter_lines(lines::OrderedDict,line_name)
+    OrderedDict(k=>v for (k,v) in lines if k!=line_name)
+end
+
+function filter_lines(lines::Array,line_name)
+    copy(lines[1:end .!= line_name])
+end
+
 function (lf::LineFailure_new)(powergrid)
-    filtered_lines = copy(powergrid.lines[1:end .!= lf.line_name])
+    filtered_lines=filter_lines(powergrid.lines,lf.line_name)
     PowerGrid(powergrid.nodes, filtered_lines)
 end
 
