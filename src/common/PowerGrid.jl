@@ -1,5 +1,6 @@
 using LightGraphs: edges, nv, AbstractGraph
 using NetworkDynamics: network_dynamics
+using OrderedCollections: OrderedDict
 
 """
 ```Julia
@@ -22,21 +23,40 @@ end
 Powergrid(nodes, lines)
 ```
 
-creates a [`PowerGrid`](@ref) from nodes and lines. The underlying graph
-is created automatically.
+creates a [`PowerGrid`](@ref) from nodes and lines (either given as a list or as a dictionay). 
+The underlying graph is created automatically.
 
 """
 function PowerGrid(nodes, lines)
+    throw(error("Please supply both bus and line components either in an `Array` or `OrderedDict` (e.g. from the package `OrderedCollections`)."))
+end
+
+function PowerGrid(nodes::OrderedDict, lines::OrderedDict)
+    bus_array=collect(keys(nodes))
+    
+    # assert that keys are consistent
+    @assert all([l.from ∈ bus_array && l.to ∈ bus_array for l in values(lines)])
+    
+    graph = SimpleGraph(length(nodes))
+    [add_edge!(graph, findfirst(bus_array .== l.from), findfirst(bus_array .== l.to)) for (key,l) in lines]
+    PowerGrid(graph, nodes, lines)
+end
+
+function PowerGrid(nodes::Array, lines::Array)
+    # assert that keys are consistent
+    @assert all([l.from isa Int && 1 <= l.from <= length(nodes) for l in lines])
+    @assert all([l.to isa Int && 1 <= l.from <= length(nodes) for l in lines])
+  
     graph = SimpleGraph(length(nodes))
     [add_edge!(graph, l.from, l.to) for l in lines]
     PowerGrid(graph, nodes, lines)
 end
 
 function rhs(pg::PowerGrid)
-    network_dynamics(map(construct_vertex, pg.nodes), map(construct_edge, pg.lines), pg.graph)
+    network_dynamics(map(construct_vertex, collect(values(pg.nodes))), map(construct_edge, collect(values(pg.lines))), pg.graph)
 end
 
 """
 Returns the total size of dynamical variables of the whole powergrid
 """
-@views systemsize(pg::PowerGrid) = sum(map(n -> dimension(n), pg.nodes))
+@views systemsize(pg::PowerGrid) = sum(map(n -> dimension(n), collect(values(pg.nodes))))
