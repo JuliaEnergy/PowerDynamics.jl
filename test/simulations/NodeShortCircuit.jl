@@ -33,7 +33,7 @@ PL = PiModelLine(;
 @testset "test NodeShortCircuit construction" begin
     pg = PowerGrid(nodes, [SL,])
 
-    nsc = NodeShortCircuit(;
+    nsc = NodeShortCircuit(
         node = 2,
         Y = complex(160., 0.),
         tspan_fault = (0.5, 0.65),

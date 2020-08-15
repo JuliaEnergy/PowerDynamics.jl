@@ -28,6 +28,7 @@ testlist = [
     ("common/States.jl", "States Tests"),
     ("simulations/PowerGridSolutions.jl", "PowerGridSolutions Tests"),
     ("simulations/simulations.jl", "Simulation Tests"),
+    ("simulations/LineFailure.jl", "LineFailure Tests"),
     ("simulations/PowerPerturbation.jl", "PowerPerturbation Simulation Tests"),
     ("simulations/NodeShortCircuit.jl", "NodeShortCircuit Simulation Tests"),
     ("operationpoint/operationpoint.jl", "operationpoint Tests"),

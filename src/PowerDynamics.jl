@@ -49,6 +49,7 @@ include("operationpoint/operationpoint.jl")
 include("operationpoint/find_valid_initial_condition.jl")
 
 include("simulations/NodePerturbation.jl")
+include("simulations/LineFailure.jl")
 include("simulations/GenericPerturbation.jl")
 include("simulations/PowerGridSolutions.jl")
 include("simulations/simulations.jl")

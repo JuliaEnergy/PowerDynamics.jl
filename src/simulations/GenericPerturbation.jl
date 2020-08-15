@@ -23,6 +23,8 @@ function (gp::GenericPerturbation)(powergrid)
     mapField(powergrid, gp, p -> p*0.0+convert(Float64, gp.var_new))
 end
 
+#GenericPerturbation(node,var_new,tspan_fault,var)=GenericPerturbation(;node,var_new,tspan_fault,var)
+
 simulate(gp::GenericPerturbation, op::State, timespan) = simulate(gp, op.grid, op.vec, timespan)
 
 

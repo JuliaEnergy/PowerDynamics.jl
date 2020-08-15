@@ -23,7 +23,7 @@ function (pd::PowerPerturbation)(powergrid)
     mapField(powergrid, pd, p -> p*0.0+convert(Float64, pd.power_new))
 end
 
-PowerPerturbation(;node,power_new,tspan_fault)=PowerPerturbation(node,power_new,tspan_fault)
+#PowerPerturbation(node,power_new,tspan_fault)=PowerPerturbation(;node,power_new,tspan_fault)
 
 simulate(pd::PowerPerturbation, op::State, timespan) = simulate(pd, op.grid, op.vec, timespan)
 

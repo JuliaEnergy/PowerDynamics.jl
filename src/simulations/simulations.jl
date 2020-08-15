@@ -3,7 +3,7 @@ import DiffEqBase: solve
 
 """
 ```Julia
-Perturbation(;node,var,f)
+ChangeInitialConditions(;node,var,f)
 ```
 # Keyword Arguments
 - `node`: number  of the node
@@ -14,7 +14,6 @@ struct ChangeInitialConditions
     node
     var
     f
-    @warn "Pleae note: Perturbation will be deprecated against GenericPerturbation soon."
 end
 
 ChangeInitialConditions(;node,var,f)=ChangeInitialConditions(node,var,f)
@@ -65,6 +64,5 @@ end
 
 export Inc
 export Dec
-export LineFault
 export Perturbation
 export simulate
