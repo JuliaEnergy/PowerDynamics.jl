@@ -9,7 +9,7 @@ state = State(grid, rand(systemsize(grid)))
 
 sol = simulate(PowerPerturbation(
     node = 1,
-    power_new = -0.9,
+    power_new = -1.#0.9,
     tspan_fault = (0.1,1.)),
     grid, state, (0., 1.))
 @test sol !== nothing

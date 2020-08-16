@@ -74,3 +74,4 @@ simulate(np::NodePerturbation, op::State, timespan) = simulate(np, op.grid, op.v
 export NodePerturbation
 export NodePerturbationError
 export simulate
+export mapField
