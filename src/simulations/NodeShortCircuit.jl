@@ -1,7 +1,3 @@
-using OrdinaryDiffEq: ODEProblem, Rodas4, solve!, DiscreteCallback, CallbackSet
-import DiffEqBase: solve
-using Setfield
-
 """
 ```Julia
     NodeShortCircuit(;node_number,Y,tspan_fault)
@@ -20,14 +16,15 @@ Base.@kwdef struct NodeShortCircuit <:AbstractNodePerturbation
 end
 
 function (nsc::NodeShortCircuit)(powergrid)
-    mapField(powergrid, nsc, Y_n -> nsc.Y)
+    #mapField(powergrid, nsc, Y_n -> nsc.Y)
+    typestable_field_update(powergrid, nsc.node, nsc.var, nsc.Y)
 end
 
 #NodeShortCircuit(node,Y,tspan_fault)=NodeShortCircuit(;node,Y,tspan_fault)
 
 
-simulate(nsc::NodeShortCircuit, op::State, timespan) = simulate(nsc, op.grid, op.vec, timespan)
+#simulate(nsc::NodeShortCircuit, op::State, timespan) = simulate(nsc, op.grid, op.vec, timespan)
 
 export NodeShortCircuit
 export NodeShortCircuitError
-export simulate
+#export simulate

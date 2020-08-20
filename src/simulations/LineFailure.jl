@@ -7,6 +7,7 @@ The arguments `from` and `to` specify the line that should be disconnected from 
 struct LineFailure
     from
     to
+    LineFailure(; from=from, to=to) = new(from, to)
 end
 
 struct LineFailure_new
@@ -19,16 +20,16 @@ function (lf::LineFailure)(powergrid)
     PowerGrid(powergrid.nodes, filtered_lines)
 end
 
-function filter_lines(lines::OrderedDict,line_name)
+function filter_lines(lines::OrderedDict, line_name)
     OrderedDict(k=>v for (k,v) in lines if k!=line_name)
 end
 
-function filter_lines(lines::Array,line_name)
+function filter_lines(lines::Array, line_name)
     copy(lines[1:end .!= line_name])
 end
 
 function (lf::LineFailure_new)(powergrid)
-    filtered_lines=filter_lines(powergrid.lines,lf.line_name)
+    filtered_lines=filter_lines(powergrid.lines, lf.line_name)
     PowerGrid(powergrid.nodes, filtered_lines)
 end
 
@@ -45,6 +46,14 @@ end
 
 function simulate(lf::LineFailure_new, powergrid, x0, timespan)
     solve(lf(powergrid), x0, timespan);
+end
+
+function simulate(lf::LineFailure, x0::State; timespan)
+    solve(lf(x0.grid), x0.vec, timespan);
+end
+
+function simulate(lf::LineFailure_new, x0::State, timespan)
+    solve(lf(x0.grid), x0.vec, timespan);
 end
 
 const iipfunc = true # is in-place function

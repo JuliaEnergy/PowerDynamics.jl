@@ -1,6 +1,3 @@
-using OrdinaryDiffEq: ODEProblem, Rodas4, init, solve!, step!, reinit!, savevalues!, u_modified!
-using Setfield
-
 """
 ```Julia
 PowerPerturbation(;node_number,power_new,tspan_fault,var)
@@ -20,13 +17,19 @@ Base.@kwdef struct PowerPerturbation <:AbstractNodePerturbation
 end
 
 function (pd::PowerPerturbation)(powergrid)
-    mapField(powergrid, pd, p -> p*0.0+convert(Float64, pd.power_new))
+    #mapField(powergrid, pd, p -> p*0.0+convert(Float64, pd.power_new))
+    typestable_field_update(powergrid, pd.node, pd.var, pd.power_new)
 end
 
 #PowerPerturbation(node,power_new,tspan_fault)=PowerPerturbation(;node,power_new,tspan_fault)
 
-simulate(pd::PowerPerturbation, op::State, timespan) = simulate(pd, op.grid, op.vec, timespan)
+#simulate(pd::PowerPerturbation, op::State, timespan) = simulate(pd, op.grid, op.vec, timespan)
 
+"Error to be thrown if something goes wrong during power perturbation"
+struct PowerPerturbationError <: PowerDynamicsError
+    msg::String
+end
 
 export PowerPerturbation
-export simulate
+#export simulate
+export PowerPerturbationError

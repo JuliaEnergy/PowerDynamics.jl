@@ -1,34 +1,28 @@
-using OrdinaryDiffEq: ODEProblem, Rodas4
+using OrdinaryDiffEq: ODEProblem, Rodas4, DiscreteCallback, CallbackSet
 import DiffEqBase: solve
+using Setfield
 
-"""
-```Julia
-AbstractNodePerturbation(;node,var,f,timespan)
-```
-# Keyword Arguments
-- `node`: number  of the node
-- `var`: symbol of the variable to be perturbated
-- `f`: function for mapping the variable x to the perturbated value
-- `timespan` time span for which perturbation is present
-"""
 abstract type AbstractNodePerturbation end
 
-"Error to be thrown if something goes wrong during power perturbation"
-struct NodePerturbationError <: PowerDynamicsError
-    msg::String
-end
+function typestable_field_update(powergrid::PowerGrid, node, sym::Symbol, val)
+    old_node = powergrid.nodes[node]
 
-function mapField(powergrid, np, f)
-    nodes = copy(powergrid.nodes)
-    np_node = powergrid.nodes[np.node]
-
-    # add shunt to the node component at the fault location
-    if !(hasproperty(np_node, np.var))
-        throw(NodePerturbationError("Node number: $(np.node) must have a variable called $(np.var)."))
+    if !(hasproperty(old_node, sym))
+        throw(FieldUpdateError("Node $(node) must have a variable called $(sym)."))
     end
-    lens = Setfield.compose(Setfield.PropertyLens{np.var}())
-    node_for_perturbation = Setfield.modify(f, np_node, lens)
-    nodes[np.node] = node_for_perturbation
+    
+    nodes = copy(powergrid.nodes)
+    sym_type = getfield(old_node, sym) |> eltype
+    lens = Setfield.compose(Setfield.PropertyLens{sym}())
+
+    new_val = try
+        convert(sym_type, val)
+    catch e
+        throw(FieldUpdateError("The parameter $(sym) at node $(node) should be of type $(sym_type). \n $(e)"))
+    end
+
+    new_node = Setfield.set(old_node, lens, new_val)
+    nodes[node] = new_node
     PowerGrid(nodes, powergrid.lines)
 end
 
@@ -38,7 +32,7 @@ simulate(no::AbstractNodePerturbation, powergrid, x1, timespan)
 ```
 Simulates a [`AbstractNodePerturbation`](@ref)
 """
-function simulate(np::AbstractNodePerturbation, powergrid, x1, timespan)
+function simulate(np::AbstractNodePerturbation, powergrid::PowerGrid, x1, timespan; solve_kwargs...)
     @assert first(timespan) <= np.tspan_fault[1] "fault cannot begin in the past"
     @assert np.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
 
@@ -65,13 +59,20 @@ function simulate(np::AbstractNodePerturbation, powergrid, x1, timespan)
 
     cb1 = DiscreteCallback(((u,t,integrator) -> t in np.tspan_fault[1]), errorState)
     cb2 = DiscreteCallback(((u,t,integrator) -> t in np.tspan_fault[2]), regularState)
-    sol = solve(problem, Rodas4(), force_dtmin = true, callback = CallbackSet(cb1, cb2), tstops=[t1, t2])
+
+    sol = solve(problem, Rodas4(), callback = CallbackSet(cb1, cb2), tstops=[t1, t2], solve_kwargs...)
+    
     return PowerGridSolution(sol, powergrid)
 end
 
 simulate(np::AbstractNodePerturbation, op::State, timespan) = simulate(np, op.grid, op.vec, timespan)
 
+"Error to be thrown if something goes wrong during power perturbation"
+struct FieldUpdateError <: PowerDynamicsError
+    msg::String
+end
+
 export AbstractNodePerturbation
-export NodePerturbationError
 export simulate
-export mapField
+export typestable_field_update
+export FieldUpdateError
