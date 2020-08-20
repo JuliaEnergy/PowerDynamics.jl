@@ -2,7 +2,10 @@ using Test
 using Crayons
 
 testlist = [
-    ("nodes/PQAlgebraic.jl", "PQAlgebraic Node Tests"),
+    ("common/States.jl", "States Tests"),
+    ("common/PowerGrid.jl", "PowerGrid Tests"),
+    ("nodes/PQAlgebraic.jl", "PQAlgebraic Node Tests"), 
+    ("nodes/VoltageDependentLoad.jl", "VoltageDependentLoad Node Tests"),
     ("nodes/PVAlgebraic.jl", "PVAlgebraic Node Tests"),
     ("nodes/SlackAlgebraic.jl", "SlackAlgebraic Node Tests"),
     ("nodes/SwingEq.jl", "SwingEq Node Tests"),
@@ -11,6 +14,7 @@ testlist = [
     ("nodes/VoltageSourceInverterMinimal.jl", "VoltageSourceInverterMinimal Node Tests"),
     ("nodes/VoltageSourceInverterVoltagePT1.jl", "VoltageSourceInverterVoltagePT1 Node Tests"),
     ("nodes/CurrentSourceInverterMinimal.jl", "CurrentSourceInverterMinimal Node Tests"),
+    ("nodes/experimental/CompositeNode.jl", "CompositeNode Node Tests"),
     ("nodes/ExponentialRecoveryLoad.jl", "ExponentialRecoveryLoad Node Tests"),
     ("nodes/FourthOrderEqGovernorExciterAVR.jl", "FourthOrderEqGovernorExciterAVR Node Tests"),
     ("nodes/experimental/RLCLoad.jl", "RLCLoad Node Tests"),
@@ -22,10 +26,9 @@ testlist = [
     ("lines/PiModelLine.jl", "PiModelLine tests"),
     ("lines/RLLine.jl", "RLLine tests"),
     ("lines/Transformer.jl", "Transformer tests"),
-    ("common/PowerGrid.jl", "PowerGrid Tests"),
-    ("common/States.jl", "States Tests"),
     ("simulations/PowerGridSolutions.jl", "PowerGridSolutions Tests"),
     ("simulations/simulations.jl", "Simulation Tests"),
+    ("simulations/LineFailure.jl", "LineFailure Tests"),
     ("simulations/PowerPerturbation.jl", "PowerPerturbation Simulation Tests"),
     ("simulations/NodeShortCircuit.jl", "NodeShortCircuit Simulation Tests"),
     ("operationpoint/operationpoint.jl", "operationpoint Tests"),

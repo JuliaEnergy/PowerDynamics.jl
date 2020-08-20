@@ -16,12 +16,13 @@ The voltage of all nodes is guessed as the slack voltage in the system.
 See also the documentation of [`guess`](@ref).
 """
 function initial_guess(pg)
-    if SlackAlgebraic ∉ pg.nodes .|> typeof
+    if SlackAlgebraic ∉ collect(values(pg.nodes)) .|> typeof
         @warn "There is no slack bus in the system to balance powers. Default voltage guess: u = 1 + 0j [pu]."
         voltage_guess = complex(1.0, 0.0)
     else
-        sl = findfirst(SlackAlgebraic ∈ pg.nodes .|> typeof)
-        slack = pg.nodes[sl]
+        sl = findfirst(SlackAlgebraic ∈ collect(values(pg.nodes)) .|> typeof)
+        bus_array=collect(values(pg.nodes))
+        slack = bus_array[sl]
         voltage_guess = slack.U
     end
 
@@ -44,7 +45,8 @@ the latter can e.g. be the result of a power flow solution.
 See also the documentation of [`guess`](@ref).
 """
 function initial_guess(pg, complex_voltages)
-    type_guesses = guess.(pg.nodes, complex_voltages)
+    bus_array=collect(values(pg.nodes))
+    type_guesses = guess.(bus_array, complex_voltages)
     return vcat(type_guesses...)
 end
 
@@ -82,6 +84,7 @@ function guess(n::AbstractNode, voltage_guess)
     state[2] = imag(voltage_guess)
     return state
 end
+
 
 # In case the system has a slack bus, make sure the voltage_guess is compatible.
 function guess(n::SlackAlgebraic, voltage_guess)
@@ -124,10 +127,10 @@ function find_operationpoint(
     sol_method = :rootfind,
     sol_kwargs...
 )
-    if SlackAlgebraic ∉ pg.nodes .|> typeof
+    if SlackAlgebraic ∉ collect(values(pg.nodes)) .|> typeof
         @warn "There is no slack bus in the system to balance powers. Currently not making any checks concerning assumptions of whether its possible to find a operation point."
     end
-    if SwingEq ∈ pg.nodes .|> typeof
+    if SwingEq ∈ collect(values(pg.nodes)) .|> typeof
         throw(OperationPointError("Found SwingEq node but these should be SwingEqLVS (just SwingEq is not yet supported for operation point search)."))
     end
 
