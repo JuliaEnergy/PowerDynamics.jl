@@ -3,7 +3,7 @@ using PowerDynamics: NodeParameterChange, simulate, SwingEqLVS, SlackAlgebraic, 
 
 ##
 
-@testset "test Power Perturbation with GenericPertubation simulation" begin
+@testset "test Power Perturbation with NodeParameterChange simulation" begin
     nodes = [SwingEqLVS(H=1., P=-1.0, D=1, Ω=50, Γ=20, V=1), SwingEqLVS(H=1., P=1.0, D=1, Ω=50, Γ=20, V=1)]
     lines = [StaticLine(Y=-50*im, from=1, to=2)]
     grid = PowerGrid(nodes, lines)
@@ -17,13 +17,13 @@ end
 
 ## 
 
-@testset "test Power Perturbation with GenericPertubation simulation" begin
+@testset "test Power Perturbation with NodeParameterChange simulation" begin
     nodes = [SwingEqLVS(H=1., P=-1.0, D=1, Ω=50, Γ=20, V=1), SwingEqLVS(H=1., P=1.0, D=1, Ω=50, Γ=20, V=1)]
     lines = [StaticLine(Y=-50*im, from=1, to=2)]
     grid = PowerGrid(nodes, lines)
     state = State(grid, rand(systemsize(grid)))
 
-    npc = NodeParameterChange(node = 1, value = 0.9, tspan_fault = (0.1,1), var=:P)
+    npc = NodeParameterChange(node = 1, value = -0.9, tspan_fault = (0.1,1), var=:P)
     sol = simulate(npc, state, (0., 1.))
     @test sol !== nothing
     @test sol.dqsol.retcode == :Success
