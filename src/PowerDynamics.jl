@@ -18,6 +18,7 @@ include("nodes/controller/PIControl.jl")
 include("nodes/AbstractNode.jl")
 include("nodes/NodeMacro.jl")
 include("nodes/PQAlgebraic.jl")
+include("nodes/VoltageDependentLoad.jl")
 include("nodes/PVAlgebraic.jl")
 include("nodes/SlackAlgebraic.jl")
 include("nodes/SwingEquation.jl")
@@ -32,6 +33,7 @@ include("nodes/experimental/PVInverterWithFrequencyControl.jl")
 include("nodes/experimental/WindTurbineGenType4.jl")
 include("nodes/experimental/WindTurbineGenType4_RotorControl.jl")
 include("nodes/experimental/CurtailedPowerPlantWithInertia.jl")
+include("nodes/experimental/CompositeNode.jl")
 
 # all line types
 
