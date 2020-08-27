@@ -1,5 +1,5 @@
 using Test: @test, @testset, @test_throws
-using PowerDynamics: NodeParameterChange, simulate, SwingEqLVS, SlackAlgebraic, StaticLine, PowerGrid, State,systemsize, PowerPerturbationError, FieldUpdateError
+using PowerDynamics: NodeParameterChange, simulate, SwingEqLVS, SlackAlgebraic, StaticLine, PowerGrid, State,systemsize, FieldUpdateError
 
 ##
 
