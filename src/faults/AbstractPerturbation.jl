@@ -4,7 +4,7 @@ using Setfield
 
 abstract type AbstractPerturbation end
 
-function typestable_field_update(powergrid::PowerGrid, node, sym::Symbol, val)
+function typestable_node_field_update(powergrid::PowerGrid, node, sym::Symbol, val)
     old_node = powergrid.nodes[node]
 
     if !(hasproperty(old_node, sym))
@@ -74,5 +74,5 @@ end
 
 export AbstractPerturbation
 export simulate
-export typestable_field_update
+export typestable_node_field_update
 export FieldUpdateError

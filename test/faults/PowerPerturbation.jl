@@ -7,7 +7,7 @@ using PowerDynamics: PowerPerturbation, simulate, SwingEqLVS, SlackAlgebraic, St
     grid = PowerGrid(nodes, lines)
     state = State(grid, rand(systemsize(grid)))
 
-    pp = PowerPerturbation(node = 1, power_new = -0.9, tspan_fault = (0.1,1))
+    pp = PowerPerturbation(node = 1, fault_power = -0.9, tspan_fault = (0.1,1))
     sol = simulate(pp, state, (0., 1.))
     @test sol !== nothing
 @test sol.dqsol.retcode == :Success
@@ -20,7 +20,7 @@ end
     grid = PowerGrid(nodes, lines)
     state = State(grid, rand(systemsize(grid)))
 
-    pp = PowerPerturbation(node = 1, power_new = Int(1), tspan_fault = (0.1,1))
+    pp = PowerPerturbation(node = 1, fault_power = Int(1), tspan_fault = (0.1,1))
     sol = simulate(pp, state, (0., 1.))
     @test sol !== nothing
     @test sol.dqsol.retcode == :Success
@@ -32,6 +32,6 @@ end
     grid = PowerGrid(nodes, lines)
     state = State(grid, rand(systemsize(grid)))
 
-    pp = PowerPerturbation(node = 1, power_new = 0.9, tspan_fault = (0.1, 1))
+    pp = PowerPerturbation(node = 1, fault_power = 0.9, tspan_fault = (0.1, 1))
     @test_throws FieldUpdateError simulate(pp, state, (0., 1.))
 end

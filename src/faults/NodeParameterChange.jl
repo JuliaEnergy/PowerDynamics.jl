@@ -1,6 +1,6 @@
 """
 ```Julia
-NodeParameterChange(;node_number,fraction,tspan_fault)
+NodeParameterChange(;node, value, tspan_fault, var)
 ```
 # Keyword Arguments
 - `node`: number or name of the node
@@ -8,7 +8,6 @@ NodeParameterChange(;node_number,fraction,tspan_fault)
 - `tspan_fault`: PowerPerturbation timespan
 - `var`:  symbol of parameter that is perturbed
 """
-
 Base.@kwdef struct NodeParameterChange <:AbstractPerturbation
     node
     value
@@ -17,14 +16,12 @@ Base.@kwdef struct NodeParameterChange <:AbstractPerturbation
 end
 
 function (gp::NodeParameterChange)(powergrid)
-    #mapField(powergrid, gp, p -> p*0.0+convert(Float64, gp.value))
-    typestable_field_update(powergrid, gp.node, gp.var, gp.value)
+    typestable_node_field_update(powergrid, gp.node, gp.var, gp.value)
 end
 
-
-#simulate(gp::NodeParameterChange, op::State, timespan) = simulate(gp, op.grid, op.vec, timespan)
-
-"Error to be thrown if something goes wrong during node parameter perturbation"
+"""
+Error to be thrown if something goes wrong during node parameter perturbation.
+"""
 struct NodePerturbationError <: PowerDynamicsError
     msg::String
 end
