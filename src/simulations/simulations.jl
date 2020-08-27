@@ -64,5 +64,5 @@ end
 
 export Inc
 export Dec
-export Perturbation
+export ChangeInitialConditions
 export simulate

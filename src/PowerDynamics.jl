@@ -48,12 +48,12 @@ include("lines/RLLine.jl")
 include("operationpoint/operationpoint.jl")
 include("operationpoint/find_valid_initial_condition.jl")
 
-include("simulations/AbstractNodePerturbation.jl")
-include("simulations/LineFailure.jl")
-include("simulations/NodeParameterChange.jl")
 include("simulations/PowerGridSolutions.jl")
 include("simulations/simulations.jl")
-include("simulations/PowerPerturbation.jl")
+include("faults/AbstractNodePerturbation.jl")
+include("faults/LineFailure.jl")
+include("faults/NodeParameterChange.jl")
+include("faults/PowerPerturbation.jl")
 include("simulations/NodeShortCircuit.jl")
 
 export AbstractNode

@@ -27,11 +27,11 @@ testlist = [
     ("lines/RLLine.jl", "RLLine tests"),
     ("lines/Transformer.jl", "Transformer tests"),
     ("simulations/PowerGridSolutions.jl", "PowerGridSolutions Tests"),
-    ("simulations/NodeParameterChange.jl", "NodeParameterChange Tests"),
     ("simulations/simulations.jl", "Simulation Tests"),
-    ("simulations/LineFailure.jl", "LineFailure Tests"),
-    ("simulations/PowerPerturbation.jl", "PowerPerturbation Simulation Tests"),
-    ("simulations/NodeShortCircuit.jl", "NodeShortCircuit Simulation Tests"),
+    ("faults/NodeParameterChange.jl", "NodeParameterChange Tests"),
+    ("faults/LineFailure.jl", "LineFailure Tests"),
+    ("faults/PowerPerturbation.jl", "PowerPerturbation Simulation Tests"),
+    ("faults/NodeShortCircuit.jl", "NodeShortCircuit Simulation Tests"),
     ("operationpoint/operationpoint.jl", "operationpoint Tests"),
     ("parsers/JsonParser.jl", "JsonParser Tests")
 ]
