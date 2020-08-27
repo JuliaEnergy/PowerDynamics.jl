@@ -2,7 +2,7 @@ using OrdinaryDiffEq: ODEProblem, Rodas4, DiscreteCallback, CallbackSet
 import DiffEqBase: solve
 using Setfield
 
-abstract type AbstractNodePerturbation end
+abstract type AbstractPerturbation end
 
 function typestable_field_update(powergrid::PowerGrid, node, sym::Symbol, val)
     old_node = powergrid.nodes[node]
@@ -28,11 +28,11 @@ end
 
 """
 ```Julia
-simulate(no::AbstractNodePerturbation, powergrid, x1, timespan)
+simulate(no::AbstractPerturbation, powergrid, x1, timespan)
 ```
-Simulates a [`AbstractNodePerturbation`](@ref)
+Simulates a [`AbstractPerturbation`](@ref)
 """
-function simulate(np::AbstractNodePerturbation, powergrid::PowerGrid, x1, timespan; solve_kwargs...)
+function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1, timespan; solve_kwargs...)
     @assert first(timespan) <= np.tspan_fault[1] "fault cannot begin in the past"
     @assert np.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
 
@@ -65,14 +65,14 @@ function simulate(np::AbstractNodePerturbation, powergrid::PowerGrid, x1, timesp
     return PowerGridSolution(sol, powergrid)
 end
 
-simulate(np::AbstractNodePerturbation, op::State, timespan) = simulate(np, op.grid, op.vec, timespan)
+simulate(np::AbstractPerturbation, op::State, timespan) = simulate(np, op.grid, op.vec, timespan)
 
 "Error to be thrown if something goes wrong during power perturbation"
 struct FieldUpdateError <: PowerDynamicsError
     msg::String
 end
 
-export AbstractNodePerturbation
+export AbstractPerturbation
 export simulate
 export typestable_field_update
 export FieldUpdateError

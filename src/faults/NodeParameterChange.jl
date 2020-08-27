@@ -9,7 +9,7 @@ NodeParameterChange(;node_number,fraction,tspan_fault)
 - `var`:  symbol of parameter that is perturbed
 """
 
-Base.@kwdef struct NodeParameterChange <:AbstractNodePerturbation
+Base.@kwdef struct NodeParameterChange <:AbstractPerturbation
     node
     value
     tspan_fault::Tuple
@@ -30,5 +30,4 @@ struct NodePerturbationError <: PowerDynamicsError
 end
 
 export NodeParameterChange
-#export simulate
 export NodePerturbationError

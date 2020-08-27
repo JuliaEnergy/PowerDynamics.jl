@@ -9,7 +9,7 @@ PowerPerturbation(;node_number,power_new,tspan_fault,var)
 - `var`: parameter symbol on the node that represents Power, default is :P
 """
 
-Base.@kwdef struct PowerPerturbation <:AbstractNodePerturbation
+Base.@kwdef struct PowerPerturbation <:AbstractPerturbation
     node
     power_new
     tspan_fault
@@ -17,7 +17,6 @@ Base.@kwdef struct PowerPerturbation <:AbstractNodePerturbation
 end
 
 function (pd::PowerPerturbation)(powergrid)
-    #mapField(powergrid, pd, p -> p*0.0+convert(Float64, pd.power_new))
     typestable_field_update(powergrid, pd.node, pd.var, pd.power_new)
 end
 
@@ -31,5 +30,4 @@ struct PowerPerturbationError <: PowerDynamicsError
 end
 
 export PowerPerturbation
-#export simulate
 export PowerPerturbationError

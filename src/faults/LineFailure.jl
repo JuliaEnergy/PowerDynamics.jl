@@ -8,11 +8,13 @@ struct LineFault
     from
     to
     LineFault(; from=from, to=to) = new(from, to)
+    @warn "This implementation of a line fault will be depresicated soon. Please use LineFailure instead."
 end
 
-struct LineFailure
+struct LineFailure <:AbstractPerturbation
     line_name
-    LineFailure(; line_name=line_name) = new(line_name)
+    tspan_fault
+    LineFailure(; line_name=line_name,tspan_fault=tspan_fault) = new(line_name,tspan_fault)
 end
 
 function (lf::LineFault)(powergrid)
@@ -45,15 +47,7 @@ function simulate(lf::LineFault, powergrid, x0; timespan)
     solve(lf(powergrid), x0, timespan);
 end
 
-function simulate(lf::LineFailure, powergrid, x0, timespan)
-    solve(lf(powergrid), x0, timespan);
-end
-
 function simulate(lf::LineFault, x0::State; timespan)
-    solve(lf(x0.grid), x0.vec, timespan);
-end
-
-function simulate(lf::LineFailure, x0::State, timespan)
     solve(lf(x0.grid), x0.vec, timespan);
 end
 

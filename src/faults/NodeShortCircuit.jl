@@ -8,7 +8,7 @@
 - `tspan_fault`: short circuit timespan
 """
 
-Base.@kwdef struct NodeShortCircuit <:AbstractNodePerturbation
+Base.@kwdef struct NodeShortCircuit <:AbstractPerturbation
     node
     Y
     tspan_fault
