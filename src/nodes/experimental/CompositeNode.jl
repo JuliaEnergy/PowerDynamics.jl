@@ -51,7 +51,7 @@ struct CompositeNode{T} <: AbstractNode
     symbols::Array{Symbol, 1}
     function CompositeNode(;CurrentNodes=nothing, VoltageNode=nothing, PowerNodes=nothing)# PowerNodes, VoltageNode)
 
-        @assert any([CurrentNodes != nothing, PowerNodes != nothing])
+        @assert any([CurrentNodes !== nothing, PowerNodes !== nothing])
 
         @assert !(typeof(VoltageNode) <: AbstractArray)
 
@@ -64,7 +64,7 @@ struct CompositeNode{T} <: AbstractNode
         # that these are combined correctly with the first two indices that represent
         # the voltage or the current constraints.
 
-        if CurrentNodes != nothing
+        if CurrentNodes !== nothing
             mix *= "I"
             for current_node in CurrentNodes
                 append!(symbols, symbolsof(current_node)[3:end])
@@ -73,7 +73,7 @@ struct CompositeNode{T} <: AbstractNode
         end
 
 
-        if PowerNodes != nothing
+        if PowerNodes !== nothing
             mix *= "P"
             for power_node in PowerNodes
                 append!(symbols, symbolsof(power_node)[3:end])
@@ -82,7 +82,7 @@ struct CompositeNode{T} <: AbstractNode
         end
 
 
-        if VoltageNode != nothing
+        if VoltageNode !== nothing
             mix *= "U"
             append!(symbols, symbolsof(VoltageNode)[3:end])
             append!(internaldims, dimension(VoltageNode) - 2)
@@ -114,13 +114,13 @@ function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IPU, _IU, _PU}
 
     # first construct each individual vertex attached to the bus
 
-    if cn.CurrentNodes != nothing
+    if cn.CurrentNodes !== nothing
         current_vertices = [construct_vertex(n) for n in cn.CurrentNodes]
     else
         current_vertices = []
     end
 
-    if cn.CurrentNodes != nothing
+    if cn.CurrentNodes !== nothing
         power_vertices = [construct_vertex(n) for n in cn.PowerNodes]
     else
         power_vertices = []
@@ -180,13 +180,13 @@ end
 
 function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IP, _I, _P}
 
-    if cn.CurrentNodes != nothing
+    if cn.CurrentNodes !== nothing
         current_vertices = [construct_vertex(n) for n in cn.CurrentNodes]
     else
         current_vertices = []
     end
 
-    if cn.CurrentNodes != nothing
+    if cn.CurrentNodes !== nothing
         power_vertices = [construct_vertex(n) for n in cn.PowerNodes]
     else
         power_vertices = []

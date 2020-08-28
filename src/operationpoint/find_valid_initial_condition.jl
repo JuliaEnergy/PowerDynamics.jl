@@ -1,6 +1,6 @@
 using OrdinaryDiffEq: ODEFunction
 using NLsolve: nlsolve, converged
-using LinearAlgebra:pinv
+using LinearAlgebra: pinv, UniformScaling
 
 struct RootRhs_ic
     rhs
@@ -13,7 +13,12 @@ function (rr::RootRhs_ic)(x)
 end
 
 function RootRhs_ic(of::ODEFunction)
-    mm = of.mass_matrix
+    if of.mass_matrix isa UniformScaling
+        n = length(of.syms)
+        mm = Array(of.mass_matrix, n, n)
+    else
+        mm = of.mass_matrix
+    end
     @assert mm !== nothing
     mpm = pinv(mm) * mm
     RootRhs_ic(of.f, mpm)

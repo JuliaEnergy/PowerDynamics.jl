@@ -1,6 +1,7 @@
 # PowerDynBase.jl Changelog
 
 ## Version 2.3.3
+* ![enhancement](https://img.shields.io/badge/PD-enhancement-%23a2eeef.svg) [refactored the fault design]()
 * ![enhancement](https://img.shields.io/badge/PD-enhancement-%23a2eeef.svg) [added OrderDicts for nodes and lines definition]()
 
 
