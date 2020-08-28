@@ -47,6 +47,7 @@ include("lines/RLLine.jl")
 
 include("operationpoint/operationpoint.jl")
 include("operationpoint/find_valid_initial_condition.jl")
+include("operationpoint/power_flow.jl")
 
 include("simulations/PowerGridSolutions.jl")
 include("simulations/simulations.jl")

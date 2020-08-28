@@ -188,3 +188,5 @@ function power_flow(power_grid :: PowerGrid)
 
     return result
 end
+
+export power_flow
