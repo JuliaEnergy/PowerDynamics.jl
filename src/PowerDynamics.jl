@@ -9,6 +9,7 @@ include("common/Errors.jl")
 include("common/Helpers.jl")
 include("common/PowerGrid.jl")
 include("common/States.jl")
+include("common/PowerGridSolutions.jl")
 
 include("parsers/Format.jl")
 include("parsers/JsonParser.jl")
@@ -48,10 +49,12 @@ include("lines/RLLine.jl")
 include("operationpoint/operationpoint.jl")
 include("operationpoint/find_valid_initial_condition.jl")
 
-include("simulations/PowerGridSolutions.jl")
-include("simulations/simulations.jl")
-include("simulations/PowerPerturbation.jl")
-include("simulations/NodeShortCircuit.jl")
+include("faults/ChangeInitialConditions.jl")
+include("faults/AbstractPerturbation.jl")
+include("faults/LineFailure.jl")
+include("faults/NodeParameterChange.jl")
+include("faults/PowerPerturbation.jl")
+include("faults/NodeShortCircuit.jl")
 
 export AbstractNode
 
