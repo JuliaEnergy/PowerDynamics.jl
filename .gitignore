@@ -20,3 +20,4 @@ Manifest.toml
 *.tex
 
 target/
+.vscode/
