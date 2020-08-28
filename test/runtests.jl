@@ -4,6 +4,7 @@ using Crayons
 testlist = [
     ("common/States.jl", "States Tests"),
     ("common/PowerGrid.jl", "PowerGrid Tests"),
+    ("common/PowerGridSolutions.jl", "PowerGridSolutions Tests"),
     ("nodes/PQAlgebraic.jl", "PQAlgebraic Node Tests"), 
     ("nodes/VoltageDependentLoad.jl", "VoltageDependentLoad Node Tests"),
     ("nodes/PVAlgebraic.jl", "PVAlgebraic Node Tests"),
@@ -26,8 +27,7 @@ testlist = [
     ("lines/PiModelLine.jl", "PiModelLine tests"),
     ("lines/RLLine.jl", "RLLine tests"),
     ("lines/Transformer.jl", "Transformer tests"),
-    ("simulations/PowerGridSolutions.jl", "PowerGridSolutions Tests"),
-    ("simulations/simulations.jl", "Simulation Tests"),
+    ("faults/ChangeInitialConditions.jl", "ChangeInitialConditions Tests"),
     ("faults/NodeParameterChange.jl", "NodeParameterChange Tests"),
     ("faults/LineFailure.jl", "LineFailure Tests"),
     ("faults/PowerPerturbation.jl", "PowerPerturbation Simulation Tests"),
