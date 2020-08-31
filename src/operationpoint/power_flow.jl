@@ -1,48 +1,36 @@
 using PowerModelsACDC
+using JuMP, Ipopt, PowerModels
 
 function power_flow(power_grid :: PowerGrid)
     global ang_min, ang_max
-    global_dict = PowerModelsACDC.get_pu_bases(1, 1)
-    global_dict["omega"] = 2π * 50
-
-    ang_min = deg2rad(360)
-    ang_max = deg2rad(-360)
+    ang_min = deg2rad(60)
+    ang_max = deg2rad(-60)
 
     function make_generator(dict :: Dict{String, Any}, key_b :: Int, node)
         key = length(dict["gen"])+1
         (dict["gen"])[string(key)] = Dict{String, Any}()
-        ((dict["gen"])[string(key)])["mBase"] = global_dict["S"] / 1e6
+        ((dict["gen"])[string(key)])["mBase"] = 1
         ((dict["gen"])[string(key)])["gen_bus"] = key_b
-        ((dict["gen"])[string(key)])["pc1"] = 0
-        ((dict["gen"])[string(key)])["pc2"] = 0
-        ((dict["gen"])[string(key)])["qc1min"] = 0
-        ((dict["gen"])[string(key)])["qc1max"] = 0
-        ((dict["gen"])[string(key)])["qc2min"] = 0
-        ((dict["gen"])[string(key)])["qc2max"] = 0
-        ((dict["gen"])[string(key)])["ramp_agc"] = 0
-        ((dict["gen"])[string(key)])["ramp_q"] = 0
-        ((dict["gen"])[string(key)])["ramp_10"] = 0
-        ((dict["gen"])[string(key)])["ramp_30"] = 0
-        ((dict["gen"])[string(key)])["apf"] = 0
-        ((dict["gen"])[string(key)])["startup"] = 0
-        ((dict["gen"])[string(key)])["shutdown"] = 0
-
         ((dict["gen"])[string(key)])["gen_status"] = 1
         ((dict["gen"])[string(key)])["source_id"] = Any["gen", key]
         ((dict["gen"])[string(key)])["index"] = key
 
-        ((dict["gen"])[string(key)])["pg"] = node.P
-        ((dict["gen"])[string(key)])["qg"] = 0
-        ((dict["gen"])[string(key)])["pmin"] = 0.9 * node.P
-        ((dict["gen"])[string(key)])["pmax"] = 1.1 * node.P
-        ((dict["gen"])[string(key)])["qmin"] = -1
-        ((dict["gen"])[string(key)])["qmax"] = 1
-        ((dict["gen"])[string(key)])["vg"] = node.V
+        if isa(node, SlackAlgebraic)
+            ((dict["gen"])[string(key)])["vg"] = node.U
+            # ((dict["gen"])[string(key)])["pg"] = no
+            ((dict["gen"])[string(key)])["pmin"] = 0
+            # ((dict["gen"])[string(key)])["pmax"] = 1.1 * node.P
+        else
+            ((dict["gen"])[string(key)])["pg"] = node.P
+            ((dict["gen"])[string(key)])["pmin"] = 0.9 * node.P
+            ((dict["gen"])[string(key)])["pmax"] = 1.1 * node.P
+            ((dict["gen"])[string(key)])["vg"] = node.V
+        end
 
-        # not using, only for OPF
-        ((dict["gen"])[string(key)])["model"] = 1
-        ((dict["gen"])[string(key)])["cost"] = 0
-        ((dict["gen"])[string(key)])["ncost"] = 0
+        ((dict["gen"])[string(key)])["qg"] = 0
+        ((dict["gen"])[string(key)])["qmin"] = -1.5
+        ((dict["gen"])[string(key)])["qmax"] = 1.5
+
     end
 
     function make_bus_ac(data :: Dict{String, Any}, node)
@@ -51,14 +39,14 @@ function power_flow(power_grid :: PowerGrid)
         dict = (data["bus"])[string(key_e)]
         dict["source_id"] = Any["bus", key_e]
         dict["index"] = key_e
-        dict["bus_i"] = key_e
-        dict["zone"] = 1
-        dict["area"] = 1
+        #dict["bus_i"] = key_e
+        #dict["zone"] = 1
+        #dict["area"] = 1
         dict["vmin"] = 0.9
         dict["vmax"] = 1.1
         dict["vm"] = 1
         dict["va"] = 0
-        dict["base_kv"] = 1e-3
+        #dict["base_kv"] = 1
 
         if isa(node, PQAlgebraic)
             dict["bus_type"] = 1
@@ -79,15 +67,6 @@ function power_flow(power_grid :: PowerGrid)
             dict["vmax"] = 1.1 * dict["vm"]
             dict["va"] = angle(node.V)
 
-            key_l = length(data["load"]) + 1
-            (data["load"])[string(key_l)] = Dict{String, Any}()
-            dict_l = (data["load"])[string(key_l)]
-            dict_l["source_id"] = dict["source_id"]
-            dict_l["load_bus"] = key_e
-            dict_l["status"] = 1
-            dict_l["pd"] = node.P
-            dict_l["qd"] = 0
-            dict_l["index"] = key_l
             isa(node, SwingEqLVS) ? make_generator(data, key_e, node) : nothing
         elseif isa(node, SlackAlgebraic)
             dict["bus_type"] = 3
@@ -95,7 +74,8 @@ function power_flow(power_grid :: PowerGrid)
             dict["vmin"] = 0.9 * dict["vm"]
             dict["vmax"] = 1.1 * dict["vm"]
             dict["va"] = angle(node.U)
-        elseif isa(node, SwingEqLVS)
+            make_generator(data, key_e, node)
+        else
             dict["bus_type"] = 4
         end
     end
@@ -163,11 +143,9 @@ function power_flow(power_grid :: PowerGrid)
     data["name"] = "network"
     data["source_version"] = "0.0.0"
     data["per_unit"] = true
-    data["dcpol"] = 2 # bipolar converter topologym check in the future
     data["baseMVA"] = 1
-    keywords = ["bus"; "busdc"; "shunt"; "dcline";
-                "storage"; "switch"; "load"; "branch"; "branchdc";
-                "gen"; "convdc"]
+    keywords = ["bus"; "shunt"; "dcline";
+                "storage"; "switch"; "load"; "branch"; "gen"]
     for keyword in keywords
         data[keyword] = Dict{String, Any}()
     end
@@ -179,14 +157,9 @@ function power_flow(power_grid :: PowerGrid)
         make_bus_ac(data, node)
     end
 
-    #data = InfrastructureModels.replicate(data, 2, Set{String}(["source_type", "name", "source_version", "per_unit"]))
-    PowerModelsACDC.process_additional_data!(data)
-    ipopt = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "tol" => 1e-6, "print_level" => 0)
-    s = Dict("output" => Dict("branch_flows" => true), "conv_losses_mp" => false)
+    result = run_pf(data, ACPPowerModel, Ipopt.Optimizer)
 
-    result = run_pf(data, ACPPowerModel, ipopt; setting = s)
-
-    return result
+    return data, result
 end
 
 export power_flow
