@@ -1,4 +1,4 @@
-@DynamicNode GridFormingTecnalia(ω_r,τ_U, τ_I, τ_V, τ_ω, τ_P, τ_Q, n_P, n_Q, K_P, K_Q, P, Q, V_r, R_f, X_f) begin
+@DynamicNode GridFormingTecnalia(ω_r,τ_U, τ_I, τ_ω, τ_P, τ_Q, n_P, n_Q, K_P, K_Q, P, Q, V_r, R_f, X_f) begin
     MassMatrix(m_u = true, m_int = [true,true,true,true,true])
 end begin
     @assert τ_U >= 0
