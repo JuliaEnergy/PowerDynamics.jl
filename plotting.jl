@@ -1,6 +1,7 @@
 using PowerDynamics
 using LaTeXStrings
 using Plots
+using Plots.Measures
 
 function plot_res(result, powergrid,disturbed_node)
     ω_indices = findall(n -> isa(n, SwingEqLVS), powergrid.nodes)
@@ -18,7 +19,7 @@ function plot_res(result, powergrid,disturbed_node)
     pl_p = plot(result, :, :p, legend = (0.8, 0.95), ylabel=L"p [p.u.]", label=p_labels)
     pl_q = plot(result, :, :q, legend = (0.8, 0.95), ylabel=L"q [p.u.]", label=p_labels)
     pl_v = plot(result, :, :v, legend = (0.8, 0.95), ylabel=L"v [p.u.]", label=p_labels)
-    pl_ω = plot(result, ω_indices, :ω, legend = (0.8, 0.7), ylabel=L"\omega \left[rad/s\right]", label=ω_labels, color=ω_colors)
+    pl_ω = plot(result, ω_indices, :ω, legend = (0.8, 0.7), ylims = (-1.0,1.0), ylabel=L"\omega \left[rad/s\right]", label=ω_labels, color=ω_colors, left_margin = 4mm)
     pl = plot(
         pl_ω, pl_v, pl_p, pl_q;
         layout=(2,2),
@@ -26,6 +27,6 @@ function plot_res(result, powergrid,disturbed_node)
         lw=3,
         xlabel=L"t[s]"
     )
-    savefig(pl,"StudyCase_dist_ω"* string(disturbed_node) *".pdf")
+    savefig(pl,"StudyCase_dist_ω"* string(disturbed_node) *".png")
     display(pl)
 end

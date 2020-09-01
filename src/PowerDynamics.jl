@@ -37,7 +37,7 @@ include("nodes/experimental/GridFormingTecnalia.jl")
 include("nodes/experimental/GridFormingTecnalia_experimental.jl")
 include("nodes/experimental/GridFollowingTecnalia.jl")
 include("nodes/experimental/Connector.jl")
-include("nodes/experimental/ConstantImpedanceLoad.jl")
+#include("nodes/experimental/ConstantImpedanceLoad.jl")
 
 # all line types
 
