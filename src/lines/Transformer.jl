@@ -1,17 +1,34 @@
 """
-Transformer(from, to, Y, T_ratio)
+```Julia
+    Transformer(from, to, y, t_ratio)
+```
 
-A transformer representation uses the Π model,
 assuming an ideal transformer in series with an admittance.
+The representation uses the Π model.
+
+# Mathematical Representation
+The voltage transforms as:
+```math
+    u_{to} = t_{ratio} u_{from}
+```
+
+# Arguments
+
+- `from` : start node
+- `to` : end node
+- `y`: transformer admittance
+- `t_ratio`: transformation ration
+
+# Assumptions
+
 The admittance is here taken to be on the high-voltage side.
 """
-@Line Transformer(Y, T_ratio) begin
+@Line Transformer(from, to, y, t_ratio) begin
+
     # If current is flowing away from the source, it is negative at the source.
     voltage_vector = [source_voltage,destination_voltage]
-    # Π[:, [k, m]] ./ pu # normalise to per unit admittance
-    Y_Pi = PiModel(Y, 0, 0, T_ratio, 1)
-    current_vector = Y_Pi * voltage_vector
+    Y = PiModel(y, 0, 0, t_ratio, 1)
+    current_vector = Y * voltage_vector
 end
-
 
 export Transformer

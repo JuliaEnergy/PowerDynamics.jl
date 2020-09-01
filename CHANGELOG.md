@@ -1,7 +1,23 @@
 # PowerDynBase.jl Changelog
 
+## Version 2.3.3
+* ![enhancement](https://img.shields.io/badge/PD-enhancement-%23a2eeef.svg) [refactored the fault design]()
+* ![enhancement](https://img.shields.io/badge/PD-enhancement-%23a2eeef.svg) [added OrderDicts for nodes and lines definition]()
+
+
+## Version 2.3.0
+
+* ![enhancement](https://img.shields.io/badge/PD-enhancement-%23a2eeef.svg) [added a voltage dependent load model]()
+* ![enhancement](https://img.shields.io/badge/PD-enhancement-%23a2eeef.svg) [added the feature to find operationpoints using SteadyStateProblem]()
+* ![enhancement](https://img.shields.io/badge/PD-enhancement-%23a2eeef.svg) [added new implementation of NodeShortCircuit](https://github.com/JuliaEnergy/PowerDynBase.jl/pull/93)
+* ![enhancement](https://img.shields.io/badge/PD-enhancement-%23a2eeef.svg) [added dynamic RL Line]()
+* ![enhancement](https://img.shields.io/badge/PD-enhancement-%23a2eeef.svg) [added composition of node types](https://github.com/JuliaEnergy/PowerDynamics.jl/pull/75)
+
+
+
 ## Version 0.8
 
+* ![enhancement](https://img.shields.io/badge/PD-enhancement-%23a2eeef.svg) [added dynamic RL Line]()
 * ![bugfix](https://img.shields.io/badge/PD-bugfix-%23d73a4a.svg) [fixed state conversion](https://github.com/JuliaEnergy/PowerDynBase.jl/pull/62)
 * ![bugfix](https://img.shields.io/badge/PD-bugfix-%23d73a4a.svg) [Voltage measurement of the exciter in grid reference frame](https://github.com/JuliaEnergy/PowerDynBase.jl/pull/63)
 * ![bugfix](https://img.shields.io/badge/PD-bugfix-%23d73a4a.svg) [removed pi-model function from Transformer.jl and added export statement](https://github.com/JuliaEnergy/PowerDynamics.jl/pull/26)
