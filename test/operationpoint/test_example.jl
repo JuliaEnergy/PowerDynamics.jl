@@ -8,7 +8,8 @@ node_list=[]
     append!(node_list, [SlackAlgebraic(U=1.)])
     append!(node_list, [SwingEqLVS(H=5., P=1., D=0.1, Ω=50,Γ=0.1,V=1.)])
     append!(node_list, [SwingEqLVS(H=5., P=1., D=0.1, Ω=50,Γ=0.1,V=1.)])
-    append!(node_list, [PQAlgebraic(P=-1,Q=-1)])
+    append!(node_list, [PQAlgebraic(P=-1,Q=-1)]) #note - for PowerModels it is different default
+    # direction, multiply by -1
 
 node_dict=OrderedDict(
     "bus1"=>SlackAlgebraic(U=1.),
@@ -41,7 +42,7 @@ data, result = power_flow(powergrid)
 # lf=LineFailure_new("line1")
 
 #result = simulate(lf,operationpoint,(0.,2.))
-# test = powerflow(powergrid)
+
 #result = simulate(LineFailure_new(1), powergrid, operationpoint, (0.,2.))
 #result = simulate(lf, powergrid_dict, operationpoint, (0.,2.))
 #result = simulate(pp_old,powergrid,operationpoint,(0.,2.))

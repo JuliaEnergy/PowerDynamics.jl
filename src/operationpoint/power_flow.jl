@@ -1,5 +1,6 @@
 using Ipopt: Optimizer
 using PowerModels: ACPPowerModel, run_pf
+using PowerModelsACDC: run_acdcpf
 
 function make_generator!(dict::Dict{String,Any}, key_b::Int, node)
     key = length(dict["gen"]) + 1
@@ -12,9 +13,6 @@ function make_generator!(dict::Dict{String,Any}, key_b::Int, node)
 
     if isa(node, SlackAlgebraic)
         ((dict["gen"])[string(key)])["vg"] = node.U
-        # ((dict["gen"])[string(key)])["pg"] = no
-        ((dict["gen"])[string(key)])["pmin"] = 0
-        # ((dict["gen"])[string(key)])["pmax"] = 1.1 * node.P
     else
         ((dict["gen"])[string(key)])["pg"] = node.P
         ((dict["gen"])[string(key)])["pmin"] = 0.9 * node.P
@@ -40,7 +38,6 @@ function _make_bus_ac_header(data::Dict{String,Any})
     bus_dict["vmax"] = 1.1
     bus_dict["vm"] = 1
     bus_dict["va"] = 0
-    #bus_dict["bus_i"] = key_e #bus_dict["zone"] = 1 #bus_dict["area"] = 1 #bus_dict["base_kv"] = 1
     return bus_dict
 end
 
@@ -62,8 +59,8 @@ function make_bus_ac!(data::Dict{String,Any}, node::PQAlgebraic)
     dict_l["source_id"] = bus_dict["source_id"]
     dict_l["load_bus"] = bus_dict["index"]
     dict_l["status"] = 1
-    dict_l["pd"] = node.P
-    dict_l["qd"] = node.Q
+    dict_l["pd"] = -node.P
+    dict_l["qd"] = -node.Q
     dict_l["index"] = key_l
 end
 
@@ -145,20 +142,6 @@ function make_branch_ac!(data::Dict{String,Any}, line::Transformer)
     branch_dict["br_x"] = imag(1 / line.Y)
 end
 
-# PiModel is not a line type but a function that the admittance matrix.
-# The following will not work:
-# function make_branch_ac!(data :: Dict{String, Any}, line::PiModel)
-#     _make_branch_ac_header(data)
-#     data["transformer"] = true
-#     data["tap"] = line.t_km / line.t_mk
-#     data["g_fr"] = real(line.y_shunt_km / data["tap"]^2)
-#     data["b_fr"] = imag(line.y_shunt_km / data["tap"]^2)
-#     data["br_r"] = real(1/line.Y)
-#     data["br_x"] = imag(1/line.Y)
-#     data["g_to"] = real(line.y_shunt_mk)
-#     data["b_to"] = imag(line.y_shunt_mk)
-# end
-
 function make_branch_ac!(data::Dict{String,Any}, line::PiModelLine)
     branch_dict = _make_branch_ac_header(data)
     branch_dict["f_bus"] = line.from
@@ -206,7 +189,8 @@ function power_flow(power_grid::PowerGrid)
         make_bus_ac!(data, node)
     end
 
-    result = run_pf(data, ACPPowerModel, Optimizer)
+    s = Dict("output" => Dict("branch_flows" => true), "conv_losses_mp" => true)
+    result = run_acdcpf(data, ACPPowerModel, Optimizer; setting = s)
 
     return data, result
 end
