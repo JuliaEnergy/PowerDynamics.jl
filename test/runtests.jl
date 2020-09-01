@@ -27,6 +27,7 @@ testlist = [
     ("lines/PiModelLine.jl", "PiModelLine tests"),
     ("lines/RLLine.jl", "RLLine tests"),
     ("lines/Transformer.jl", "Transformer tests"),
+    ("faults/AbstractPerturbation.jl", "AbstractPerturbation Tests"),
     ("faults/ChangeInitialConditions.jl", "ChangeInitialConditions Tests"),
     ("faults/NodeParameterChange.jl", "NodeParameterChange Tests"),
     ("faults/LineFailure.jl", "LineFailure Tests"),

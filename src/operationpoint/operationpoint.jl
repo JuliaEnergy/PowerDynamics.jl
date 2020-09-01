@@ -20,7 +20,7 @@ function initial_guess(pg)
         @warn "There is no slack bus in the system to balance powers. Default voltage guess: u = 1 + 0j [pu]."
         voltage_guess = complex(1.0, 0.0)
     else
-        sl = findfirst(SlackAlgebraic ∈ collect(values(pg.nodes)) .|> typeof)
+        sl = findfirst(collect(values(pg.nodes).|> typeof).== SlackAlgebraic)
         bus_array=collect(values(pg.nodes))
         slack = bus_array[sl]
         voltage_guess = slack.U
