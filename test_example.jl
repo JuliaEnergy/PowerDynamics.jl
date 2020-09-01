@@ -39,7 +39,7 @@ gp  = NodeParameterChange(node="bus2", value = 0.5,tspan_fault=(0.5,1.),var=:V)
 lf=LineFailure_new("line1")
 
 #result = simulate(lf,operationpoint,(0.,2.))
-test = powerflow(powergrid)
+test = power_flow(powergrid)
 #result = simulate(LineFailure_new(1), powergrid, operationpoint, (0.,2.))
 #result = simulate(lf, powergrid_dict, operationpoint, (0.,2.))
 #result = simulate(pp_old,powergrid,operationpoint,(0.,2.))
