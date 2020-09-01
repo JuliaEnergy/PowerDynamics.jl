@@ -1,5 +1,4 @@
-using PowerModelsACDC
-using JuMP, Ipopt, PowerModels
+using Ipopt, PowerModels
 
 function power_flow(power_grid :: PowerGrid)
     global ang_min, ang_max
@@ -30,7 +29,6 @@ function power_flow(power_grid :: PowerGrid)
         ((dict["gen"])[string(key)])["qg"] = 0
         ((dict["gen"])[string(key)])["qmin"] = -1.5
         ((dict["gen"])[string(key)])["qmax"] = 1.5
-
     end
 
     function make_bus_ac(data :: Dict{String, Any}, node)
