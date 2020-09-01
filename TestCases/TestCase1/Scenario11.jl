@@ -30,11 +30,10 @@ timespan = (0., 20.)
 
 pd = PowerPerturbation(
     node = perturbed_node,
-    fault_power = 0,#-16.67/S_base_kW,
+    fault_power = -16.67/S_base_kW,
     tspan_fault = (1.,10.))
 
-result_pd = simulate(pd,
-    powergrid, operationpoint, timespan)
+result_pd = simulate(pd, operationpoint, timespan)
 
 include("../../plotting.jl")
 plot_res(result_pd,powergrid,perturbed_node)

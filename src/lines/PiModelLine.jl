@@ -19,12 +19,12 @@ See also the Chapter 2 in
 # Assumptions:
 - the line admittance is symmetric
 """
-@Line PiModelLine(from, to, Y, Y_shunt_km, Y_shunt_mk) begin
-    Y_Pi = PiModel(Y, Y_shunt_km, Y_shunt_mk, 1, 1)
+@Line PiModelLine(from, to, y, y_shunt_km, y_shunt_mk) begin
+    Y = PiModel(y, y_shunt_km, y_shunt_mk, 1, 1)
 end begin
     # If current is flowing away from the source, it is negative at the source.
     voltage_vector = [source_voltage,destination_voltage]
-    current_vector = Y_Pi * voltage_vector
+    current_vector = Y * voltage_vector
 end
 
 export PiModelLine
