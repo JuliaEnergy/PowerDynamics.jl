@@ -19,7 +19,8 @@ Q_2 = 0/S_base_kW
 
 node_list=[]
     append!(node_list,[SlackAlgebraic(U=1.)])
-    append!(node_list,[PQAlgebraic(P=P_2,Q=Q_2)])
+    #append!(node_list,[PQAlgebraic(P=P_2,Q=Q_2)])
+    append!(node_list,[VoltageDependentLoad(P=P_2,Q=Q_2,U=1,A=0.,B=0.)])
 line_list=[]
     append!(line_list,[StaticLine(from=1,to=2,Y=Y_12)])
 
