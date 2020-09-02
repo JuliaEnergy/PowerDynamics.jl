@@ -1,5 +1,5 @@
 using Ipopt: Optimizer
-using PowerModels: ACPPowerModel, run_pf
+using PowerModels: ACPPowerModel, run_pf, with_optimizer
 
 function make_generator!(dict::Dict{String,Any}, key_b::Int, node)
     key = length(dict["gen"]) + 1

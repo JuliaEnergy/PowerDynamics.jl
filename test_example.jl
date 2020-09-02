@@ -39,7 +39,26 @@ gp  = NodeParameterChange(node="bus2", value = 0.5,tspan_fault=(0.5,1.),var=:V)
 lf=LineFailure_new("line1")
 
 #result = simulate(lf,operationpoint,(0.,2.))
-test = power_flow(powergrid)
+data, result = power_flow(powergrid)
+
+N = length(node_list)
+
+v = [result["solution"]["bus"][string(k)]["vm"] for k in 1:N]
+
+@assert isapprox.(operationpoint[:, :v], v, atol=1e-10) |> all
+
+va = [result["solution"]["bus"][string(k)]["va"] for k in 1:N]
+
+@assert isapprox.(operationpoint[:, :φ], va, atol=1e-10) |> all
+
+p = [result["solution"]["gen"][string(k)]["pg"] for k in 1:N-1]
+
+@assert isapprox.(operationpoint[1:N-1, :p], p, atol=1e-10) |> all
+
+q = [result["solution"]["gen"][string(k)]["qg"] for k in 1:N-1]
+
+@assert isapprox.(operationpoint[1:N-1, :q], q, atol=1e-10) |> all
+
 #result = simulate(LineFailure_new(1), powergrid, operationpoint, (0.,2.))
 #result = simulate(lf, powergrid_dict, operationpoint, (0.,2.))
 #result = simulate(pp_old,powergrid,operationpoint,(0.,2.))
