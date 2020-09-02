@@ -1,15 +1,14 @@
 using OrdinaryDiffEq: ODEProblem, Rodas4
 import DiffEqBase: solve
 
-"""
+@doc """
 ```Julia
 ChangeInitialConditions(;node,var,f)
 ```
 # Keyword Arguments
 - `node`: number  of the node
 - `var`: symbol of the variable to be perturbated
-- `f`: function for mapping the variable x to the perturbated value
-"""
+- `f`: function for mapping the variable x to the perturbated value"""
 struct ChangeInitialConditions
     node
     var

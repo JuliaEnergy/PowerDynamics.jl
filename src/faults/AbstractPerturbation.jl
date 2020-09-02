@@ -2,6 +2,17 @@ using OrdinaryDiffEq: ODEProblem, Rodas4, DiscreteCallback, CallbackSet
 import DiffEqBase: solve
 using Setfield
 
+@doc """
+```Julia
+AbstractPerturbation(;)
+```
+An AbstractPerturbation can be uses to construct almost any type of perturbation that has a time span of a fault.
+Perturbations that are of type of AbstractPerturbation can use the same simulate function then.
+For example implementations of faults as type AbstractPerturbation see e.g. PowerPerturbation. 
+
+# Keyword Arguments
+- `tspan_fault`: number  of the node
+"""
 abstract type AbstractPerturbation end
 
 function typestable_node_field_update(powergrid::PowerGrid, node, sym::Symbol, val)
