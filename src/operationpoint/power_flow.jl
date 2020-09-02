@@ -25,6 +25,16 @@ function make_generator!(dict::Dict{String,Any}, key_b::Int, node)
     ((dict["gen"])[string(key)])["qmax"] = 1.5
 end
 
+function make_shunt!(dict::Dict{String,Any}, key_b::Int, ω::Float64, node)
+    key = dict["shunt"] + 1
+    dict["shunt"][string(key)] = Dict{String, Any}()
+    dict["shunt"][string(key)]["index"] = key
+    dict["shunt"][string(key)]["shunt_bus"] = key_b
+    Z = node.R + node.L*ω*1im + 1/(1im*node.C*ω)
+    dict["shunt"][string(key)]["gs"] = real(1/Z)
+    dict["shunt"][string(key)]["bs"] = imag(1/Z)
+end
+
 """
 The entries that are present for all busses.
 """
@@ -49,7 +59,7 @@ function make_bus_ac!(data::Dict{String,Any}, node)
     bus_dict["bus_type"] = 4
 end
 
-function make_bus_ac!(data::Dict{String,Any}, node::PQAlgebraic)
+function make_bus_ac!(data::Dict{String,Any}, node::Union{PQAlgebraic,VoltageDependentLoad})
     bus_dict = _make_bus_ac_header(data)
     bus_dict["bus_type"] = 1
 
@@ -64,14 +74,23 @@ function make_bus_ac!(data::Dict{String,Any}, node::PQAlgebraic)
     dict_l["index"] = key_l
 end
 
-function make_bus_ac!(data::Dict{String,Any}, node::Union{PVAlgebraic,SwingEqLVS})
+function make_bus_ac!(data::Dict{String,Any}, node::PVAlgebraic)
     bus_dict = _make_bus_ac_header(data)
     bus_dict["bus_type"] = 2
     bus_dict["vm"] = abs(node.V)  # assumed p.u.
     bus_dict["vmin"] = 0.9 * bus_dict["vm"]
     bus_dict["vmax"] = 1.1 * bus_dict["vm"]
     bus_dict["va"] = angle(node.V)
-    isa(node, SwingEqLVS) ? make_generator!(data, bus_dict["index"], node) : nothing
+end
+
+function make_bus_ac!(data::Dict{String,Any}, node::SwingEqLVS)
+    bus_dict = _make_bus_ac_header(data)
+    bus_dict["bus_type"] = 2
+    bus_dict["vm"] = abs(node.V)  # assumed p.u.
+    bus_dict["vmin"] = 0.9 * bus_dict["vm"]
+    bus_dict["vmax"] = 1.1 * bus_dict["vm"]
+    bus_dict["va"] = angle(node.V)
+    make_generator!(data, bus_dict["index"], node)
 end
 
 function make_bus_ac!(data::Dict{String,Any}, node::SlackAlgebraic)
@@ -82,6 +101,16 @@ function make_bus_ac!(data::Dict{String,Any}, node::SlackAlgebraic)
     bus_dict["vmax"] = 1.1 * bus_dict["vm"]
     bus_dict["va"] = angle(node.U)
     make_generator!(data, bus_dict["index"], node)
+end
+
+function make_bus_ac!(data::Dict{String,Any}, node::RLCLoad)
+    bus_dict = _make_bus_ac_header(data)
+    bus_dict["bus_type"] = 3
+    bus_dict["vm"] = 1  # assumed p.u.
+    bus_dict["vmin"] = 0.9 * bus_dict["vm"]
+    bus_dict["vmax"] = 1.1 * bus_dict["vm"]
+    bus_dict["va"] = 0
+    make_shunt!(data, bus_dict["index"], 100π, node) # atm ω is set fixed 100π
 end
 
 function _make_branch_ac_header(data::Dict{String,Any})
