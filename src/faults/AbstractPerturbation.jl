@@ -32,7 +32,7 @@ simulate(no::AbstractPerturbation, powergrid, x1, timespan)
 ```
 Simulates a [`AbstractPerturbation`](@ref)
 """
-function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1, timespan; solve_kwargs...)
+function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1::Array, timespan; solve_kwargs...)
     @assert first(timespan) <= np.tspan_fault[1] "fault cannot begin in the past"
     @assert np.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
 
@@ -66,6 +66,8 @@ function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1, timespan; 
 end
 
 simulate(np::AbstractPerturbation, op::State, timespan) = simulate(np, op.grid, op.vec, timespan)
+simulate(np::AbstractPerturbation, powergrid::PowerGrid,op::State, timespan) = simulate(np, powergrid, op.vec, timespan)
+
 
 "Error to be thrown if something goes wrong during power perturbation"
 struct FieldUpdateError <: PowerDynamicsError
