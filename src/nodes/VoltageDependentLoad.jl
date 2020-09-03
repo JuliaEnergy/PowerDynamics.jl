@@ -26,9 +26,10 @@ Using `VoltageDependentLoad` for node ``a`` applies the equation
 end  begin
     @assert 0 <= A <= 1
     @assert 0 <= B <= 1
+    @assert isreal(U)
 end [] begin
     s = u * conj(i)
-    u_rel = u / U
+    u_rel = abs(u) / U
     du = complex(P, Q) * (A * u_rel^2 + B * u_rel + 1 - A - B) - s
 end
 
