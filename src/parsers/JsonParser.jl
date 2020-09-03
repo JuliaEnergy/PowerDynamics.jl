@@ -95,7 +95,7 @@ end
 
 function write_type(t)
     params = typedict(t)
-    dict = Dict("type" => string(typeof(t).name), "params" => params)
+    dict = Dict("type" => string(t |> typeof |> nameof), "params" => params)
 end
 
 typedict(x) = Dict(fn => getfield(x, fn) for fn ∈ fieldnames(typeof(x)))
