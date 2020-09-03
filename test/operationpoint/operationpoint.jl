@@ -17,8 +17,8 @@ begin
     V = 1.
 
     nodes = [
-        SlackAlgebraic(U = U1),
         PQAlgebraic(P = P2, Q = Q2),
+        SlackAlgebraic(U = U1),
         CSIMinimal(I_r = I_r),
         SwingEqLVS(H = H, P = P, D = D, Ω = Ω, Γ = Γ, V = V),
     ]
@@ -40,14 +40,14 @@ end
     @test PowerDynamics.initial_guess(grid) == expected_guess
     @test PowerDynamics.initial_guess(grid, v) == expected_guess
 
-    v[1] *= 0.9
+    v[2] *= 0.9
 
     @test_throws AssertionError PowerDynamics.initial_guess(grid, v)
 end
 
 @testset "test for slack warning and SwingEq" begin
     no_slack = copy(nodes)
-    no_slack[1] = PQAlgebraic(P=0., Q=0.)
+    no_slack[2] = PQAlgebraic(P=0., Q=0.)
     @test_logs (
         :warn,
         "There is no slack bus in the system to balance powers. Default voltage guess: u = 1 + 0j [pu].",
@@ -69,6 +69,35 @@ end
     with_swing = copy(nodes)
     with_swing[end] = SwingEq(H = H, P = P, D = D, Ω = Ω)
     @test_throws OperationPointError find_operationpoint(PowerGrid(with_swing, lines))
+end
+
+# define small test system
+begin
+    U1 = complex(1.0)
+    P2 = -1.0
+    Q2 = 0.0
+    Y = 20f0im
+    I_r = complex(0.5)
+    H = 1.0
+    P = 1.0
+    D = 10.
+    Ω = 2π*50
+    Γ = 100.
+    V = 1.
+
+    nodes = [
+        SlackAlgebraic(U = U1),
+        PQAlgebraic(P = P2, Q = Q2),
+        CSIMinimal(I_r = I_r),
+        SwingEqLVS(H = H, P = P, D = D, Ω = Ω, Γ = Γ, V = V),
+    ]
+    lines = [
+        StaticLine(from = 1, to = 2, Y = Y),
+        StaticLine(from = 2, to = 3, Y = Y),
+        StaticLine(from = 3, to = 4, Y = Y),
+    ]
+
+    grid = PowerGrid(nodes, lines)
 end
 
 @testset "check found operationpoint" begin
