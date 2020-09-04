@@ -15,6 +15,7 @@ Manifest.toml
 
 # output pictures
 *.png
+*.pdf
 *.jpg
 *.html
 *.tex
