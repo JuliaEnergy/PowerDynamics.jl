@@ -13,6 +13,7 @@ The main components of PowerDynamics are
 - PowerGridSolutions
 
 The relationships between the components is illustrated in the figure below:
+
 <img src="figures/PowerDynamics_Architecturemd.svg">
 
 ### nodes

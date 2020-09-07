@@ -1,4 +1,4 @@
-"""
+@doc """
 ```Julia
     PiModelLine(from, to, y, y_shunt_km, y_shunt_mk)
 ```
