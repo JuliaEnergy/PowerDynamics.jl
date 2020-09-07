@@ -41,7 +41,7 @@ Using `VSIMinimal` for node ``a`` (according to J. Schiffer et. al., eq. (7)) gi
 ```
 """
 @DynamicNode VSIMinimal_experimental(τ_P,τ_Q,K_P,K_Q,V_r,P,Q) begin
-    MassMatrix(m_u = false, m_int = [true,true,true])
+    MassMatrix(m_int = [true,true,true])
 end begin
     @assert τ_P > 0 "time constant active power measurement should be >0"
     @assert τ_Q > 0 "time constant reactive power measurement should be >0"
@@ -51,11 +51,9 @@ end [[ω, dω],[v,dv],[ϕ,dϕ]] begin
     p = real(u * conj(i))
     q = imag(u * conj(i))
     dϕ = ω
-    #v = abs(u)
-    dv = 1/τ_Q*(-v + V_r- K_Q *(q-Q))
-    #du = u * 1im * dϕ + dv*(u/v)
-    dω = 1/τ_P*(-ω) + K_P/ τ_P*(P-p)
-    du = u - v*exp(1im*ϕ)
+    dv = 1/τ_Q*(-v + V_r - K_Q *(q-Q))
+    dω = 1/τ_P*(-ω) + K_P/τ_P*(P-p)
+    du = (u - (v)*exp(1im*ϕ))
 end
 
 export VSIMinimal_experimental

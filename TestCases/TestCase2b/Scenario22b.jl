@@ -14,13 +14,17 @@ S_base_kW = 1
 Y_base = S_base_kW*1000/(V_base_kV*1000)^2
 
 # line paramterization
-Y_14 = (1/(0.05+1im*0.49*ω*1e-6))/Y_base # X=L_mH*ω*1e-6
-Y_34 = (1/(0.0474069+1im*0.0645069))/Y_base
+R_14 = 0.05
+L_14 = 0.49*1e-3
+X_14 = ω*L_14
+Z_14 = R_14 + 1im*X_14
+Y_14 = (1/Z_14)/Y_base
 
+Y_34 = (1/(0.0474069+1im*0.0645069))/Y_base
 Y_34_shunt = (1/((536.8837037+125.25700254999994*1im)))/Y_base
 
 # node powers
-P_2 = 0
+P_2 = 0.
 P_2_sc = -37.4/S_base_kW
 Q_2 = 0/S_base_kW
 P_3=20/S_base_kW
@@ -52,28 +56,28 @@ V_r =1.
 
 node_list=[]
     append!(node_list,[SlackAlgebraic(U=1.)])
-    append!(node_list,[PQAlgebraic(P=P_2,Q=Q_2)])
-    append!(node_list,[GridFormingTecnalia(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_V=τ_V, τ_ω=τ_ω, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=R_f, X_f=X_f)])
-    #append!(node_list,[GridFormingTecnalia_experimental(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=R_f, X_f=X_f)])
-    #append!(node_list,[VSIMinimal_experimental(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P_3,Q=Q_3)])
+    append!(node_list,[VoltageDependentLoad(P=P_2,Q=Q_2,U=1.,A=1.0,B=0.0)])
     #append!(node_list,[VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P_3,Q=Q_3)])
+    #append!(node_list,[VSIMinimal_experimental(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P_3,Q=Q_3)])
+    append!(node_list,[SwingEqLVS(V = 1.,H=1.0, P=1.0, D=0.1, Ω=2*π*50, Γ=100.)])
     append!(node_list,[Connector()])
 line_list=[]
     append!(line_list,[ConnectorLine(from=2,to=4)])
-    append!(line_list,[PiModelLine(from=3,to=4,Y=Y_34,Y_shunt_mk=Y_34_shunt/2,Y_shunt_km=Y_34_shunt/2)])
+    append!(line_list,[PiModelLine(from=3,to=4,y=Y_34,y_shunt_mk=Y_34_shunt/2,y_shunt_km=Y_34_shunt/2)])
     append!(line_list,[StaticLine(from=1,to=4,Y=Y_14)])
 
 powergrid = PowerGrid(node_list,line_list)
 operationpoint = find_operationpoint(powergrid)
 
-timespan = (0., 20.)
-pd = PowerPerturbation_abs(
-    P_new = P_2_sc,
-    node_number = perturbed_node,
-    tspan_fault = (1.,10.))
+timespan = (0., 40.)
 
-result_pd = simulate(pd,
-    powergrid, operationpoint, timespan)
+pd = PowerPerturbation(
+    node = perturbed_node,
+    fault_power = P_2_sc/S_base_kW,
+    tspan_fault = (18.,25.),
+    var = :P)
+
+result_pd = simulate(pd, powergrid, operationpoint, timespan)
 
 include("../../plotting.jl")
 plot_res(result_pd,powergrid,perturbed_node)

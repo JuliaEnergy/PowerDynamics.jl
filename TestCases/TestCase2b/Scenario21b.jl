@@ -22,13 +22,13 @@ Y_14 = (1/Z_14)/Y_base
 
 # transformer parametrization
 Y_34 = (1/(0.0474069+1im*0.0645069))/Y_base
-Y_12_shunt = (1/((536.8837037+125.25700254999994*1im)))/Y_base
+Y_34_shunt = (1/((536.8837037+125.25700254999994*1im)))/Y_base
 
 # node powers
 P_2 = -16.67/S_base_kW
-Q_2 = 0/S_base_kW
+Q_2 = -2.0/S_base_kW
 P_3=20/S_base_kW
-Q_3=0/S_base_kW
+Q_3=8.0/S_base_kW
 
 # paramterization of grid-forming inverter
 ω_r = 0#-0.25
@@ -51,14 +51,14 @@ V_r =1
 
 
 node_list=[]
-    append!(node_list,[SlackAlgebraic(U=1.)])
-    append!(node_list,[VoltageDependentLoad(P=P_2,Q=Q_2,U=1.,A=1.0,B=0.0)])
+    append!(node_list,[SlackAlgebraic(U=1.0)])
+    append!(node_list,[VoltageDependentLoad(P=P_2,Q=Q_2,U=1.,A=0.0,B=1.0)])
     #append!(node_list,[GridFormingTecnalia(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=R_f, X_f=X_f)])
-    append!(node_list,[VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P,Q=Q)])
+    append!(node_list,[VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P_3,Q=Q_3)])
     append!(node_list,[Connector()])
 line_list=[]
     append!(line_list,[ConnectorLine(from=2,to=4)])
-    append!(line_list,[StaticLine(from=3,to=4,Y=Y_13)])
+    append!(line_list,[PiModelLine(from=3,to=4,y=Y_34,y_shunt_mk=Y_34_shunt/2,y_shunt_km=Y_34_shunt/2)])
     append!(line_list,[StaticLine(from=1,to=4,Y=Y_12)])
 
 powergrid = PowerGrid(node_list,line_list)
