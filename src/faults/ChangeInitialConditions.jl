@@ -50,7 +50,7 @@ simulate(p::ChangeInitialConditions, powergrid, x0; timespan)
 ```
 Simulates a [`ChangeInitialConditions`](@ref)
 """
-function simulate(p::ChangeInitialConditions, powergrid, x0::State; timespan)
+function simulate(p::ChangeInitialConditions, powergrid, x0::State, timespan; solve_kwargs...)
     solve(powergrid, p(x0), timespan);
 end
 
