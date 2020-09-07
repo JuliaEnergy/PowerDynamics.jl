@@ -5,7 +5,6 @@ using Revise
 
 perturbed_node=3
 
-
 #grid frequency
 ω = 2π*50
 
@@ -14,9 +13,16 @@ V_base_kV = 0.4
 S_base_kW = 1
 Y_base = S_base_kW*1000/(V_base_kV*1000)^2
 
-# line paramterization
-Y_12 = (1/(0.25+1im*0.98*ω*1e-6))/Y_base
+# line paramterization 12
+R_12 = 0.25
+L_12 = 0.98*1e-3
+X_12 = ω*L_12
+Z_12 = R_12 + 1im*X_12
+Y_12 = (1/Z_12)/Y_base
+
+# line paramterization 12
 Y_13 = (1/(0.0474069+1im*0.0645069))/Y_base
+
 # node paramterization
 P_2 = -16.67/S_base_kW
 Q_2 = 0/S_base_kW
@@ -45,8 +51,8 @@ Q=0/S_base_kW
 node_list=[]
     append!(node_list,[SlackAlgebraic(U=1.)])
     append!(node_list,[PQAlgebraic(P=P_2,Q=Q_2)])
-    append!(node_list,[GridFormingTecnalia_experimental(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P, Q=Q, V_r=V_r, R_f=R_f, X_f=X_f)])
-    #append!(node_list,[VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P,Q=Q)])
+    #append!(node_list,[GridFormingTecnalia_experimental(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P, Q=Q, V_r=V_r, R_f=R_f, X_f=X_f)])
+    append!(node_list,[VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P,Q=Q)])
     append!(node_list,[Connector()])
 line_list=[]
     append!(line_list,[ConnectorLine(from=1,to=4)])

@@ -14,9 +14,14 @@ S_base_kW = 1
 Y_base = S_base_kW*1000/(V_base_kV*1000)^2
 
 # line paramterization
-Y_14 = (1/(0.25+1im*0.98*ω*1e-6))/Y_base
-Y_34 = (1/(0.0474069+1im*0.0645069))/Y_base
+R_14 = 0.25
+L_14 = 0.98*1e-3
+X_14 = ω*L_14
+Z_14 = R_14 + 1im*X_14
+Y_14 = (1/Z_14)/Y_base
 
+# transformer parametrization
+Y_34 = (1/(0.0474069+1im*0.0645069))/Y_base
 Y_12_shunt = (1/((536.8837037+125.25700254999994*1im)))/Y_base
 
 # node powers
@@ -47,9 +52,9 @@ V_r =1
 
 node_list=[]
     append!(node_list,[SlackAlgebraic(U=1.)])
-    append!(node_list,[PQAlgebraic(P=P_2,Q=Q_2)])
-    append!(node_list,[GridFormingTecnalia(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=R_f, X_f=X_f)])
-    #append!(node_list,[VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P,Q=Q)])
+    append!(node_list,[VoltageDependentLoad(P=P_2,Q=Q_2,U=1.,A=1.0,B=0.0)])
+    #append!(node_list,[GridFormingTecnalia(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=R_f, X_f=X_f)])
+    append!(node_list,[VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P,Q=Q)])
     append!(node_list,[Connector()])
 line_list=[]
     append!(line_list,[ConnectorLine(from=2,to=4)])
@@ -59,11 +64,13 @@ line_list=[]
 powergrid = PowerGrid(node_list,line_list)
 operationpoint = find_operationpoint(powergrid)
 
-timespan = (0., 20.)
+timespan = (0., 40.)
+
 pd = PowerPerturbation(
-    fraction =11.11/16.67,
-    node_number = perturbed_node,
-    tspan_fault = (1.,10.))
+    node = perturbed_node,
+    fault_power = -11.11/S_base_kW,
+    tspan_fault = (18.,25.),
+    var = :P)
 
 result_pd = simulate(pd,
     powergrid, operationpoint, timespan)
