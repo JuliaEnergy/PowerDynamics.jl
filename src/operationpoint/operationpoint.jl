@@ -125,6 +125,7 @@ function find_operationpoint(
     p0 = nothing,
     t0 = 0.0,
     sol_method = :rootfind,
+    solve_powerflow = false,
     sol_kwargs...
 )
     if SlackAlgebraic ∉ collect(values(pg.nodes)) .|> typeof
@@ -135,7 +136,14 @@ function find_operationpoint(
     end
 
     if ic_guess === nothing
-        ic_guess = initial_guess(pg)
+        if solve_powerflow # use PowerModels to solve the power flow
+            data, result = power_flow(pg)
+            v = [result["solution"]["bus"][string(k)]["vm"] for k in 1:length(pg.nodes)]
+            va = [result["solution"]["bus"][string(k)]["va"] for k in 1:length(pg.nodes)]
+            ic_guess = initial_guess(pg, v .* exp.(1im .* va))
+        else
+            ic_guess = initial_guess(pg)
+        end
     end
 
     if sol_method == :nlsolve
