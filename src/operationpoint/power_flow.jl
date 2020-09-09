@@ -1,7 +1,8 @@
 using Ipopt: Optimizer
 using PowerModels: ACPPowerModel, run_pf, with_optimizer
+#using PowerModelsACDC: run_acdcpf
 
-function make_generator!(dict::Dict{String,Any}, key_b::Int, node)
+function _make_generator_header(dict::Dict{String,Any}, key_b::Int)
     key = length(dict["gen"]) + 1
     (dict["gen"])[string(key)] = Dict{String,Any}()
     ((dict["gen"])[string(key)])["mBase"] = 1
@@ -10,18 +11,45 @@ function make_generator!(dict::Dict{String,Any}, key_b::Int, node)
     ((dict["gen"])[string(key)])["source_id"] = Any["gen", key]
     ((dict["gen"])[string(key)])["index"] = key
 
-    if isa(node, SlackAlgebraic)
-        ((dict["gen"])[string(key)])["vg"] = node.U
-    else
-        ((dict["gen"])[string(key)])["pg"] = node.P
-        ((dict["gen"])[string(key)])["pmin"] = 0.9 * node.P
-        ((dict["gen"])[string(key)])["pmax"] = 1.1 * node.P
-        ((dict["gen"])[string(key)])["vg"] = node.V
-    end
-
     ((dict["gen"])[string(key)])["qg"] = 0
     ((dict["gen"])[string(key)])["qmin"] = -1.5
     ((dict["gen"])[string(key)])["qmax"] = 1.5
+end
+
+function make_generator!(dict::Dict{String,Any}, key_b::Int, node::SlackAlgebraic)
+    _make_generator_header(dict, key_b)
+    key = length(dict["gen"])
+    ((dict["gen"])[string(key)])["vg"] = node.U
+end
+
+function make_generator!(dict::Dict{String,Any}, key_b::Int, node::Union{SwingEq, FourthOrderEq, FourthOrderEqGovernorExciterAVR})
+    _make_generator_header(dict, key_b)
+    key = length(dict["gen"])
+    ((dict["gen"])[string(key)])["pg"] = node.P
+    ((dict["gen"])[string(key)])["pmin"] = 0.9 * node.P
+    ((dict["gen"])[string(key)])["pmax"] = 1.1 * node.P
+    ((dict["gen"])[string(key)])["vg"] = 1
+end
+
+function make_generator!(dict::Dict{String,Any}, key_b::Int, node::SwingEqLVS)
+    _make_generator_header(dict, key_b)
+    key = length(dict["gen"])
+    ((dict["gen"])[string(key)])["pg"] = node.P
+    ((dict["gen"])[string(key)])["pmin"] = 0.9 * node.P
+    ((dict["gen"])[string(key)])["pmax"] = 1.1 * node.P
+    ((dict["gen"])[string(key)])["vg"] = node.V
+end
+
+function make_generator!(dict::Dict{String,Any}, key_b::Int, node::Union{VSIMinimal, VSIVoltagePT1})
+    _make_generator_header(dict, key_b)
+    key = length(dict["gen"])
+    ((dict["gen"])[string(key)])["pg"] = node.P
+    ((dict["gen"])[string(key)])["pmin"] = 0.9 * node.P
+    ((dict["gen"])[string(key)])["pmax"] = 1.1 * node.P
+    ((dict["gen"])[string(key)])["vg"] = node.V_r
+    ((dict["gen"])[string(key)])["qg"] = node.Q
+    ((dict["gen"])[string(key)])["qmin"] = -1.5 * abs(node.Q)
+    ((dict["gen"])[string(key)])["qmax"] = 1.5 * abs(node.Q)
 end
 
 function make_shunt!(dict::Dict{String,Any}, key_b::Int, ω::Float64, node)
@@ -89,6 +117,26 @@ function make_bus_ac!(data::Dict{String,Any}, node::SwingEqLVS)
     bus_dict["vmin"] = 0.9 * bus_dict["vm"]
     bus_dict["vmax"] = 1.1 * bus_dict["vm"]
     bus_dict["va"] = angle(node.V)
+    make_generator!(data, bus_dict["index"], node)
+end
+
+function make_bus_ac!(data::Dict{String,Any}, node::Union{SwingEq, FourthOrderEq, FourthOrderEqGovernorExciterAVR})
+    bus_dict = _make_bus_ac_header(data)
+    bus_dict["bus_type"] = 2
+    bus_dict["vm"] = 1
+    bus_dict["vmin"] = 0.9
+    bus_dict["vmax"] = 1.1
+    bus_dict["va"] = 0
+    make_generator!(data, bus_dict["index"], node)
+end
+
+function make_bus_ac!(data::Dict{String,Any}, node::Union{VSIMinimal, VSIVoltagePT1})
+    bus_dict = _make_bus_ac_header(data)
+    bus_dict["bus_type"] = 2
+    bus_dict["vm"] = node.V_r
+    bus_dict["vmin"] = 0.9 * node.V_r
+    bus_dict["vmax"] = 1.1 * node.V_r
+    bus_dict["va"] = 0
     make_generator!(data, bus_dict["index"], node)
 end
 
@@ -218,7 +266,7 @@ function power_flow(power_grid::PowerGrid)
     end
 
     s = Dict("output" => Dict("branch_flows" => true), "conv_losses_mp" => true)
-    result = run_pf(data, ACPPowerModel, with_optimizer(Optimizer); setting = s)
+    result = run_pf(data, ACPPowerModel, Optimizer; setting = s)
 
     return data, result
 end
