@@ -12,7 +12,7 @@ The main components of PowerDynamics are
 - faults
 - PowerGridSolutions
 
-The relationships between the components is illustrated in the figure below:
+The data flow between some of the components is illustrated in the figure below:
 
 <img src="figures/PowerDynamics_Architecturemd.svg">
 
@@ -23,7 +23,7 @@ The [node component](https://github.com/JuliaEnergy/PowerDynamics.jl/tree/master
 The [line component](https://github.com/JuliaEnergy/PowerDynamics.jl/tree/master/src/lines) includes a standard library of different line and transformer types, e.g. a simple admittance line (`StaticLine`), the `PiModelLine` and a simple transfomer model based on the PiModel.
 
 ### PowerGrid
-The [PowerGrid component](https://github.com/JuliaEnergy/PowerDynamics.jl/blob/master/src/common/PowerGrid.jl) is built from nodes and lines. It contains all information about the graph and is used to derive the right-hand-side function with the [NetworkDynamics.jl](https://github.com/JuliaEnergy/PowerDynamics.jl/blob/master/src/common/PowerGrid.jl)-library.
+The [PowerGrid component](https://github.com/JuliaEnergy/PowerDynamics.jl/blob/master/src/common/PowerGrid.jl) is built from nodes and lines. It contains all information about the graph and is used to derive the right-hand-side function with the [NetworkDynamics.jl](https://github.com/JuliaEnergy/PowerDynamics.jl/blob/master/src/common/PowerGrid.jl)-library. The powergrid can also be parsed from a json-file with read_powergrid.
 
 ### operationpoint
 The [operationpoint](https://github.com/JuliaEnergy/PowerDynamics.jl/tree/master/src/operationpoint) represents the steady-state solution of the dynamic power system. There are different methods for finding the operation point: rootfind, nlsolve and dynamic. The function `find_operationpoint` returns the operationpoint which is of Type State.
