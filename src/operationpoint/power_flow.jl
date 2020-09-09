@@ -1,6 +1,6 @@
 using Ipopt: Optimizer
 using PowerModels: ACPPowerModel, run_pf, with_optimizer
-using PowerModelsACDC: run_acdcpf
+#using PowerModelsACDC: run_acdcpf
 
 function _make_generator_header(dict::Dict{String,Any}, key_b::Int)
     key = length(dict["gen"]) + 1
@@ -266,7 +266,7 @@ function power_flow(power_grid::PowerGrid)
     end
 
     s = Dict("output" => Dict("branch_flows" => true), "conv_losses_mp" => true)
-    result = run_acdcpf(data, ACPPowerModel, Optimizer; setting = s)
+    result = run_pf(data, ACPPowerModel, Optimizer; setting = s)
 
     return data, result
 end
