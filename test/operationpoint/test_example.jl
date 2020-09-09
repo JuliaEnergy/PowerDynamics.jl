@@ -6,7 +6,8 @@ using OrderedCollections:OrderedDict
 
 node_list=[]
     append!(node_list, [SlackAlgebraic(U=1.)])
-    append!(node_list, [SwingEqLVS(H=5., P=1., D=0.1, Ω=50,Γ=0.1,V=1.)])
+    append!(node_list, [VSIMinimal(τ_P=1., τ_Q=2., K_P=3., K_Q=4., V_r=1, P=1., Q=0.)])
+    #append!(node_list, [SwingEqLVS(H=5., P=1., D=0.1, Ω=50,Γ=0.1,V=1.)])
     append!(node_list, [SwingEqLVS(H=5., P=1., D=0.1, Ω=50,Γ=0.1,V=1.)])
     append!(node_list, [PQAlgebraic(P=-1,Q=-1)]) #note - for PowerModels it is different default
     # direction, multiply by -1
