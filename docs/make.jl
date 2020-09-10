@@ -9,6 +9,7 @@ makedocs(
     sitename = "PowerDynamics.jl",
     pages = [
         "General" => "index.md",
+        "Architecture" => "../ARCHITECTURE.md",
         "language_conventions.md",
         "powergrid_model.md",
         "node_types.md",

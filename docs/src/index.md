@@ -12,12 +12,14 @@ and analyze it.
 The source code is licensed under [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html) and [published on github](https://github.com/JuliaEnergy/PowerDynamics.jl).
 
 These Docs have been built
+
 ```@setup documentationbuildtime
 using Dates
 function printBuiltTime()
   println(Dates.format(now(), "on YYYY-mm-dd at HH:MM"))
 end
 ```
+
 ```@example documentationbuildtime
 printBuiltTime() # hide
 ```
@@ -25,10 +27,13 @@ printBuiltTime() # hide
 ## Installation
 
 The installation can be done via the new package manager. Either use
+
 ```
 ]add PowerDynamics
 ```
+
 or copy
+
 ```Julia
 using Pkg; Pkg.add("PowerDynamics")
 ```
@@ -47,6 +52,7 @@ Julia versions 0.x are not supported.
 ## Usage
 
 Generally, we distinguish three types of user for `PowerDynamics.jl`:
+
 - [Grid Modeler](@ref)
 - [Grid Component Developer](@ref)
 - [`PowerDynamics.jl` Developer](@ref)
