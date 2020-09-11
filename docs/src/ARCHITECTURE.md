@@ -13,7 +13,7 @@ The main components of PowerDynamics are
 - faults
 - PowerGridSolutions
 
-The data flow between some of the components is illustrated in the figure below:
+For a typical simulation the data flow between some of the components is illustrated in the figure below:
 
 ![Data flow diagram for PowerDynamics.jl](../figures/PowerDynamics_Architecturemd.svg)
 

@@ -14,6 +14,11 @@ join(["* [`$n`](@ref PowerDynamics.$n)" for n in perturbations], "\n") |> Markdo
 
 ## Detailed Simulation/ Fault Type Documentation
 
+```@docs
+NodeShortCircuit
+NodeParameterChange
+PowerPerturbation
+```
 ```@autodocs
 Modules = [PowerDynamics]
 Pages   = ["ChangeInitialConditions.jl","PowerPerturbation.jl","NodeParameterChange","LineFailure.jl","NodeShortCircuit.jl","AbstractPerturbation.jl"]
