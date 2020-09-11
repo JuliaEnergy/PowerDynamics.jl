@@ -2,6 +2,7 @@ using Test
 using Crayons
 
 testlist = [
+    ("operationpoint/test_example.jl", "PowerModels operationpoint Tests"),
     ("common/States.jl", "States Tests"),
     ("common/PowerGrid.jl", "PowerGrid Tests"),
     ("common/PowerGridSolutions.jl", "PowerGridSolutions Tests"),

@@ -1,16 +1,11 @@
-# using Pkg
-# Pkg.instantiate()
-using PowerDynamics: SlackAlgebraic, SwingEqLVS, PQAlgebraic, StaticLine, PowerGrid, find_operationpoint
-#using Revise
+using PowerDynamics
 using OrderedCollections:OrderedDict
 
 node_list=[]
     append!(node_list, [SlackAlgebraic(U=1.)])
-    append!(node_list, [VSIMinimal(τ_P=1., τ_Q=2., K_P=3., K_Q=4., V_r=1, P=1., Q=0.)])
-    #append!(node_list, [SwingEqLVS(H=5., P=1., D=0.1, Ω=50,Γ=0.1,V=1.)])
     append!(node_list, [SwingEqLVS(H=5., P=1., D=0.1, Ω=50,Γ=0.1,V=1.)])
-    append!(node_list, [PQAlgebraic(P=-1,Q=-1)]) #note - for PowerModels it is different default
-    # direction, multiply by -1
+    append!(node_list, [SwingEqLVS(H=5., P=1., D=0.1, Ω=50,Γ=0.1,V=1.)])
+    append!(node_list, [PQAlgebraic(P=-1,Q=-1)])
 
 node_dict=OrderedDict(
     "bus1"=>SlackAlgebraic(U=1.),
@@ -35,14 +30,31 @@ powergrid_dict = PowerGrid(node_dict,line_dict)
 operationpoint = find_operationpoint(powergrid)
 operationpoint_dict = find_operationpoint(powergrid_dict)
 
-data, result = power_flow(powergrid)
-
-# pp = PowerPerturbation(node="bus2", fault_power=0.5,tspan_fault=(0.5,1.))
-# nsc = NodeShortCircuit(node="bus2", Y = complex(10., 0.),tspan_fault=(0.5,1.))
-# gp  = NodeParameterChange(node="bus2", value = 0.5,tspan_fault=(0.5,1.),var=:V)
-# lf=LineFailure(line_name="line1",tspan_fault=(0.5,1.))
+pp = PowerPerturbation(node="bus2", fault_power=0.5,tspan_fault=(0.5,1.))
+nsc = NodeShortCircuit(node="bus2", Y = complex(10., 0.),tspan_fault=(0.5,1.))
+gp  = NodeParameterChange(node="bus2", value = 0.5,tspan_fault=(0.5,1.),var=:V)
+lf=LineFailure(line_name="line1",tspan_fault=(0.5,1.))
 
 #result = simulate(lf,operationpoint,(0.,2.))
+data, result = power_flow(powergrid)
+
+N = length(node_list)
+
+v = [result["solution"]["bus"][string(k)]["vm"] for k in 1:N]
+
+@assert isapprox.(operationpoint[:, :v], v, atol=1e-10) |> all
+
+va = [result["solution"]["bus"][string(k)]["va"] for k in 1:N]
+
+@assert isapprox.(operationpoint[:, :φ], va, atol=1e-10) |> all
+
+p = [result["solution"]["gen"][string(k)]["pg"] for k in 1:N-1]
+
+@assert isapprox.(operationpoint[1:N-1, :p], p, atol=1e-10) |> all
+
+q = [result["solution"]["gen"][string(k)]["qg"] for k in 1:N-1]
+
+@assert isapprox.(operationpoint[1:N-1, :q], q, atol=1e-10) |> all
 
 #result = simulate(LineFailure_new(1), powergrid, operationpoint, (0.,2.))
 #result = simulate(lf, powergrid_dict, operationpoint, (0.,2.))
