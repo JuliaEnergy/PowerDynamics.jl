@@ -1,4 +1,4 @@
-"""
+@doc """
 ```Julia
     StaticLine(from, to, Y)
 ```
