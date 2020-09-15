@@ -1,5 +1,6 @@
 using Test: @testset, @test
 using PowerDynamics: PQAlgebraic, SlackAlgebraic, StaticLine, VoltageDependentLoad, construct_vertex, symbolsof, find_operationpoint, PowerGrid
+using LinearAlgebra: diag
 
 include("NodeTestBase.jl")
 
@@ -11,7 +12,7 @@ include("NodeTestBase.jl")
     load = VoltageDependentLoad(P = P, Q = Q, U = U, A = A, B = B)
     load_vertex = construct_vertex(load)
     @test symbolsof(load) == [:u_r, :u_i]
-    @test load_vertex.mass_matrix == [0,0]
+    @test load_vertex.mass_matrix |> diag == [0,0]
 
     smoketest_rhs(load_vertex)
 end
