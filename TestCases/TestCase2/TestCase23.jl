@@ -14,11 +14,11 @@ S_base_kW = 1
 Y_base = S_base_kW*1000/(V_base_kV*1000)^2
 
 # line paramterization
-R_14 = 0.25
-L_14 = 0.98*1e-3
-X_14 = ω*L_14
-Z_14 = R_14 + 1im*X_14
-Y_14 = (1/Z_14)/Y_base
+R_24 = 0.25
+L_24 = 0.98*1e-3
+X_24 = ω*L_24
+Z_24 = R_24 + 1im*X_24
+Y_24 = (1/Z_24)/Y_base
 
 # transformer parametrization
 Y_34 = (1/(0.0474069+1im*0.0645069))/Y_base
@@ -60,9 +60,9 @@ node_list=[]
     #append!(node_list,[VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P_3,Q=Q_3)])
     append!(node_list,[Connector()])
 line_list=[]
-    append!(line_list,[ConnectorLine(from=2,to=4)])
+    append!(line_list,[ConnectorLine(from=1,to=4)])
     append!(line_list,[PiModelLine(from=3,to=4,y=Y_34,y_shunt_mk=Y_34_shunt/2,y_shunt_km=Y_34_shunt/2)])
-    append!(line_list,[StaticLine(from=1,to=4,Y=Y_14)])
+    append!(line_list,[StaticLine(from=2,to=4,Y=Y_24)])
 
 powergrid = PowerGrid(node_list,line_list)
 operationpoint = find_operationpoint(powergrid)

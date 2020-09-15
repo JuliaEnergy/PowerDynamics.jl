@@ -53,8 +53,9 @@ V_r =1
 node_list=[]
     append!(node_list,[SlackAlgebraic(U=1.0)])
     append!(node_list,[VoltageDependentLoad(P=P_2,Q=Q_2,U=1.,A=0.0,B=1.0)])
-    append!(node_list,[GridFormingTecnalia(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=R_f, X_f=X_f)])
+    append!(node_list,[GridFormingTecnalia_experimental(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=R_f, X_f=X_f)])
     #append!(node_list,[VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P_3,Q=Q_3)])
+    #append!(node_list,[VSIMinimal_experimental(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P_3,Q=Q_3)])
     append!(node_list,[Connector()])
 line_list=[]
     append!(line_list,[ConnectorLine(from=2,to=4)])
@@ -62,7 +63,9 @@ line_list=[]
     append!(line_list,[StaticLine(from=1,to=4,Y=Y_14)])
 
 powergrid = PowerGrid(node_list,line_list)
-operationpoint = find_operationpoint(powergrid) #, sol_method = :dynamic)
+operationpoint = find_operationpoint(powergrid)#, sol_method = :dynamic)
+
+#startpoint = State(powergrid,10*rand(11))
 
 timespan = (0., 40.)
 
