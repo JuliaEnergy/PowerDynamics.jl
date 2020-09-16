@@ -1,5 +1,6 @@
 using Test: @testset, @test
 using PowerDynamics: CompositeNode, CSIMinimal, VSIMinimal, PQAlgebraic, construct_vertex, symbolsof
+using LinearAlgebra: diag
 
 include("../NodeTestBase.jl")
 
@@ -27,7 +28,7 @@ include("../NodeTestBase.jl")
     comp_vertex = construct_vertex(comp_node)
 
     @test symbolsof(comp_node) == [:u_r, :u_i, :ω]
-    @test comp_vertex.mass_matrix == [1,1,1]
+    @test comp_vertex.mass_matrix |> diag == [1,1,1]
 
     smoketest_rhs(comp_vertex, int_x=omega, int_dx=domega)
     # smoketest not compatible with internal variables?
@@ -38,7 +39,7 @@ include("../NodeTestBase.jl")
     comp_vertex_2 = construct_vertex(comp_node_2)
 
     @test symbolsof(comp_node_2) == [:u_r, :u_i]
-    @test comp_vertex_2.mass_matrix == [0,0]
+    @test comp_vertex_2.mass_matrix |> diag == [0,0]
 
     smoketest_rhs(comp_vertex_2)
 end

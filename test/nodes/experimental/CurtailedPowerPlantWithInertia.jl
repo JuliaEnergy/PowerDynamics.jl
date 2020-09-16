@@ -1,6 +1,6 @@
 using Test: @testset, @test
 using PowerDynamics: CurtailedPowerPlantWithInertia, construct_vertex, symbolsof
-using LinearAlgebra: I
+using LinearAlgebra: I, diag
 
 include("../NodeTestBase.jl")
 
@@ -18,7 +18,7 @@ include("../NodeTestBase.jl")
     curtailed_pp_vertex = construct_vertex(curtailed_pp)
 
     @test symbolsof(curtailed_pp) == [:u_r,:u_i,:θ_PLL,:e_Iω, :ω,:y,:e_Iiq,:e_Iid]
-    @test curtailed_pp_vertex.mass_matrix == [0,0,1,1,1,1,1,1]
+    @test curtailed_pp_vertex.mass_matrix |> diag == [0,0,1,1,1,1,1,1]
 
     smoketest_rhs(curtailed_pp_vertex, int_x=[θ_PLL,e_Iω, ω,y,e_Iiq,e_Iid], int_dx=[dθ_PLL,de_Iω, dω,dy,de_Iiq,de_Iid])
 end
