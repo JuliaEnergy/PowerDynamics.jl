@@ -45,11 +45,12 @@ end
 
 ## LineFailure
 
-"""
+@doc """
 ```Julia
 LineFailure(;line_name,tspan_fault)
 ```
 The arguments `line_name` and `tspan_fault` specify the line that should be disconnected from the grid and the respective fault duration.
+For a list of lines the line_name is the index and for an OrderedDict it is the key of the line.
 """
 struct LineFailure <: AbstractPerturbation
     line_name::Any

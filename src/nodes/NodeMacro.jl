@@ -216,5 +216,5 @@ creates a mass matrix with all masses turned off.
 function MassMatrix(;m_u::Bool = false, m_int = no_internal_masses)
     mm = [m_u, m_u] # double mass for u, because it is a complex variable
     append!(mm, m_int)
-    return mm .|> Int
+    return mm .|> Int |> Diagonal
 end

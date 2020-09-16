@@ -1,4 +1,5 @@
 # Error Types
+
 ```@docs
 PowerDynamicsError
 NodeDynamicsError

@@ -1,5 +1,6 @@
 using Test: @testset, @test
 using PowerDynamics: CSIMinimal, construct_vertex, symbolsof
+using LinearAlgebra: diag
 
 @testset "CSIMinimal" begin
     I_r = rand(1.0:10.0)
@@ -7,7 +8,7 @@ using PowerDynamics: CSIMinimal, construct_vertex, symbolsof
     CSI_min_vertex= construct_vertex(CSI_min)
 
     @test symbolsof(CSI_min) == [:u_r, :u_i]
-    @test CSI_min_vertex.mass_matrix == [0,0]
+    @test CSI_min_vertex.mass_matrix |> diag == [0,0]
 
     smoketest_rhs(CSI_min_vertex)
 end

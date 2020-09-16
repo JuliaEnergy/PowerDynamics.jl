@@ -1,4 +1,4 @@
-"""
+@doc """
 ```Julia
 NodeParameterChange(;node, value, tspan_fault, var)
 ```

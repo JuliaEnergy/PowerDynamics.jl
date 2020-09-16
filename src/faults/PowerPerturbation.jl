@@ -1,4 +1,4 @@
-"""
+@doc """
 ```Julia
 PowerPerturbation(;node_number,fault_power,tspan_fault,var)
 ```
