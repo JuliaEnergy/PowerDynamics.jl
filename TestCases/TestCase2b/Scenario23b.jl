@@ -26,9 +26,9 @@ Y_34_shunt = (1/((536.8837037+125.25700254999994*1im)))/Y_base
 
 # node powers
 P_2 = -16.67/S_base_kW
-Q_2 = 0/S_base_kW
-P_3=20/S_base_kW
-Q_3=0/S_base_kW
+Q_2 = 0.0/S_base_kW
+P_3 = 20/S_base_kW
+Q_3 = 0/S_base_kW
 
 # paramterization of grid-forming inverter
 ω_r = 0#-0.25
@@ -55,9 +55,9 @@ V_r =1
 
 node_list=[]
     append!(node_list,[SlackAlgebraic(U=1.)])
-    append!(node_list,[VoltageDependentLoad(P=P_2,Q=Q_2,U=1.,A=0.0,B=1.0)])
-    #append!(node_list,[GridFormingTecnalia(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_ω=τ_ω, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=R_f, X_f=X_f)])
-    append!(node_list,[VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P_3,Q=Q_3)])
+    append!(node_list,[VoltageDependentLoad(P=P_2,Q=Q_2,U=1.,A=1.0,B=0.0)])
+    append!(node_list,[GridFormingTecnalia(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=R_f, X_f=X_f)])
+    #append!(node_list,[VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P_3,Q=Q_3)])
     append!(node_list,[Connector()])
 line_list=[]
     append!(line_list,[ConnectorLine(from=2,to=4)])

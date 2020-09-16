@@ -57,9 +57,8 @@ V_r =1.
 node_list=[]
     append!(node_list,[SlackAlgebraic(U=1.)])
     append!(node_list,[VoltageDependentLoad(P=P_2,Q=Q_2,U=1.,A=1.0,B=0.0)])
-    #append!(node_list,[VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P_3,Q=Q_3)])
+    append!(node_list,[VSIMinimal(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P_3,Q=Q_3)])
     #append!(node_list,[VSIMinimal_experimental(τ_P=τ_P,τ_Q=τ_Q,K_P=K_P,K_Q=K_Q,V_r=V_r,P=P_3,Q=Q_3)])
-    append!(node_list,[SwingEqLVS(V = 1.,H=1.0, P=1.0, D=0.1, Ω=2*π*50, Γ=100.)])
     append!(node_list,[Connector()])
 line_list=[]
     append!(line_list,[ConnectorLine(from=2,to=4)])
