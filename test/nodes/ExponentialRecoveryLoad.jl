@@ -1,5 +1,6 @@
 using Test: @testset, @test
 using PowerDynamics: ExponentialRecoveryLoad, construct_vertex, symbolsof
+using LinearAlgebra: diag
 
 include("NodeTestBase.jl")
 
@@ -12,7 +13,7 @@ include("NodeTestBase.jl")
     exprec_vertex= construct_vertex(exponentialRecoveryLoad)
 
     @test symbolsof(exponentialRecoveryLoad) == [:u_r, :u_i, :x_p, :x_q]
-    @test exprec_vertex.mass_matrix == [0,0,1,1]
+    @test exprec_vertex.mass_matrix |> diag == [0,0,1,1]
 
     smoketest_rhs(exprec_vertex, int_x=[x_p,x_q], int_dx=[dx_p, dx_q])
 end
