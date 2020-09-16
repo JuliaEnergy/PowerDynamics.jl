@@ -1,6 +1,6 @@
 using Test: @testset, @test
 using PowerDynamics: PVInverterWithFrequencyControl, construct_vertex, symbolsof
-using LinearAlgebra: I
+using LinearAlgebra: I, diag
 
 include("../NodeTestBase.jl")
 
@@ -17,7 +17,7 @@ include("../NodeTestBase.jl")
     pv_inverter_vertex = construct_vertex(pv_inverter)
 
     @test symbolsof(pv_inverter) == [:u_r, :u_i,:θ_PLL,:v_xm,:v_ym,:P,:ω]
-    @test pv_inverter_vertex.mass_matrix == [0,0,1,1,1,1,1]
+    @test pv_inverter_vertex.mass_matrix |> diag == [0,0,1,1,1,1,1]
 
     smoketest_rhs(pv_inverter_vertex, int_x=[omega,theta_PLL, v_xm, v_ym, P, ω], int_dx=[domega, dtheta_PLL, dvx_m, dv_ym, dP,dω])
 end

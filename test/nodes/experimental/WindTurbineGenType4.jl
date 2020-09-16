@@ -1,6 +1,6 @@
 using Test: @testset, @test
 using PowerDynamics: WindTurbineGenType4, construct_vertex, symbolsof
-using LinearAlgebra: I
+using LinearAlgebra: I, diag
 
 include("../NodeTestBase.jl")
 
@@ -17,7 +17,7 @@ include("../NodeTestBase.jl")
     wind_gen_vertex = construct_vertex(wind_gen)
 
     @test symbolsof(wind_gen) == [:u_r,:u_i,:θ_PLL,:ω,:e_Idθ,:i_d]
-    @test wind_gen_vertex.mass_matrix == [0,0,1,1,1,1]
+    @test wind_gen_vertex.mass_matrix |> diag == [0,0,1,1,1,1]
 
     smoketest_rhs(wind_gen_vertex, int_x=[θ_PLL,e_Idθ,i_d, ω], int_dx=[dθ_PLL,de_Idθ,di_d, dω])
 end

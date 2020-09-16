@@ -29,17 +29,22 @@ Unicode, greek letters are used within the Code, e.g. `Ω` and `ω` in [`PowerDy
 - Ranges of nodes are mathematical, i.e. they include the first and the last element. For example $\sum_{k=3}^6$ sums over $3$, $4$, $5$, and $6$.
 - For now, no selfadmittance is allowed, i.e. $y_{aa} = 0$ for all nodes $a$.
 - The admittance laplacian uses the following definition ([convention from wikipedia](https://en.wikipedia.org/wiki/Nodal_admittance_matrix#Construction))
-```math
-Y^L_{ab} = \begin{cases}
-  \sum_{c} y_{ac} & \text{if } a=b, \\
-  -y_{ab} & \text{otherwise.}
-\end{cases}
-```
+
+  ```math
+  Y^L_{ab} = \begin{cases}
+    \sum_{c} y_{ac} & \text{if } a=b, \\
+    -y_{ab} & \text{otherwise.}
+  \end{cases}
+  ```
+
 - The nodal complex current is calculated as
-```math
-{i_c}_a = \sum_{b} LY_{ab} u_b .
-```
+
+  ```math
+  {i_c}_a = \sum_{b} LY_{ab} u_b .
+  ```
+
 - The complex power is calculated as (with ``^*`` as complex conjugation)
-```math
-s_a = u_a \cdot {i_c}_a^*.
-```
+
+  ```math
+  s_a = u_a \cdot {i_c}_a^*.
+  ```

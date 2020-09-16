@@ -1,4 +1,4 @@
-"""
+@doc """
 ```Julia
     NodeShortCircuit(;node,Y,tspan_fault)
 ```
