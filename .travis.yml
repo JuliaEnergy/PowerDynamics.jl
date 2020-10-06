@@ -1,4 +1,5 @@
 language: julia
+codecov: true
 os:
 - linux
 julia:
@@ -22,7 +23,8 @@ env:
   global:
   - PYTHON=conda
 script:
-- julia --check-bounds=yes --color=yes --inline=no -e "using Pkg; Pkg.test(coverage=true)"
-  && julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; res=Codecov.process_folder(); Codecov.submit(res);'
-- julia -e 'using Pkg; Pkg.add(PackageSpec(name="Documenter", version="0.23"))' &&
-  julia docs/make.jl
+  - julia --project --check-bounds=yes --color=yes --inline=no -e 'using Pkg; Pkg.instantiate(); Pkg.build(); Pkg.test(; coverage=true)'
+  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="Documenter", version="0.23"))' && julia docs/make.jl
+
+after_success:
+  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder()); Coveralls.submit(process_folder())'
