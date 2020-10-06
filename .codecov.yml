@@ -1,2 +1,3 @@
 ignore:
   - "src/nodes/experimental"  # ignore folder
+  - "*.jl.*cov" # copied over from 'codecov.yml'
