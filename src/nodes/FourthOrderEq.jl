@@ -71,7 +71,7 @@ With the PowerDynamics.jl naming conventions of ``i`` and ``u`` they read as
 
     Ω_H = Ω / (2*H)
     
-end [[θ,dθ],[ω, dω]] begin
+end [[θ,dθ],[ω, dω]] begin # u= u_r+1im*u_i = v*exp(1im*ϕ)
     i_c = 1im*i*exp(-1im*θ)
     e_c = 1im*u*exp(-1im*θ)
     p = real(u * conj(i))
