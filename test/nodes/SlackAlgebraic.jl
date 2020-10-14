@@ -1,5 +1,6 @@
 using Test: @testset, @test
 using PowerDynamics: SlackAlgebraic, construct_vertex, symbolsof
+using LinearAlgebra: diag
 
 include("NodeTestBase.jl")
 
@@ -9,7 +10,7 @@ include("NodeTestBase.jl")
     slack_vertex = construct_vertex(slack)
 
     @test symbolsof(slack) == [:u_r, :u_i]
-    @test slack_vertex.mass_matrix == [0,0]
+    @test slack_vertex.mass_matrix |> diag == [0,0]
 
     smoketest_rhs(slack_vertex)
 end

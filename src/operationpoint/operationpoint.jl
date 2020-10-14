@@ -136,14 +136,15 @@ function find_operationpoint(
     end
 
     if ic_guess === nothing
-        if solve_powerflow # use PowerModels to solve the power flow
-            data, result = power_flow(pg)
-            v = [result["solution"]["bus"][string(k)]["vm"] for k in 1:length(pg.nodes)]
-            va = [result["solution"]["bus"][string(k)]["va"] for k in 1:length(pg.nodes)]
-            ic_guess = initial_guess(pg, v .* exp.(1im .* va))
-        else
-            ic_guess = initial_guess(pg)
-        end
+        ic_guess = initial_guess(pg)
+    end
+
+    # use PowerModels to solve the power flow
+    if solve_powerflow 
+        _, result = power_flow(pg)
+        v = [result["solution"]["bus"][string(k)]["vm"] for k in 1:length(pg.nodes)]
+        va = [result["solution"]["bus"][string(k)]["va"] for k in 1:length(pg.nodes)]
+        ic_guess = initial_guess(pg, v .* exp.(1im .* va))
     end
 
     if sol_method == :nlsolve

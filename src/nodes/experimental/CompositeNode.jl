@@ -133,10 +133,10 @@ function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IPU, _IU, _PU}
     cfs = [n.f! for n in current_vertices]
     pfs = [n.f! for n in power_vertices]
 
-    mms = [vert.mass_matrix == I ? vert.mass_matrix * ones(Int, vert.dim) : vert.mass_matrix for vert in all_vertices]
+    mms = [vert.mass_matrix == I ? vert.mass_matrix * ones(Int, vert.dim) : diag(vert.mass_matrix) for vert in all_vertices]
 
     #  and the corresponding masses for the internal variables of all vertices
-    mass_matrix = vcat(mms[end][1:2], [mm[3:end] for mm in mms]...)
+    mass_matrix = vcat(mms[end][1:2], [mm[3:end] for mm in mms]...) |> Diagonal
 
     num_cv = length(current_vertices)
     num_pv = length(power_vertices)
@@ -197,12 +197,12 @@ function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IP, _I, _P}
     cfs = [n.f! for n in current_vertices]
     pfs = [n.f! for n in power_vertices]
 
-    mms = [vert.mass_matrix == I ? vert.mass_matrix * ones(Int, vert.dim) : vert.mass_matrix for vert in all_vertices]
+    mms = [vert.mass_matrix == I ? vert.mass_matrix * ones(Int, vert.dim) : diag(vert.mass_matrix) for vert in all_vertices]
 
     # Since there is no U-vertex, we construct a complex constraint and
     # set the first two entries to 0. The remaining entries are the
     # corresponding masses for the internal variables of all vertices.
-    mass_matrix = vcat([0, 0], [mm[3:end] for mm in mms]...)
+    mass_matrix = vcat([0, 0], [mm[3:end] for mm in mms]...) |> Diagonal
 
     num_cv = length(current_vertices)
     num_pv = length(power_vertices)
