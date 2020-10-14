@@ -1,4 +1,4 @@
-using PowerDynamics: SlackAlgebraic, SwingEqLVS, PQAlgebraic, StaticLine, PowerGrid, find_operationpoint, VSIMinimal
+using PowerDynamics: SlackAlgebraic, SwingEqLVS, PQAlgebraic, StaticLine, PowerGrid, find_operationpoint, VSIMinimal, power_flow
 using OrderedCollections:OrderedDict
 using Test: @test, @testset, @test_throws, @test_logs, @test_nowarn
 
@@ -35,11 +35,6 @@ powergrid_dict = PowerGrid(node_dict,line_dict)
 
 operationpoint = find_operationpoint(powergrid)
 operationpoint_dict = find_operationpoint(powergrid_dict)
-
-pp = PowerPerturbation(node="bus2", fault_power=0.5,tspan_fault=(0.5,1.))
-nsc = NodeShortCircuit(node="bus2", Y = complex(10., 0.),tspan_fault=(0.5,1.))
-gp  = NodeParameterChange(node="bus2", value = 0.5,tspan_fault=(0.5,1.),var=:V)
-lf=LineFailure(line_name="line1",tspan_fault=(0.5,1.))
 
 data, result = power_flow(powergrid)
 
