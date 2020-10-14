@@ -1,11 +1,35 @@
 using ModelingToolkit
 using NetworkDynamics
 using Latexify
+using LinearAlgebra
 using OrdinaryDiffEq
 using Plots
 
 # https://github.com/SciML/ModelingToolkit.jl/issues/362
 # https://github.com/SciML/ModelingToolkit.jl/issues/340
+
+@variables t x[1:3](t) u(t)
+@parameters p[1:4]
+@derivatives D'~t
+
+eqs = [
+      D(x[1]) ~ - p[1] * x[2]
+      D(x[2]) ~ - p[2] * x[1]
+      D(x[3]) ~ p[3] - x[3] + sin(x[1]) + p[4] * u
+]
+
+sys = ODESystem(eqs, t, x, p; name = :foo)
+
+function ODEVertex(os::ODESystem, inputs)
+      dim = length(os.states)
+      sym = getfield.(os.states, :name)
+      #compute mass_matrix --> TODO
+      f! = build_function(os.eqs, os.states, os.ps, os.iv, inputs)
+      ODEVertex{typeof(f!)}(f!, dim, I, sym)
+  end
+
+  # this works, but how to get arrays as variables? now the signature is x₁, x₂, x₃, p₁, p₂, p₃, p₄, t, u
+ODEVertex(sys, u)
 
 ################# formulation with currents #################
 
@@ -43,6 +67,9 @@ flow_constraints = [
       0 ~ node2.i_r + line1.i_r,
       0 ~ node2.i_i + line1.i_i,
 ]
+
+# This step should be done in ND.jl
+# https://github.com/FHell/NetworkDynamics.jl/issues/38
 
 network =  ODESystem(flow_constraints, t, [], [], systems=[node1, node2, line1])
 
