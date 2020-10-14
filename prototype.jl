@@ -8,28 +8,22 @@ using Plots
 # https://github.com/SciML/ModelingToolkit.jl/issues/362
 # https://github.com/SciML/ModelingToolkit.jl/issues/340
 
-@variables t x[1:3](t) u(t)
+@variables t dx[1:3](t) x[1:3](t) u(t)
 @parameters p[1:4]
 @derivatives D'~t
 
-eqs = [
-      D(x[1]) ~ - p[1] * x[2]
-      D(x[2]) ~ - p[2] * x[1]
-      D(x[3]) ~ p[3] - x[3] + sin(x[1]) + p[4] * u
-]
+function foo!(dx, x, p, t, u)
+      dx[1] = - p[1] * x[2]
+      dx[2] = - p[2] * x[1]
+      dx[3] = p[3] - x[3] + sin(x[1]) + p[4] * u
+end
 
-sys = ODESystem(eqs, t, x, p; name = :foo)
-
-function ODEVertex(os::ODESystem, inputs)
-      dim = length(os.states)
-      sym = getfield.(os.states, :name)
-      #compute mass_matrix --> TODO
-      f! = build_function(os.eqs, os.states, os.ps, os.iv, inputs)
-      ODEVertex{typeof(f!)}(f!, dim, I, sym)
-  end
+foo!(dx, x, p, t, u)
+eqs = @. D(x) ~ dx
 
   # this works, but how to get arrays as variables? now the signature is x₁, x₂, x₃, p₁, p₂, p₃, p₄, t, u
-ODEVertex(sys, u)
+build_function(eqs, x, p, t, u)
+
 
 ################# formulation with currents #################
 
