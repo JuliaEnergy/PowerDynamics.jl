@@ -1,8 +1,7 @@
-# using Pkg
-# Pkg.instantiate()
-using PowerDynamics: SlackAlgebraic, SwingEqLVS, PQAlgebraic, StaticLine, PowerGrid, find_operationpoint
-#using Revise
+using PowerDynamics: SlackAlgebraic, SwingEqLVS, PQAlgebraic, StaticLine, PowerGrid, find_operationpoint, VSIMinimal
 using OrderedCollections:OrderedDict
+using Test: @test, @testset, @test_throws, @test_logs, @test_nowarn
+
 
 node_list=[]
     append!(node_list, [SlackAlgebraic(U=1.)])
@@ -32,21 +31,33 @@ line_dict=OrderedDict(
 powergrid = PowerGrid(node_list,line_list)
 powergrid_dict = PowerGrid(node_dict,line_dict)
 
+##
+
 operationpoint = find_operationpoint(powergrid)
 operationpoint_dict = find_operationpoint(powergrid_dict)
 
+pp = PowerPerturbation(node="bus2", fault_power=0.5,tspan_fault=(0.5,1.))
+nsc = NodeShortCircuit(node="bus2", Y = complex(10., 0.),tspan_fault=(0.5,1.))
+gp  = NodeParameterChange(node="bus2", value = 0.5,tspan_fault=(0.5,1.),var=:V)
+lf=LineFailure(line_name="line1",tspan_fault=(0.5,1.))
+
 data, result = power_flow(powergrid)
 
-# pp = PowerPerturbation(node="bus2", fault_power=0.5,tspan_fault=(0.5,1.))
-# nsc = NodeShortCircuit(node="bus2", Y = complex(10., 0.),tspan_fault=(0.5,1.))
-# gp  = NodeParameterChange(node="bus2", value = 0.5,tspan_fault=(0.5,1.),var=:V)
-# lf=LineFailure(line_name="line1",tspan_fault=(0.5,1.))
+N = length(node_list)
 
-#result = simulate(lf,operationpoint,(0.,2.))
+v = [result["solution"]["bus"][string(k)]["vm"] for k in 1:N]
 
-#result = simulate(LineFailure_new(1), powergrid, operationpoint, (0.,2.))
-#result = simulate(lf, powergrid_dict, operationpoint, (0.,2.))
-#result = simulate(pp_old,powergrid,operationpoint,(0.,2.))
+@test isapprox.(operationpoint[:, :v], v, atol=1e-10) |> all
 
-#include("plotting_test.jl")
-#plot_res(result,powergrid,2)
+va = [result["solution"]["bus"][string(k)]["va"] for k in 1:N]
+
+@test isapprox.(operationpoint[:, :φ], va, atol=1e-10) |> all
+
+p = [result["solution"]["gen"][string(k)]["pg"] for k in 1:N-1]
+
+@test isapprox.(operationpoint[1:N-1, :p], p, atol=1e-10) |> all
+
+q = [result["solution"]["gen"][string(k)]["qg"] for k in 1:N-1]
+
+@test isapprox.(operationpoint[1:N-1, :q], q, atol=1e-10) |> all
+    
