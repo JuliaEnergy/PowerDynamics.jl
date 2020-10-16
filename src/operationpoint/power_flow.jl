@@ -257,11 +257,11 @@ function power_flow(power_grid::PowerGrid)
         data[keyword] = Dict{String,Any}()
     end
 
-    for line in power_grid.lines
+    for line in collect(values(power_grid.lines))
         make_branch_ac!(data, line)
     end
 
-    for node in power_grid.nodes
+    for node in collect(values(power_grid.nodes))
         make_bus_ac!(data, node)
     end
 
