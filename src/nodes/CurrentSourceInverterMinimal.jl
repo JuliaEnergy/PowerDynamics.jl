@@ -10,6 +10,7 @@ most simple representation of an inverter in grid-feeding mode, according to
 Rocabert, Joan, et al. "Control of power converters in AC microgrids." (2012).
 Here, additionally to `u`, there are no internal dynamic variables.
 
+
 # Keyword Arguments
 - `I_r`: reference/ desired current
 
