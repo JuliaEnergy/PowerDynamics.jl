@@ -6,4 +6,4 @@
 
 # Contact
 
-In case of questions, please submit an [issue on github](https://github.com/JuliaEnergy/PowerDynamics.jl) or ask on [our slack channel](https://julialang.slack.com/messages/CDAGL4T09/) (get [your invitation here](https://slackinvite.julialang.org/)).
+In case of questions, please submit an [issue on github](https://github.com/JuliaEnergy/PowerDynamics.jl) or ask on [our slack channel](https://julialang.slack.com/messages/CDAGL4T09/) (get [your invitation here](https://julialang.org/slack/)).
