@@ -3,6 +3,7 @@
 ## Version 2.4.0
 
 * ![enhancement](https://img.shields.io/badge/PD-enhancement-%23a2eeef.svg) [added Architecture.md](https://github.com/JuliaEnergy/PowerDynamics.jl/issues/52)
+* ![enhancement](https://img.shields.io/badge/PD-enhancement-%23a2eeef.svg) [using github actions for CI]()
 
 ## Version 2.3.3
 
