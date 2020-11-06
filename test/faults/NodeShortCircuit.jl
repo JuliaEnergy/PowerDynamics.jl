@@ -72,7 +72,7 @@ end
     @test sol.dqsol.retcode == :Success
 
     # no voltage drop
-    @test all(sol(0.6, 1:2, :v) .≈ op[1:2, :v])
+    @test all(sol(0.575, 1:2, :v) .≈ op[1:2, :v])
 
     # a short circuit at the non-slack node
     nsc = NodeShortCircuit(;
@@ -84,13 +84,13 @@ end
     sol = simulate(nsc, op, (0., 1.))
 
     # observe voltage drop
-    @test sol(0.6, 1, :v) ≈ op[1, :v]
-    @test sol(0.6, 2, :v) ≈ 0.7918311818509268
+    @test sol(0.575, 1, :v) ≈ op[1, :v]
+    @test sol(0.575, 2, :v) ≈ 0.7918311818509268
 
     # test whether currents are determined correctly
     normal_current = op[2, :i]
-    fault_current = pg.lines[1].Y * (sol(0.6, 2, :u) - sol(0.6, 1, :u))
-    shunt_current = - nsc.Y * sol(0.6, 2, :u)
+    fault_current = pg.lines[1].Y * (sol(0.575, 2, :u) - sol(0.575, 1, :u))
+    shunt_current = - nsc.Y * sol(0.575, 2, :u)
     @test abs(fault_current) > abs(normal_current)
     @test fault_current - shunt_current ≈ normal_current
 
