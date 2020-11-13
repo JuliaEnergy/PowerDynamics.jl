@@ -82,6 +82,8 @@ function convert_line(line)
         StaticLine(;sym_params...)
     elseif type == "PiModelLine"
         PiModelLine(;sym_params...)
+    elseif type == "Transformer"
+        Transformer(;sym_params...)
     else
         throw(ArgumentError("Invalid type: $type"))
     end
