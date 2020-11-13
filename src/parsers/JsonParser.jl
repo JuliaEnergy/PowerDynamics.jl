@@ -63,6 +63,8 @@ function convert_node(node)
         CSIMinimal(;sym_params...)
     elseif type == "ExponentialRecoveryLoad"
         ExponentialRecoveryLoad(;sym_params...)
+    elseif type == "VoltageDependentLoad"
+        VoltageDependentLoad(;sym_params...)
     else
         throw(ArgumentError("Invalid type: $type"))
     end
