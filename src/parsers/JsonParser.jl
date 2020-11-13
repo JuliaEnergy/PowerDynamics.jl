@@ -23,8 +23,8 @@ end
 Writes a [`PowerGrid`](@ref) model into a file as JSON.
 """
 function write_powergrid(pg::PowerGrid, file, ::Type{Json})
-    json_nodes = map(write_type, pg.nodes)
-    json_lines = map(write_type, pg.lines)
+    json_nodes = map(write_type, values(pg.nodes))
+    json_lines = map(write_type, values(pg.lines))
     json_dict = Dict("version" => "1","nodes" => json_nodes, "lines" => json_lines)
     open(file,"w") do f
         print(f, json_dict, 2)
