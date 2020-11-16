@@ -77,10 +77,10 @@ function convert_node(node)
     else
         throw(ArgumentError("Invalid type: $type"))
     end
-    if name != "nothing"
-        (name,node)
-    else
+    if typeof(name) == Nothing
         node
+    else
+        (name,node)
     end
 end
 
@@ -102,10 +102,10 @@ function convert_line(line)
     else
         throw(ArgumentError("Invalid type: $type"))
     end
-    if name != "nothing"
-        (name,line)
-    else
+    if typeof(name) == Nothing
         line
+    else
+        (name,line)
     end
 end
 
@@ -117,7 +117,12 @@ function _map_complex(v)
     end
 end
 
-function write_type(component,name=nothing)
+function write_type(component)
+    params = typedict(component)
+    dict = Dict("type" => string(t |> typeof |> nameof), "params" => params)
+end
+
+function write_type(component,name)
     params = typedict(component)
     dict = Dict("type" => string(component |> typeof |> nameof), "params" => params, "name" => string(name))
 end
