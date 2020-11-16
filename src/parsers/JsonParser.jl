@@ -119,7 +119,7 @@ end
 
 function write_type(component)
     params = typedict(component)
-    dict = Dict("type" => string(t |> typeof |> nameof), "params" => params)
+    dict = Dict("type" => string(component |> typeof |> nameof), "params" => params)
 end
 
 function write_type(component,name)
