@@ -203,7 +203,7 @@ end
     else
         label --> tslabel(sym, n)
     end
-    xlabel --> "t"
+    xguide --> "t"
     t = tspan(sol, tres)
     println(t)
     t, tstransform(sol(t, n, sym, args...))
