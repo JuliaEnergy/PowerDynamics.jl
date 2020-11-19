@@ -125,6 +125,12 @@ dict_grid = read_powergrid(dict_export_file, Json)
 @test dict_grid.nodes == expected_nodes_dict
 @test dict_grid.lines == expected_lines_dict
 
+@test typeof(dict_grid.nodes)<: OrderedDict 
+@test typeof(dict_grid.lines)<: OrderedDict 
+
+@test typeof(array_grid.nodes)<:Array
+@test typeof(array_grid.lines)<:Array
+
 
 @test_throws ArgumentError read_powergrid(
     joinpath(@__DIR__, "grid_with_invalid_type.json"),
