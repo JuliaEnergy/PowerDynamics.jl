@@ -61,9 +61,9 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Pkg
-            Pkg.add("PowerDynamics")
             Pkg.develop(PackageSpec(path=pwd()))
             Pkg.instantiate()'
+      - run: julia -e "using Pkg; Pkg.activate(\".\"); include(\"docs/make.jl\")" 
       - run: julia -e 'using Pkg; Pkg.add(PackageSpec(name="Documenter", version="0.23"))' && julia docs/make.jl
       #- run: julia --project=docs docs/make.jl
         env:
