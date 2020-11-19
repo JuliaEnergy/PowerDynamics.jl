@@ -1,0 +1,168 @@
+{
+  "nodes": [
+    {
+      "params": {
+        "P": 2,
+        "H": 1,
+        "Ω": 12,
+        "D": 3,
+        "Y_n": 0
+      },
+      "type": "SwingEq"
+    },
+    {
+      "params": {
+        "P": 2,
+        "H": 1,
+        "Ω": 12,
+        "D": 3,
+        "Γ": 13,
+        "V": 14,
+        "Y_n": 0
+      },
+      "type": "SwingEqLVS"
+    },
+    {
+      "params": {
+        "T_d_dash": 14,
+        "D": 3,
+        "X_d": 18,
+        "X_q": 19,
+        "Ω": 12,
+        "X_d_dash": 17,
+        "T_q_dash": 15,
+        "X_q_dash": 16,
+        "P": 2,
+        "H": 1,
+        "E_f": 13,
+        "Y_n": 0
+      },
+      "type": "FourthOrderEq"
+    },
+    {
+      "params": {
+        "U": 10,
+        "Y_n": 0
+      },
+      "type": "SlackAlgebraic"
+    },
+    {
+      "params": {
+        "P": 0,
+        "Q": 10,
+        "Y_n": 0
+      },
+      "type": "PQAlgebraic"
+    },
+    {
+      "params": {
+        "P": 10,
+        "V": 120,
+        "Y_n": 0
+      },
+      "type": "PVAlgebraic"
+    },
+    {
+      "params": {
+        "τ_Q": 2,
+        "P": 6,
+        "V_r": 5,
+        "Q": 7,
+        "K_P": 3,
+        "K_Q": 4,
+        "τ_P": 1,
+        "Y_n": 0
+      },
+      "type": "VSIMinimal"
+    },
+    {
+      "params": {
+        "τ_Q": 3,
+        "P": 7,
+        "V_r": 6,
+        "τ_v": 1,
+        "Q": 8,
+        "K_P": 4,
+        "K_Q": 5,
+        "τ_P": 2,
+        "Y_n": 0
+      },
+      "type": "VSIVoltagePT1"
+    },
+    {
+      "params": {
+        "I_r": 1,
+        "Y_n": 0
+      },
+      "type": "CSIMinimal"
+    },
+    {
+      "params": {
+        "Nqt": 6,
+        "P0": 1,
+        "V0": 9,
+        "Npt": 4,
+        "Tq": 8,
+        "Nqs": 5,
+        "Q0": 2,
+        "Nps": 3,
+        "Tp": 7,
+        "Y_n": 0
+      },
+      "type": "ExponentialRecoveryLoad"
+    },
+    {
+      "params": {
+        "T_d_dash": 5,
+        "D": 3,
+        "X_d": 9,
+        "X_q": 10,
+        "R_d": 18,
+        "K_e": 14,
+        "Ω": 4,
+        "T_f": 13,
+        "T_sv": 19,
+        "X_d_dash": 8,
+        "T_q_dash": 6,
+        "K_a": 15,
+        "X_q_dash": 7,
+        "T_e": 11,
+        "P": 2,
+        "H": 1,
+        "V_ref": 17,
+        "K_f": 16,
+        "T_a": 12,
+        "T_ch": 20,
+        "Y_n": 0
+      },
+      "type": "FourthOrderEqGovernorExciterAVR"
+    }
+  ],
+  "lines": [
+    {
+      "params": {
+        "from": 1,
+        "Y": {
+          "re": 0.1,
+          "im": 5.0
+        },
+        "to": 2
+      },
+      "type": "StaticLine"
+    },
+    {
+      "params": {
+        "y": {
+          "re": 0.1,
+          "im": 5.0
+        },
+        "from": 1,
+        "y_shunt_mk": 300,
+        "y_shunt_km": 200,
+        "to": 3
+      },
+      "type": "PiModelLine"
+    }
+  ],
+  "version": "1"
+}

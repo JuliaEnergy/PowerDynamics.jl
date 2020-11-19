@@ -2,6 +2,7 @@ using PowerDynamics:
     read_powergrid,
     write_powergrid,
     Json
+using OrderedCollections: OrderedDict
 using Test: @test, @test_throws
 
 expected_swing_eq = SwingEq(H = 1, P = 2, D = 3, Ω = 12)
@@ -60,11 +61,15 @@ expected_fourth_order_eq_avr = FourthOrderEqGovernorExciterAVR(
     T_ch = 20,
 )
 
-expected_static_line = StaticLine(from = 1, to = 2, Y = 0.1 + 5im)
-expected_pimodel_line =
+expected_static_line_array = StaticLine(from = 1, to = 2, Y = 0.1 + 5im)
+expected_pimodel_line_array =
     PiModelLine(from = 1, to = 3, y = 0.1 + 5im, y_shunt_km = 200, y_shunt_mk = 300)
 
-expected_nodes = [
+expected_static_line_dict = StaticLine(from = "bus1", to = "bus2", Y = 0.1 + 5im)
+expected_pimodel_line_dict =
+    PiModelLine(from = "bus1", to = "bus3", y = 0.1 + 5im, y_shunt_km = 200, y_shunt_mk = 300)
+
+expected_nodes_array = [
     expected_swing_eq,
     expected_swing_eq_lvs,
     expected_fourth_order_eq,
@@ -77,23 +82,48 @@ expected_nodes = [
     expected_exponential_recov_load,
     expected_fourth_order_eq_avr,
 ]
-expected_lines = [expected_static_line, expected_pimodel_line]
+expected_lines_array = [expected_static_line_array, expected_pimodel_line_array]
 
-grid = read_powergrid(joinpath(@__DIR__, "grid.json"), Json)
-@test grid.nodes == expected_nodes
-@test grid.lines == expected_lines
+expected_nodes_dict = OrderedDict(
+    "bus1" => expected_swing_eq,
+    "bus2" => expected_swing_eq_lvs,
+    "bus3" => expected_fourth_order_eq,
+    "bus4" => expected_slack,
+    "bus5" => expected_pq,
+    "bus6" => expected_pv,
+    "bus7" => expected_vsi_minimal,
+    "bus8" => expected_vsi_voltage_pt1,
+    "bus9" => expected_csi_minimal,
+    "bus10" => expected_exponential_recov_load,
+    "bus11" => expected_fourth_order_eq_avr,
+)
+expected_lines_dict = OrderedDict("branch1" => expected_static_line_dict, "branch2" => expected_pimodel_line_dict)
+
+array_grid = read_powergrid(joinpath(@__DIR__, "array_grid.json"), Json)
+@test array_grid.nodes == expected_nodes_array
+@test array_grid.lines == expected_lines_array
+
+dict_grid = read_powergrid(joinpath(@__DIR__, "dict_grid.json"), Json)
+@test dict_grid.nodes == expected_nodes_dict
+@test dict_grid.lines == expected_lines_dict
 
 target_dir = "../target"
-export_file = joinpath(target_dir, "grid_export.json")
+array_export_file = joinpath(target_dir, "array_grid_export.json")
+dict_export_file = joinpath(target_dir, "dict_grid_export.json")
 mkpath(target_dir)
 
-write_powergrid(grid, export_file, Json)
+write_powergrid(array_grid, array_export_file, Json)
+write_powergrid(dict_grid, dict_export_file, Json)
 
 # complete the cycle and read back in
-grid = read_powergrid(export_file, Json)
+array_grid = read_powergrid(array_export_file, Json)
+dict_grid = read_powergrid(dict_export_file, Json)
 
-@test grid.nodes == expected_nodes
-@test grid.lines == expected_lines
+@test array_grid.nodes == expected_nodes_array
+@test array_grid.lines == expected_lines_array
+
+@test dict_grid.nodes == expected_nodes_dict
+@test dict_grid.lines == expected_lines_dict
 
 
 @test_throws ArgumentError read_powergrid(
