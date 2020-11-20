@@ -37,6 +37,7 @@ include("nodes/experimental/WindTurbineGenType4_RotorControl.jl")
 include("nodes/experimental/CurtailedPowerPlantWithInertia.jl")
 include("nodes/experimental/CompositeNode.jl")
 include("nodes/experimental/GridFormingTecnalia.jl")
+include("nodes/experimental/GridFollowingTecnalia.jl")
 include("nodes/experimental/Connector.jl")
 
 
