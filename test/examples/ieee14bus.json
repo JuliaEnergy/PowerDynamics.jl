@@ -1,0 +1,450 @@
+{
+  "nodes": [
+    {
+      "name": "bus1",
+      "params": {
+        "T_d_dash": 7.4,
+        "D": 2,
+        "X_d": 0.8979,
+        "X_q": 0.646,
+        "Ω": 50,
+        "X_d_dash": 0.2995,
+        "T_q_dash": 0.1,
+        "X_q_dash": 0.646,
+        "P": 2.32,
+        "H": 5.148,
+        "E_f": 1,
+        "Y_n": 0
+      },
+      "type": "FourthOrderEq"
+    },
+    {
+      "name": "bus2",
+      "params": {
+        "U": 1,
+        "Y_n": 0
+      },
+      "type": "SlackAlgebraic"
+    },
+    {
+      "name": "bus3",
+      "params": {
+        "T_d_dash": 6.1,
+        "D": 2,
+        "X_d": 1.05,
+        "X_q": 0.98,
+        "Ω": 50,
+        "X_d_dash": 0.185,
+        "T_q_dash": 0.4,
+        "X_q_dash": 0.36,
+        "P": -0.942,
+        "H": 6.54,
+        "E_f": 1,
+        "Y_n": 0
+      },
+      "type": "FourthOrderEq"
+    },
+    {
+      "name": "bus4",
+      "params": {
+        "U": 1.0,
+        "P": -0.478,
+        "A": 0.0,
+        "Q": -0.0,
+        "B": 0.0,
+        "Y_n": 0
+      },
+      "type": "VoltageDependentLoad"
+    },
+    {
+      "name": "bus5",
+      "params": {
+        "U": 1.0,
+        "P": -0.076,
+        "A": 0.0,
+        "Q": -0.016,
+        "B": 0.0,
+        "Y_n": 0
+      },
+      "type": "VoltageDependentLoad"
+    },
+    {
+      "name": "bus6",
+      "params": {
+        "T_d_dash": 4.75,
+        "D": 2,
+        "X_d": 1.25,
+        "X_q": 1.22,
+        "Ω": 50,
+        "X_d_dash": 0.232,
+        "T_q_dash": 1.6,
+        "X_q_dash": 0.715,
+        "P": -0.122,
+        "H": 5.06,
+        "E_f": 1,
+        "Y_n": 0
+      },
+      "type": "FourthOrderEq"
+    },
+    {
+      "name": "bus7",
+      "params": {
+        "U": 1.0,
+        "P": -0.0,
+        "A": 0.0,
+        "Q": -0.0,
+        "B": 0.0,
+        "Y_n": 0
+      },
+      "type": "VoltageDependentLoad"
+    },
+    {
+      "name": "bus8",
+      "params": {
+        "T_d_dash": 4.75,
+        "D": 2,
+        "X_d": 1.25,
+        "X_q": 1.22,
+        "Ω": 50,
+        "X_d_dash": 0.232,
+        "T_q_dash": 1.6,
+        "X_q_dash": 0.715,
+        "P": 0.0,
+        "H": 5.06,
+        "E_f": 1,
+        "Y_n": 0
+      },
+      "type": "FourthOrderEq"
+    },
+    {
+      "name": "bus9",
+      "params": {
+        "U": 1.0,
+        "P": -0.295,
+        "A": 0.0,
+        "Q": -0.166,
+        "B": 0.0,
+        "Y_n": 0
+      },
+      "type": "VoltageDependentLoad"
+    },
+    {
+      "name": "bus10",
+      "params": {
+        "U": 1.0,
+        "P": -0.09,
+        "A": 0.0,
+        "Q": -0.058,
+        "B": 0.0,
+        "Y_n": 0
+      },
+      "type": "VoltageDependentLoad"
+    },
+    {
+      "name": "bus11",
+      "params": {
+        "U": 1.0,
+        "P": -0.035,
+        "A": 0.0,
+        "Q": -0.018,
+        "B": 0.0,
+        "Y_n": 0
+      },
+      "type": "VoltageDependentLoad"
+    },
+    {
+      "name": "bus12",
+      "params": {
+        "U": 1.0,
+        "P": -0.061,
+        "A": 0.0,
+        "Q": -0.016,
+        "B": 0.0,
+        "Y_n": 0
+      },
+      "type": "VoltageDependentLoad"
+    },
+    {
+      "name": "bus13",
+      "params": {
+        "U": 1.0,
+        "P": -0.135,
+        "A": 0.0,
+        "Q": -0.058,
+        "B": 0.0,
+        "Y_n": 0
+      },
+      "type": "VoltageDependentLoad"
+    },
+    {
+      "name": "bus14",
+      "params": {
+        "U": 1.0,
+        "P": -0.149,
+        "A": 0.0,
+        "Q": -0.05,
+        "B": 0.0,
+        "Y_n": 0
+      },
+      "type": "VoltageDependentLoad"
+    }
+  ],
+  "lines": [
+    {
+      "name": "branch1",
+      "params": {
+        "y": {
+          "re": 4.999131600798035,
+          "im": -15.263086523179553
+        },
+        "from": "bus1",
+        "y_shunt_mk": 0.0264,
+        "y_shunt_km": 0.0264,
+        "to": "bus2"
+      },
+      "type": "PiModelLine"
+    },
+    {
+      "name": "branch2",
+      "params": {
+        "y": {
+          "re": 1.025897454970189,
+          "im": -4.234983682334831
+        },
+        "from": "bus1",
+        "y_shunt_mk": 0.0246,
+        "y_shunt_km": 0.0246,
+        "to": "bus5"
+      },
+      "type": "PiModelLine"
+    },
+    {
+      "name": "branch3",
+      "params": {
+        "y": {
+          "re": 1.1350191923073958,
+          "im": -4.781863151757718
+        },
+        "from": "bus2",
+        "y_shunt_mk": 0.0219,
+        "y_shunt_km": 0.0219,
+        "to": "bus3"
+      },
+      "type": "PiModelLine"
+    },
+    {
+      "name": "branch4",
+      "params": {
+        "y": {
+          "re": 1.686033150614943,
+          "im": -5.115838325872083
+        },
+        "from": "bus2",
+        "y_shunt_mk": 0.017,
+        "y_shunt_km": 0.017,
+        "to": "bus4"
+      },
+      "type": "PiModelLine"
+    },
+    {
+      "name": "branch5",
+      "params": {
+        "y": {
+          "re": 1.7011396670944048,
+          "im": -5.193927397969713
+        },
+        "from": "bus2",
+        "y_shunt_mk": 0.0173,
+        "y_shunt_km": 0.0173,
+        "to": "bus5"
+      },
+      "type": "PiModelLine"
+    },
+    {
+      "name": "branch6",
+      "params": {
+        "y": {
+          "re": 1.9859757099255606,
+          "im": -5.0688169775939205
+        },
+        "from": "bus3",
+        "y_shunt_mk": 0.0064,
+        "y_shunt_km": 0.0064,
+        "to": "bus4"
+      },
+      "type": "PiModelLine"
+    },
+    {
+      "name": "branch7",
+      "params": {
+        "from": "bus4",
+        "Y": {
+          "re": 6.840980661495672,
+          "im": -21.578553981691588
+        },
+        "to": "bus5"
+      },
+      "type": "StaticLine"
+    },
+    {
+      "name": "branch8",
+      "params": {
+        "y": {
+          "re": 0.0,
+          "im": -4.781943381790359
+        },
+        "t_ratio": 0.978,
+        "from": "bus4",
+        "to": "bus7"
+      },
+      "type": "Transformer"
+    },
+    {
+      "name": "branch9",
+      "params": {
+        "y": {
+          "re": 0.0,
+          "im": -1.7979790715236075
+        },
+        "t_ratio": 0.969,
+        "from": "bus4",
+        "to": "bus9"
+      },
+      "type": "Transformer"
+    },
+    {
+      "name": "branch10",
+      "params": {
+        "y": {
+          "re": 0.0,
+          "im": -3.967939052456154
+        },
+        "t_ratio": 0.932,
+        "from": "bus5",
+        "to": "bus6"
+      },
+      "type": "Transformer"
+    },
+    {
+      "name": "branch11",
+      "params": {
+        "from": "bus6",
+        "Y": {
+          "re": 1.9550285631772604,
+          "im": -4.0940743442404415
+        },
+        "to": "bus11"
+      },
+      "type": "StaticLine"
+    },
+    {
+      "name": "branch12",
+      "params": {
+        "from": "bus6",
+        "Y": {
+          "re": 1.525967440450974,
+          "im": -3.1759639650294003
+        },
+        "to": "bus12"
+      },
+      "type": "StaticLine"
+    },
+    {
+      "name": "branch13",
+      "params": {
+        "from": "bus6",
+        "Y": {
+          "re": 3.0989274038379877,
+          "im": -6.102755448193116
+        },
+        "to": "bus13"
+      },
+      "type": "StaticLine"
+    },
+    {
+      "name": "branch14",
+      "params": {
+        "from": "bus7",
+        "Y": {
+          "re": 0.0,
+          "im": -5.676979846721544
+        },
+        "to": "bus8"
+      },
+      "type": "StaticLine"
+    },
+    {
+      "name": "branch15",
+      "params": {
+        "from": "bus7",
+        "Y": {
+          "re": 0.0,
+          "im": -9.09008271975275
+        },
+        "to": "bus9"
+      },
+      "type": "StaticLine"
+    },
+    {
+      "name": "branch16",
+      "params": {
+        "from": "bus9",
+        "Y": {
+          "re": 3.902049552447428,
+          "im": -10.365394127060915
+        },
+        "to": "bus10"
+      },
+      "type": "StaticLine"
+    },
+    {
+      "name": "branch17",
+      "params": {
+        "from": "bus9",
+        "Y": {
+          "re": 1.4240054870199312,
+          "im": -3.0290504569306034
+        },
+        "to": "bus14"
+      },
+      "type": "StaticLine"
+    },
+    {
+      "name": "branch18",
+      "params": {
+        "from": "bus10",
+        "Y": {
+          "re": 1.8808847537003996,
+          "im": -4.402943749460521
+        },
+        "to": "bus11"
+      },
+      "type": "StaticLine"
+    },
+    {
+      "name": "branch19",
+      "params": {
+        "from": "bus12",
+        "Y": {
+          "re": 2.4890245868219187,
+          "im": -2.251974626172212
+        },
+        "to": "bus13"
+      },
+      "type": "StaticLine"
+    },
+    {
+      "name": "branch20",
+      "params": {
+        "from": "bus13",
+        "Y": {
+          "re": 1.1369941578063267,
+          "im": -2.314963475105352
+        },
+        "to": "bus14"
+      },
+      "type": "StaticLine"
+    }
+  ],
+  "version": "1"
+}
