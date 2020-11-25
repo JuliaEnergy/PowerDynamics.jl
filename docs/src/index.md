@@ -82,5 +82,5 @@ If you have any questions, [contact us](@ref Contact).
 
 After going throught the introduction for a [Grid Modeler](@ref) and a [Grid Component Developer](@ref),
 read through the code where hopefully all of this documentation will helpful for you.
-Afterwards, it's probably best to open an issue explainng the idea you want to implement
+Afterwards, it's probably best to open an issue explaining the idea you want to implement
 and we can discuss how you can transform your idea into a pull request.
