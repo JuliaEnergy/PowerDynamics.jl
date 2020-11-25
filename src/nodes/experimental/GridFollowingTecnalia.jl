@@ -22,7 +22,7 @@ end [[e_Iω,de_Iω],[θ,dθ],[u_fil_d,du_fil_d],[u_fil_q,du_fil_q]] begin
 
     p = -K_ω*(ω-ω_r) + P
     q = -K_v*(abs(u_fil_dq)-V_r) + Q
-    i_fil_dq = (p+im*q)/u_dq
+    i_fil_dq = (p-im*q)/conj(u_dq) #conj(u_fil_dq)
     du = i - i_fil_dq*exp(im*θ)
 end
 
