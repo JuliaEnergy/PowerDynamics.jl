@@ -2,6 +2,7 @@ using Pkg
 Pkg.instantiate()
 using PowerDynamics
 using Revise
+using OrderedCollections: OrderedDict
 
 perturbed_node="VS Inverter"
 scenario = "Scenario2b3"
@@ -66,9 +67,9 @@ line_list=[]
     append!(line_list,[StaticLine(from=1,to=2,Y=Y_14)])
 
 node_dict=OrderedDict(
-    "VS Inverter"=>GridFormingTecnalia(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=R_f, X_f=X_f))
+    "VS Inverter"=>GridFormingTecnalia(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=R_f, X_f=X_f),
     "Slack"=> SlackAlgebraic(U=1.),
-    "Load"=>VoltageDependentLoad(P=P_2,Q=Q_2,U=1.,A=1.0,B=0.0),
+    "Load"=>VoltageDependentLoad(P=P_2,Q=Q_2,U=1.,A=1.0,B=0.0))
     line_dict=OrderedDict(
     "Line1"=>StaticLine(from="Slack",to="Load",Y=Y_12),
     "Line2"=>PiModelLine(from="Load",to="VS Inverter",y=Y_23,y_shunt_mk=Y_23_shunt/2,y_shunt_km=Y_23_shunt/2))
@@ -76,6 +77,8 @@ node_dict=OrderedDict(
 
 
 powergrid = PowerGrid(node_dict,line_dict)
+#powergrid = PowerGrid(node_list,line_list)
+
 operationpoint = find_operationpoint(powergrid)
 
 timespan = (0., 40.)
@@ -92,4 +95,4 @@ result_pd = simulate(pd,
 
 include("../../plotting.jl")
 create_plot(result_pd,scenario)
-#plot_res(result_pd,powergrid,perturbed_node)
+#plot_res(result_pd,powergrid,perturbed_node,scenario)

@@ -1,8 +1,8 @@
 using PowerDynamics: symbolsof
-using Plots: Measures,plot, get_color_palette, plot_color
+using Plots: Measures,plot, get_color_palette, plot_color, savefig
 using LaTeXStrings: latexstring, @L_str
 
-function plot_res(result, powergrid,disturbed_node)
+function plot_res(result, powergrid,disturbed_node,scenario)
     ω_indices = findall(n -> isa(n, SwingEqLVS), powergrid.nodes)
     append!(ω_indices,findall(n -> isa(n, VSIMinimal), powergrid.nodes))
     #append!(ω_indices,findall(n -> isa(n, VSIMinimal_experimental), powergrid.nodes))
@@ -26,7 +26,7 @@ function plot_res(result, powergrid,disturbed_node)
         lw=3,
         xlabel=L"t[s]"
     )
-    savefig(pl,"StudyCase_dist_ω"* string(disturbed_node) *".png")
+    savefig(pl,"Testcase_"*scenario*".pdf")
     display(pl)
 end
 
