@@ -4,7 +4,12 @@ using PowerDynamics
 using Revise
 using OrderedCollections: OrderedDict
 
-perturbed_node="VS Inverter"
+flag_usedict = false
+
+if flag_usedict
+    perturbed_node="VS Inverter"
+else perturbed_node = 3
+end
 scenario = "Scenario3b3"
 
 #grid frequency
@@ -90,8 +95,11 @@ node_dict=OrderedDict(
     "Line2"=>PiModelLine(from="Load",to="VS Inverter",y=Y_23,y_shunt_mk=Y_23_shunt/2,y_shunt_km=Y_23_shunt/2),
     "Line3"=>PiModelLine(from="Load",to="CS Inverter",y=Y_24,y_shunt_mk=Y_24_shunt/2,y_shunt_km=Y_24_shunt/2))
 
-#powergrid = PowerGrid(node_list,line_list)
-powergrid = PowerGrid(node_dict,line_dict)
+if flag_usedict
+    powergrid = PowerGrid(node_dict,line_dict)
+else
+    powergrid = PowerGrid(node_list,line_list)
+end
 
 operationpoint = find_operationpoint(powergrid)
 
@@ -108,5 +116,8 @@ result_pd = simulate(pd,
     powergrid, operationpoint, timespan)
 
 include("../../plotting.jl")
-create_plot(result_pd,scenario)
-#plot_res(result_pd,powergrid,perturbed_node,scenario)
+if flag_usedict
+    create_plot(result_pd,scenario)
+else
+    plot_res(result_pd,powergrid,perturbed_node,scenario)
+end

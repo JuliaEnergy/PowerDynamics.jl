@@ -53,8 +53,21 @@ function PowerGrid(nodes::Array, lines::Array)
 end
 
 function rhs(pg::PowerGrid)
-    sorted_lines = collect(values(pg.lines))
-    network_dynamics(map(construct_vertex, collect(values(pg.nodes))), map(construct_edge, sorted_lines, pg.graph))
+    bus_array=collect(keys(pg.nodes))
+    lines = collect(values(pg.lines))
+    sources = [findfirst(bus_array .== l.from) for l in lines]
+    dest = [findfirst(bus_array .== l.to) for l in lines]
+    sorted_lines = deepcopy(lines)
+    for (j,edge) in enumerate(collect(edges(pg.graph)))
+        try sorted_lines[j]=lines[max(findfirst(sources.==edge.src),findfirst(dest.==edge.dst))]
+        catch error_message
+            try  sorted_lines[j]=lines[max(findfirst(sources.==edge.dst),findfirst(dest.==edge.src))]
+            catch
+                println("no nodes matching the graph found")
+            end
+        end
+    end
+    network_dynamics(map(construct_vertex, collect(values(pg.nodes))), map(construct_edge, sorted_lines), pg.graph)
 end
 
 """
