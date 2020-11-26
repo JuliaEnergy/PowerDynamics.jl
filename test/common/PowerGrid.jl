@@ -18,13 +18,13 @@ power_grid_2 = PowerGrid(nodes_2,lines_2)
 @test collect(edges(power_grid_1.graph))[1]==collect(edges(power_grid_2.graph))[1]
 @test collect(edges(power_grid_1.graph))[2]==collect(edges(power_grid_2.graph))[2]
 
-nodes_3 = [SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1),SlackAlgebraic(U=1), SwingEqLVS(H=1, P=1, D=1, Ω=50, Γ=20, V=1)]
-lines_3 = [PiModelLine(;from=1, to=3, y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.),StaticLine(from=2, to=1, Y=0*5im)]
-power_grid_3 = PowerGrid(nodes_3,lines_3)
-op2 = find_operationpoint(power_grid_2)
-op3 = find_operationpoint(power_grid_3)
-@test op2[3]-op3[1]<=1*10^-3
-@test op2[1]-op3[4]<=1*10^-3
+# nodes_3 = [SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1),SlackAlgebraic(U=1), SwingEqLVS(H=1, P=1, D=1, Ω=50, Γ=20, V=1)]
+# lines_3 = [PiModelLine(;from=1, to=3, y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.),StaticLine(from=2, to=1, Y=0*5im)]
+# power_grid_3 = PowerGrid(nodes_3,lines_3)
+# op2 = find_operationpoint(power_grid_2)
+# op3 = find_operationpoint(power_grid_3)
+# @test op2[3]-op3[1]<=1*10^-3
+# @test op2[1]-op3[4]<=1*10^-3
 
 
 ##
