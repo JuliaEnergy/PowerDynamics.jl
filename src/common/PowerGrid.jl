@@ -54,7 +54,7 @@ end
 
 function rhs(pg::PowerGrid)
     sorted_lines = collect(values(pg.lines))
-    network_dynamics(map(construct_vertex, collect(values(pg.nodes))), map(construct_edge, sorted_lines, pg.graph)
+    network_dynamics(map(construct_vertex, collect(values(pg.nodes))), map(construct_edge, sorted_lines, pg.graph))
 end
 
 """
