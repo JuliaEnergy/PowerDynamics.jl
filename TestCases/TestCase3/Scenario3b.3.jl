@@ -2,8 +2,9 @@ using Pkg
 Pkg.instantiate()
 using PowerDynamics
 using Revise
+using OrderedCollections: OrderedDict
 
-perturbed_node=3
+perturbed_node="VS Inverter"
 
 #grid frequency
 ω = 2π*50
@@ -77,7 +78,18 @@ line_list=[]
     append!(line_list,[PiModelLine(from=2,to=3,y=Y_23,y_shunt_mk=Y_23_shunt/2,y_shunt_km=Y_23_shunt/2)])
     append!(line_list,[PiModelLine(from=2,to=4,y=Y_24,y_shunt_mk=Y_24_shunt/2,y_shunt_km=Y_24_shunt/2)])
 
-powergrid = PowerGrid(node_list,line_list)
+node_dict=OrderedDict(
+    "Slack"=> SlackAlgebraic(U=1.),
+    "Load"=>VoltageDependentLoad(P=P_2,Q=Q_2,U=1.,A=1.0,B=0.0),
+    "VS Inverter"=>GridFormingTecnalia(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=R_f, X_f=X_f),
+    #append!(node_list,[GridFormingTecnalia(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_4, Q=Q_4, V_r=V_r, R_f=R_f, X_f=X_f)])
+    "CS Inverter"=>GridFollowingTecnalia(τ_u=τ_U2,ω_ini=0,K_pω=K_pω,K_iω=K_iω,K_ω=K_ω,K_v=K_v,ω_r=0,V_r=V_r,P=P_4,Q=Q_4))
+line_dict=OrderedDict(
+    "Line1"=>StaticLine(from="Slack",to="Load",Y=Y_12),
+    "Line2"=>PiModelLine(from="Load",to="VS Inverter",y=Y_23,y_shunt_mk=Y_23_shunt/2,y_shunt_km=Y_23_shunt/2),
+    "Line3"=>PiModelLine(from="Load",to="CS Inverter",y=Y_24,y_shunt_mk=Y_24_shunt/2,y_shunt_km=Y_24_shunt/2))
+
+powergrid = PowerGrid(node_dict,line_dict)
 operationpoint = find_operationpoint(powergrid)
 
 timespan = (0., 40.)
@@ -93,4 +105,5 @@ result_pd = simulate(pd,
     powergrid, operationpoint, timespan)
 
 include("../../plotting.jl")
-plot_res(result_pd,powergrid,perturbed_node)
+create_plot(result_pd)
+#plot_res(result_pd,powergrid,perturbed_node)
