@@ -4,7 +4,12 @@ using PowerDynamics
 using Revise
 using OrderedCollections: OrderedDict
 
-perturbed_node="VS Inverter"
+flag_usedict = false
+
+if flag_usedict
+    perturbed_node="VS Inverter"
+else perturbed_node = 3
+end
 scenario = "Scenario2b3"
 
 #grid frequency
@@ -65,21 +70,29 @@ line_list=[]
     #append!(line_list,[ConnectorLine(from=2,to=4)])
     append!(line_list,[PiModelLine(from=3,to=2,y=Y_34,y_shunt_mk=Y_34_shunt/2,y_shunt_km=Y_34_shunt/2)])
     append!(line_list,[StaticLine(from=1,to=2,Y=Y_14)])
+    #append!(line_list,[PiModelLine(from=3,to=2,y=Y_34,y_shunt_mk=Y_34_shunt/2,y_shunt_km=Y_34_shunt/2)])
+
+
 
 node_dict=OrderedDict(
-    "VS Inverter"=>GridFormingTecnalia(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=R_f, X_f=X_f),
     "Slack"=> SlackAlgebraic(U=1.),
-    "Load"=>VoltageDependentLoad(P=P_2,Q=Q_2,U=1.,A=1.0,B=0.0))
-    line_dict=OrderedDict(
+    "Load"=>VoltageDependentLoad(P=P_2,Q=Q_2,U=1.,A=1.0,B=0.0),
+    "VS Inverter"=>GridFormingTecnalia(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=R_f, X_f=X_f))
+
+line_dict=OrderedDict(
+    #"Line1"=>PiModelLine(from="Load",to="VS Inverter",y=Y_23,y_shunt_mk=Y_23_shunt/2,y_shunt_km=Y_23_shunt/2),
     "Line1"=>StaticLine(from="Slack",to="Load",Y=Y_12),
     "Line2"=>PiModelLine(from="Load",to="VS Inverter",y=Y_23,y_shunt_mk=Y_23_shunt/2,y_shunt_km=Y_23_shunt/2))
     #"Line3"=>PiModelLine(from="Load",to="CS Inverter",y=Y_24,y_shunt_mk=Y_24_shunt/2,y_shunt_km=Y_24_shunt/2))
 
+if flag_usedict
+    powergrid = PowerGrid(node_dict,line_dict)
+else
+    powergrid = PowerGrid(node_list,line_list)
+end
 
-powergrid = PowerGrid(node_dict,line_dict)
-#powergrid = PowerGrid(node_list,line_list)
-
-operationpoint = find_operationpoint(powergrid)
+operationpoint = State(powergrid,[1.0, -4.404487390110113e-24, 0.9979973245262423, 0.003073959937626391, 1.0150009664107618, 0.051077063138566386, 1.0162853084609853, -2.829871253052193e-15, 19.67951305884806, 5.900824875072969, 0.0, 0.05027976888089481, 1.0162853084609853])
+#find_operationpoint(powergrid)
 
 timespan = (0., 40.)
 P3_new = P_3-0.25/K_P*2*pi
@@ -94,5 +107,8 @@ result_pd = simulate(pd,
     powergrid, operationpoint, timespan)
 
 include("../../plotting.jl")
-create_plot(result_pd,scenario)
-#plot_res(result_pd,powergrid,perturbed_node,scenario)
+if flag_usedict
+    create_plot(result_pd,scenario)
+else
+    plot_res(result_pd,powergrid,perturbed_node,scenario)
+end

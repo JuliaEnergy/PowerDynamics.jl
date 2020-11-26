@@ -53,7 +53,8 @@ function PowerGrid(nodes::Array, lines::Array)
 end
 
 function rhs(pg::PowerGrid)
-    network_dynamics(map(construct_vertex, collect(values(pg.nodes))), map(construct_edge, collect(values(pg.lines))), pg.graph)
+    sorted_lines = collect(values(pg.lines))
+    network_dynamics(map(construct_vertex, collect(values(pg.nodes))), map(construct_edge, sorted_lines, pg.graph)
 end
 
 """
