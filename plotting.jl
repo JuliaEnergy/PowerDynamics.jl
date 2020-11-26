@@ -32,7 +32,7 @@ end
 
 
 
-function create_plot(sol)
+function create_plot(sol,scenario)
     swing_indices = findall(n -> :ω ∈ symbolsof(n), sol.powergrid.nodes)
     ω_labels = reshape([latexstring(string(raw"\omega", "_{$i}")) for i=swing_indices], (1, length(swing_indices)))
     p_labels = reshape([latexstring(string(raw"p", "_{$i}")) for i=collect(keys(powergrid.nodes))], (1, length(collect(powergrid.nodes))))
@@ -49,5 +49,6 @@ function create_plot(sol)
         lw=3,
         xlabel=L"t[s]"
         )
+    savefig(pl,"Testcase_"*scenario*".pdf")
     return pl
 end
