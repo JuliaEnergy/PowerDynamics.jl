@@ -40,14 +40,13 @@ jobs:
           git config --global user.email te@st.er
       - uses: julia-actions/julia-runtest@latest
         continue-on-error: ${{ matrix.version == '1.2' }}
-      -run: julia --code-coverage test/runtests.jl
-      # - uses: julia-actions/julia-processcoverage@v1
+       - uses: julia-actions/julia-processcoverage@v1
       #   with:
       #     fail_ci_if_error: false
       #     allow_failure: true
-      # - uses: codecov/codecov-action@v1
-      #   with:
-      #     file: lcov.info
+       - uses: codecov/codecov-action@v1
+         with:
+           file: lcov.info
   docs:
     name: Documentation
     runs-on: ubuntu-latest
