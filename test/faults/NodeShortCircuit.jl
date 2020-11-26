@@ -54,7 +54,7 @@ end
 
 @testset "test NodeShortCircuit simulation" begin
     pg = PowerGrid(nodes, [SL,])
-    op = find_operationpoint(pg)
+    op = find_operationpoint(pg,sol_method = :rootfind)
 
     # make sure we obtain the right operating point
     @test op[2, :v] ≈ 1.0024169204096718
