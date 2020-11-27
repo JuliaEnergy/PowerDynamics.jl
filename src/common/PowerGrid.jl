@@ -33,13 +33,33 @@ end
 
 function PowerGrid(nodes::OrderedDict, lines::OrderedDict)
     bus_array=collect(keys(nodes))
+    line_array = collect(values(lines))
+    line_keys = collect(keys(lines))
     
     # assert that keys are consistent
     @assert all([l.from ∈ bus_array && l.to ∈ bus_array for l in values(lines)])
     
     graph = SimpleGraph(length(nodes))
     [add_edge!(graph, findfirst(bus_array .== l.from), findfirst(bus_array .== l.to)) for (key,l) in lines]
-    PowerGrid(graph, nodes, lines)
+    
+    pg=PowerGrid(graph, nodes, lines)
+
+    sources = [findfirst(bus_array .== l.from) for l in line_array]
+    dest = [findfirst(bus_array .== l.to) for l in line_array]
+    sorted_lines = OrderedDict()#deepcopy(lines)
+    for (j,edge) in enumerate(collect(edges(pg.graph)))
+        index = max(findfirst(sources.==edge.src),findfirst(dest.==edge.dst))
+        try sorted_lines[line_keys[index]]=lines[line_keys[index]]
+        catch error_message
+            index = max(findfirst(sources.==edge.dst),findfirst(dest.==edge.src))
+            try  sorted_lines[line_keys[index]]=lines[line_keys[index]]
+            catch
+                println("no nodes matching the graph found")
+            end
+        end
+    end
+
+    PowerGrid(pg.graph,pg.nodes,sorted_lines)
 end
 
 function PowerGrid(nodes::Array, lines::Array)
@@ -49,10 +69,8 @@ function PowerGrid(nodes::Array, lines::Array)
   
     graph = SimpleGraph(length(nodes))
     [add_edge!(graph, l.from, l.to) for l in lines]
-    PowerGrid(graph, nodes, lines)
-end
+    pg=PowerGrid(graph, nodes, lines)
 
-function rhs(pg::PowerGrid)
     bus_array=collect(keys(pg.nodes))
     lines = collect(values(pg.lines))
     sources = [findfirst(bus_array .== l.from) for l in lines]
@@ -67,7 +85,13 @@ function rhs(pg::PowerGrid)
             end
         end
     end
-    network_dynamics(map(construct_vertex, collect(values(pg.nodes))), map(construct_edge, sorted_lines), pg.graph)
+
+    PowerGrid(pg.graph,pg.nodes,sorted_lines)
+end
+
+function rhs(pg::PowerGrid)
+
+    network_dynamics(map(construct_vertex, collect(values(pg.nodes))), map(construct_edge, collect(values(pg.lines))), pg.graph)
 end
 
 """

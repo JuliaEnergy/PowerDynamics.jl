@@ -4,7 +4,7 @@ using PowerDynamics
 using Revise
 using OrderedCollections: OrderedDict
 
-flag_usedict = false
+flag_usedict = true
 
 if flag_usedict
     perturbed_node="VS Inverter"
