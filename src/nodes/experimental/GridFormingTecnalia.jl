@@ -37,7 +37,7 @@ end [[u_fil_r,du_fil_r],[u_fil_i,du_fil_i],[i_fil_r,di_fil_r],[i_fil_i,di_fil_i]
     dω = 1/τ_P*(ω_r-ω) + K_P/τ_P*(P-p) - K_P/n_P*dp
     dv = 1/τ_Q*(V_r - v) + K_Q/τ_Q*(Q-q) - K_Q/n_Q*dq
 
-    u_out = v #- R_f*(i_dq-i_fil) - 1im*X_f*i_fil
+    u_out = v  - R_f*(i_dq-i_fil) - 1im*X_f*i_fil
     du = u - u_out*exp(1im*ϕ)
 end
 

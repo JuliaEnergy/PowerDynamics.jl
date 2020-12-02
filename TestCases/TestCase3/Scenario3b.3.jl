@@ -35,11 +35,14 @@ Y_24_shunt = Y_23_shunt
 
 # node powers
 P_2 = -16.67/S_base_kW
-Q_2 = 0.0/S_base_kW
+#TODO: check this parameter, used to be 0
+Q_2 = 2/S_base_kW
 P_3 = 20/S_base_kW
-Q_3 = 0/S_base_kW
+#TODO: check this parameter, used to be 0
+Q_3 = -10/S_base_kW
 P_4 = 20/S_base_kW
-Q_4 = 0/S_base_kW
+#TODO: check this parameter, used to be 0
+Q_4 = -10/S_base_kW
 
 # paramterization of grid-forming inverter
 ω_r = 0#-0.25
@@ -62,7 +65,10 @@ transformer_ratio = 0.916
 K_Q=1/transformer_ratio*(398/(1000*V_base_kV)*(1.1-0.9)/(40/S_base_kW- (-40/S_base_kW))) # Q-U droop constant, kV/kVar is transformed into pu/pu
 R_f=0.6 #in Ω #Vitual resistance
 X_f=0.8 # in Ω #Vitual reactance
-V_r =1
+Z=R_f+1im*X_f
+Z_fict_pu = Z*Y_base
+#TODO: check this parameter, used to be 1
+V_r =1.04
 
 # paramterization of grid-following inverter
 w_cU2=1.9998000 #rad: Voltage low pass filter cutoff frequency
@@ -87,7 +93,7 @@ line_list=[]
 node_dict=OrderedDict(
     "Slack"=> SlackAlgebraic(U=1.),
     "Load"=>VoltageDependentLoad(P=P_2,Q=Q_2,U=1.,A=1.0,B=0.0),
-    "VS Inverter"=>GridFormingTecnalia(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=R_f, X_f=X_f),
+    "VS Inverter"=>GridFormingTecnalia(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_3, Q=Q_3, V_r=V_r, R_f=real(Z_fict_pu), X_f=imag(Z_fict_pu)),
     #append!(node_list,[GridFormingTecnalia(ω_r=0,τ_U=τ_U, τ_I=τ_I, τ_P=τ_P, τ_Q=τ_Q, n_P=n_P, n_Q=n_Q, K_P=K_P, K_Q=K_Q, P=P_4, Q=Q_4, V_r=V_r, R_f=R_f, X_f=X_f)])
     "CS Inverter"=>GridFollowingTecnalia(τ_u=τ_U2,ω_ini=0,K_pω=K_pω,K_iω=K_iω,K_ω=K_ω,K_v=K_v,ω_r=0,V_r=V_r,P=P_4,Q=Q_4))
  line_dict=OrderedDict(
