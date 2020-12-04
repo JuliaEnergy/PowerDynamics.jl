@@ -49,7 +49,7 @@ Additionally to ``u``, it has the internal dynamic variables
 - `T_e`: Exciter time constant, integration rate associated with exciter control [s]
 """
 
-@DynamicNode FourthOrderEqExciterIEEED1A(H, P, D, Ω, T_d_dash, T_q_dash, X_d_dash, X_q_dash, X_d, X_q, K_e, K_f, K_a, U, U_ref, U_ref2, U_rmax, U_rmin, T_a, T_f, T_e, S_E_max, S_E_tq, V_R_max) begin
+@DynamicNode FourthOrderEqExciterIEEEDC1A(H, P, D, Ω, T_d_dash, T_q_dash, X_d_dash, X_q_dash, X_d, X_q, K_e, K_f, K_a, U, U_ref, U_ref2, U_rmax, U_rmin, T_a, T_f, T_e, S_E_max, S_E_tq, V_R_max) begin
     @assert H > 0 "inertia (H) should be >0"
     @assert D >= 0 "damping (D) should be >=0"
     @assert T_d_dash > 0 "time constant of d-axis (T_d_dash) should be >0"
@@ -74,11 +74,9 @@ end [[θ,dθ],[ω, dω], [E_f, dE_f], [U_f, dU_f], [U_r, dU_r]] begin
 	dU_f = 1 / T_f * (K_f / T_e * (U_r - U_x - K_e * E_f) - U_f)
 
     if U_r > U_rmax
-		println("Ur > Urmax")
 		U_r2 = U_rmax
 
 	elseif U_r < U_rmin
-		println("Ur < Urmax")
 		U_r2 = U_rmin
 	else
 		U_r2 = U_r
@@ -96,4 +94,4 @@ end [[θ,dθ],[ω, dω], [E_f, dE_f], [U_f, dU_f], [U_r, dU_r]] begin
 
 end
 
-export FourthOrderEqExciterIEEED1A
+export FourthOrderEqExciterIEEEDC1A

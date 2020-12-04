@@ -5,7 +5,7 @@ using LinearAlgebra: I
 include("NodeTestBase.jl")
 
 @testset "FourthOrderEqGovernorIEEEG1" begin
-    H, P, D, Ω, E_f, T_d_dash, T_q_dash, X_d_dash, X_q_dash, X_d, X_q, K_e, K_f, K_a, U, U_ref, U_ref2, U_rmax, U_rmin, T_a, T_f, T_e, S_E_max, S_E_tq, V_R_max = rand_positive(25)
+    H, D, Ω, E_f, T_d_dash, T_q_dash, X_d_dash, X_q_dash, X_d, X_q, P0, Pmax, Pmin, Pup, Pdown, T1, T2, T3, K = rand_positive(19)
     omega, domega, theta, dtheta, Pm, dPm, x1, dx1, z, dz, P, dP = rand_real(12)
     fourth_order = FourthOrderEqGovernorIEEEG1(H = H, D = D, Ω = Ω, E_f = E_f, 
                                                T_d_dash = T_d_dash,  T_q_dash = T_q_dash, X_d_dash = X_d_dash,  X_q_dash = X_q_dash, X_d = X_d, X_q = X_q, 
