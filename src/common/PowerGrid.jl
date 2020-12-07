@@ -32,40 +32,44 @@ function PowerGrid(nodes, lines)
 end
 
 function PowerGrid(nodes::OrderedDict, lines::OrderedDict)
-    bus_array=collect(keys(nodes))
-    line_array = collect(values(lines))
-    line_keys = collect(keys(lines))
+    pg = PowerGrid(collect(values(nodes)), collect(values(lines)))
+    return PowerGrid(pg.graph, nodes, pg.lines)
+    # bus_array=collect(keys(nodes))
+    # line_array = collect(values(lines))
+    # line_keys = collect(keys(lines))
     
-    # assert that keys are consistent
-    @assert all([l.from ∈ bus_array && l.to ∈ bus_array for l in values(lines)])
+    # # assert that keys are consistent
+    # @assert all([l.from ∈ bus_array && l.to ∈ bus_array for l in values(lines)])
     
-    graph = SimpleGraph(length(nodes))
-    [add_edge!(graph, findfirst(bus_array .== l.from), findfirst(bus_array .== l.to)) for (key,l) in lines]
+    # graph = SimpleGraph(length(nodes))
+    # [add_edge!(graph, findfirst(bus_array .== l.from), findfirst(bus_array .== l.to)) for (key,l) in lines]
     
-    pg=PowerGrid(graph, nodes, lines)
+    # pg=PowerGrid(graph, nodes, lines)
 
-    sources = [findfirst(bus_array .== l.from) for l in line_array]
-    dest = [findfirst(bus_array .== l.to) for l in line_array]
-    sorted_lines = OrderedDict()#deepcopy(lines)
-    for (j,edge) in enumerate(collect(edges(pg.graph)))
-        index = max(findfirst(sources.==edge.src),findfirst(dest.==edge.dst))
-        try sorted_lines[line_keys[index]]=lines[line_keys[index]]
-        catch error_message
-            index = max(findfirst(sources.==edge.dst),findfirst(dest.==edge.src))
-            try  sorted_lines[line_keys[index]]=lines[line_keys[index]]
-            catch
-                println("no nodes matching the graph found")
-            end
-        end
-    end
+    # sources = [findfirst(bus_array .== l.from) for l in line_array]
+    # dest = [findfirst(bus_array .== l.to) for l in line_array]
+    # sorted_lines = OrderedDict()#deepcopy(lines)
+    # for (j,edge) in enumerate(collect(edges(pg.graph)))
+    #     index = max(findfirst(sources.==edge.src),findfirst(dest.==edge.dst))
+    #     try sorted_lines[line_keys[index]]=lines[line_keys[index]]
+    #     catch error_message
+    #         index = max(findfirst(sources.==edge.dst),findfirst(dest.==edge.src))
+    #         try  sorted_lines[line_keys[index]]=lines[line_keys[index]]
+    #         catch
+    #             println("no nodes matching the graph found")
+    #         end
+    #     end
+    # end
 
-    PowerGrid(pg.graph,pg.nodes,sorted_lines)
+    # PowerGrid(pg.graph,pg.nodes,sorted_lines)
 end
 
 function PowerGrid(nodes::Array, lines::Array)
     # assert that keys are consistent
-    @assert all([l.from isa Int && 1 <= l.from <= length(nodes) for l in lines])
-    @assert all([l.to isa Int && 1 <= l.from <= length(nodes) for l in lines])
+    @assert all([l.from isa Int for l in lines])
+    @assert all([l.to isa Int for l in lines])
+    @assert all([1 <= l.from <= length(nodes) for l in lines])
+    @assert all([1 <= l.to <= length(nodes) for l in lines])
 
     # We should enforce ordering of from/to to comply with Lightgraphs.jl. 
     # This could otherwise lead to problems for unsymmetric line types.
