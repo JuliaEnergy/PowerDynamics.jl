@@ -4,7 +4,6 @@ authors = ["Tim Kittel", "Jan Liße", "Sabine Auer"]
 version = "2.4.1"
 
 [deps]
-Crayons = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 Lazy = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
