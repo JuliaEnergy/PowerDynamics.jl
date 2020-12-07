@@ -48,8 +48,9 @@ function PowerGrid(nodes::OrderedDict, lines::OrderedDict)
     dest = [findfirst(bus_array .== l.to) for l in line_array]
     sorted_lines = OrderedDict()#deepcopy(lines)
     for (j,edge) in enumerate(collect(edges(pg.graph)))
-        index = max(findfirst(sources.==edge.src),findfirst(dest.==edge.dst))
-        try sorted_lines[line_keys[index]]=lines[line_keys[index]]
+        try 
+            index = max(findfirst(sources.==edge.src),findfirst(dest.==edge.dst))
+            sorted_lines[line_keys[index]]=lines[line_keys[index]]
         catch error_message
             index = max(findfirst(sources.==edge.dst),findfirst(dest.==edge.src))
             try  sorted_lines[line_keys[index]]=lines[line_keys[index]]
