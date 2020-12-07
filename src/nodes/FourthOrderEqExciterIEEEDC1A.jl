@@ -18,7 +18,7 @@ The type was implemented using the following resources as the guide line:
 Additionally to ``u``, it has the internal dynamic variables
 * ``ω`` representing the frequency of the rotator relative to the grid frequency ``Ω``, i.e. the real frequency ``ω_r`` of the rotator is given as ``\omega_r = \Omega + \omega``
 * ``θ`` representing the relative angle of the rotor with respect to the voltage angle ``ϕ``.
-* ``E_f`` representing the scaled field voltage, The exciter model (here IEEEDC1A) proviedes the value for ``E_f``(according to P. Sauer, p. 65)
+* ``E_f`` representing the scaled field voltage, The exciter model (here IEEEDC1A) provides the value for ``E_f``(according to P. Sauer, p. 65)
 * ``U_r`` representing the Voltage regulator output in [pu]
 * ``U_f`` representing the excitation system stabilization rate feedback
 
@@ -67,7 +67,7 @@ end [[θ,dθ],[ω, dω], [E_f, dE_f], [U_f, dU_f], [U_r, dU_r]] begin
     i_q = imag(i_c)
 
     # Exciter Model, IEEEDC1A
-	E_f_d_max, A_x, B_x = ExciterSaturationEq(K_e, S_E_max, S_E_tq, V_R_max) # Saturation modeling
+	E_f_d_max, A_x, B_x = exciter_saturation_eq(K_e, S_E_max, S_E_tq, V_R_max) # Saturation modeling
 	U_x = A_x * exp(B_x * E_f)
 
 	dU_r = 1 / T_a * (K_a * (U_ref - U + U_ref2 - U_f) - U_r)

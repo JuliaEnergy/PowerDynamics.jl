@@ -27,7 +27,7 @@ In a steady-state it is also given that:
 - `B_x`: Fitting Parameter
 """
 
-function ExciterSaturationEq(K_e, S_E_max, S_E_tq, V_R_max)
+function exciter_saturation_eq(K_e, S_E_max, S_E_tq, V_R_max)
     E_f_d_max = V_R_max / (K_e + S_E_max)
     A_x = S_E_tq^4 / S_E_max^3
     B_x = 4/3 * log(S_E_tq / A_x) / E_f_d_max
