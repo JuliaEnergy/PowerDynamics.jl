@@ -32,51 +32,48 @@ function PowerGrid(nodes, lines)
 end
 
 function PowerGrid(nodes::OrderedDict, lines::OrderedDict)
-    pg = PowerGrid(collect(values(nodes)), collect(values(lines)))
-    return PowerGrid(pg.graph, nodes, pg.lines)
-    # bus_array=collect(keys(nodes))
-    # line_array = collect(values(lines))
-    # line_keys = collect(keys(lines))
+    bus_keys=collect(keys(nodes))
+    line_array = collect(values(lines))
+    line_keys = collect(keys(lines))
     
-    # # assert that keys are consistent
-    # @assert all([l.from ∈ bus_array && l.to ∈ bus_array for l in values(lines)])
-    
-    # graph = SimpleGraph(length(nodes))
-    # [add_edge!(graph, findfirst(bus_array .== l.from), findfirst(bus_array .== l.to)) for (key,l) in lines]
-    
-    # pg=PowerGrid(graph, nodes, lines)
+    # assert that keys are consistent
+    @assert all([l.from ∈ bus_keys && l.to ∈ bus_keys for l in values(lines)]) "invalid node key given in lines"
 
-    # sources = [findfirst(bus_array .== l.from) for l in line_array]
-    # dest = [findfirst(bus_array .== l.to) for l in line_array]
-    # sorted_lines = OrderedDict()#deepcopy(lines)
-    # for (j,edge) in enumerate(collect(edges(pg.graph)))
-    #     index = max(findfirst(sources.==edge.src),findfirst(dest.==edge.dst))
-    #     try sorted_lines[line_keys[index]]=lines[line_keys[index]]
-    #     catch error_message
-    #         index = max(findfirst(sources.==edge.dst),findfirst(dest.==edge.src))
-    #         try  sorted_lines[line_keys[index]]=lines[line_keys[index]]
-    #         catch
-    #             println("no nodes matching the graph found")
-    #         end
-    #     end
-    # end
+    # Assert ordering of from/to according to index in bus_keys to assure
+    # to assure compatibility with LighGraphs.
+    @assert all([findfirst(bus_keys .== l.from) < findfirst(bus_keys .== l.to) for l in values(lines)]) "the pairs (from, to) need to be ordered according to the index of the corresponding keys in the node dict"
 
-    # PowerGrid(pg.graph,pg.nodes,sorted_lines)
+    graph = SimpleGraph(length(nodes))
+    for (key,l) in lines
+        add_edge!(graph, findfirst(bus_keys .== l.from), findfirst(bus_keys .== l.to)) 
+    end
+
+    sorted_lines = OrderedDict()#deepcopy(lines)
+    for e in edges(graph)
+        original_key = findfirst( x ->  bus_keys[src(e)] == x.from && bus_keys[dst(e)] == x.to, lines)
+        # We can maintain the same keys but simply reorder the OrderedDict since 
+        # the entries appear in the order they're added.
+        sorted_lines[original_key] = lines[original_key]
+    end
+
+    PowerGrid(graph,nodes,sorted_lines)
 end
 
 function PowerGrid(nodes::Array, lines::Array)
     # assert that keys are consistent
-    @assert all([l.from isa Int for l in lines])
-    @assert all([l.to isa Int for l in lines])
-    @assert all([1 <= l.from <= length(nodes) for l in lines])
-    @assert all([1 <= l.to <= length(nodes) for l in lines])
+    @assert all([l.from isa Int for l in lines]) "`from` should be of type `Int`"
+    @assert all([l.to isa Int for l in lines]) "`to` should be of type `Int`"
+    @assert all([1 <= l.from <= length(nodes) for l in lines]) "numerical index needs to be between 1 and the number of nodes"
+    @assert all([1 <= l.to <= length(nodes) for l in lines]) "numerical index needs to be between 1 and the number of nodes"
 
     # We should enforce ordering of from/to to comply with Lightgraphs.jl. 
     # This could otherwise lead to problems for unsymmetric line types.
-    @assert all([l.from < l.to for l in lines])
+    @assert all([l.from < l.to for l in lines]) "the pairs (from, to) need to be ordered according to index value"
   
     graph = SimpleGraph(length(nodes))
-    [add_edge!(graph, l.from, l.to) for l in lines]
+    for l in lines
+        add_edge!(graph, l.from, l.to)
+    end
     
     # We sort the lines to be in accordance with the indexing in the graph.
     sorted_lines = similar(lines)
