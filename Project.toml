@@ -1,7 +1,7 @@
 name = "PowerDynamics"
 uuid = "cc46b21f-1b17-51c2-b642-af74c3d3a8be"
 authors = ["Tim Kittel", "Jan Liße", "Sabine Auer"]
-version = "2.4.0"
+version = "2.4.1"
 
 [deps]
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
