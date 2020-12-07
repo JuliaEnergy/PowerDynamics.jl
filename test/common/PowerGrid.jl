@@ -8,11 +8,11 @@ using OrderedCollections: OrderedDict
 #test whether order of node or lines construction changes the power grid graph or operation point
 
 nodes_1 = [SlackAlgebraic(U=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1), SwingEqLVS(H=1, P=1, D=1, Ω=50, Γ=20, V=1)]
-lines_1 = [StaticLine(from=1, to=2, Y=0*5im),PiModelLine(;from=2, to=3, y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.)]
+lines_1 = [StaticLine(from=1, to=2, Y=5im),PiModelLine(;from=2, to=3, y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.)]
 power_grid_1 = PowerGrid(nodes_1,lines_1)
 
 nodes_2 = [SlackAlgebraic(U=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1),SwingEqLVS(H=1, P=1, D=1, Ω=50, Γ=20, V=1)]
-lines_2 = [PiModelLine(;from=2, to=3, y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.),StaticLine(from=1, to=2, Y=0*5im)]
+lines_2 = [PiModelLine(;from=2, to=3, y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.),StaticLine(from=1, to=2, Y=5im)]
 power_grid_2 = PowerGrid(nodes_2,lines_2)
 
 @test collect(edges(power_grid_1.graph))[1]==collect(edges(power_grid_2.graph))[1]
@@ -37,6 +37,13 @@ lines_string = [StaticLine(from="bus1", to="bus2", Y=0*5im)]
 dlines_string = ["line$i" => lines_string[i] for i in 1:length(lines_string)]
 
 ##
+
+# test assertions
+@test_throws AssertionError PowerGrid(nodes, [StaticLine(from=2, to=1, Y=5im)])
+@test_throws AssertionError PowerGrid(nodes, [StaticLine(from=1.0, to=2, Y=5im)])
+@test_throws AssertionError PowerGrid(nodes, [StaticLine(from=1, to=2.0, Y=5im)])
+@test_throws AssertionError PowerGrid(nodes, [StaticLine(from=-1, to=2, Y=5im)])
+@test_throws AssertionError PowerGrid(nodes, [StaticLine(from=1, to=3, Y=5im)])
 
 # test array constructor
 power_grid = PowerGrid(nodes, lines)
