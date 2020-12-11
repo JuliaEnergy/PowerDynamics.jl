@@ -41,7 +41,7 @@ function create_plot(sol,scenario)
     
     pl_p = plot(sol, :, :p, ylims=(-30.,30.), legend = (0.8, 0.95), ylabel=L"p [p.u.]", label=p_labels)
     pl_q = plot(sol, :, :q, ylims=(-20.,20.), legend = (0.8, 0.95), ylabel=L"q [p.u.]", label=p_labels)
-    pl_v = plot(sol, :, :v, ylims=(0.9,1.1), legend = (0.8, 0.95), ylabel=L"v [p.u.]", label=p_labels)
+    pl_v = plot(sol, :, :v, ylims=(0.98,1.05), legend = (0.8, 0.95), ylabel=L"v [p.u.]", label=p_labels)
     pl_ω = plot(sol, swing_indices, :ω, legend = (0.8, 0.7), ylabel=L"\omega \left[rad/s\right]", label=ω_labels)
     pl = plot(pl_ω, pl_v, pl_p, pl_q;
         layout=(2,2),

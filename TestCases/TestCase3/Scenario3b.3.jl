@@ -13,13 +13,13 @@ scenario = "Scenario3b3"
 # per unit transformation base values
 t_ratio = 0.916 # 0.9, 0.916, 0.9201
 V1_base_kV = 0.4 # primary side
-V2_base_kV = V1_base_kV*t_ratio # secondary side
+V2_base_kV = V1_base_kV#*t_ratio # secondary side
 S_base_kW = 1.0
 Y1_base = S_base_kW*1000/(V1_base_kV*1000)^2
 Y2_base = S_base_kW*1000/(V2_base_kV*1000)^2
 
 # line paramterization
-R_12 = 0.25
+R_12 = 0.5#0.25
 L_12 = 0.98*1e-3
 X_12 = ω*L_12
 Z_12 = R_12 + 1im*X_12
@@ -65,7 +65,7 @@ R_f=0.6 #in Ω #Vitual resistance
 X_f=0.8 # in Ω #Vitual reactance
 Z=R_f+1im*X_f
 Z_fict_pu = Z*Y2_base
-V_r = 1.0
+V_r = 1.03#1.0
 
 # paramterization of grid-following inverter
 w_cU2=1.9998000 #rad: Voltage low pass filter cutoff frequency
@@ -83,10 +83,10 @@ node_dict=OrderedDict(
     "CS Inverter"=>GridFollowingTecnalia(τ_u=τ_U2,ω_ini=0,K_pω=K_pω,K_iω=K_iω,K_ω=K_ω,K_v=K_v,ω_r=0,V_r=V_r,P=P_4,Q=Q_4))
  line_dict=OrderedDict(
     "Line1"=>StaticLine(from="Slack",to="Load",Y=Y_12),
-    #"Line2"=>PiModelLine(from="Load",to="VS Inverter",y=Y_23,y_shunt_mk=Y_23_shunt/2,y_shunt_km=Y_23_shunt/2),
-    #"Line3"=>PiModelLine(from="Load",to="CS Inverter",y=Y_24,y_shunt_mk=Y_24_shunt/2,y_shunt_km=Y_24_shunt/2))
-    "Line2"=>Transformer(from="Load",to="VS Inverter",y=Y_23,t_ratio=t_ratio),
-    "Line3"=>Transformer(from="Load",to="CS Inverter",y=Y_24,t_ratio=t_ratio))
+    "Line2"=>PiModelLine(from="Load",to="VS Inverter",y=Y_23,y_shunt_mk=Y_23_shunt/2,y_shunt_km=Y_23_shunt/2*Y1_base/Y2_base),
+    "Line3"=>PiModelLine(from="Load",to="CS Inverter",y=Y_24,y_shunt_mk=Y_24_shunt/2,y_shunt_km=Y_24_shunt/2*Y1_base/Y2_base))
+    #"Line2"=>Transformer(from="Load",to="VS Inverter",y=Y_23,t_ratio=t_ratio),
+    #"Line3"=>Transformer(from="Load",to="CS Inverter",y=Y_24,t_ratio=t_ratio))
 
 powergrid = PowerGrid(node_dict,line_dict)
 
