@@ -13,26 +13,26 @@ scenario = "Scenario3b3"
 # per unit transformation base values
 t_ratio = 0.916 # 0.9, 0.916, 0.9201
 V1_base_kV = 0.4 # primary side
-V2_base_kV = V1_base_kV#*t_ratio # secondary side
+V2_base_kV = V1_base_kV*t_ratio # secondary side
 S_base_kW = 1.0
 Y1_base = S_base_kW*1000/(V1_base_kV*1000)^2
 Y2_base = S_base_kW*1000/(V2_base_kV*1000)^2
 
 # line paramterization
-R_12 = 0.5#0.25
+R_12 = 0.4#0.25
 L_12 = 0.98*1e-3
 X_12 = ω*L_12
 Z_12 = R_12 + 1im*X_12
 Y_12 = (1/Z_12)/Y1_base
 
 # transformer parametrization ("The admittance is here taken to be on the high-voltage side.")
-Y_23 = (1/(0.0474069+1im*0.0645069))/Y1_base
+Y_23 = (1/(2*0.0474069+1im*0.0645069))/Y1_base #(1/(0.0474069+1im*0.0645069))/Y1_base
 Y_23_shunt = (1/((536.8837037+125.25700254999994*1im)))/Y1_base
 Y_24 = Y_23 # transformer of grid-following inverter
 Y_24_shunt = Y_23_shunt
 
 # node powers
-P_2 = -16.67/S_base_kW
+P_2 = -15.0/S_base_kW#/16.67/S_base_kW
 #TODO: check this parameter, used to be 0
 Q_2 = 2/S_base_kW
 P_3 = 20/S_base_kW
