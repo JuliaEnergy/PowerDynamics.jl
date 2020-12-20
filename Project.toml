@@ -19,7 +19,6 @@ OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 Setfield = "efcf1570-3423-57d1-acb7-fd33fddbac46"
-StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 SteadyStateDiffEq = "9672c7b4-1e72-59bd-8a11-6ac3964bc41f"
 
 [compat]
@@ -35,7 +34,6 @@ OrdinaryDiffEq = "^5.17.2"
 Parameters = "^0.12.0"
 RecipesBase = "0.7.0,0.8.0, 1.0"
 Setfield = "0.4,0.5,0.6, 0.7"
-StaticArrays = "^0.11.0, 0.12"
 SteadyStateDiffEq = "^1.5.1"
 julia = "1"
 
