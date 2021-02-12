@@ -3,7 +3,6 @@ function total_current(edges)
     current = 0.0im
     for e in edges
         current += e[1] + e[2]*im
-        # FIXME: not sure if + or -
     end
     current
 end
