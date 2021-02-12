@@ -1,11 +1,9 @@
-function total_current(e_s, e_d)
+function total_current(edges)
     # Keeping with the convention of negative sign for outging current
     current = 0.0im
-    for e in e_s
-        current -= e[1] + e[2]*im
-    end
-    for e in e_d
-        current += e[3] + e[4]*im
+    for e in edges
+        current += e[1] + e[2]*im
+        # FIXME: not sure if + or -
     end
     current
 end

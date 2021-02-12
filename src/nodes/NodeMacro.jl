@@ -15,14 +15,13 @@ function cndfunction_builder!(
     rhscall = :(rhs!(
         dx,
         x,
-        e_s,
-        e_d,
+        edges,
         p,
         t)
         )
     rhsbody = quote end
     rhsbody.args[1] = func_body.args[1]
-    append!(rhsbody.args, [:(i = total_current(e_s, e_d)+Y_n*(x[1] + x[2] * im))])
+    append!(rhsbody.args, [:(i = total_current(edges)+Y_n*(x[1] + x[2] * im))])
     append!(rhsbody.args, [:(u = x[1] + x[2] * im)])
 
     extracted_vars =  [:($sym = x[$(index+2)] ) for (index, sym) in enumerate(internals.vars)]
