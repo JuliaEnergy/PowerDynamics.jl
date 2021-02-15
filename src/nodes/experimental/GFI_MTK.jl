@@ -87,21 +87,17 @@ begin
       K_Q = par.K_Q#reactive_power_droop₊K
       Y_n = par.Y_n
       function rhs!(dx, x, e_s, e_d, p, t)
+        # states sind in gen.states
+        # TODO current sollte input sein, voltage sollte output sein
           i = total_current(e_s, e_d) + Y_n * (x[1] + x[2] * im)#Y_n * x[1]*exp(1im*x2)
           u = x[1] + x[2] * im #u = x[1]*exp(x[2] * im)
           active_power = real(u * conj(i))
           reactive_power = imag(u * conj(i))
-          odefun(dy, y, p, t) = gen.f_ip(dy, y, [active_power,reactive_power], p, t)
-          y = copy.deepcopy(x)
-          y[1]=sqrt(x[1]^2+x[2]^2)
-          y[2]=atan(x[2]/x[1])
-          # du = ?
-          du = odefun(du, u, p, t)[1]*exp(1im*odefun(du, u, p, t)[2])
-          dp_fil = odefun(du, u, p, t)[3]
-          dq_fil = odefun(du, u, p, t)[4]
+          # TODO input statt reactive_power und active_power i_r and i_i
+          odefun(dx, x, p, t) = gen.f_ip(dx, x, [active_power,reactive_power], p, t)
           try
-              dx[1] = abs(du)
-              dx[2] = atan(du)
+              dx[1] = real(du)
+              dx[2] = imag(du)
               return nothing
           catch e
               if typeof(e) === UndefVarError
