@@ -16,10 +16,10 @@ end
         # assure function call does not explode!
         edge.f!(e, v_s, v_d, 0, 0)
 
-        @test e[1] == -70
-        @test e[2] == -30
-        @test e[3] == 1230
-        @test e[4] == 220
+        @test e[1] == 1230
+        @test e[2] == 220
+        @test e[3] == 70
+        @test e[4] == 30
 end
 
 @testset "PiModelLine should return the same result as StaticLine" begin
