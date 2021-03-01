@@ -47,8 +47,7 @@ include("LineTestBase.jl")
         smoketest_rhs(edge, int_x = [], int_dx = [])
 end
 
-# Please make sure that RLLLine tests work as intended. The fixpoint 0 is too symmetric to test effects if changed sign conventions"
-@test_broken  false
+
 
 @testset "RLLine should have the right fixed point" begin
         line = RLLine(from = 1, to = 2, R = 0.01, L = 0.1, ω0 = 100π)
@@ -73,7 +72,9 @@ end
         @test de[4] == 0
 end
 
-# This doesn't really test RLLLine but StaticLine in my opinion (Micha)
+# Please make sure that RLLLine tests work as intended.
+@test_broken  false
+
 @testset "The steady state of RLLine should coincide with StaticLine" begin
         line = RLLine(from = 1, to = 2, R = 0.01, L = 0.1, ω0 = 100π)
         rll_edge = construct_edge(line)
