@@ -38,16 +38,16 @@ begin
         @assert ω0 > 0 "rated frequency (ω0) should be positive"
         Z = [R -ω0*L; ω0*L R]
         function rhs!(de, e, v_s, v_d, p, t)
-            # the different minus signs are due to the PowerDynamics sign convention for currents
-            i_left_right = [e[1]; e[2]]
-            i_right_left = [e[3]; e[4]]
+            # new ND convention require no minus, but some variable shuffling
+            i_left_right = [e[3]; e[4]]
+            i_right_left = [e[1]; e[2]]
             v_left = [v_s[1]; v_s[2]]
             v_right = [v_d[1]; v_d[2]]
             v_left_right = (- Z * i_left_right .- v_left .+ v_right) ./ L
             v_right_left = (- Z * i_right_left .+ v_right .- v_left) ./ L
-            de .= [v_left_right; v_right_left]
+            de .= [v_right_left; -1 .* v_left_right]
         end
-        return ODEEdge(f! = rhs!, dim=4, mass_matrix=I, sym=Symbol[:id, :iq, :id_r, :iq_r])
+        return ODEEdge(f! = rhs!, dim=4, mass_matrix=I, sym=Symbol[:id, :iq, :id_r, :iq_r], coupling=:fiducial)
     end
     symbolsof(::RLLine) = begin
             [:id, :iq, :id_r, :iq_r]
