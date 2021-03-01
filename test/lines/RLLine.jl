@@ -1,9 +1,11 @@
-using Test: @testset, @test, @test_throws
+using Test: @testset, @test, @test_throws, @test_broken
 using PowerDynamics: RLLine, StaticLine, construct_edge, symbolsof, dimension
 using NetworkDynamics: ODEEdge
 using LinearAlgebra: I
 
 include("LineTestBase.jl")
+
+
 
 @testset "RLLine construct_edge" begin
         R = rand_real()
@@ -45,6 +47,9 @@ include("LineTestBase.jl")
         smoketest_rhs(edge, int_x = [], int_dx = [])
 end
 
+# Please make sure that RLLLine tests work as intended. The fixpoint 0 is too symmetric to test effects if changed sign conventions"
+@test_broken  false
+
 @testset "RLLine should have the right fixed point" begin
         line = RLLine(from = 1, to = 2, R = 0.01, L = 0.1, ω0 = 100π)
         edge = construct_edge(line)
@@ -68,9 +73,10 @@ end
         @test de[4] == 0
 end
 
+# This doesn't really test RLLLine but StaticLine in my opinion (Micha)
 @testset "The steady state of RLLine should coincide with StaticLine" begin
         line = RLLine(from = 1, to = 2, R = 0.01, L = 0.1, ω0 = 100π)
-        edge = construct_edge(line)
+        rll_edge = construct_edge(line)
 
         sl = StaticLine(
                 ;
@@ -78,19 +84,19 @@ end
                 to = line.to,
                 Y = inv(complex(line.R, line.ω0 * line.L)),
         )
-        ed = construct_edge(sl)
+        sl_edge = construct_edge(sl)
 
         v_s = [10.0; 5.0]
         v_d = [12.0; 2.0]
 
         arr = zeros(4)
-        ed.f!(arr, v_s, v_d, 0, 0)
+        sl_edge.f!(arr, v_s, v_d, 0, 0)
 
         # recapitulate RLLine steady state
         Zinv = [line.R line.ω0 * line.L; -line.ω0 * line.L line.R] ./
                (line.R^2 + line.ω0^2 * line.L^2)
         e_star = -Zinv * (v_s .- v_d)
-        e = [e_star; e_star]
+        e = [e_star; -e_star]
 
         @test arr ≈ e
 end
