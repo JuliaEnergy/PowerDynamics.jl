@@ -144,6 +144,8 @@ function find_operationpoint(
         _, result = power_flow(pg)
         v = [result["solution"]["bus"][string(k)]["vm"] for k in 1:length(pg.nodes)]
         va = [result["solution"]["bus"][string(k)]["va"] for k in 1:length(pg.nodes)]
+
+        # TODO write function for mapping list back to dicts
         ic_guess = initial_guess(pg, v .* exp.(1im .* va))
     end
 

@@ -232,6 +232,7 @@ end
 
 
 function power_flow(power_grid::PowerGrid)
+    # TODO write a wrapper for mapping dict strings to integer lists and remmeber it for mapping back the results to string bus names
     global ang_min, ang_max
     ang_min = deg2rad(60)
     ang_max = deg2rad(-60)
