@@ -13,6 +13,8 @@ testlist = [
     ("nodes/SwingEq.jl", "SwingEq Node Tests"),
     ("nodes/SwingEqLVS.jl", "SwingEqLVS Node Tests"),
     ("nodes/FourthOrderEq.jl", "FourthOrderEq Node Tests"),
+    ("nodes/FourthOrderEqGovernorIEEEG1.jl", "FourthOrderEqGovernorIEEEG1 Node Tests"),
+    ("nodes/FourthOrderEqExciterIEEEDC1A.jl", "FourthOrderEqExciterIEEEDC1A Node Tests"),
     ("nodes/VoltageSourceInverterMinimal.jl", "VoltageSourceInverterMinimal Node Tests"),
     ("nodes/VoltageSourceInverterVoltagePT1.jl", "VoltageSourceInverterVoltagePT1 Node Tests"),
     ("nodes/CurrentSourceInverterMinimal.jl", "CurrentSourceInverterMinimal Node Tests"),
