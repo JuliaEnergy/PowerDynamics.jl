@@ -1,121 +1,108 @@
-# First attempt at VSC in BlockSystems (nee IOSystems)
-
-# ]add "https://github.com/hexaeder/IOSystems_prototype"
+#=
+## Generate `PowerDynamics.jl`-Node with `BlockSystems`
+We want to model the
+[`VSIVoltagePT1`](https://juliaenergy.github.io/PowerDynamics.jl/dev/node_types/#PowerDynamics.VSIVoltagePT1)
+with the help of `BlockSystems`.
+We start by defining some general stuff...
+=#
 using BlockSystems
 using ModelingToolkit
 
+function GFI(;τ_v,τ_P,τ_Q,K_P,K_Q,V_r,P,Q,ω_r)
 
-## Common time
+    para = Dict(
+    :τ_v => τ_v,    # time constant voltage control delay
+    :τ_P => τ_P,      # time constant active power measurement
+    :τ_Q => τ_Q,      # time constant reactive power measurement
+    :K_P => K_P,     # droop constant frequency droop
+    :K_Q => K_Q,     # droop constant voltage droop
+    :V_r => V_r,   # reference/ desired voltage
+    :P   => P, # active (real) power infeed
+    :Q   => Q, # reactive (imag) power infeed                .
+    :ω_r => ω_r)   # refrence/ desired frequency
 
-@parameters t 
-D = Differential(t)
-
-## Low pass filter
-
-@parameters τ input(t) 
-@variables filtered(t)
-
-lpf = IOBlock([D(filtered) ~ 1/τ * (- filtered + input)], [input], [filtered], name=:lp_filter)
-
-## integrator
-
-@parameters x(t)
-@variables int(t)
     
-integrator = IOBlock([D(int) ~ x], [x], [int], name=:integrator)
-
-## Droop control
-
-@parameters K u_ref x_ref x(t)
-@variables u(t)
-
-droop_control = IOBlock([
-    u ~ - K * (x - x_ref) + u_ref # output is the droop voltage v
-    ], [x], [u], name = :droop)
-
-##
-
-p_filter = IOBlock(lpf, name = :active_power_filter)
-q_filter = IOBlock(lpf, name = :reactive_power_filter)
-p_droop = IOBlock(droop_control, name = :active_power_droop)
-q_droop = IOBlock(droop_control, name = :reactive_power_droop)
-f_integrator = IOBlock(integrator, name = :frequency_integrator)
-
-##
-@variables ϕ(t) v(t)
-@parameters p(t) q(t)
-
-gfi = IOSystem([f_integrator.x => p_droop.u,
-          p_droop.x => p_filter.filtered,
-          q_droop.x => q_filter.filtered],
-          [p_filter, q_filter, p_droop, q_droop, f_integrator],
-          name = :GridForming,
-          namespace_map = [p_filter.input => p, q_filter.input => q, f_integrator.int => ϕ, q_droop.u => v],
-          outputs = [ϕ, v])
-
-connected_gfi = connect_system(gfi)
-
-##
-
-gen = generate_io_function(connected_gfi, f_states=[v, ϕ], f_inputs=[p, q])
-
-##
+    @parameters t
+    D = Differential(t)
 
 
-##
-begin
-  Base.@__doc__ struct GFI <: AbstractNode
-          τ_P
-          τ_Q
-          P_ref
-          V_refP
-          K_P
-          V_refQ 
-          Q_ref 
-          K_Q 
-          Y_n
-      end
-  GFI(; τ_P,τ_Q,P_ref,V_refP,K_P,V_refQ,Q_ref,K_Q, Y_n = 0) = GFI(τ_P,τ_Q,P_ref,V_refP,K_P,V_refQ,Q_ref,K_Q,Y_n)
-  function construct_vertex(par::GFI)
-      τ_P = par.τ_P#par.active_power_filter₊τ
-      τ_Q = par.τ_Q#reactive_power_filter₊τ
-      P_ref = par.P_ref#active_power_droop₊x_ref
-      V_refP = par.V_refP#active_power_droop₊u_ref
-      K_P = par.K_P#active_power_droop₊K
-      V_refQ = par.V_refQ#reactive_power_droop₊u_ref
-      Q_ref = par.Q_ref#reactive_power_droop₊x_ref
-      K_Q = par.K_Q#reactive_power_droop₊K
-      Y_n = par.Y_n
-      function rhs!(dx, x, e_s, e_d, p, t)
-        # states sind in gen.states
-        # TODO current sollte input sein, voltage sollte output sein
-          i = total_current(e_s, e_d) + Y_n * (x[1] + x[2] * im)#Y_n * x[1]*exp(1im*x2)
-          u = x[1] + x[2] * im #u = x[1]*exp(x[2] * im)
-          active_power = real(u * conj(i))
-          reactive_power = imag(u * conj(i))
-          # TODO input statt reactive_power und active_power i_r and i_i
-          odefun(dx, x, p, t) = gen.f_ip(dx, x, [active_power,reactive_power], p, t)
-          try
-              dx[1] = real(du)
-              dx[2] = imag(du)
-              return nothing
-          catch e
-              if typeof(e) === UndefVarError
-                  throw(NodeDynamicsError("you need to provide $(e.var)"))
-              else
-                  throw(e)
-              end
-          end
-      end
-      ODEVertex(f! = rhs!, dim = length(gen.states), mass_matrix = gen.massm, sym = [:u_r, :u_i, :p_fil, :q_fil])
-  end
-  symbolsof(::GFI) = begin
-          [:u_r, :u_i,:p_fil, :q_fil]
-      end
-  dimension(::GFI) = begin
-          length(gen.states)
-      end
+    # #### low pass filter
+    @parameters τ input(t)
+    @variables filtered(t)
+
+    lpf = IOBlock([D(filtered) ~ 1/τ * (- filtered + input)],
+                [input], [filtered])
+
+    # #### voltage source
+
+    @parameters ω(t) v(t) τ
+    @variables u_i(t) u_r(t) A(t)
+
+    ## explicit algebraic equation for A will be reduced at connect
+    voltage_source = IOBlock([A ~ 1/τ * (v/√(u_i^2 + u_r^2) - 1),
+                            D(u_r) ~ -ω * u_i + A*u_r,
+                            D(u_i) ~  ω * u_r + A*u_i],
+                            [ω, v], [u_i, u_r])
+
+    # #### Droop control
+
+    @parameters K u_ref x_ref x(t)
+    @variables u(t)
+
+    droop_control = IOBlock([
+        u ~ - K * (x - x_ref) + u_ref # output is the droop voltage v
+        ], [x], [u])
+
+
+
+    p_filter = IOBlock(lpf, name = :p_filter)
+    q_filter = IOBlock(lpf, name = :q_filter)
+    p_droop = IOBlock(droop_control, name = :p_droop)
+    q_droop = IOBlock(droop_control, name = :q_droop)
+    v_source = IOBlock(voltage_source, name = :v_source)
+
+
+    gfi = IOSystem([p_filter.filtered => p_droop.x,
+                    q_filter.filtered => q_droop.x,
+                    p_droop.u => v_source.ω,
+                    q_droop.u => v_source.v],
+                [p_filter, q_filter, p_droop, q_droop, v_source],
+                name = :GridForming,
+                namespace_map = [p_filter.input => :P_in,
+                                    q_filter.input => :Q_in,
+                                    p_filter.filtered => :p_filtered,
+                                    q_filter.filtered => :q_filtered,
+                                    ## parameter names which match VSIVoltagePT1
+                                    v_source.τ => :τ_v, # time constant voltage control delay
+                                    p_filter.τ => :τ_P, # time constant active power measurement
+                                    q_filter.τ => :τ_Q, # time constant reactive power measurement
+                                    p_droop.K  => :K_P, # droop constant frequency droop
+                                    q_droop.K  => :K_Q, # droop constant voltage droop
+                                    q_droop.u_ref => :V_r, # reference/ desired voltage
+                                    p_droop.u_ref => :ω_r, # reference/ desired frequency
+                                    p_droop.x_ref => :P, # active (real) power infeed
+                                    q_droop.x_ref => :Q], # reactive (imag) power infeed                .
+                outputs = [v_source.u_i, v_source.u_r])
+
+
+    @parameters u_i(t) u_r(t) i_i(t) i_r(t)
+    @variables P_in(t) Q_in(t)
+    pow = IOBlock([P_in ~ u_r*i_r + u_i*i_i,
+                Q_in ~ u_i*i_r - u_r*i_i],
+                [u_i, u_r, i_i, i_r], [P_in, Q_in], name=:pow)
+
+    gfi2 = IOSystem([gfi.u_i => pow.u_i,
+                    gfi.u_r => pow.u_r,
+                    pow.P_in => gfi.P_in,
+                    pow.Q_in => gfi.Q_in],
+                    [gfi, pow], outputs=[gfi.u_i, gfi.u_r], name=:gfi_i_to_u)
+
+
+    # and the system can be reduced to a single IOBlock
+    connected = connect_system(gfi2)
+
+    IONode(connected, para)
 end
-##
+
 
 export GFI
