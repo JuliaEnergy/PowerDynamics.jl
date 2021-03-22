@@ -160,7 +160,7 @@ function make_bus_ac!(data::Dict{String,Any}, node::RLCLoad)
     make_shunt!(data, bus_dict["index"], 100π, node) # atm ω is set fixed 100π
 end
 
-function _make_branch_ac_header(data::Dict{String,Any})
+function _make_branch_ac_header(data::Dict{String,Any}, dict::Dict{Any, Int}, line)
     key_e = length(data["branch"]) + 1
     (data["branch"])[string(key_e)] = Dict{String,Any}()
     branch_dict = (data["branch"])[string(key_e)]
@@ -182,46 +182,48 @@ function _make_branch_ac_header(data::Dict{String,Any})
     branch_dict["b_fr"] = 0
     branch_dict["g_to"] = 0
     branch_dict["b_to"] = 0
+
+    # addition for dictionary use
+    if isempty(dict)
+        branch_dict["f_bus"] = line.from
+        branch_dict["t_bus"] = line.to
+    else
+        branch_dict["f_bus"] = dict[line.from]
+        branch_dict["t_bus"] = dict[line.to]
+    end
+
     return branch_dict
 end
 
 """
 The default, non-specialised method.
 """
-function make_branch_ac!(data::Dict{String,Any}, line)
+function make_branch_ac!(data::Dict{String,Any}, dict::Dict{Any, Int}, line)
     throw(ArgumentError("Line type $(typeof(line)) does not exist."))
 end
 
-function make_branch_ac!(data::Dict{String,Any}, line::StaticLine)
-    branch_dict = _make_branch_ac_header(data)
-    branch_dict["f_bus"] = line.from
-    branch_dict["t_bus"] = line.to
+function make_branch_ac!(data::Dict{String,Any}, dict::Dict{Any, Int}, line::StaticLine)
+    branch_dict = _make_branch_ac_header(data, dict, line)
     branch_dict["br_r"] = real(1 / line.Y)
     branch_dict["br_x"] = imag(1 / line.Y)
 end
 
-function make_branch_ac!(data::Dict{String,Any}, line::RLLine)
-    branch_dict = _make_branch_ac_header(data)
-    branch_dict["f_bus"] = line.from
-    branch_dict["t_bus"] = line.to
+function make_branch_ac!(data::Dict{String,Any}, dict::Dict{Any, Int}, line::RLLine)
+    branch_dict = _make_branch_ac_header(data, dict, line)
     branch_dict["br_r"] = real(line.R)
     branch_dict["br_x"] = imag(line.L * line.ω0)
 end
 
-function make_branch_ac!(data::Dict{String,Any}, line::Transformer)
-    branch_dict = _make_branch_ac_header(data)
-    branch_dict["f_bus"] = line.from
-    branch_dict["t_bus"] = line.to
+function make_branch_ac!(data::Dict{String,Any}, dict::Dict{Any, Int}, line::Transformer)
+    branch_dict = _make_branch_ac_header(data, dict, line)
     branch_dict["transformer"] = true
     branch_dict["tap"] = line.t_ratio
     branch_dict["br_r"] = real(1 / line.Y)
     branch_dict["br_x"] = imag(1 / line.Y)
 end
 
-function make_branch_ac!(data::Dict{String,Any}, line::PiModelLine)
-    branch_dict = _make_branch_ac_header(data)
-    branch_dict["f_bus"] = line.from
-    branch_dict["t_bus"] = line.to
+function make_branch_ac!(data::Dict{String,Any}, dict::Dict{Any, Int}, line::PiModelLine)
+    branch_dict = _make_branch_ac_header(data, dict, line)
     branch_dict["g_fr"] = real(line.y_shunt_km)
     branch_dict["b_fr"] = imag(line.y_shunt_km)
     branch_dict["br_r"] = real(1 / line.Y)
@@ -258,12 +260,22 @@ function power_flow(power_grid::PowerGrid)
         data[keyword] = Dict{String,Any}()
     end
 
-    for line in collect(values(power_grid.lines))
-        make_branch_ac!(data, line)
+    # addition for dictionary
+    dict = Dict{Any, Int}()
+    if isa(power_grid.nodes, OrderedDict)
+        for (key, node) in power_grid.nodes
+            val = length(data["gen"]) + 1
+            dict[key] = val
+            make_bus_ac!(data, node)
+        end
+    else
+        for node in power_grid.nodes
+            make_bus_ac!(data, node)
+        end
     end
 
-    for node in collect(values(power_grid.nodes))
-        make_bus_ac!(data, node)
+    for line in collect(values(power_grid.lines))
+        make_branch_ac!(data, dict, line)
     end
 
     s = Dict("output" => Dict("branch_flows" => true), "conv_losses_mp" => true)

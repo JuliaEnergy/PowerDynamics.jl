@@ -79,11 +79,10 @@ println(operationpoint[:, :φ] - va_2)
 @test isapprox.(va_2, va, atol = 1e-4) |> all
 @test isapprox.(operationpoint[:, :φ], va, atol = 1e-10) |> all
 
-p = [result["solution"]["gen"][string(k)]["pg"] for k in 1:N - 1]
+p = [result["solution"]["gen"][string(k)]["pg"] for k in 1:N-1]
 
-@test isapprox.(operationpoint[1:N - 1, :p], p, atol = 1e-10) |> all
+@test isapprox.(operationpoint[:, :p][1:N - 1], p, atol = 1e-10) |> all
 
 q = [result["solution"]["gen"][string(k)]["qg"] for k in 1:N - 1]
 
-@test isapprox.(operationpoint[1:N - 1, :q], q, atol = 1e-10) |> all
-    
+@test isapprox.(operationpoint[:, :q][1:N - 1], q, atol = 1e-10) |> all
