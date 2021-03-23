@@ -3,7 +3,7 @@ module IOComponents
 using BlockSystems
 using ModelingToolkit
 
-export LowPassFilter, DroopControl, VoltageSource, Power
+export LowPassFilter, DroopControl, VoltageSource, Power, PowerConstraint
 
 """
     LowPassFilter(;name, renamings...)
@@ -130,6 +130,31 @@ function Power(;name=gensym(:power), renamings...)
     block = IOBlock([P ~ u_r*i_r + u_i*i_i,
                      Q ~ u_i*i_r - u_r*i_i],
                     [u_i, u_r, i_i, i_r], [P, Q]; name)
+
+    return isempty(renamings) ? block : rename_vars(block; renamings...)
+end
+
+"""
+    PowerConstraint(;name, renamings...)
+
+Returns a Block that calculates complex voltage for fixed complex power: u = S/conj(i)
+
+    u_r = (P i_r - Q i_i)/(i_r² + i_i²)
+    u_i = (P i_i + Q i_r)/(i_r² + i_i²)
+
+             +-----+
+    i_r(t) --|  P  |-- u_r(t)
+    i_i(t) --|  Q  |-- u_i(t)
+             +-----+
+"""
+function PowerConstraint(;name=gensym(:pqconstraint), renamings...)
+    @parameters t P Q
+    @parameters i_i(t) i_r(t)
+    @variables u_i(t) u_r(t)
+
+    block = IOBlock([u_r ~ (P*i_r - Q*i_i)/(i_r^2 + i_i^2),
+                     u_i ~ (P*i_i + Q*i_r)/(i_r^2 + i_i^2)],
+                    [i_i, i_r], [u_i, u_r]; name)
 
     return isempty(renamings) ? block : rename_vars(block; renamings...)
 end

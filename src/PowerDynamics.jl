@@ -43,6 +43,7 @@ include("nodes/experimental/CompositeNode.jl")
 include("nodes/IONode.jl")
 include("nodes/IOComponents.jl")
 include("nodes/experimental/GFI_MTK.jl")
+include("nodes/experimental/MTK_Load.jl")
 
 # all line types
 
