@@ -15,19 +15,11 @@ i_i(t) --|  Q  |-- u_i(t)
          +-----+
 
 """
-
-function PQ_Load(;P,Q)
+function PQ_Load(;P,Q, name=gensym(:PQ_load))
 
     para = Dict(:P => P,    # active power set point
                 :Q => Q)    # reactive power set point
 
-    pq_constraint = PowerConstraint(name=:pq_constraint, P=:P, Q=:Q)
-
-    pql = IOSystem([],
-                   [pq_constraint],
-                   name=:PQLoad,
-                   outputs=[pq_constraint.u_i, pq_constraint.u_r])
-
-    connected = connect_system(pql)
-    IONode(connected, para)
+    pq_constraint = PowerConstraint(;name=name)
+    IONode(pq_constraint, para)
 end

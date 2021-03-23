@@ -20,7 +20,7 @@ Implementation of `VSIVoltagePT1` as an IONode.
      |+------------------------------------------------+|
      +--------------------------------------------------+
 """
-function GFI(;τ_v,τ_P,τ_Q,K_P,K_Q,V_r,P,Q,ω_r)
+function GFI(;τ_v,τ_P,τ_Q,K_P,K_Q,V_r,P,Q,ω_r, name=gensym(:GridForming))
 
     para = Dict(
         :τ_v => τ_v,    # time constant voltage control delay
@@ -49,7 +49,7 @@ function GFI(;τ_v,τ_P,τ_Q,K_P,K_Q,V_r,P,Q,ω_r)
                     v_source.u_r => pow.u_r,
                     v_source.u_i => pow.u_i],
                    [pow, p_filter, p_droop, q_filter, q_droop, v_source],
-                   name=:GridForming,
+                   name=name,
                    outputs=[v_source.u_i, v_source.u_r],
                    namespace_map=[p_droop.P => :P,
                                   q_droop.Q => :Q])
