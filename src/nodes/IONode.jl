@@ -15,9 +15,10 @@ function IONode(blk::IOBlock, parameters::Dict)
     @assert spec(blk) "Block has to follow PowerDynamics i/o conventions!"
     # TODO check parameters
     gen = generate_io_function(blk,
-        f_states=[blk.u_r, blk.u_i],
-        f_inputs=[blk.i_r, blk.i_i],
-        f_params=keys(parameters), warn=false);
+                               f_states=[blk.u_r, blk.u_i],
+                               f_inputs=[blk.i_r, blk.i_i],
+                               f_params=keys(parameters), warn=false,
+                               type=:ode);
     IONode(blk, gen, collect(values(parameters)), gen.massm)
 end
 
