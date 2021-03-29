@@ -47,26 +47,20 @@
     {
       "name": "bus4",
       "params": {
-        "U": 1.0,
         "P": -0.478,
-        "A": 0.0,
         "Q": -0.0,
-        "B": 0.0,
         "Y_n": 0
       },
-      "type": "VoltageDependentLoad"
+      "type": "PQAlgebraic"
     },
     {
       "name": "bus5",
       "params": {
-        "U": 1.0,
         "P": -0.076,
-        "A": 0.0,
         "Q": -0.016,
-        "B": 0.0,
         "Y_n": 0
       },
-      "type": "VoltageDependentLoad"
+      "type": "PQAlgebraic"
     },
     {
       "name": "bus6",
@@ -89,14 +83,11 @@
     {
       "name": "bus7",
       "params": {
-        "U": 1.0,
         "P": -0.0,
-        "A": 0.0,
         "Q": -0.0,
-        "B": 0.0,
         "Y_n": 0
       },
-      "type": "VoltageDependentLoad"
+      "type": "PQAlgebraic"
     },
     {
       "name": "bus8",
@@ -119,74 +110,56 @@
     {
       "name": "bus9",
       "params": {
-        "U": 1.0,
         "P": -0.295,
-        "A": 0.0,
         "Q": -0.166,
-        "B": 0.0,
         "Y_n": 0
       },
-      "type": "VoltageDependentLoad"
+      "type": "PQAlgebraic"
     },
     {
       "name": "bus10",
       "params": {
-        "U": 1.0,
         "P": -0.09,
-        "A": 0.0,
         "Q": -0.058,
-        "B": 0.0,
         "Y_n": 0
       },
-      "type": "VoltageDependentLoad"
+      "type": "PQAlgebraic"
     },
     {
       "name": "bus11",
       "params": {
-        "U": 1.0,
         "P": -0.035,
-        "A": 0.0,
         "Q": -0.018,
-        "B": 0.0,
         "Y_n": 0
       },
-      "type": "VoltageDependentLoad"
+      "type": "PQAlgebraic"
     },
     {
       "name": "bus12",
       "params": {
-        "U": 1.0,
         "P": -0.061,
-        "A": 0.0,
         "Q": -0.016,
-        "B": 0.0,
         "Y_n": 0
       },
-      "type": "VoltageDependentLoad"
+      "type": "PQAlgebraic"
     },
     {
       "name": "bus13",
       "params": {
-        "U": 1.0,
         "P": -0.135,
-        "A": 0.0,
         "Q": -0.058,
-        "B": 0.0,
         "Y_n": 0
       },
-      "type": "VoltageDependentLoad"
+      "type": "PQAlgebraic"
     },
     {
       "name": "bus14",
       "params": {
-        "U": 1.0,
         "P": -0.149,
-        "A": 0.0,
         "Q": -0.05,
-        "B": 0.0,
         "Y_n": 0
       },
-      "type": "VoltageDependentLoad"
+      "type": "PQAlgebraic"
     }
   ],
   "lines": [

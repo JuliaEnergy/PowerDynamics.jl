@@ -1,4 +1,4 @@
-using PowerDynamics: SlackAlgebraic, FourthOrderEq, VoltageDependentLoad, PiModelLine, StaticLine, Transformer, PowerGrid, write_powergrid, Json
+using PowerDynamics: SlackAlgebraic, FourthOrderEq, PQAlgebraic, PiModelLine, StaticLine, Transformer, PowerGrid, write_powergrid, Json
 using OrderedCollections: OrderedDict
 
 # Data Source: Kodsi, S. K. M., & Canizares, C. A. (2003). Modeling and simulation of IEEE 14-bus system with FACTS controllers. University of Waterloo, Canada, Tech. Rep.
@@ -7,17 +7,17 @@ buses=OrderedDict(
     "bus1"=> FourthOrderEq(T_d_dash=7.4, D=2, X_d=0.8979, X_q=0.646, Ω=50, X_d_dash=0.2995, T_q_dash=0.1, X_q_dash=0.646, P=2.32, H=5.148, E_f=1),
     "bus2"=> SlackAlgebraic(U=1),
     "bus3"=> FourthOrderEq(T_d_dash=6.1, D=2, X_d=1.05, X_q=0.98, Ω=50, X_d_dash=0.185, T_q_dash=0.4, X_q_dash=0.36, P=-0.942, H=6.54, E_f= 1),
-    "bus4"=> VoltageDependentLoad(P=-0.478, Q=-0.0, U=1.0, A=0.0, B=0.0),
-    "bus5"=> VoltageDependentLoad(P=-0.076, Q=-0.016, U=1.0, A=0.0, B=0.0),
+    "bus4"=> PQAlgebraic(P=-0.478, Q=-0.0),
+    "bus5"=> PQAlgebraic(P=-0.076, Q=-0.016),
     "bus6"=> FourthOrderEq(T_d_dash=4.75, D=2, X_d=1.25, X_q=1.22, Ω=50, X_d_dash=0.232, T_q_dash=1.6, X_q_dash=0.715, P=-0.122, H=5.06, E_f= 1),
-    "bus7"=> VoltageDependentLoad(P=-0.0, Q=-0.0, U=1.0, A=0.0, B=0.0),
+    "bus7"=> PQAlgebraic(P=-0.0, Q=-0.0),
     "bus8"=> FourthOrderEq(T_d_dash=4.75, D=2, X_d=1.25, X_q=1.22, Ω=50, X_d_dash=0.232, T_q_dash=1.6, X_q_dash=0.715, P=0.0, H=5.06, E_f= 1),
-    "bus9"=> VoltageDependentLoad(P=-0.295, Q=-0.166, U=1.0, A=0.0, B=0.0),
-    "bus10"=> VoltageDependentLoad(P=-0.09, Q=-0.058, U=1.0, A=0.0, B=0.0),
-    "bus11"=> VoltageDependentLoad(P=-0.035, Q=-0.018, U=1.0, A=0.0, B=0.0),
-    "bus12"=> VoltageDependentLoad(P=-0.061, Q=-0.016, U=1.0, A=0.0, B=0.0),
-    "bus13"=> VoltageDependentLoad(P=-0.135, Q=-0.058, U=1.0, A=0.0, B=0.0),
-    "bus14"=> VoltageDependentLoad(P=-0.149, Q=-0.05, U=1.0, A=0.0, B=0.0));
+    "bus9"=> PQAlgebraic(P=-0.295, Q=-0.166),
+    "bus10"=> PQAlgebraic(P=-0.09, Q=-0.058),
+    "bus11"=> PQAlgebraic(P=-0.035, Q=-0.018),
+    "bus12"=> PQAlgebraic(P=-0.061, Q=-0.016),
+    "bus13"=> PQAlgebraic(P=-0.135, Q=-0.058),
+    "bus14"=> PQAlgebraic(P=-0.149, Q=-0.05));
 
 branches=OrderedDict(
     "branch1"=> PiModelLine(from= "bus1", to = "bus2",y=4.999131600798035-1im*15.263086523179553, y_shunt_km=0.0528/2, y_shunt_mk=0.0528/2),
