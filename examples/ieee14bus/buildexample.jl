@@ -43,4 +43,4 @@ branches=OrderedDict(
 
 
 powergrid = PowerGrid(buses, branches)
-write_powergrid(powergrid,"./examples/ieee14bus/grid.json", Json)
+write_powergrid(powergrid, joinpath(@__DIR__,"grid.json"), Json)

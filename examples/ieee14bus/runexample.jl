@@ -1,6 +1,6 @@
 using PowerDynamics: read_powergrid, Json, Inc, find_operationpoint, ChangeInitialConditions, LineFailure, PowerPerturbation, simulate
 
-powergrid = read_powergrid("./examples/ieee14bus/grid.json", Json)
+powergrid = read_powergrid(joinpath(@__DIR__,"grid.json"), Json)
 operationpoint = find_operationpoint(powergrid)
 
 timespan= (0.0,5.)

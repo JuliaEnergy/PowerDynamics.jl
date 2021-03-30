@@ -2,7 +2,7 @@ using Test: @test, @testset
 using PowerDynamics
 
 # read grid data from json file
-pg_read = read_powergrid("./examples/ieee14bus/grid.json", Json)
+pg_read = read_powergrid("../examples/ieee14bus/grid.json", Json)
 
 # build grid using the example script
 include("../../examples/ieee14bus/buildexample.jl")
