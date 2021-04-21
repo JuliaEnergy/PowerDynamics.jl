@@ -18,7 +18,7 @@ end
 operationpoint = find_operationpoint(pg_build)
 timespan= (0.0,5.)
 tsteps = 0.0:0.1:5.0
-rtol = 1e-3
+rtol = 1e-2
 
 fault1 = ChangeInitialConditions(node="bus1", var=:ω, f=Inc(0.2))
 fault2 = LineFailure(line_name="branch2", tspan_fault=(1.,5.))
