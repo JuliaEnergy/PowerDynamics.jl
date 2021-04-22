@@ -51,6 +51,7 @@ include("lines/RLLine.jl")
 
 include("operationpoint/operationpoint.jl")
 include("operationpoint/find_valid_initial_condition.jl")
+include("operationpoint/power_flow.jl")
 
 include("faults/ChangeInitialConditions.jl")
 include("faults/AbstractPerturbation.jl")
