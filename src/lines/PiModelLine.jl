@@ -13,6 +13,8 @@ See also the Chapter 2 in
 - `y`: admittance of line between `k` and `m`
 - `y_shunt_km`: shunt admittance at the end connected to node `k`
 - `y_shunt_mk`: shunt admittance at the end connected to node `m`
+- `t_km`: transformer ratio at the end connected to node `k`
+- `t_mk`: transformer ratio at the end connected to node `m`
 
 # Assumptions:
 - the line admittance is symmetric

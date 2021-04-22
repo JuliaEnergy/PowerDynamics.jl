@@ -26,6 +26,8 @@ powergrid = PowerGrid(node_list, line_list)
 ##
 
 operationpoint = find_operationpoint(powergrid_dict; sol_method=:rootfind)
+operationpoint_pf = find_operationpoint(powergrid_dict; sol_method=:rootfind,solve_powerflow=true)
+
 
 data, result = power_flow(powergrid)
 
@@ -62,22 +64,19 @@ v =   [  result["solution"]["bus"][string(k)]["vm"] for k in 1:N]
 v_2 = [result_2["solution"]["bus"][string(k)]["vm"] for k in 1:N]
 
 
-println(operationpoint[:, :v] - v)
-println(operationpoint[:, :v] - v_2)
-println(isapprox.(operationpoint[:, :v], v, atol = 1e-10) |> all)
+@test isapprox.(operationpoint[:, :v], v, atol = 1e-10) |> all
+@test isapprox.(operationpoint[:, :v], v_2, atol = 1e-10) |> all
+@test isapprox.(operationpoint_pf[:, :v], v, atol = 1e-10) |> all
+@test isapprox.(operationpoint_pf[:, :v], v_2, atol = 1e-10) |> all
 
-@test isapprox.(v_2, v, atol = 1e-4) |> all
-@test isapprox.(operationpoint[:, :v], v, atol = 1e-4) |> all
 
 va =   [  result["solution"]["bus"][string(k)]["va"] for k in 1:N]
 va_2 = [result_2["solution"]["bus"][string(k)]["va"] for k in 1:N]
 
-
-println(operationpoint[:, :φ] - va)
-println(operationpoint[:, :φ] - va_2)
-
-@test isapprox.(va_2, va, atol = 1e-4) |> all
 @test isapprox.(operationpoint[:, :φ], va, atol = 1e-10) |> all
+@test isapprox.(operationpoint[:, :φ], va_2, atol = 1e-10) |> all
+@test isapprox.(operationpoint_pf[:, :φ], va, atol = 1e-10) |> all
+@test isapprox.(operationpoint_pf[:, :φ], va_2, atol = 1e-10) |> all
 
 p = [result["solution"]["gen"][string(k)]["pg"] for k in 1:N-1]
 
