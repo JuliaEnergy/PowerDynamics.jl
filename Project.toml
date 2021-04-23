@@ -35,6 +35,7 @@ NetworkDynamics = "0.2,0.4"
 OrderedCollections = "1.3"
 OrdinaryDiffEq = "^5.17.2"
 Parameters = "^0.12.0"
+PowerModelsACDC = "0.4"
 RecipesBase = "0.7.0,0.8.0, 1.0"
 Setfield = "0.4,0.5,0.6, 0.7"
 SteadyStateDiffEq = "^1.5.1"
@@ -42,8 +43,8 @@ julia = "1"
 
 [extras]
 Crayons = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
-Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
