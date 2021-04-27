@@ -2,6 +2,7 @@ using Test
 using Crayons
 
 testlist = [
+    ("operationpoint/PowerModelsIntegration.jl","PowerModels Operationpoint Finder Tests"),
     ("common/States.jl", "States Tests"),
     ("common/PowerGrid.jl", "PowerGrid Tests"),
     ("common/PowerGridSolutions.jl", "PowerGridSolutions Tests"),
@@ -36,7 +37,8 @@ testlist = [
     ("faults/PowerPerturbation.jl", "PowerPerturbation Simulation Tests"),
     ("faults/NodeShortCircuit.jl", "NodeShortCircuit Simulation Tests"),
     ("operationpoint/operationpoint.jl", "operationpoint Tests"),
-    ("parsers/JsonParser.jl", "JsonParser Tests")
+    ("parsers/JsonParser.jl", "JsonParser Tests"),
+    ("examples/ieee14bus.jl", "IEEE 14-bus Tests")
 ]
 @testset "All Tests" begin
     @testset "$desc" for (file, desc) in testlist
