@@ -114,8 +114,8 @@ using NetworkDynamics: find_valid_ic
 import PowerDynamics: systemsize, dimension
 dimension(::StaticLine) = 0
 systemsize(pg::PowerGrid) =
-        sum(map(n -> dimension(n), pg.nodes)) +
-        sum(map(n -> dimension(n), pg.lines))
+        sum(map(n -> dimension(n), collect(values(pg.nodes)))) +
+        sum(map(n -> dimension(n), collect(values(pg.lines))))
 
 @testset "Do static and dynamics solutions agree for Slack & Swing" begin
 
