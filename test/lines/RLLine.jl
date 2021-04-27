@@ -111,8 +111,8 @@ using PowerDynamics: PowerGrid,
 using NetworkDynamics: find_valid_ic
 
 # extend to account for line variables
-import PowerDynamics: systemsize, dimension
-dimension(::StaticLine) = 0
+import PowerDynamics: systemsize, dimension, AbstractLine
+dimension(::AbstractLine) = 0
 systemsize(pg::PowerGrid) =
         sum(map(n -> dimension(n), collect(values(pg.nodes)))) +
         sum(map(n -> dimension(n), collect(values(pg.lines))))
