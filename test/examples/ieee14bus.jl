@@ -3,7 +3,7 @@ using JLD2
 using PowerDynamics
 
 # read grid data from json file
-ieee14path = joinpath(dirname(pwd()), "examples", "ieee14bus")
+ieee14path = joinpath(@__DIR__, "..", "..", "examples", "ieee14bus")
 pg_read = read_powergrid(joinpath(ieee14path,"grid.json"), Json)
 
 # build grid using the example script
