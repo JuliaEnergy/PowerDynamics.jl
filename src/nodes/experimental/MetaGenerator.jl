@@ -76,7 +76,10 @@ Symbols:
 
 TODO: I went with the NREL convention v instead of u. Should be discussed.
 """
-function MetaGenerator(mover, shaft, machine, controller, para; name=gensym(:MGenerator))
+function MetaGenerator(mover, shaft, machine, controller, para;
+                       verbose=false, name=gensym(:MGenerator))
+
+    verbose && println("Create MetaGenerator:")
     rfc = reference_frame_conversion()
 
     @assert BlockSpec([], [:τ_m])(mover) "mover has not output τₘ!"
@@ -96,21 +99,26 @@ function MetaGenerator(mover, shaft, machine, controller, para; name=gensym(:MGe
     # optional additional connections to machine
     if :v_f ∈ getname.(machine.inputs)
         push!(connections, controller.v_f => machine.v_f)
+        verbose && println("  - added optional connection: controller.v_f => machine.v_f")
     end
     # optional additional connections to controller
     controller_inputs = getname.(controller.inputs)
     if :v_h ∈ controller_inputs
         push!(connections, rfc.v_h => controller.v_h)
+        verbose && println("  - added optional connection: rfc.v_h => controller.v_h")
     end
     if :τ_e ∈ controller_inputs
         push!(connections, machine.τ_e => controller.τ_e)
+        verbose && println("  - added optional connection: machine.τ_e => controller.τ_e")
     end
     if :ω ∈ controller_inputs
         push!(connections, shaft.ω => controller.ω)
+        verbose && println("  - added optional connection: shaft.ω => controller.ω")
     end
     # optional additional connection to mover
     if :ω ∈ getname.(mover.inputs)
         push!(connections, shaft.ω => mover.ω)
+        verbose && println("  - added optional connection: shaft.ω => mover.ω")
     end
 
     # make sure that v_r, u_i, i_r, i_i get promoted
@@ -120,12 +128,15 @@ function MetaGenerator(mover, shaft, machine, controller, para; name=gensym(:MGe
     sys = IOSystem(connections, [rfc, mover, shaft, machine, controller],
                    namespace_map=rfc_promotions, outputs=[rfc.u_r, rfc.u_i],
                    autopromote=false, name=name)
+    verbose && println("IOSystem: ", sys)
     # we want no further autopromote to keep all of the parameters in the namespaces
     # this is necessary because the parameterdict will be namespaced as well!
     connected = connect_system(sys, verbose=false)
+    verbose && println("IOBlock: ", connected)
 
     inputs = Set(getname.(connected.inputs))
-    @assert Set((:i_i, :i_r)) == inputs "System inputs [:i_i, :i_r] != $inputs"
+
+    @assert Set((:i_i, :i_r)) == inputs "System inputs [:i_i, :i_r] != $inputs. It seems like there are still open inputs in the subsystems!"
     @assert Set(connected.iparams) == Set(keys(para)) "parameter dict does not equal system parameters $(connected.iparams)"
 
     IONode(connected, para)
