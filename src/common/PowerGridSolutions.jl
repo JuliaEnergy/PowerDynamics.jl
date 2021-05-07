@@ -1,7 +1,7 @@
 using DiffEqBase: AbstractTimeseriesSolution
 using Lazy: @>>
 using RecipesBase: @recipe, RecipesBase
-using NetworkDynamics: StaticEdgeFunction
+using NetworkDynamics
 
 
 """
@@ -123,16 +123,15 @@ variable_index(nodes, n::AbstractArray, s) = map(n -> variable_index(nodes, n, s
 
 startindex(nodes, n::AbstractArray) = map(n -> startindex(nodes, n), n)
 
-
 # current for a timeseries t
 get_current(sol, t, n) = begin
     vertices = map(construct_vertex, collect(values(sol.powergrid.nodes)))
     edges = map(construct_edge, collect(values(sol.powergrid.lines)))
     bus_array=collect(keys(sol.powergrid.nodes))
     ni=findfirst(x->x==n, bus_array)
-    sef = StaticEdgeFunction(vertices, edges, sol.powergrid.graph)
+    nd = network_dynamics(vertices, edges, sol.powergrid.graph)
     xt = sol.dqsol(t)
-    hcat([get_current_internal(sef, x, ni) for x in xt]...)
+    hcat([get_current_internal(nd, x, ni) for x in xt]...)
 end
 
 # current for a single point in time
@@ -141,10 +140,10 @@ get_current(sol, t::Number, n) = begin
     edges = map(construct_edge, collect(values(sol.powergrid.lines)))
     bus_array=collect(keys(sol.powergrid.nodes))
     ni=findfirst(x->x==n, bus_array)
-    sef = StaticEdgeFunction(vertices,edges,sol.powergrid.graph)
+    nd = network_dynamics(vertices,edges,sol.powergrid.graph)
     x = sol.dqsol(t)
-    (e_s, e_d) = sef(x, Nothing, 0)
-    total_current(e_s[ni], e_d[ni])
+    gd = nd(x, nothing, 0.0, GetGD)
+    total_current(get_dst_edges(gd, ni))
 end
 
 # current for a single point in time and for array of nodes
@@ -153,10 +152,10 @@ get_current(sol, t::Number, n::Array) = begin
     edges = map(construct_edge, collect(values(sol.powergrid.lines)))
     bus_array=collect(keys(sol.powergrid.nodes))
     ni=[findfirst(x->x==nx, bus_array) for nx in n]
-    sef = StaticEdgeFunction(vertices,edges,sol.powergrid.graph)
+    nd = network_dynamics(vertices,edges,sol.powergrid.graph)
     x = sol.dqsol(t)
-    (e_s, e_d) = sef(x, Nothing, 0)
-    [total_current(e_s[nx], e_d[nx]) for nx in ni]
+    gd = nd(x, nothing, 0.0, GetGD)
+    [total_current(get_dst_edges(gd, nx)) for nx in ni]
 end
 
 # current for array of nodes
@@ -165,20 +164,20 @@ get_current(sol, t, n::Array) = begin
     edges = map(construct_edge, collect(values(sol.powergrid.lines)))
     bus_array=collect(keys(sol.powergrid.nodes))
     ni=[findfirst(x->x==nx, bus_array) for nx in n]
-    sef = StaticEdgeFunction(vertices,edges,sol.powergrid.graph)
+    nd = network_dynamics(vertices,edges,sol.powergrid.graph)
     xt = sol.dqsol(t)
-    hcat([get_current_internal(sef, x, ni) for x in xt]...)
+    hcat([get_current_internal(nd, x, ni) for x in xt]...)
 end
 
 
-get_current_internal(sef, x, nodes) = begin
-    (e_s, e_d) = sef(x, Nothing, 0)
-    [total_current(e_s[n], e_d[n]) for n in collect(values(nodes))]
+get_current_internal(nd, x, nodes) = begin
+    gd = nd(x, nothing, 0.0, GetGD)
+    [total_current(get_dst_edges(gd, n)) for n in collect(values(nodes))]
 end
 
-get_current_internal(sef, x, n::Number) = begin
-    (e_s, e_d) = sef(x, Nothing, 0)
-    total_current(e_s[n], e_d[n])
+get_current_internal(nd, x, n::Number) = begin
+    gd = nd(x, nothing, 0.0, GetGD)
+    total_current(get_dst_edges(gd, n))
 end
 
 # define the plotting recipes

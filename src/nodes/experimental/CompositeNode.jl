@@ -41,7 +41,7 @@ CompositionTypes = Dict(["IPU" => _IPU,
     "P" => _P,
     "IP" => _IP])
 
-struct CompositeNode{T} <: AbstractNode 
+struct CompositeNode{T} <: AbstractNode
     CurrentNodes # constant current nodes
     VoltageNode # constant voltage nodes
     PowerNodes # constant power nodes
@@ -141,8 +141,8 @@ function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IPU, _IU, _PU}
     num_cv = length(current_vertices)
     num_pv = length(power_vertices)
 
-    function rhs!(dx, x, e_s, e_d, p, t)
-        i = total_current(e_s, e_d)
+    function rhs!(dx, x, edges, p, t)
+        i = total_current(edges)
         u = x[1] + x[2] * im
         s = u*conj(i)
 
@@ -153,21 +153,21 @@ function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IPU, _IU, _PU}
 
             # constant current
             for (cf, idx) in zip(cfs, cn.idxs[1:num_cv])
-                cf(dx[idx], x[idx], e_s, e_d, p, t)
+                cf(dx[idx], x[idx], edges, p, t)
                 # The current nodes are assumed to have du = i - I_node
                 i_injected += i - complex(dx[1], dx[2])
             end
 
             # constant power
             for (pf, idx) in zip(pfs, cn.idxs[num_cv+1:num_cv+num_pv])
-                pf(dx[idx], x[idx], e_s, e_d, p, t)
+                pf(dx[idx], x[idx], edges, p, t)
                 # The current nodes are assumed to have du = p - P_node
                 p_injected += s - complex(dx[1], dx[2])
             end
 
             total_i = i_injected + p_injected / u
 
-            voltage_vertex.f!(dx[cn.idxs[end]], x[cn.idxs[end]], [e_s;[[real(total_i), imag(total_i), 0., 0.]]], e_d, p, t)
+            voltage_vertex.f!(dx[cn.idxs[end]], x[cn.idxs[end]], [edges;[[-real(total_i), -imag(total_i)]]], p, t)
 
         end # views
 
@@ -207,8 +207,8 @@ function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IP, _I, _P}
     num_cv = length(current_vertices)
     num_pv = length(power_vertices)
 
-    function rhs!(dx, x, e_s, e_d, p, t)
-        i = total_current(e_s, e_d)
+    function rhs!(dx, x, edges, p, t)
+        i = total_current(edges)
         u = x[1] + x[2] * im
         s = u*conj(i)
 
@@ -219,14 +219,14 @@ function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IP, _I, _P}
 
             # constant current
             for (cf, idx) in zip(cfs, cn.idxs[1:num_cv])
-                cf(dx[idx], x[idx], e_s, e_d, p, t)
+                cf(dx[idx], x[idx], edges, p, t)
                 # The current nodes are assumed to have du = i - I_node
                 i_injected += i - complex(dx[1], dx[2])
             end
 
             #constant powers
             for (pf, idx) in zip(pfs, cn.idxs[num_cv+1:num_cv+num_pv])
-                pf(dx[idx], x[idx], e_s, e_d, p, t)
+                pf(dx[idx], x[idx], edges, p, t)
                 # The current nodes are assumed to have du = p - P_node
                 p_injected += s - complex(dx[1], dx[2])
             end
