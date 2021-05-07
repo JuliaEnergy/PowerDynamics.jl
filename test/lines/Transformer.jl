@@ -20,10 +20,10 @@ end
         I_km = -abs2(trafo.t_ratio) * trafo.y * complex(v_s...) + conj(trafo.t_ratio) * trafo.y * complex(v_d...)
         I_mk = trafo.y * complex(v_d...) - trafo.t_ratio * trafo.y * complex(v_s...)
 
-        @test e[1] ≈ real(I_km)
-        @test e[2] ≈ imag(I_km)
-        @test e[3] ≈ real(I_mk)
-        @test e[4] ≈ imag(I_mk)
+        @test e[3] ≈ -real(I_km)
+        @test e[4] ≈ -imag(I_km)
+        @test e[1] ≈ real(I_mk)
+        @test e[2] ≈ imag(I_mk)
 end
 
 @testset "Transformer should return the same result as PiModelLine" begin
