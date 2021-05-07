@@ -11,7 +11,10 @@ abstract type Json <: Format end
 Parses an existing model in JSON format into a [`PowerGrid`](@ref)
 """
 function read_powergrid(file, ::Type{Json})
-    json = parsefile(file; dicttype=Dict, inttype=Int64, use_mmap=true)
+    # only use mmap on non-windows systems
+    # https://github.com/JuliaIO/JSON.jl/issues/112
+    mmap = !Sys.iswindows()
+    json = parsefile(file; dicttype=Dict, inttype=Int64, use_mmap=mmap)
     nodes = get(json, "nodes", []) |> convert_nodes |> component_format
     lines = get(json, "lines", []) |> convert_lines |> component_format
     PowerGrid(nodes, lines)
