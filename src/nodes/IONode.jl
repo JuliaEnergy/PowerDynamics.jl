@@ -24,8 +24,8 @@ end
 
 function construct_vertex(ion::IONode)
     gen = ion.generated
-    function rhs!(dx, x, e_s, e_d, _p, t)
-        i = total_current(e_s, e_d)
+    function rhs!(dx, x, edges, _p, t)
+        i = total_current(edges)
         gen.f_ip(dx, x, (real(i), imag(i)), ion.parameters, t)
     end
     ODEVertex(f! = rhs!, dim = length(gen.states), mass_matrix = gen.massm, sym = Symbol.(gen.states))

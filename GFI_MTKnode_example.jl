@@ -40,15 +40,13 @@ para = Dict(:τ_v=>rand(),:τ_P=>rand(), :τ_Q=>rand(),
             :K_P=>rand(), :K_Q=>rand(), :V_r=>rand(),
             :P=>rand(), :Q=>rand(), :ω_r=>0.0)
 
-node_bs = IONode(connected, para)
+node_bs = GFI(;para...)
 f_bs = construct_vertex(node_bs).f!
 para_pd = delete!(copy(para), :ω_r)
-nt = NamedTuple{Tuple(keys(para_pd))}(values(para_pd))
-node_pd = VSIVoltagePT1(; nt...)
+node_pd = VSIVoltagePT1(; para_pd...)
 f_pd = construct_vertex(node_pd).f!
 
-es = [randn(4) for i in 1:4]
-ed = [randn(4) for i in 1:4]
+edges = [randn(4) for i in 1:4]
 t = rand()
 
 ## chose random initial state and account for initial ω in PD node
@@ -58,6 +56,6 @@ x_pd[3] = - para[:K_P] * (x_bs[3] - para[:P])
 dx = similar(x_bs)
 
 using BenchmarkTools
-@btime $f_bs($dx, $x_bs, $es, $ed, nothing, $t)
-@btime $f_pd($dx, $x_pd, $es, $ed, nothing, $t)
+@btime $f_bs($dx, $x_bs, $edges, nothing, $t)
+@btime $f_pd($dx, $x_pd, $edges, nothing, $t)
 # it seems like the `IONode` is even a bit faster.

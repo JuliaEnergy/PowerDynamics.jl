@@ -29,8 +29,7 @@ using LinearAlgebra: I
         f_pd = construct_vertex(node_pd).f!
 
         ## create fake "edge data", 4 incoming, 4 outgooing with 4 states each
-        es = [randn(4) for i in 1:4]
-        ed = [randn(4) for i in 1:4]
+        edges = [randn(4) for i in 1:4]
 
         ## select random time
         t = rand()
@@ -45,8 +44,8 @@ using LinearAlgebra: I
         dx_pd = similar(x_pd)
 
         ## call both functions
-        f_bs(dx_bs, x_bs, es, ed, nothing, t)
-        f_pd(dx_pd, x_pd, es, ed, nothing, t)
+        f_bs(dx_bs, x_bs, edges, nothing, t)
+        f_pd(dx_pd, x_pd, edges, nothing, t)
 
         ## compare results
         ## we have to correct variable 3 of bs implementation to match dω

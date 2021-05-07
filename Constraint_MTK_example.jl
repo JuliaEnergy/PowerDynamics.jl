@@ -33,4 +33,3 @@ fault1 = ChangeInitialConditions(node="bus1", var=:u_r, f=Inc(0.2))
 solution1 = simulate(fault1, powergrid, operationpoint, timespan)
 using Plots
 plot(solution1.dqsol)
-nothing #hide
