@@ -3,10 +3,11 @@ using JLD2
 using PowerDynamics
 
 # read grid data from json file
-pg_read = read_powergrid("../examples/ieee14bus/grid.json", Json)
+ieee14path = joinpath(@__DIR__, "..", "..", "examples", "ieee14bus")
+pg_read = read_powergrid(joinpath(ieee14path,"grid.json"), Json)
 
 # build grid using the example script
-include("../../examples/ieee14bus/buildexample.jl")
+include(joinpath(ieee14path,"buildexample.jl"))
 pg_build = powergrid
 
 @testset "IEEE 14-bus stucture tests" begin
