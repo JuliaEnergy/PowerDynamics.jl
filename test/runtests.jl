@@ -6,7 +6,7 @@ testlist = [
     ("common/States.jl", "States Tests"),
     ("common/PowerGrid.jl", "PowerGrid Tests"),
     ("common/PowerGridSolutions.jl", "PowerGridSolutions Tests"),
-    ("nodes/PQAlgebraic.jl", "PQAlgebraic Node Tests"), 
+    ("nodes/PQAlgebraic.jl", "PQAlgebraic Node Tests"),
     ("nodes/VoltageDependentLoad.jl", "VoltageDependentLoad Node Tests"),
     ("nodes/PVAlgebraic.jl", "PVAlgebraic Node Tests"),
     ("nodes/SlackAlgebraic.jl", "SlackAlgebraic Node Tests"),

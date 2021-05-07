@@ -1,11 +1,8 @@
-function total_current(e_s, e_d)
-    # Keeping with the convention of negative sign for outging current
+function total_current(edges)
+    # ND convention: all flows entering a node are positive
     current = 0.0im
-    for e in e_s
-        current -= e[1] + e[2]*im
-    end
-    for e in e_d
-        current += e[3] + e[4]*im
+    @inbounds for e in edges
+        current += e[1] + e[2]*im
     end
     current
 end

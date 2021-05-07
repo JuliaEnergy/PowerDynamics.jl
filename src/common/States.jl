@@ -1,8 +1,6 @@
 # (C) 2018 Potsdam Institute for Climate Impact Research, authors and contributors (see AUTHORS file)
 # Licensed under GNU GPL v3 (see LICENSE file)
 
-using NetworkDynamics: StaticEdgeFunction
-
 import Base: convert
 
 
@@ -240,9 +238,9 @@ Base.:/(s::State, k) = (1/k)*s
 get_current(state, n) = begin
     vertices = map(construct_vertex, state.grid.nodes)
     edges = map(construct_edge, state.grid.lines)
-    sef = StaticEdgeFunction(vertices,edges,state.grid.graph)
-    (e_s, e_d) = sef(state.vec, Nothing, 0)
-    total_current(e_s[n], e_d[n])
+    nd = network_dynamics(vertices,edges,state.grid.graph)
+    gd = nd(state.vec, nothing, 0.0, GetGD)
+    total_current(get_dst_edges(gd, n))
 end
 
 get_current(state, n::String) = begin
@@ -252,7 +250,7 @@ get_current(state, n::String) = begin
     bus_id = findfirst(x->x==n, busnames_array)
     edges_array = collect(values(state.grid.lines))
     edges = map(construct_edge, edges_array)
-    sef = StaticEdgeFunction(vertices,edges,state.grid.graph)
-    (e_s, e_d) = sef(state.vec, Nothing, 0)
-    total_current(e_s[bus_id], e_d[bus_id])
+    nd = network_dynamics(vertices,edges,state.grid.graph)
+    gd = nd(state.vec, nothing, 0.0, GetGD)
+    total_current(get_dst_edges(gd, bus_id))
 end
