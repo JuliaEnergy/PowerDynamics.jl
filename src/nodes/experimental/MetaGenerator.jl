@@ -27,7 +27,7 @@ function reference_frame_conversion()
 end
 
 """
-    MetaGenerator(mover, shaft, machine, controller, parameters; name)
+    MetaGenerator(mover, shaft, machine, AVR, parameters; name)
 
 Implementation of the NREL MetaGenerator model. This function takes several
 `IOBlocks`` as inputs which should satisfy the corresponding block specification (see below).
@@ -39,7 +39,7 @@ Block specifications: `(input, [optional]) ↦ (output)`
  - mover                      `([ω]) ↦ (τ_m)`
  - shaft                 `(τ_m, τ_e) ↦ (δ, ω)`
  - machine               `(i_d, i_q) ↦ (v_d, v_q, τ_e)`
- - controller      `([v_df, τ_e, ω]) ↦ (v_f)`
+ - AVR      `([v_df, τ_e, ω]) ↦ (v_f)`
 
 Symbols:
  - `u_r + j u_i`; `i_r + j i_i` : current and voltage in voltage reference system (θ)
@@ -53,18 +53,18 @@ Symbols:
          i_r,i_i    u_r,u_i
             ↓          ↑
      +-----------------------+ v_h
- +--→| ref. frame conversion |--------------+
- |   +-----------------------+              |  (optional inputs)
- |  i_d,i_q |          ↑ v_d,v_q            | /
- |          ↓          |                   (↓)
- |   +-----------------------+    v_f +------------+
- |   |        machine        |(←)-----| Controller |
- |   +-----------------------+        +------------+
- |               | τ_e                   (↑)  (↑)
- |               +------------------------+    |
- |               ↓                             |
- | δ +-----------------------+ ω               |
- +---|         shaft         |----+------------+
+ +--→| ref. frame conversion |-------------+
+ |   +-----------------------+             |  (optional inputs)
+ |  i_d,i_q |          ↑ v_d,v_q           | /
+ |          ↓          |                  (↓)
+ |   +-----------------------+    v_f +---------+
+ |   |        machine        |(←)-----|   AVR   |
+ |   +-----------------------+        +---------+
+ |               | τ_e                 (↑)   (↑)
+ |               +----------------------+     |
+ |               ↓                            |
+ | δ +-----------------------+ ω              |
+ +---|         shaft         |----+-----------+
      +-----------------------+    |
                  ↑ τ_m            |
                  |                |
@@ -76,7 +76,7 @@ Symbols:
 
 TODO: I went with the NREL convention v instead of u. Should be discussed.
 """
-function MetaGenerator(mover, shaft, machine, controller, para;
+function MetaGenerator(mover, shaft, machine, AVR, para;
                        verbose=false, name=gensym(:MGenerator))
 
     verbose && println("Create MetaGenerator:")
@@ -85,7 +85,7 @@ function MetaGenerator(mover, shaft, machine, controller, para;
     @assert BlockSpec([], [:τ_m])(mover) "mover has not output τₘ!"
     @assert BlockSpec([:τ_m, :τ_e], [:δ, :ω])(shaft) "shaft not of type (τₑ, τₘ) ↦ (δ, ω)!"
     @assert BlockSpec([:i_d, :i_q], [:v_d, :v_q, :τ_e])(machine) "machine not of type (i_dq) ↦ (v_h, τₑ)!"
-    @assert BlockSpec([], [:v_f])(controller) "controller has not output v_f!"
+    @assert BlockSpec([], [:v_f])(AVR) "AVR has not output v_f!"
 
     # create all necessary connections
     connections = [mover.τ_m => shaft.τ_m,
@@ -98,22 +98,22 @@ function MetaGenerator(mover, shaft, machine, controller, para;
 
     # optional additional connections to machine
     if :v_f ∈ getname.(machine.inputs)
-        push!(connections, controller.v_f => machine.v_f)
-        verbose && println("  - added optional connection: controller.v_f => machine.v_f")
+        push!(connections, AVR.v_f => machine.v_f)
+        verbose && println("  - added optional connection: AVR.v_f => machine.v_f")
     end
-    # optional additional connections to controller
-    controller_inputs = getname.(controller.inputs)
-    if :v_h ∈ controller_inputs
-        push!(connections, rfc.v_h => controller.v_h)
-        verbose && println("  - added optional connection: rfc.v_h => controller.v_h")
+    # optional additional connections to AVR
+    AVR_inputs = getname.(AVR.inputs)
+    if :v_h ∈ AVR_inputs
+        push!(connections, rfc.v_h => AVR.v_h)
+        verbose && println("  - added optional connection: rfc.v_h => AVR.v_h")
     end
-    if :τ_e ∈ controller_inputs
-        push!(connections, machine.τ_e => controller.τ_e)
-        verbose && println("  - added optional connection: machine.τ_e => controller.τ_e")
+    if :τ_e ∈ AVR_inputs
+        push!(connections, machine.τ_e => AVR.τ_e)
+        verbose && println("  - added optional connection: machine.τ_e => AVR.τ_e")
     end
-    if :ω ∈ controller_inputs
-        push!(connections, shaft.ω => controller.ω)
-        verbose && println("  - added optional connection: shaft.ω => controller.ω")
+    if :ω ∈ AVR_inputs
+        push!(connections, shaft.ω => AVR.ω)
+        verbose && println("  - added optional connection: shaft.ω => AVR.ω")
     end
     # optional additional connection to mover
     if :ω ∈ getname.(mover.inputs)
@@ -125,7 +125,7 @@ function MetaGenerator(mover, shaft, machine, controller, para;
     rfc_promotions = [rfc.u_r => :u_r, rfc.u_i => :u_i,
                       rfc.i_r => :i_r, rfc.i_i => :i_i]
 
-    sys = IOSystem(connections, [rfc, mover, shaft, machine, controller],
+    sys = IOSystem(connections, [rfc, mover, shaft, machine, AVR],
                    namespace_map=rfc_promotions, outputs=[rfc.u_r, rfc.u_i],
                    autopromote=false, name=name)
     verbose && println("IOSystem: ", sys)

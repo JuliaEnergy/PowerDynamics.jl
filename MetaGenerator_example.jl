@@ -40,11 +40,11 @@ https://nrel-siip.github.io/PowerSimulationsDynamics.jl/stable/component_models/
 @parameters K v_h(t) v_ref
 @variables v_f(t)
 
-controller = IOBlock([v_f ~ K*(v_ref - v_h)],
+AVR = IOBlock([v_f ~ K*(v_ref - v_h)],
                      [v_h], [v_f], name=:AVR)
 
-controller_p = [controller.K => 2.0,
-                controller.v_ref => 3.14]
+AVR_p = [AVR.K => 2.0,
+         AVR.v_ref => 3.14]
 
 #=
 Single mass shaft
@@ -87,11 +87,10 @@ mover_p = [mover.P_ref => 404]
 #=
 Let's plug it together, shall we??
 =#
-# the controller eqs won't show up in the final system therefor we must not
+# the AVR eqs won't show up in the final system therefor we must not
 # provide thos in the parameter dictionary
 para = Dict(vcat(mover_p, shaft_p, machine_p))
-
-node = MetaGenerator(mover, shaft, machine, controller, para);
+node = MetaGenerator(mover, shaft, machine, AVR, para);
 
 symbolsof(node) # u_r, u_i, shaft₊δ shaft₊ω
 
