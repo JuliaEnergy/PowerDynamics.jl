@@ -4,6 +4,9 @@ using ModelingToolkit: getname
 
 export MetaGenerator
 
+# include the librarys for the components
+include("Shafts.jl")
+
 """
          i_r,i_i    u_r,u_i
             ↓          ↑
