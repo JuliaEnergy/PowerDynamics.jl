@@ -36,10 +36,10 @@ The `parameters` should be provided as a Dict of parameters as namespaced syms, 
 `mover.P_ref => 123`.
 
 Block specifications: `(input, [optional]) ↦ (output)`
- - mover                      `([ω]) ↦ (τ_m)`
- - shaft                 `(τ_m, τ_e) ↦ (δ, ω)`
- - machine               `(i_d, i_q) ↦ (v_d, v_q, τ_e)`
- - AVR      `([v_df, τ_e, ω]) ↦ (v_f)`
+ - mover                 `([ω]) ↦ (τ_m)`
+ - shaft            `(τ_m, τ_e) ↦ (δ, ω)`
+ - machine          `(i_d, i_q) ↦ (v_d, v_q, τ_e)`
+ - AVR        `([v_df, τ_e, ω]) ↦ (v_f)`
 
 Symbols:
  - `u_r + j u_i`; `i_r + j i_i` : current and voltage in voltage reference system (θ)
@@ -124,20 +124,32 @@ function MetaGenerator(mover, shaft, machine, AVR, para;
     # make sure that v_r, u_i, i_r, i_i get promoted
     rfc_promotions = [rfc.u_r => :u_r, rfc.u_i => :u_i,
                       rfc.i_r => :i_r, rfc.i_i => :i_i]
+    # we want no further autopromote to keep all of the parameters in the namespaces
+    # this is necessary because the parameterdict will be namespaced as well!
 
     sys = IOSystem(connections, [rfc, mover, shaft, machine, AVR],
                    namespace_map=rfc_promotions, outputs=[rfc.u_r, rfc.u_i],
                    autopromote=false, name=name)
-    verbose && println("IOSystem: ", sys)
-    # we want no further autopromote to keep all of the parameters in the namespaces
-    # this is necessary because the parameterdict will be namespaced as well!
-    connected = connect_system(sys, verbose=false)
-    verbose && println("IOBlock: ", connected)
+    verbose && println("IOSystem before connection: ", sys)
+    connected = connect_system(sys, verbose=verbose)
+    verbose && println("IOBlock after connection: ", connected)
 
     inputs = Set(getname.(connected.inputs))
 
     @assert Set((:i_i, :i_r)) == inputs "System inputs [:i_i, :i_r] != $inputs. It seems like there are still open inputs in the subsystems!"
-    @assert Set(connected.iparams) == Set(keys(para)) "parameter dict does not equal system parameters $(connected.iparams)"
+
+    # compare the provied parameters with the needed parameters
+    needed_p = Set(connected.iparams)
+    provided_p = Set(keys(para))
+
+    missing_p = Tuple(setdiff(needed_p, provided_p))
+    isempty(missing_p) || throw(ArgumentError("Parameters $missing_p are missing from the parameterset!"))
+
+    additional_p = Tuple(setdiff(provided_p, needed_p))
+    isempty(additional_p) || @warn "Provided parameters $additional_p are not used in the equations and will be dropped!"
+    for k in additional_p
+        delete!(para, k)
+    end
 
     IONode(connected, para)
 end
