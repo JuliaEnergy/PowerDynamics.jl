@@ -5,6 +5,7 @@ export IONode
 struct IONode{T,M} <: AbstractNode
     block::IOBlock
     generated::T
+    parameter_names::Vector{Symbol}
     parameters::Vector{Float64}
     mass_matrix::M
 end
@@ -19,7 +20,10 @@ function IONode(blk::IOBlock, parameters::Dict)
                                f_inputs=[blk.i_r, blk.i_i],
                                f_params=keys(parameters), warn=false,
                                type=:ode);
-    IONode(blk, gen, collect(values(parameters)), gen.massm)
+    IONode(blk, gen,
+           getname.(keys(parameters)),
+           collect(Float64, values(parameters)),
+           gen.massm)
 end
 
 function construct_vertex(ion::IONode)

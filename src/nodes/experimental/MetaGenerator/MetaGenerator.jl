@@ -1,13 +1,28 @@
 using BlockSystems
 using ModelingToolkit
 using ModelingToolkit: getname
+using PowerSystems
 
 export MetaGenerator
 
 # include the librarys for the components
 include("Shafts.jl")
+include("Machines.jl")
+include("AVRs.jl")
+include("Movers.jl")
 
 """
+    reference_frame_conversion()
+
+The RFC is an IOBlock to transform between the different
+reference frames.
+The grid "provides" the current `i_r` and `i_i` in global reference frame. This
+gets converted to `i_d` and `i_q` in machine reference frame.
+
+On its way back the calculated voltages `v_d` and `v_q` in device frame get converted
+back to the global reference fram `u_r` and `u_i`.
+
+```
          i_r,i_i    u_r,u_i
             ↓          ↑
         +------------------+
@@ -15,7 +30,7 @@ include("Shafts.jl")
         +------------------+
             ↓          ↑
          i_d,i_q    v_d,v_q
-
+```
 """
 function reference_frame_conversion()
     @parameters t i_r(t) i_i(t) v_d(t) v_q(t) δ(t)
@@ -81,6 +96,7 @@ TODO: I went with the NREL convention v instead of u. Should be discussed.
 """
 function MetaGenerator(mover, shaft, machine, AVR, para;
                        verbose=false, name=gensym(:MGenerator))
+    para = copy(para) # create new reference
 
     verbose && println("Create MetaGenerator:")
     rfc = reference_frame_conversion()
@@ -155,4 +171,19 @@ function MetaGenerator(mover, shaft, machine, AVR, para;
     end
 
     IONode(connected, para)
+end
+
+function MetaGenerator(gen::DynamicGenerator; verbose=false)
+    (mover, mover_p)     = gen_mover_block(gen.prime_mover)
+    verbose && @info "mover loaded:" mover mover_p
+    (shaft, shaft_p)     = gen_shaft_block(gen.shaft)
+    verbose && @info "shaft loaded:" shaft shaft_p
+    (machine, machine_p) = gen_machine_block(gen.machine)
+    verbose && @info "machine loaded:" machine machine_p
+    (avr, avr_p)         = gen_avr_block(gen.avr)
+    verbose && @info "avr loaded:" avr avr_p
+
+    para = merge(mover_p, shaft_p, machine_p, avr_p)
+
+    MetaGenerator(mover, shaft, machine, avr, para; verbose)
 end
