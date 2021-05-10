@@ -1,4 +1,5 @@
 using BlockSystems
+using ModelingToolkit: getname, value
 
 export IONode
 
@@ -14,16 +15,18 @@ function IONode(blk::IOBlock, parameters::Dict)
     # BlockSpec: blk must by of type (i_r, i_i) ↦ (u_r, u_i)
     spec = BlockSpec([:i_r, :i_i], [:u_r, :u_i])
     @assert spec(blk) "Block has to follow PowerDynamics i/o conventions!"
-    # TODO check parameters
+
+    # parameters may be given as Num oder Symbol types
+    p_keys = [k isa Symbol ? k : getname(value(k)) for k in keys(parameters)]
+    p_vals = collect(Float64, values(parameters))
+
     gen = generate_io_function(blk,
                                f_states=[blk.u_r, blk.u_i],
                                f_inputs=[blk.i_r, blk.i_i],
-                               f_params=keys(parameters), warn=false,
+                               f_params=p_keys, warn=false,
                                type=:ode);
-    IONode(blk, gen,
-           getname.(keys(parameters)),
-           collect(Float64, values(parameters)),
-           gen.massm)
+
+    IONode(blk, gen, p_keys, p_vals, gen.massm)
 end
 
 function construct_vertex(ion::IONode)
