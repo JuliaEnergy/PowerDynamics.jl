@@ -16,17 +16,11 @@ i_p,i_q  u_p,u_q
 
 https://nrel-siip.github.io/PowerSimulationsDynamics.jl/stable/component_models/machines/#Classical-Model-(Zero-Order)-[BaseMachine]
 =#
-@parameters t
-@parameters r_a x_d e_q i_d(t) i_q(t)
-@variables v_d(t) v_q(t) τ_e(t)
 
-machine = IOBlock([v_d ~ -r_a*i_d + x_d*i_q,
-                   v_q ~ -x_d*i_d - r_a*i_q * e_q,
-                   τ_e ~ (v_q + r_a*i_q)*i_q + (v_d + r_a*i_d)*i_d],
-                  [i_d, i_q], [v_d, v_q, τ_e], name=:machine)
+machine = PowerDynamics.base_machine()
 
-machine_p = [machine.r_a => 1.0,
-             machine.x_d => 1.0,
+machine_p = [machine.R => 1.0,
+             machine.X_d => 1.0,
              machine.e_q => 1.0]
 
 #=
@@ -37,11 +31,7 @@ Since the machine does not use the v_f input this block has no effect!
 
 https://nrel-siip.github.io/PowerSimulationsDynamics.jl/stable/component_models/avr/#Simple-AVR-[AVRSimple]
 =#
-@parameters K v_h(t) v_ref
-@variables v_avr(t)
-
-AVR = IOBlock([v_avr ~ K*(v_ref - v_h)],
-                     [v_h], [v_avr], name=:AVR)
+AVR = PowerDynamics.avr_simple()
 
 AVR_p = [AVR.K => 2.0,
          AVR.v_ref => 3.14]
@@ -51,11 +41,9 @@ Fixed PSS
 
 https://nrel-siip.github.io/PowerSimulationsDynamics.jl/stable/component_models/pss/#Fixed-PSS-[PSSFixed]
 =#
-@parameters vs_fix
-@variables v_pss(t)
-PSS = IOBlock([v_pss ~ vs_fix], [], [v_pss], name=:PSS)
-PSS_p = [PSS.vs_fix => 1.0]
+PSS = PowerDynamics.pss_fixed()
 
+PSS_p = [PSS.vs_fix => 1.0]
 
 #=
 Single mass shaft
@@ -71,13 +59,7 @@ has angular velocity and acceleration.
 https://nrel-siip.github.io/PowerSimulationsDynamics.jl/stable/component_models/shafts/#Rotor-Mass-Shaft-[SingleMass]
 =#
 
-dt = Differential(t)
-@parameters τ_m(t) τ_e(t) D H ω_ref Ω_b
-@variables δ(t) ω(t)
-
-shaft = IOBlock([dt(δ) ~ Ω_b * (ω - ω_ref),
-                 dt(ω) ~ 1/(2H) * (τ_m - τ_e - D*(ω - ω_ref))],
-                [τ_m, τ_e], [δ, ω], name=:shaft)
+shaft = PowerDynamics.single_mass_shaft()
 
 shaft_p = [shaft.Ω_b => 1.2,
            shaft.ω_ref => 50,
@@ -88,12 +70,10 @@ shaft_p = [shaft.Ω_b => 1.2,
 prime mover
 we'll just use the fixed version
 =#
-@parameters P_ref
-@variables τ_m(t)
+mover = PowerDynamics.tg_fixed()
 
-mover = IOBlock([τ_m ~ P_ref], [], [τ_m], name=:mover)
-
-mover_p = [mover.P_ref => 404]
+mover_p = [mover.P_ref => 404,
+           mover.η => 1.0]
 
 #=
 Let's plug it together, shall we??
