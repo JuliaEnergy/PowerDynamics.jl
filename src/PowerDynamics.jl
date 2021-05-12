@@ -39,6 +39,13 @@ include("nodes/experimental/WindTurbineGenType4_RotorControl.jl")
 include("nodes/experimental/CurtailedPowerPlantWithInertia.jl")
 include("nodes/experimental/CompositeNode.jl")
 
+# requirements for the IONodes
+include("nodes/IONode.jl")
+include("nodes/IOComponents.jl")
+include("nodes/experimental/GFI_MTK.jl")
+include("nodes/experimental/MTK_Load.jl")
+include("nodes/experimental/MetaGenerator/MetaGenerator.jl")
+
 # all line types
 
 include("lines/AbstractLine.jl")
