@@ -19,21 +19,22 @@ See [`PowerSimulationDynamics.jl` docs](https://nrel-siip.github.io/PowerSimulat
 julia> PowerDynamics.avr_fixed()
 IOBlock :AVR with 1 eqs
   ├ inputs:  (empty)
-  ├ outputs: v_f(t)
+  ├ outputs: v_avr(t)
   ├ istates: (empty)
   └ iparams: v_fix
 ```
 """
 function avr_fixed(;name=:AVR)
     @parameters t v_fix
-    @variables v_f(t)
+    @variables v_avr(t)
 
-    IOBlock([v_f ~ v_fix],
-            [], [v_f], name=name)
+    IOBlock([v_avr ~ v_fix],
+            [], [v_avr], name=name)
 end
 
 function gen_avr_block(avr::AVRFixed)
     block = avr_fixed()
+    @warn "Use Vf as v_fix. Is this right? May be v_ref!"
     p = Dict(block.v_fix => avr.Vf) #FIXME: Vf or V_ref for AVRFixed
     return (block, p)
 end
@@ -50,18 +51,18 @@ See [`PowerSimulationDynamics.jl` docs](https://nrel-siip.github.io/PowerSimulat
 julia> PowerDynamics.avr_simple()
 IOBlock :AVR with 1 eqs
   ├ inputs:  v_h(t)
-  ├ outputs: v_f(t)
+  ├ outputs: v_avr(t)
   ├ istates: (empty)
   └ iparams: K, v_ref
 ```
 """
 function avr_simple(;name=:AVR)
     @parameters t K v_h(t) v_ref
-    @variables v_f(t)
+    @variables v_avr(t)
     dt = Differential(t)
 
-    IOBlock([dt(v_f) ~ K*(v_ref - v_h)],
-            [v_h], [v_f], name=name)
+    IOBlock([dt(v_avr) ~ K*(v_ref - v_h)],
+            [v_h], [v_avr], name=name)
 end
 
 function gen_avr_block(avr::AVRSimple)

@@ -180,8 +180,10 @@ function MetaGenerator(gen::DynamicGenerator; verbose=false)
     verbose && @info "machine loaded:" machine machine_p
     (avr, avr_p)         = gen_avr_block(gen.avr)
     verbose && @info "avr loaded:" avr avr_p
+    (pss, pss_p)         = gen_pss_block(gen.pss)
+    verbose && @info "pss loaded:" pss pss_p
 
-    para = merge(mover_p, shaft_p, machine_p, avr_p)
+    para = merge(mover_p, shaft_p, machine_p, avr_p, pss_p)
 
-    MetaGenerator(mover, shaft, machine, avr, para; verbose)
+    MetaGenerator(mover, shaft, machine, avr, pss, para; verbose)
 end
