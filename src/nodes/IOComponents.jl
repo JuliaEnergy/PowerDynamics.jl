@@ -6,6 +6,21 @@ using ModelingToolkit
 export LowPassFilter, DroopControl, VoltageSource, Power, PowerConstraint
 
 """
+    Adder(n=2; name, renamings...)
+
+Returns a simple block which adds `n` inputs.
+
+    out(t) = a₁(t) + a₂(t) + ...
+"""
+function Adder(n=2; name=gensym(:adder), renamings...)
+    @parameters t a[1:n](t)
+    @variables out(t)
+    block = IOBlock([out ~ (+)(a...)],
+                    [a...], [out]; name)
+    return isempty(renamings) ? block : rename_vars(block; renamings...)
+end
+
+"""
     LowPassFilter(;name, renamings...)
 
 Returns a low pass filter. The name of the system and the names of the vars
