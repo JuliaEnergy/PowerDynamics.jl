@@ -7,10 +7,11 @@ using PowerSystems
 export MetaGenerator
 
 # include the librarys for the components
+include("Movers.jl")
 include("Shafts.jl")
 include("Machines.jl")
 include("AVRs.jl")
-include("Movers.jl")
+include("PSSs.jl")
 
 """
     reference_frame_conversion()
