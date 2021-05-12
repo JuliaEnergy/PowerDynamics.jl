@@ -119,8 +119,10 @@ function MetaGenerator(mover, shaft, machine, AVR, PSS, para;
     # create a dict of :sym => block
     # of each available output and the block where to find it as an output
     outputs = collect(sym => comp for comp in components for sym in getname.(comp.outputs))
-    verbose && println("Available Outupts: ", map(p -> getproperty(p.second, p.first), outputs))
-    @assert allunique(first.(outputs)) "There are multiple components which have outputs with the same name $(first.(outputs))"
+    # all of the outputs need to have unique names, we can promote their namespaces!
+    output_promotions = map(p -> getproperty(p.second, p.first) => p.first, outputs)
+    verbose && println("Available Outputs: ", first.(output_promotions))
+    @assert allunique(first.(outputs)) "There are multiple components which have outputs with the same name $(first.(output_promotions))"
     outputs = Dict(outputs...)
 
     # if any component specifies one of the available outputs as an input, connect to it!
@@ -135,14 +137,15 @@ function MetaGenerator(mover, shaft, machine, AVR, PSS, para;
         end
     end
 
-    # make sure that v_r, u_i, i_r, i_i get promoted
-    rfc_promotions = [rfc.u_r => :u_r, rfc.u_i => :u_i,
-                      rfc.i_r => :i_r, rfc.i_i => :i_i]
+    # make sure that the rfc inputs get promoted
+    # the rfc outputs are allready in output_promotions
+    rfc_promotions = [rfc.i_r => :i_r, rfc.i_i => :i_i]
+    promotions = vcat(rfc_promotions, output_promotions)
     # we want no further autopromote to keep all of the parameters in the namespaces
     # this is necessary because the parameterdict will be namespaced as well!
 
     sys = IOSystem(connections, [rfc, mover, shaft, machine, AVR, PSS, adder],
-                   namespace_map=rfc_promotions, outputs=[rfc.u_r, rfc.u_i],
+                   namespace_map=promotions, outputs=[rfc.u_r, rfc.u_i],
                    autopromote=false, name=name)
     verbose && println("IOSystem before connection: ", sys)
     connected = connect_system(sys, verbose=verbose)
