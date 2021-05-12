@@ -38,13 +38,24 @@ Since the machine does not use the v_f input this block has no effect!
 https://nrel-siip.github.io/PowerSimulationsDynamics.jl/stable/component_models/avr/#Simple-AVR-[AVRSimple]
 =#
 @parameters K v_h(t) v_ref
-@variables v_f(t)
+@variables v_avr(t)
 
-AVR = IOBlock([v_f ~ K*(v_ref - v_h)],
-                     [v_h], [v_f], name=:AVR)
+AVR = IOBlock([v_avr ~ K*(v_ref - v_h)],
+                     [v_h], [v_avr], name=:AVR)
 
 AVR_p = [AVR.K => 2.0,
          AVR.v_ref => 3.14]
+
+#=
+Fixed PSS
+
+https://nrel-siip.github.io/PowerSimulationsDynamics.jl/stable/component_models/pss/#Fixed-PSS-[PSSFixed]
+=#
+@parameters vs_fix
+@variables v_pss(t)
+PSS = IOBlock([v_pss ~ vs_fix], [], [v_pss], name=:PSS)
+PSS_p = [PSS.vs_fix => 1.0]
+
 
 #=
 Single mass shaft
@@ -89,8 +100,8 @@ Let's plug it together, shall we??
 =#
 # the AVR eqs won't show up in the final system therefor we must not
 # provide thos in the parameter dictionary
-para = Dict(vcat(mover_p, shaft_p, machine_p))
-node = MetaGenerator(mover, shaft, machine, AVR, para);
+para = Dict(vcat(mover_p, shaft_p, machine_p, AVR_p, PSS_p))
+node = MetaGenerator(mover, shaft, machine, AVR, PSS, para, verbose=true);
 
 symbolsof(node) # u_r, u_i, shaft₊δ shaft₊ω
 

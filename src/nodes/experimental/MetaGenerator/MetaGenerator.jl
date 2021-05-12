@@ -1,6 +1,7 @@
 using BlockSystems
 using ModelingToolkit
 using ModelingToolkit: getname
+using ModelingToolkit.SymbolicUtils: Symbolic
 using PowerSystems
 
 export MetaGenerator
@@ -53,11 +54,15 @@ Implementation of the NREL MetaGenerator model. This function takes several
 The `parameters` should be provided as a Dict of parameters as namespaced syms, i.e.
 `mover.P_ref => 123`.
 
-Block specifications: `(input, [optional]) ↦ (output)`
- - mover                 `([ω]) ↦ (τ_m)`
- - shaft            `(τ_m, τ_e) ↦ (δ, ω)`
- - machine          `(i_d, i_q) ↦ (v_d, v_q, τ_e)`
- - AVR        `([v_df, τ_e, ω]) ↦ (v_f)`
+Block specifications: `(input) ↦ (output)`
+ - mover                   `() ↦ (τ_m)`
+ - shaft           `(τ_m, τ_e) ↦ (δ, ω)`
+ - machine         `(i_d, i_q) ↦ (v_d, v_q, τ_e)`
+ - AVR                     `() ↦ (v_avr)`
+ - PSS                     `() ↦ (v_pss)`
+
+All of the blocks may specify any of optional inputs `v_h`, `v_f`, `ω`, ...
+to get access to the output of another blocks.
 
 Symbols:
  - `u_r + j u_i`; `i_r + j i_i` : current and voltage in voltage reference system (θ)
@@ -71,73 +76,63 @@ Symbols:
          i_r,i_i    u_r,u_i
             ↓          ↑
      +-----------------------+ v_h
- +--→| ref. frame conversion |-------------+
- |   +-----------------------+             |  (optional inputs)
- |  i_d,i_q |          ↑ v_d,v_q           | /
- |          ↓          |                  (↓)
- |   +-----------------------+    v_f +---------+
- |   |        machine        |(←)-----|   AVR   |
- |   +-----------------------+        +---------+
- |               | τ_e                 (↑)   (↑)
- |               +----------------------+     |
- |               ↓                            |
- | δ +-----------------------+ ω              |
- +---|         shaft         |----+-----------+
-     +-----------------------+    |
-                 ↑ τ_m            |
-                 |                |
-     +-----------------------+    |
-     |         mover         |(←)-+
+ +--→| ref. frame conversion |----→(all)   (all optional)
+ |   +-----------------------+                   ↓
+ |  i_d,i_q |          ↑ v_d,v_q      v_pss +---------+
+ |          ↓          |               +----|   PSS   |
+ |   +-----------------------+    v_f  ↓    +---------+
+ |   |        machine        |(←)----(add)
+ |   +-----------------------+         ↑    +---------+
+ |               | τ_e                 +----|   AVR   |
+ +-→(all)        +-----→(all)         v_avr +---------+
+ |               ↓                               ↑
+ | δ +-----------------------+ ω           (all optional)
+ +---|         shaft         |--→(all)
+     +-----------------------+
+                 ↑
+                 +-----→(all)
+                 | τ_m
+     +-----------------------+
+     |         mover         |
      +-----------------------+
 ```
 
 
 TODO: I went with the NREL convention v instead of u. Should be discussed.
 """
-function MetaGenerator(mover, shaft, machine, AVR, para;
+function MetaGenerator(mover, shaft, machine, AVR, PSS, para;
                        verbose=false, name=gensym(:MGenerator))
     para = copy(para) # create new reference
 
     verbose && println("Create MetaGenerator:")
     rfc = reference_frame_conversion()
+    adder = IOComponents.Adder(name=:exitation, out=:v_f, a₁=:v_avr, a₂=:v_pss)
 
     @assert BlockSpec([], [:τ_m])(mover) "mover has not output τₘ!"
     @assert BlockSpec([:τ_m, :τ_e], [:δ, :ω])(shaft) "shaft not of type (τₑ, τₘ) ↦ (δ, ω)!"
     @assert BlockSpec([:i_d, :i_q], [:v_d, :v_q, :τ_e])(machine) "machine not of type (i_dq) ↦ (v_h, τₑ)!"
-    @assert BlockSpec([], [:v_f])(AVR) "AVR has not output v_f!"
+    @assert BlockSpec([], [:v_avr])(AVR) "AVR has not output v_avr!"
+    @assert BlockSpec([], [:v_pss])(PSS) "PSS has not output v_pss!"
 
-    # create all necessary connections
-    connections = [mover.τ_m => shaft.τ_m,
-                   shaft.δ => rfc.δ,
-                   rfc.i_d => machine.i_d,
-                   rfc.i_q => machine.i_q,
-                   machine.v_d => rfc.v_d,
-                   machine.v_q => rfc.v_q,
-                   machine.τ_e => shaft.τ_e]
+    # for more flexibility everything with matching name gets connected
+    components = [mover, shaft, machine, AVR, PSS, rfc, adder]
+    # create a dict of :sym => block
+    # of each available output and the block where to find it as an output
+    outputs = collect(sym => comp for comp in components for sym in getname.(comp.outputs))
+    verbose && println("Available Outupts: ", map(p -> getproperty(p.second, p.first), outputs))
+    @assert allunique(first.(outputs)) "There are multiple components which have outputs with the same name $(first.(outputs))"
+    outputs = Dict(outputs...)
 
-    # optional additional connections to machine
-    if :v_f ∈ getname.(machine.inputs)
-        push!(connections, AVR.v_f => machine.v_f)
-        verbose && println("  - added optional connection: AVR.v_f => machine.v_f")
-    end
-    # optional additional connections to AVR
-    AVR_inputs = getname.(AVR.inputs)
-    if :v_h ∈ AVR_inputs
-        push!(connections, rfc.v_h => AVR.v_h)
-        verbose && println("  - added optional connection: rfc.v_h => AVR.v_h")
-    end
-    if :τ_e ∈ AVR_inputs
-        push!(connections, machine.τ_e => AVR.τ_e)
-        verbose && println("  - added optional connection: machine.τ_e => AVR.τ_e")
-    end
-    if :ω ∈ AVR_inputs
-        push!(connections, shaft.ω => AVR.ω)
-        verbose && println("  - added optional connection: shaft.ω => AVR.ω")
-    end
-    # optional additional connection to mover
-    if :ω ∈ getname.(mover.inputs)
-        push!(connections, shaft.ω => mover.ω)
-        verbose && println("  - added optional connection: shaft.ω => mover.ω")
+    # if any component specifies one of the available outputs as an input, connect to it!
+    connections = Pair{Symbolic, Symbolic}[]
+    for comp in components
+        inputs = getname.(comp.inputs) # get the inputs as :sym without namespace
+        for key in keys(outputs) ∩ inputs
+            src = getproperty(outputs[key], key)
+            dst = getproperty(comp, key)
+            push!(connections, src => dst)
+            verbose && println("  - added connection: $(src) => $(dst)")
+        end
     end
 
     # make sure that v_r, u_i, i_r, i_i get promoted
@@ -146,7 +141,7 @@ function MetaGenerator(mover, shaft, machine, AVR, para;
     # we want no further autopromote to keep all of the parameters in the namespaces
     # this is necessary because the parameterdict will be namespaced as well!
 
-    sys = IOSystem(connections, [rfc, mover, shaft, machine, AVR],
+    sys = IOSystem(connections, [rfc, mover, shaft, machine, AVR, PSS, adder],
                    namespace_map=rfc_promotions, outputs=[rfc.u_r, rfc.u_i],
                    autopromote=false, name=name)
     verbose && println("IOSystem before connection: ", sys)
@@ -154,12 +149,11 @@ function MetaGenerator(mover, shaft, machine, AVR, para;
     verbose && println("IOBlock after connection: ", connected)
 
     inputs = Set(getname.(connected.inputs))
-
-    @assert Set((:i_i, :i_r)) == inputs "System inputs [:i_i, :i_r] != $inputs. It seems like there are still open inputs in the subsystems!"
+    @assert inputs == Set((:i_i, :i_r)) "System inputs [:i_i, :i_r] != $inputs. It seems like there are still open inputs in the subsystems!"
 
     # compare the provied parameters with the needed parameters
     needed_p = Set(connected.iparams)
-    provided_p = Set(keys(para))
+    provided_p = keys(para)
 
     missing_p = Tuple(setdiff(needed_p, provided_p))
     isempty(missing_p) || throw(ArgumentError("Parameters $missing_p are missing from the parameterset!"))
