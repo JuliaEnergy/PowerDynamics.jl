@@ -112,4 +112,4 @@ end
 """
 Returns the total size of dynamical variables of the whole powergrid
 """
-@views systemsize(pg::PowerGrid) = sum(map(n -> dimension(n), collect(values(pg.nodes))))
+@views systemsize(pg::PowerGrid) = sum(map(n -> dimension(n), collect(values(pg.nodes)))) + sum(map(n -> dimension(n), collect(values(pg.lines))))
