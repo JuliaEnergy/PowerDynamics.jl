@@ -74,3 +74,6 @@ function create(typedef, prep, func_body)
     append!(mainex.args, [showex])
     return esc(mainex)
 end
+
+# By default we assume static lines. For dynamic lines a dimension method for the specific type has to be implemented.
+dimension(::AbstractLine) = 0
