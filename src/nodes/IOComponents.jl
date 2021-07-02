@@ -2,6 +2,8 @@ module IOComponents
 
 using BlockSystems
 using ModelingToolkit
+using ModelingToolkit.Symbolics
+using ModelingToolkit.SymbolicUtils
 
 export LowPassFilter, DroopControl, VoltageSource, Power, PowerConstraint
 
@@ -19,6 +21,34 @@ function Adder(n=2; name=gensym(:adder), renamings...)
                     [a...], [out]; name)
     return isempty(renamings) ? block : rename_vars(block; renamings...)
 end
+
+"""
+    Constants(constants...)
+
+Returns in `IOBlock` with outputs which are directly mapped to values.
+
+```jldoctest
+julia> blk = PowerDynamics.IOComponents.Constants(:a=>42, :b=>3.14; name=:const)
+IOBlock :const with 2 eqs
+  ├ inputs:  (empty)
+  ├ outputs: a(t), b(t)
+  ├ istates: (empty)
+  └ iparams: (empty)
+
+julia> blk.system.eqs
+2-element Vector{Equation}:
+ a(t) ~ 42
+ b(t) ~ 3.14
+```
+"""
+Constants(constants...; kwargs...) = Constants(Dict(constants); kwargs...)
+function Constants(constants::Dict; name=gensym(:constantes))
+    @parameters t
+    outputs = [Sym{(SymbolicUtils.FnType){NTuple{1, Any}, Real}}(s)(Symbolics.value(t)) for s in keys(constants)]
+    eqs = collect(map((k, v) -> k ~ v, outputs, values(constants)))
+    return IOBlock(eqs, [], collect(outputs); name)
+end
+
 
 """
     LowPassFilter(;name, renamings...)

@@ -47,13 +47,16 @@ function reference_frame_conversion()
 end
 
 """
-    MetaGenerator(mover, shaft, machine, AVR, parameters; name)
+    MetaGenerator(mover, shaft, machine, AVR, parameters, constants=[]; name)
 
 Implementation of the NREL MetaGenerator model. This function takes several
 `IOBlocks`` as inputs which should satisfy the corresponding block specification (see below).
 
 The `parameters` should be provided as a Dict of parameters as namespaced syms, i.e.
 `mover.P_ref => 123`.
+The optional `constants` parameter can be used to pass generator wide constants
+as a collection of pairs, i.e. `:ω_ref => 50`. Those constants are available
+as optional inputs to all of the blocks.
 
 Block specifications: `(input) ↦ (output)`
  - mover                   `() ↦ (τ_m)`
@@ -101,13 +104,21 @@ Symbols:
 
 TODO: I went with the NREL convention v instead of u. Should be discussed.
 """
-function MetaGenerator(mover, shaft, machine, AVR, PSS, para;
+function MetaGenerator(mover, shaft, machine, AVR, PSS, para, constants=nothing;
                        verbose=false, name=gensym(:MGenerator))
     para = copy(para) # create new reference
 
     verbose && println("Create MetaGenerator:")
     rfc = reference_frame_conversion()
     adder = IOComponents.Adder(name=:exitation, out=:v_f, a₁=:v_avr, a₂=:v_pss)
+
+    # crate an constblk IOBlock which holds additional generator wide constants
+    components = if constants !== nothing
+        constblk = IOComponents.Constants(Dict(constants); name=:Const)
+        [mover, shaft, machine, AVR, PSS, rfc, adder, constblk]
+    else
+        [mover, shaft, machine, AVR, PSS, rfc, adder]
+    end
 
     @assert BlockSpec([], [:τ_m])(mover) "mover has not output τₘ!"
     @assert BlockSpec([:τ_m, :τ_e], [:δ, :ω])(shaft) "shaft not of type (τₑ, τₘ) ↦ (δ, ω)!"
@@ -116,7 +127,6 @@ function MetaGenerator(mover, shaft, machine, AVR, PSS, para;
     @assert BlockSpec([], [:v_pss])(PSS) "PSS has not output v_pss!"
 
     # for more flexibility everything with matching name gets connected
-    components = [mover, shaft, machine, AVR, PSS, rfc, adder]
     # create a dict of :sym => block
     # of each available output and the block where to find it as an output
     outputs = collect(sym => comp for comp in components for sym in getname.(comp.outputs))
@@ -145,7 +155,7 @@ function MetaGenerator(mover, shaft, machine, AVR, PSS, para;
     # we want no further autopromote to keep all of the parameters in the namespaces
     # this is necessary because the parameterdict will be namespaced as well!
 
-    sys = IOSystem(connections, [rfc, mover, shaft, machine, AVR, PSS, adder],
+    sys = IOSystem(connections, components,
                    namespace_map=promotions, outputs=[rfc.u_r, rfc.u_i],
                    autopromote=false, name=name)
     verbose && println("IOSystem before connection: ", sys)
