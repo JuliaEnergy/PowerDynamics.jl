@@ -26,5 +26,6 @@ makedocs(
    )
 deploydocs(
     repo = "github.com/JuliaEnergy/PowerDynamics.jl.git",
-    target = "build"
+    target = "build",
+    push_preview = true
 )
