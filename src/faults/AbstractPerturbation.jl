@@ -50,36 +50,24 @@ function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1::Array, tim
     np_powergrid = np(powergrid)
     regular = rhs(powergrid)
     error = rhs(np_powergrid)
-    f = (dx, x, p, t) -> p ? regular(dx,x,p,t) : error(dx,x,p,t)
+    _f = (dx, x, p, t) -> p ? regular(dx,x,p,t) : error(dx,x,p,t)
+
+    f = ODEFunction(_f, mass_matrix = regular.mass_matrix, syms = regular.syms)
 
     problem = ODEProblem{true}(f, x1, timespan, true)
 
     function errorState(integrator)
-        try
-            sol1 = integrator.sol
-            x2 = find_valid_initial_condition(np_powergrid, sol1[end]) # Jump the state to be valid for the new system.
-            integrator.u = x2
-        catch e
-            @warn("The nonlinear solver did not find a valid inital condition for the perturbation.
-
-            Attempting to continue integration nevertheless, hoping that the dynamic solver will find a valid inital condition.")
-        end
+        sol1 = integrator.sol
+        x2 = find_valid_initial_condition(np_powergrid, sol1[end]) # Jump the state to be valid for the new system.
+        integrator.u = x2
         integrator.p = false
-        reinit!(integrator)
     end
 
     function regularState(integrator)
-        try
-            sol2 = integrator.sol
-            x3 = find_valid_initial_condition(powergrid, sol2[end]) # Jump the state to be valid for the new system.
-            integrator.u = x3
-        catch e
-            @warn("The nonlinear solver did not find a valid inital condition.
-
-            Attempting to continue integration nevertheless, hoping that the dynamic solver will find a valid inital condition.")
-        end
+        sol2 = integrator.sol
+        x3 = find_valid_initial_condition(powergrid, sol2[end]) # Jump the state to be valid for the new system.
+        integrator.u = x3
         integrator.p = true
-        reinit!(integrator)
     end
 
     t1 = np.tspan_fault[1]
@@ -88,7 +76,7 @@ function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1::Array, tim
     cb1 = DiscreteCallback(((u,t,integrator) -> t in np.tspan_fault[1]), errorState)
     cb2 = DiscreteCallback(((u,t,integrator) -> t in np.tspan_fault[2]), regularState)
 
-    sol = solve(problem, Rodas4())#, callback = CallbackSet(cb1, cb2), tstops=[t1, t2], solve_kwargs...)
+    sol = solve(problem, Rodas4(), callback = CallbackSet(cb1, cb2), tstops=[t1, t2], solve_kwargs...)
 
     return PowerGridSolution(sol, powergrid)
 end
