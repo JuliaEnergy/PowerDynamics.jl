@@ -39,7 +39,7 @@ end
 
 """
 ```Julia
-simulate(no::AbstractPerturbation, powergrid, x1, timespan)
+simulate(np::AbstractPerturbation, powergrid, x1, timespan)
 ```
 Simulates a [`AbstractPerturbation`](@ref)
 """
@@ -48,21 +48,24 @@ function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1::Array, tim
     @assert np.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
 
     np_powergrid = np(powergrid)
+    regular = rhs(powergrid)
+    error = rhs(np_powergrid)
+    f = (dx, x, p, t) -> p ? regular(dx,x,p,t) : error(dx,x,p,t)
 
-    problem = ODEProblem{true}(rhs(powergrid), x1, timespan)
+    problem = ODEProblem{true}(f, x1, timespan, true)
 
     function errorState(integrator)
         sol1 = integrator.sol
         x2 = find_valid_initial_condition(np_powergrid, sol1[end]) # Jump the state to be valid for the new system.
-        integrator.f = rhs(np_powergrid)
         integrator.u = x2
+        integrator.p = false
     end
 
     function regularState(integrator)
         sol2 = integrator.sol
         x3 = find_valid_initial_condition(powergrid, sol2[end]) # Jump the state to be valid for the new system.
-        integrator.f = rhs(powergrid)
         integrator.u = x3
+        integrator.p = true
     end
 
     t1 = np.tspan_fault[1]
