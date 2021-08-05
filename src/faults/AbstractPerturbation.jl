@@ -55,16 +55,16 @@ function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1::Array, tim
     problem = ODEProblem{true}(f, x1, timespan, true)
 
     function errorState(integrator)
-        sol1 = integrator.sol
-        x2 = find_valid_initial_condition(np_powergrid, sol1[end]) # Jump the state to be valid for the new system.
-        integrator.u = x2
+        #sol1 = integrator.sol
+        #x2 = find_valid_initial_condition(np_powergrid, sol1[end]) # Jump the state to be valid for the new system.
+        #integrator.u = x2
         integrator.p = false
     end
 
     function regularState(integrator)
-        sol2 = integrator.sol
-        x3 = find_valid_initial_condition(powergrid, sol2[end]) # Jump the state to be valid for the new system.
-        integrator.u = x3
+        #sol2 = integrator.sol
+        #x3 = find_valid_initial_condition(powergrid, sol2[end]) # Jump the state to be valid for the new system.
+        #integrator.u = x3
         integrator.p = true
     end
 
