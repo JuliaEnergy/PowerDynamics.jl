@@ -8,7 +8,7 @@ AbstractPerturbation(;)
 ```
 An AbstractPerturbation can be uses to construct almost any type of perturbation that has a time span of a fault.
 Perturbations that are of type of AbstractPerturbation can use the same simulate function then.
-For example implementations of faults as type AbstractPerturbation see e.g. PowerPerturbation. 
+For example implementations of faults as type AbstractPerturbation see e.g. PowerPerturbation.
 
 # Keyword Arguments
 - `tspan_fault`: number  of the node
@@ -21,7 +21,7 @@ function typestable_node_field_update(powergrid::PowerGrid, node, sym::Symbol, v
     if !(hasproperty(old_node, sym))
         throw(FieldUpdateError("Node $(node) must have a variable called $(sym)."))
     end
-    
+
     nodes = copy(powergrid.nodes)
     sym_type = getfield(old_node, sym) |> eltype
     lens = Setfield.compose(Setfield.PropertyLens{sym}())
@@ -55,17 +55,31 @@ function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1::Array, tim
     problem = ODEProblem{true}(f, x1, timespan, true)
 
     function errorState(integrator)
-        #sol1 = integrator.sol
-        #x2 = find_valid_initial_condition(np_powergrid, sol1[end]) # Jump the state to be valid for the new system.
-        #integrator.u = x2
+        try
+            sol1 = integrator.sol
+            x2 = find_valid_initial_condition(np_powergrid, sol1[end]) # Jump the state to be valid for the new system.
+            integrator.u = x2
+        catch e
+            @warn("The nonlinear solver did not find a valid inital condition for the perturbation.
+
+            Attempting to continue integration nevertheless, hoping that the dynamic solver will find a valid inital condition.")
+        end
         integrator.p = false
+        reinit!(integrator)
     end
 
     function regularState(integrator)
-        #sol2 = integrator.sol
-        #x3 = find_valid_initial_condition(powergrid, sol2[end]) # Jump the state to be valid for the new system.
-        #integrator.u = x3
+        try
+            sol2 = integrator.sol
+            x3 = find_valid_initial_condition(powergrid, sol2[end]) # Jump the state to be valid for the new system.
+            integrator.u = x3
+        catch e
+            @warn("The nonlinear solver did not find a valid inital condition.
+
+            Attempting to continue integration nevertheless, hoping that the dynamic solver will find a valid inital condition.")
+        end
         integrator.p = true
+        reinit!(integrator)
     end
 
     t1 = np.tspan_fault[1]
@@ -74,8 +88,8 @@ function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1::Array, tim
     cb1 = DiscreteCallback(((u,t,integrator) -> t in np.tspan_fault[1]), errorState)
     cb2 = DiscreteCallback(((u,t,integrator) -> t in np.tspan_fault[2]), regularState)
 
-    sol = solve(problem, Rodas4(), callback = CallbackSet(cb1, cb2), tstops=[t1, t2], solve_kwargs...)
-    
+    sol = solve(problem, Rodas4())#, callback = CallbackSet(cb1, cb2), tstops=[t1, t2], solve_kwargs...)
+
     return PowerGridSolution(sol, powergrid)
 end
 
