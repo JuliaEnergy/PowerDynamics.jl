@@ -50,7 +50,7 @@ function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1::Array, tim
     np_powergrid = np(powergrid)
     regular = rhs(powergrid)
     error = rhs(np_powergrid)
-    _f = (dx, x, p, t) -> p ? regular(dx,x,p,t) : error(dx,x,p,t)
+    _f = (dx, x, p, t) -> p ? regular(dx,x,nothing,t) : error(dx,x,nothing,t)
 
     f = ODEFunction(_f, mass_matrix = regular.mass_matrix, syms = regular.syms)
 
