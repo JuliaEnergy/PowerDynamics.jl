@@ -51,6 +51,11 @@ function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1::Array, tim
     np_powergrid = np(powergrid)
     regular = rhs(powergrid)
     error = rhs(np_powergrid)
+
+    if regular.mass_matrix != error.mass_matrix || length(regular.syms) != length(error.syms)
+        error("Change of MassMatrix or system size in abstract pertubation not supported!")
+    end
+
     _f = (dx, x, p, t) -> p ? regular(dx,x,nothing,t) : error(dx,x,nothing,t)
 
     f = ODEFunction(_f, mass_matrix = regular.mass_matrix, syms = regular.syms)
