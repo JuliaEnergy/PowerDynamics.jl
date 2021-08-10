@@ -1,4 +1,5 @@
-using OrdinaryDiffEq: ODEProblem, Rodas4, DiscreteCallback, CallbackSet
+using OrdinaryDiffEq: ODEProblem, Rodas4
+using DiffEqCallbacks: CallbackSet, PresetTimeCallback
 import DiffEqBase: solve
 using Setfield
 
@@ -73,10 +74,10 @@ function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1::Array, tim
     t1 = np.tspan_fault[1]
     t2 = np.tspan_fault[2]
 
-    cb1 = DiscreteCallback(((u,t,integrator) -> t in np.tspan_fault[1]), errorState)
-    cb2 = DiscreteCallback(((u,t,integrator) -> t in np.tspan_fault[2]), regularState)
+    cb1 = PresetTimeCallback([t1], errorState)
+    cb2 = PresetTimeCallback([t2], regularState)
 
-    sol = solve(problem, Rodas4(), callback = CallbackSet(cb1, cb2), tstops=[t1, t2], solve_kwargs...)
+    sol = solve(problem, Rodas4(); callback = CallbackSet(cb1, cb2), solve_kwargs...)
 
     return PowerGridSolution(sol, powergrid)
 end
