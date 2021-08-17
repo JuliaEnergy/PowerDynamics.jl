@@ -1,30 +1,4 @@
-@doc doc"""
-```julia
-CompositeNode(CurrentNodes)
-```
 
-A composite node consisting of current and power sources provided, as well as up to one
-optional voltage controling node. This assumes that the
-current nodes are implemented as
-
-```julia
-du = i - I_node
-```
-
-and the power nodes are implemented with
-
-```julia
-du = u*conj(i) - P_node
-```
-
-*Important!!* The individual nodes are given the current that is arriving from
-the grid into the bus, _not_ the current they themself inject! Check the definitions
-of the nodes going into the CompositeType to make sure they have the right dynamics.
-
-*Experimental!!* This node has not been sufficiently tested for correctness yet. For example
-the plotting recipe does not work with this node, yet!
-
-"""
 
 struct _IPU end
 struct _IU end
@@ -41,6 +15,33 @@ CompositionTypes = Dict(["IPU" => _IPU,
     "P" => _P,
     "IP" => _IP])
 
+@doc doc"""
+    ```julia
+    CompositeNode(CurrentNodes)
+    ```
+
+    A composite node consisting of current and power sources provided, as well as up to one
+    optional voltage controling node. This assumes that the
+    current nodes are implemented as
+
+    ```julia
+    du = i - I_node
+    ```
+
+    and the power nodes are implemented with
+
+    ```julia
+    du = u*conj(i) - P_node
+    ```
+
+    *Important!!* The individual nodes are given the current that is arriving from
+    the grid into the bus, _not_ the current they themself inject! Check the definitions
+    of the nodes going into the CompositeType to make sure they have the right dynamics.
+
+    *Experimental!!* This node has not been sufficiently tested for correctness yet. For example
+    the plotting recipe does not work with this node, yet!
+
+    """
 struct CompositeNode{T} <: AbstractNode
     CurrentNodes # constant current nodes
     VoltageNode # constant voltage nodes

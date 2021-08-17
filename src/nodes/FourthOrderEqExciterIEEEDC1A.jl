@@ -11,8 +11,8 @@ of the power flow onto the voltage into account. This has the effect that the an
 and the angle of the rotating mass are no longer the same but become dynamically coupled.
 
 In addition to the 4th-order model the Type IEEEDC1A exciter was implemented.
-The type was implemented using the following resources as the guide line: 
-"MatDyn" Copyright ©2009 Stijn Cole and 
+The type was implemented using the following resources as the guide line:
+"MatDyn" Copyright ©2009 Stijn Cole and
 "IEEE Recommended Practice for Excitation System Models for Power System Stability Studies", IEEE Power and Energy Society, 2016
 
 Additionally to ``u``, it has the internal dynamic variables
@@ -48,7 +48,6 @@ Additionally to ``u``, it has the internal dynamic variables
 - `T_f`: Excitation control system stabilizer time constant [s]
 - `T_e`: Exciter time constant, integration rate associated with exciter control [s]
 """
-
 @DynamicNode FourthOrderEqExciterIEEEDC1A(H, P, D, Ω, T_d_dash, T_q_dash, X_d_dash, X_q_dash, X_d, X_q, K_e, K_f, K_a, U, U_ref, U_ref2, U_rmax, U_rmin, T_a, T_f, T_e, S_E_max, S_E_tq, V_R_max) begin
     @assert H > 0 "inertia (H) should be >0"
     @assert D >= 0 "damping (D) should be >=0"

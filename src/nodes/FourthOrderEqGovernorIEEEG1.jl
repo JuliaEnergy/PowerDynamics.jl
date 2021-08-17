@@ -12,7 +12,7 @@ and the angle of the rotating mass are no longer the same but become dynamically
 
 In addition to the 4th-order model the  Type IEEEG1 governor was implemented.
 It is used for tandem compound, double reheat steam turbine systems.
-The type was implemented using the following resources as the guide line: 
+The type was implemented using the following resources as the guide line:
 "MatDyn" Copyright ©2009 Stijn Cole and
 "Dynamic Models for Turbine-Governors in Power System Studies", IEEE PES, 2013, Page 2 - 2
 
@@ -47,7 +47,6 @@ Additionally to ``u``, it has the internal dynamic variables
 - `T3`: Valve position time constant (servomotor mechanism) [s]
 - `K`: Total effective speed-governing system gain [pu]
 """
-
 @DynamicNode FourthOrderEqGovernorIEEEG1(H, D, Ω, E_f, T_d_dash, T_q_dash, X_d_dash, X_q_dash, X_d, X_q, P0, Pmax, Pmin, Pup, Pdown, T1, T2, T3, K) begin
     @assert H > 0 "inertia (H) should be >0"
     @assert D >= 0 "damping (D) should be >=0"
