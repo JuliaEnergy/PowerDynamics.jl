@@ -3,7 +3,6 @@
 WindTurbineGenType4(;I_n,k_PLL,f,f_s,T_m,k_P,τ_ω)
 ```
 
-```
 """
 @DynamicNode WindTurbineGenType4(ΔP_max,K_P,K_PLL,P) begin
     MassMatrix(m_u = false,m_int = [true,true,true,true])
