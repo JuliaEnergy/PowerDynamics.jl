@@ -1,6 +1,6 @@
 using BlockSystems
 using ModelingToolkit
-using ModelingToolkit: getname
+using ModelingToolkit: getname, rename, renamespace
 using ModelingToolkit.SymbolicUtils: Symbolic
 using PowerSystems
 
@@ -18,36 +18,36 @@ include("PSSs.jl")
 
 The RFC is an IOBlock to transform between the different
 reference frames.
-The grid "provides" the current `i_r` and `i_i` in global reference frame. This
-gets converted to `i_d` and `i_q` in machine reference frame.
+The grid "provides" the voltage `u_r` and `u_i` in global reference frame. This
+gets converted to `v_d` and `v_q` in machine reference frame.
 
-On its way back the calculated voltages `v_d` and `v_q` in device frame get converted
-back to the global reference fram `u_r` and `u_i`.
+On its way back the calculated currents `i_d` and `i_q` in device frame get converted
+back to the global reference fram `i_r` and `i_i`.
 
 ```
-         i_r,i_i    u_r,u_i
+         u_r,u_i    i_r,i_i
             ↓          ↑
         +------------------+
 δ(t) --→| rot(δ)   rot(-δ) |--→ |v_h|
         +------------------+
             ↓          ↑
-         i_d,i_q    v_d,v_q
+         v_d,v_q    i_d,i_q
 ```
 """
 function reference_frame_conversion()
-    @parameters t i_r(t) i_i(t) v_d(t) v_q(t) δ(t)
-    @variables u_r(t) u_i(t) i_d(t) i_q(t) v_h(t)
+    @parameters t u_r(t) u_i(t) i_d(t) i_q(t)  δ(t)
+    @variables i_r(t) i_i(t) v_d(t) v_q(t) v_h(t)
 
-    IOBlock([u_r ~ sin(-δ)*v_d - cos(-δ)*v_q,
-             u_i ~ cos(-δ)*v_d + sin(-δ)*v_q,
-             i_d ~ sin( δ)*i_r - cos( δ)*i_i,
-             i_q ~ cos( δ)*i_r + sin( δ)*i_i,
+    IOBlock([v_d ~ sin( δ)*u_r - cos( δ)*u_i,
+             v_q ~ cos( δ)*u_r + sin( δ)*u_i,
+             i_r ~ sin(-δ)*i_d - cos(-δ)*i_q,
+             i_i ~ cos(-δ)*i_d + sin(-δ)*i_q,
              v_h ~ √(v_d^2 + v_q^2)],
-            [δ, i_r, i_i, v_d, v_q], [u_r, u_i, i_d, i_q, v_h], name=:rfc)
+            [δ, u_r, u_i, i_d, i_q], [i_r, i_i, v_d, v_q, v_h], name=:rfc)
 end
 
 """
-    MetaGenerator(mover, shaft, machine, AVR, parameters, constants=[]; name)
+    MetaGenerator(parameters, mover, shaft, machine, AVR, PSS; constants=[], name)
 
 Implementation of the NREL MetaGenerator model. This function takes several
 `IOBlocks`` as inputs which should satisfy the corresponding block specification (see below).
@@ -61,7 +61,7 @@ as optional inputs to all of the blocks.
 Block specifications: `(input) ↦ (output)`
  - mover                   `() ↦ (τ_m)`
  - shaft           `(τ_m, τ_e) ↦ (δ, ω)`
- - machine         `(i_d, i_q) ↦ (v_d, v_q, τ_e)`
+ - machine         `(v_d, v_q) ↦ (i_d, i_q, τ_e)`
  - AVR                     `() ↦ (v_avr)`
  - PSS                     `() ↦ (v_pss)`
 
@@ -77,12 +77,12 @@ Symbols:
  - `v_f` : field voltage
 
 ```
-         i_r,i_i    u_r,u_i
+         u_r,u_i    i_r,i_i
             ↓          ↑
      +-----------------------+ v_h
  +--→| ref. frame conversion |----→(all)   (all optional)
  |   +-----------------------+                   ↓
- |  i_d,i_q |          ↑ v_d,v_q      v_pss +---------+
+ |  v_d,v_q |          ↑ i_d,i_q      v_pss +---------+
  |          ↓          |               +----|   PSS   |
  |   +-----------------------+    v_f  ↓    +---------+
  |   |        machine        |(←)----(add)
@@ -104,8 +104,14 @@ Symbols:
 
 TODO: I went with the NREL convention v instead of u. Should be discussed.
 """
-function MetaGenerator(mover, shaft, machine, AVR, PSS, para, constants=nothing;
-                       verbose=false, name=gensym(:MGenerator))
+function MetaGenerator(block_p_pairs::Vararg{<:Tuple{<:IOBlock, <:Dict}, 5}; kwargs...)
+    blocks = first.(block_p_pairs)
+    params = merge(last.(block_p_pairs)...)
+    MetaGenerator(params, blocks...; kwargs...)
+end
+
+function MetaGenerator(para::Dict, mover, shaft, machine, AVR, PSS;
+                       constants=nothing, verbose=false, name=gensym(:MGenerator))
     para = copy(para) # create new reference
 
     verbose && println("Create MetaGenerator:")
@@ -122,7 +128,7 @@ function MetaGenerator(mover, shaft, machine, AVR, PSS, para, constants=nothing;
 
     @assert BlockSpec([], [:τ_m])(mover) "mover has not output τₘ!"
     @assert BlockSpec([:τ_m, :τ_e], [:δ, :ω])(shaft) "shaft not of type (τₑ, τₘ) ↦ (δ, ω)!"
-    @assert BlockSpec([:i_d, :i_q], [:v_d, :v_q, :τ_e])(machine) "machine not of type (i_dq) ↦ (v_h, τₑ)!"
+    @assert BlockSpec([:v_d, :v_q], [:i_d, :i_q, :τ_e])(machine) "machine not of type (v_dq) ↦ (i_dq, τₑ)!"
     @assert BlockSpec([], [:v_avr])(AVR) "AVR has not output v_avr!"
     @assert BlockSpec([], [:v_pss])(PSS) "PSS has not output v_pss!"
 
@@ -150,20 +156,20 @@ function MetaGenerator(mover, shaft, machine, AVR, PSS, para, constants=nothing;
 
     # make sure that the rfc inputs get promoted
     # the rfc outputs are allready in output_promotions
-    rfc_promotions = [rfc.i_r => :i_r, rfc.i_i => :i_i]
+    rfc_promotions = [rfc.u_r => :u_r, rfc.u_i => :u_i]
     promotions = vcat(rfc_promotions, output_promotions)
     # we want no further autopromote to keep all of the parameters in the namespaces
     # this is necessary because the parameterdict will be namespaced as well!
 
     sys = IOSystem(connections, components,
-                   namespace_map=promotions, outputs=[rfc.u_r, rfc.u_i],
+                   namespace_map=promotions, outputs=[rfc.i_r, rfc.i_i],
                    autopromote=false, name=name)
     verbose && println("IOSystem before connection: ", sys)
     connected = connect_system(sys, verbose=verbose)
     verbose && println("IOBlock after connection: ", connected)
 
     inputs = Set(getname.(connected.inputs))
-    @assert inputs == Set((:i_i, :i_r)) "System inputs [:i_i, :i_r] != $inputs. It seems like there are still open inputs in the subsystems!"
+    @assert inputs == Set((:u_r, :u_i)) "System inputs [:u_r, :u_i] != $inputs. It seems like there are still open inputs in the subsystems!"
 
     # compare the provied parameters with the needed parameters
     needed_p = Set(connected.iparams)
@@ -178,7 +184,13 @@ function MetaGenerator(mover, shaft, machine, AVR, PSS, para, constants=nothing;
         delete!(para, k)
     end
 
-    IONode(connected, para)
+    para_renamespaced = typeof(para)()
+    for (k, v) in para
+        newk = rename(k, renamespace(connected.name, getname(k)))
+        para_renamespaced[newk] = v
+    end
+
+    return (connected, para_renamespaced)
 end
 
 function MetaGenerator(gen::DynamicGenerator; verbose=false)

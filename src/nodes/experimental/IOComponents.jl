@@ -5,6 +5,9 @@ using ModelingToolkit
 using ModelingToolkit.Symbolics
 using ModelingToolkit.SymbolicUtils
 
+export subscript
+subscript(s, i) = Symbol(s, Char(0x02080 + i))
+
 export LowPassFilter, DroopControl, VoltageSource, Power, PowerConstraint
 
 """
@@ -15,7 +18,14 @@ Returns a simple block which adds `n` inputs.
     out(t) = a₁(t) + a₂(t) + ...
 """
 function Adder(n=2; name=gensym(:adder), renamings...)
-    @parameters t a[1:n](t)
+    @parameters t
+
+    a = Num[]
+    for i in 1:n
+        symname = subscript(:a, i)
+        append!(a, @parameters $symname(t))
+    end
+
     @variables out(t)
     block = IOBlock([out ~ (+)(a...)],
                     [a...], [out]; name)
@@ -35,7 +45,7 @@ IOBlock :const with 2 eqs
   ├ istates: (empty)
   └ iparams: (empty)
 
-julia> blk.system.eqs
+julia> equations(blk.system)
 2-element Vector{Equation}:
  a(t) ~ 42
  b(t) ~ 3.14
@@ -44,9 +54,14 @@ julia> blk.system.eqs
 Constants(constants...; kwargs...) = Constants(Dict(constants); kwargs...)
 function Constants(constants::Dict; name=gensym(:constantes))
     @parameters t
-    outputs = [Sym{(SymbolicUtils.FnType){NTuple{1, Any}, Real}}(s)(Symbolics.value(t)) for s in keys(constants)]
+
+    outputs = Num[]
+    for s in keys(constants)
+        append!(outputs, @variables $s(t))
+    end
+
     eqs = collect(map((k, v) -> k ~ v, outputs, values(constants)))
-    return IOBlock(eqs, [], collect(outputs); name)
+    return IOBlock(eqs, [], outputs; name)
 end
 
 

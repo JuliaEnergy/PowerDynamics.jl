@@ -18,20 +18,20 @@ See [`PowerSimulationDynamics.jl` docs](https://nrel-siip.github.io/PowerSimulat
 ```jldoctest
 julia> PowerDynamics.base_machine()
 IOBlock :machine with 3 eqs
-  ├ inputs:  i_d(t), i_q(t)
-  ├ outputs: v_d(t), v_q(t), τ_e(t)
+  ├ inputs:  v_d(t), v_q(t)
+  ├ outputs: i_d(t), i_q(t), τ_e(t)
   ├ istates: (empty)
   └ iparams: X_d, R, e_q
 ```
 """
 function base_machine(;name=:machine)
-    @parameters t R X_d e_q i_d(t) i_q(t)
-    @variables v_d(t) v_q(t) τ_e(t)
+    @parameters t R X_d e_q v_d(t) v_q(t)
+    @variables i_d(t) i_q(t) τ_e(t)
 
-    IOBlock([v_d ~ -R*i_d + X_d*i_q,
-             v_q ~ -X_d*i_d - R*i_q * e_q,
+    IOBlock([i_d ~ (- R*v_d + e_q*X_d - v_q*X_d) / (R^2 + X_d^2),
+             i_q ~ (  R*e_q - R*v_q   + v_d*X_d) / (R^2 + X_d^2),
              τ_e ~ (v_q + R*i_q)*i_q + (v_d + R*i_d)*i_d],
-            [i_d, i_q], [v_d, v_q, τ_e], name=name)
+            [v_d, v_q], [i_d, i_q, τ_e], name=name)
 end
 
 function gen_machine_block(machine::BaseMachine)
