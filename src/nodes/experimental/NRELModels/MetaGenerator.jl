@@ -205,7 +205,11 @@ function MetaGenerator(gen::DynamicGenerator; verbose=false)
     (pss, pss_p)         = gen_pss_block(gen.pss)
     verbose && @info "pss loaded:" pss pss_p
 
-    para = merge(mover_p, shaft_p, machine_p, avr_p, pss_p)
-
-    MetaGenerator(mover, shaft, machine, avr, pss, para; verbose)
+    MetaGenerator((mover, mover_p),
+                  (shaft, shaft_p),
+                  (machine, machine_p),
+                  (avr, avr_p),
+                  (pss, pss_p);
+                  verbose,
+                  name=Symbol(replace(gen.name, '-'=>'_')))
 end
