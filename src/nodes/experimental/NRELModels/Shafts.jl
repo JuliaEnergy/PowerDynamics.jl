@@ -38,8 +38,8 @@ function gen_shaft_block(s::SingleMass)
     shaft = single_mass_shaft()
     p = Dict(shaft.D => s.D,
              shaft.H => s.H,
-             shaft.ω_ref => 50,
-             shaft.Ω_b => 1)
-    # FIXME where to geht ω_ref and Ω_b?
+             shaft.ω_ref => 1.0,
+             shaft.Ω_b => 2π*60.0)
+    # FIXME where to geht ω_ref and Ω_b? -> constants in MetaGenerator
     return (shaft, p)
 end
