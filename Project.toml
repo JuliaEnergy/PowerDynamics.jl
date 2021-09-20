@@ -28,7 +28,7 @@ SteadyStateDiffEq = "9672c7b4-1e72-59bd-8a11-6ac3964bc41f"
 [compat]
 DiffEqBase = "^6.9.4"
 DiffEqCallbacks = "^2"
-Ipopt = "^0.7"
+Ipopt = "^0.7, 0.8"
 JSON = "^0.21.0"
 Lazy = "^0.14.0, 0.15"
 LightGraphs = "^1.3.0"
