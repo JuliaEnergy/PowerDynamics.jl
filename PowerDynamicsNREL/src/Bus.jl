@@ -1,5 +1,13 @@
 export BusNode
 
+subscript(s, i) = Symbol(s, Char(0x02080 + i))
+
+function BusNode(injpairs::Vector{<:Tuple{<:IOBlock, <:Dict}}; kwargs...)
+    blocks = first.(injpairs)
+    params = merge(last.(injpairs)...)
+    BusNode(params, blocks; kwargs...)
+end
+
 function BusNode(injpairs::Vararg{<:Tuple{<:IOBlock, <:Dict}, N}; kwargs...) where {N}
     blocks = first.(injpairs)
     params = merge(last.(injpairs)...)

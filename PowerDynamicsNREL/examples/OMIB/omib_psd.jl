@@ -1,7 +1,6 @@
 # simulate OMIB example with PowerSimulatonDynamics
 
-using PowerSimulationsDynamics
-PSID = PowerSimulationsDynamics
+import PowerSimulationsDynamics as PSID
 using PowerSystems
 using Sundials
 using Plots
@@ -13,13 +12,13 @@ omib_sys = System(raw_file, dyr_file, runchecks = true)
 
 time_span = (0.0, 30.0)
 
-perturbation_trip = BranchTrip(1.0, "BUS 1-BUS 2-i_1")
+perturbation_trip = PSID.BranchTrip(1.0, "BUS 1-BUS 2-i_1")
 sim = PSID.Simulation(PSID.ImplicitModel, omib_sys, pwd(), time_span, perturbation_trip)
 
 #V_source_change = SourceBusVoltageChange(1.0, case_source, PSID.θ_source_index, 0.1)
 #sim = PSID.Simulation(PSID.ImplicitModel, omib_sys, pwd(), time_span, V_source_change)
 
-print_device_states(sim)
+PSID.print_device_states(sim)
 x0_init = PSID.get_initial_conditions(sim)
 
 PSID.execute!(

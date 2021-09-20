@@ -1,0 +1,34 @@
+name = "PowerDynamicsNREL"
+uuid = "54518e6d-f17f-4734-b314-970a8813eaed"
+authors = ["Hans Würfel <git@wuerfel.io>"]
+version = "0.1.0"
+
+[deps]
+BlockSystems = "4663d367-db1f-4bef-81e7-dc1bd7f7b428"
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
+OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
+PowerDynamics = "cc46b21f-1b17-51c2-b642-af74c3d3a8be"
+PowerSimulationsDynamics = "398b2ede-47ed-4edc-b52e-69e4a48b4336"
+PowerSystems = "bcd98974-b02a-5e2f-9ee0-a103f5c450dd"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
+SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
+Sundials = "c3572dad-4567-51f8-b174-8c6c989267f4"
+
+[compat]
+BlockSystems = "0.2.5"
+CSV = "0.8"
+ModelingToolkit = "6"
+OrderedCollections = "1.3"
+PowerDynamics = "2.5"
+PowerSimulationsDynamics = "0.6"
+PowerSystems = "1"
+Reexport = "1"
+SafeTestsets = "0.0.1"
+Sundials = "4"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

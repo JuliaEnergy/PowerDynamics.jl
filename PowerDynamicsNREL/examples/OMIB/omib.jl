@@ -1,11 +1,9 @@
-using PowerDynamics
+using PowerDynamicsNREL
 using PowerSystems
 using ModelingToolkit
 using LinearAlgebra: norm
-using OrdinaryDiffEq
 using Plots
 using OrderedCollections: OrderedDict
-# using PowerSystemCaseBuilder
 
 "take real and imaginary part and return norm and argument"
 to_exp(re, im) = norm([re, im]), atan(im, re)
@@ -38,7 +36,7 @@ dyngen = deepcopy(collect(get_components(DynamicGenerator, system))[1])
 
 # create a MetaGenerator block and use it to create the BusNode
 metagen = MetaGenerator(dyngen; verbose=false);
-# metagen[2][metagen[1].machine₊e_q] = 1.0278632050189886
+metagen[2][metagen[1].machine₊e_q] = 1.0278632050189886 # taken from actual initialization with PSD
 busnode = BusNode(metagen; name=:bus1);
 
 # symbolsof(busnode)
@@ -56,7 +54,7 @@ buses=OrderedDict(
 branches=OrderedDict(
     "branch1"=> PiModelLine(from="bus1", to="bus2",y=2/(0.1im), y_shunt_km=0, y_shunt_mk=0))
 
-powergrid = PowerGrid(buses,branches);
+powergrid = PowerGrid(buses, branches);
 
 op = find_operationpoint(powergrid);
 
@@ -67,7 +65,7 @@ to_exp(op.vec[1:2]...) # v slack in exp
 to_exp(op.vec[3:4]...) # v gen in exp
 op.vec[5:6] # δ and ω of shaft
 
-# actuall simulation
+# actual simulation
 timespan = (0.0, 100.0)
 fault = PartialLineFailure("branch1", 0.5, (1.0,100.0))
 sol = simulate(fault, powergrid, op.vec, timespan; dtmax=0.01);

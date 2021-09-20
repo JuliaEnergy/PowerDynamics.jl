@@ -5,7 +5,6 @@ using ModelingToolkit
 using ModelingToolkit.Symbolics
 using ModelingToolkit.SymbolicUtils
 
-export subscript
 subscript(s, i) = Symbol(s, Char(0x02080 + i))
 
 export LowPassFilter, DroopControl, VoltageSource, Power, PowerConstraint

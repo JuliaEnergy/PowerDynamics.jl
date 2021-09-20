@@ -44,8 +44,6 @@ include("nodes/experimental/IONode.jl")
 include("nodes/experimental/IOComponents.jl")
 include("nodes/experimental/GFI_MTK.jl")
 include("nodes/experimental/MTK_Load.jl")
-include("nodes/experimental/NRELModels/Bus.jl")
-include("nodes/experimental/NRELModels/MetaGenerator.jl")
 
 # all line types
 
