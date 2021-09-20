@@ -1,9 +1,7 @@
 """
     gen_avr_block(avr <: PowerSystems.AVR)
 
-Returns tuple of
- - `IOBlock` representaion of `avr`
- - parameter dict for this block based on the contents of `avr`
+Returns composite type `BlockPara` which consists of an `IOBlock` and a parameter `Dict`.
 """
 function gen_avr_block end
 
@@ -36,7 +34,7 @@ function gen_avr_block(avr::AVRFixed)
     block = avr_fixed()
     @warn "Use Vf as v_fix. Is this right? May be v_ref!"
     p = Dict(block.v_fix => avr.Vf) #FIXME: Vf or V_ref for AVRFixed
-    return (block, p)
+    return BlockPara(block, p)
 end
 
 
@@ -69,5 +67,5 @@ function gen_avr_block(avr::AVRSimple)
     block = avr_simple()
     p = Dict(block.K => avr.Kv,
              block.v_ref => avr.V_ref)
-    return (block, p)
+    return BlockPara(block, p)
 end

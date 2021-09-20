@@ -1,9 +1,3 @@
-using BlockSystems
-using ModelingToolkit
-using ModelingToolkit: getname, rename, renamespace
-using ModelingToolkit.SymbolicUtils: Symbolic
-using PowerSystems
-
 export MetaGenerator
 
 """
@@ -43,7 +37,7 @@ end
     MetaGenerator(parameters, mover, shaft, machine, AVR, PSS; constants=[], name)
 
 Implementation of the NREL MetaGenerator model. This function takes several
-`IOBlocks`` as inputs which should satisfy the corresponding block specification (see below).
+`IOBlock`s as inputs which should satisfy the corresponding block specification (see below).
 
 The `parameters` should be provided as a Dict of parameters as namespaced syms, i.e.
 `mover.P_ref => 123`.
@@ -97,9 +91,8 @@ Symbols:
 
 TODO: I went with the NREL convention v instead of u. Should be discussed.
 """
-function MetaGenerator(block_p_pairs::Vararg{<:Tuple{<:IOBlock, <:Dict}, 5}; kwargs...)
-    blocks = first.(block_p_pairs)
-    params = merge(last.(block_p_pairs)...)
+function MetaGenerator(block_p_pairs::Vararg{BlockPara, 5}; kwargs...)
+    blocks, params = mergep(block_p_pairs)
     MetaGenerator(params, blocks...; kwargs...)
 end
 
@@ -183,26 +176,21 @@ function MetaGenerator(para::Dict, mover, shaft, machine, AVR, PSS;
         para_renamespaced[newk] = v
     end
 
-    return (connected, para_renamespaced)
+    return BlockPara(connected, para_renamespaced)
 end
 
 function MetaGenerator(gen::DynamicGenerator; verbose=false)
-    (mover, mover_p)     = gen_mover_block(gen.prime_mover)
-    verbose && @info "mover loaded:" mover mover_p
-    (shaft, shaft_p)     = gen_shaft_block(gen.shaft)
-    verbose && @info "shaft loaded:" shaft shaft_p
-    (machine, machine_p) = gen_machine_block(gen.machine)
-    verbose && @info "machine loaded:" machine machine_p
-    (avr, avr_p)         = gen_avr_block(gen.avr)
-    verbose && @info "avr loaded:" avr avr_p
-    (pss, pss_p)         = gen_pss_block(gen.pss)
-    verbose && @info "pss loaded:" pss pss_p
+    mover = gen_mover_block(gen.prime_mover)
+    verbose && @info "mover loaded:" mover 
+    shaft = gen_shaft_block(gen.shaft)
+    verbose && @info "shaft loaded:" shaft 
+    machine = gen_machine_block(gen.machine)
+    verbose && @info "machine loaded:" machine 
+    avr = gen_avr_block(gen.avr)
+    verbose && @info "avr loaded:" avr 
+    pss = gen_pss_block(gen.pss)
+    verbose && @info "pss loaded:" pss 
 
-    MetaGenerator((mover, mover_p),
-                  (shaft, shaft_p),
-                  (machine, machine_p),
-                  (avr, avr_p),
-                  (pss, pss_p);
-                  verbose,
-                  name=Symbol(replace(gen.name, '-'=>'_')))
+    MetaGenerator(mover, shaft, machine, avr, pss;
+                  verbose, name=Symbol(replace(gen.name, '-'=>'_')))
 end

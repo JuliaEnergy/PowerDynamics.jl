@@ -1,9 +1,7 @@
 """
     gen_shaft_block(shaft <: PowerSystems.Shaft)
 
-Returns tuple of
- - `IOBlock` representaion of `shaft`
- - parameter dict for this block based on the contents of `shaft`
+Returns composite type `BlockPara` which consists of an `IOBlock` and a parameter `Dict`.
 """
 function gen_shaft_block end
 
@@ -41,5 +39,5 @@ function gen_shaft_block(s::SingleMass)
              shaft.ω_ref => 1.0,
              shaft.Ω_b => 2π*60.0)
     # FIXME where to geht ω_ref and Ω_b? -> constants in MetaGenerator
-    return (shaft, p)
+    return BlockPara(shaft, p)
 end

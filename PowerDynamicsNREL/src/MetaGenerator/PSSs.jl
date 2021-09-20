@@ -1,9 +1,7 @@
 """
     gen_pss_block(pss <: PowerSystems.PSS)
 
-Returns tuple of
- - `IOBlock` representaion of `pss`
- - parameter dict for this block based on the contents of `pss`
+Returns composite type `BlockPara` which consists of an `IOBlock` and a parameter `Dict`.
 """
 function gen_pss_block end
 
@@ -35,7 +33,7 @@ end
 function gen_pss_block(pss::PSSFixed)
     block = pss_fixed()
     p = Dict(block.v_fix => pss.V_pss)
-    return (block, p)
+    return BlockPara(block, p)
 end
 
 
@@ -68,5 +66,5 @@ function gen_pss_block(pss::PSSSimple)
     block = pss_simple()
     p = Dict(block.K_ω => pss.K_ω,
              block.K_p => pss.K_p)
-    return (block, p)
+    return BlockPara(block, p)
 end

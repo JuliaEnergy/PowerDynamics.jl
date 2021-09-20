@@ -11,6 +11,7 @@ using ModelingToolkit
 using ModelingToolkit: getname, rename, renamespace
 using ModelingToolkit.SymbolicUtils: Symbolic
 
+include("utils.jl")
 
 # include files related to the MetaGenerator model
 include("MetaGenerator/Movers.jl")

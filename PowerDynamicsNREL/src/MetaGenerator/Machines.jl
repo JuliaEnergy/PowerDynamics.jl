@@ -1,9 +1,7 @@
 """
     gen_machine_block(machine <: PowerSystems.Machine)
 
-Returns tuple of
- - `IOBlock` representaion of `machine`
- - parameter dict for this block based on the contents of `machine`
+Returns composite type `BlockPara` which consists of an `IOBlock` and a parameter `Dict`.
 """
 function gen_machine_block end
 
@@ -39,5 +37,5 @@ function gen_machine_block(machine::BaseMachine)
     p = Dict(block.R => machine.R,
              block.X_d => machine.Xd_p,
              block.e_q => machine.eq_p)
-    return (block, p)
+    return BlockPara(block, p)
 end

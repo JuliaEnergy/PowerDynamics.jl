@@ -1,9 +1,7 @@
 """
     gen_mover_block(machine <: PowerSystems.TurbineGov)
 
-Returns tuple of
- - `IOBlock` representaion of `machine`
- - parameter dict for this block based on the contents of `machine`
+Returns composite type `BlockPara` which consists of an `IOBlock` and a parameter `Dict`.
 """
 function gen_mover_block end
 
@@ -36,5 +34,5 @@ function gen_mover_block(mover::TGFixed)
     block = tg_fixed()
     p = Dict(block.η => mover.efficiency,
              block.P_ref => mover.P_ref)
-    return (block, p)
+    return BlockPara(block, p)
 end

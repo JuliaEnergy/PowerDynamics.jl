@@ -27,10 +27,9 @@ function getgenerator(;name)
 end
 
 @named gen1 = getgenerator()
-@named load = BusLoad()
-load_p = Dict(load.P => 1.0, load.Q => 0.0)
+@named load = BusLoad(P=1.0, Q=0.0)
 
-@named busnode = BusNode(gen1, (load, load_p))
+@named busnode = BusNode(gen1, load)
 
 busnode.mass_matrix
 busnode.block

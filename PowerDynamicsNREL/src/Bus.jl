@@ -1,21 +1,9 @@
-export BusNode
+export BusNode, BusLoad
 
-subscript(s, i) = Symbol(s, Char(0x02080 + i))
+BusNode(injs::BlockPara...; kwargs...) = BusNode(injs; kwargs...)
 
-function BusNode(injpairs::Vector{<:Tuple{<:IOBlock, <:Dict}}; kwargs...)
-    blocks = first.(injpairs)
-    params = merge(last.(injpairs)...)
-    BusNode(params, blocks; kwargs...)
-end
-
-function BusNode(injpairs::Vararg{<:Tuple{<:IOBlock, <:Dict}, N}; kwargs...) where {N}
-    blocks = first.(injpairs)
-    params = merge(last.(injpairs)...)
-    BusNode(params, blocks; kwargs...)
-end
-
-function BusNode(params::Dict, injectors; name=gensym(:Bus), verbose=false)
-    N = length(injectors)
+function BusNode(injpairs::NTuple{N, BlockPara}; name=gensym(:Bus), verbose=false) where {N}
+    injectors, params = mergep(injpairs)
 
     for inj in injectors
         @assert BlockSpec([:u_r, :u_i], [:i_r, :i_i])(inj) "Injector $inj does not satisfy injector interface!"
@@ -64,13 +52,15 @@ function BusNode(params::Dict, injectors; name=gensym(:Bus), verbose=false)
     return IONode(connected, params)
 end
 
-export BusLoad
-function BusLoad(;name=:load)
+function BusLoad(;P, Q, name=:load)
+    pv, qv = P, Q
     @parameters t P Q u_r(t) u_i(t)
     @variables i_r(t) i_i(t)
-    IOBlock([0 ~ u_r*i_r + u_i*i_i - P,
-             0 ~ u_i*i_r - u_r*i_i - Q],
-            [u_r, u_i],
-            [i_r, i_i];
-            name, iv=t)
+    block = IOBlock([0 ~ u_r*i_r + u_i*i_i - P,
+                     0 ~ u_i*i_r - u_r*i_i - Q],
+                    [u_r, u_i],
+                    [i_r, i_i];
+                    name, iv=t)
+    para = Dict(block.P => pv, block.Q => qv)
+    BlockPara(block, para)
 end
