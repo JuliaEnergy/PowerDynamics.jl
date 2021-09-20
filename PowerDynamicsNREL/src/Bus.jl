@@ -2,6 +2,18 @@ export BusNode, BusLoad
 
 BusNode(injs::BlockPara...; kwargs...) = BusNode(injs; kwargs...)
 
+function BusNode(; name=gensym(:Bus), verbose=false)
+    # busnode without any elements
+    @parameters t i_r(t) i_i(t)
+    @variables u_r(t) u_i(t)
+
+    bar = IOBlock([0 ~ i_r, 0 ~ i_i],
+                  [i_r, i_i], [u_r, u_i];
+                  iv=t, name)
+
+    return IONode(bar, Dict{Symbolic, Float64}())
+end
+
 function BusNode(injpairs::NTuple{N, BlockPara}; name=gensym(:Bus), verbose=false) where {N}
     injectors, params = mergep(injpairs)
 
@@ -63,4 +75,43 @@ function BusLoad(;P, Q, name=:load)
                     name, iv=t)
     para = Dict(block.P => pv, block.Q => qv)
     BlockPara(block, para)
+end
+
+
+"""
+    get_io_load(load<:ElectricLoad)
+
+Add methods for each supported subtype of `ElectricLoad`. Returns
+an `BlockPara` for the current draw/injection.
+"""
+function get_io_load end
+
+function get_io_load(load::PowerLoad)
+    @assert load.dynamic_injector == nothing "Whait whaat load $(load.name) has a dynamic injection: $(load.dynamic_injector)"
+    BusLoad(P=load.active_power, Q=load.reactive_power, name=Symbol(get_name(load)))
+end
+
+
+"""
+    get_io_injection(inj<:DynamicInjector)
+
+Add methods for each supported subtype of `DynamicInjector`. Returns
+an `BlockPara` for the current draw/injection.
+"""
+function get_io_injection end
+
+function get_io_injection(gen::DynamicGenerator; verbose=false)
+    mover = gen_mover_block(gen.prime_mover)
+    verbose && @info "mover loaded:" mover
+    shaft = gen_shaft_block(gen.shaft)
+    verbose && @info "shaft loaded:" shaft
+    machine = gen_machine_block(gen.machine)
+    verbose && @info "machine loaded:" machine
+    avr = gen_avr_block(gen.avr)
+    verbose && @info "avr loaded:" avr
+    pss = gen_pss_block(gen.pss)
+    verbose && @info "pss loaded:" pss
+
+    MetaGenerator(mover, shaft, machine, avr, pss;
+                  verbose, name=Symbol(replace(gen.name, '-'=>'_')))
 end

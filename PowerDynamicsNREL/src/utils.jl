@@ -1,4 +1,4 @@
-using BlockSystems: namespace_iparams
+using BlockSystems: namespace_iparams, IOBlock
 
 export BlockPara
 
@@ -32,12 +32,12 @@ If `strict=true` check whether the keys in the parameterdicts are unique.
 """
 mergep(bps::BlockPara...; kwargs...) = mergep(bps; kwargs...)
 function mergep(bps::NTuple{N, BlockPara}; strict=true) where {N}
-    isempty(bps) && throw(ArgumentError("Can't merge nothing."))
+    isempty(bps) && return (NTuple{0, IOBlock}(), Dict())
 
     paras = get_parameters.(bps)
 
     if strict && !allunique(vcat(collect.(keys.(paras))...))
-        throw(ArgumentError("Keys of parameter dicts not unique!"))
+        throw(ArgumentError("Keys of parameter dicts not unique: $(vcat(collect.(keys.(paras))...))"))
     end
 
     return get_block.(bps), merge(paras...)

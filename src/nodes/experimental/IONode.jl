@@ -17,7 +17,7 @@ function IONode(blk::IOBlock, parameters::Dict)
     @assert spec(blk) "Block has to follow PowerDynamics i/o conventions!"
 
     # parameters may be given as Num oder Symbol types
-    p_keys = [k isa Symbol ? k : getname(value(k)) for k in keys(parameters)]
+    p_keys = Symbol[k isa Symbol ? k : getname(value(k)) for k in keys(parameters)]
     p_vals = collect(Float64, values(parameters))
 
     gen = generate_io_function(blk,

@@ -11,6 +11,8 @@ using ModelingToolkit
 using ModelingToolkit: getname, rename, renamespace
 using ModelingToolkit.SymbolicUtils: Symbolic
 
+using OrderedCollections: OrderedDict
+
 include("utils.jl")
 
 # include files related to the MetaGenerator model
@@ -23,6 +25,9 @@ include("MetaGenerator/MetaGenerator.jl")
 
 # include bus model
 include("Bus.jl")
+
+# include mapping for branch types
+include("Branches.jl")
 
 # include grid constructor
 include("GridConstructor.jl")

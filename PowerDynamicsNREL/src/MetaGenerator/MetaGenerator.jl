@@ -178,19 +178,3 @@ function MetaGenerator(para::Dict, mover, shaft, machine, AVR, PSS;
 
     return BlockPara(connected, para_renamespaced)
 end
-
-function MetaGenerator(gen::DynamicGenerator; verbose=false)
-    mover = gen_mover_block(gen.prime_mover)
-    verbose && @info "mover loaded:" mover 
-    shaft = gen_shaft_block(gen.shaft)
-    verbose && @info "shaft loaded:" shaft 
-    machine = gen_machine_block(gen.machine)
-    verbose && @info "machine loaded:" machine 
-    avr = gen_avr_block(gen.avr)
-    verbose && @info "avr loaded:" avr 
-    pss = gen_pss_block(gen.pss)
-    verbose && @info "pss loaded:" pss 
-
-    MetaGenerator(mover, shaft, machine, avr, pss;
-                  verbose, name=Symbol(replace(gen.name, '-'=>'_')))
-end
