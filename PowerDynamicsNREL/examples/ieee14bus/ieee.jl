@@ -29,9 +29,14 @@ for i in 1:14
 end
 plt
 
-PowerGrid(sys)
+powergrid = PowerGrid(sys; verbose=true)
 
-gen = collect(get_components(DynamicGenerator, sys))[1]
+op = find_operationpoint(powergrid);
+timespan = (0.0, 3.0)
+
+fault = PartialLineFailure("BUS 01 -> BUS 02", 1.0, (1.0,2.0))
+sol = simulate(fault, powergrid, op.vec, timespan);
+
 
 #=
 Topological elements

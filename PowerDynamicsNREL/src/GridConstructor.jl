@@ -1,14 +1,17 @@
 function PowerDynamics.PowerGrid(sys::System; verbose=false)
+    # warnings for currently unssuported components
     isempty(get_components(Source, sys)) || @warn "Ignore devices of type Source"
     isempty(get_components(StaticInjectionSubsystem, sys)) || @warn "Ignore devices of type StaticInjectionSubsystem"
     isempty(get_components(Storage, sys)) || @warn "Ignore devices of type StaticInjectionSubsystem"
     isempty(get_components(RegulationDevice, sys)) || @warn "Ignore devices of type StaticInjectionSubsystem"
 
-    busiter = get_components(Bus, sys)
-    N = length(get_components(Bus, sys))
-    busnames = get_name.(busiter)
+    ####
+    #### buses
+    ####
+    busnames = sort!(get_name.(get_components(Bus, sys)))
+    N = length(busnames)
 
-    busdevices = Dict{String, Vector{BlockPara}}()
+    busdevices = OrderedDict{String, Vector{BlockPara}}()
     for name in busnames
         busdevices[name] = BlockPara[]
     end
@@ -40,5 +43,19 @@ function PowerDynamics.PowerGrid(sys::System; verbose=false)
         verbose && println(" - $(name): ", (d->d.block.name).(devices))
         buses[name] = BusNode(devices...; name=Symbol(name))
     end
-    return buses
+
+    ####
+    #### branches
+    ####
+    branches = OrderedDict{String, PowerDynamics.AbstractLine}()
+    verbose && println("Branches ")
+    for arc in get_components(Arc, sys)
+        lines = get_components(Branch, sys, x->x.arc==arc) |> collect
+        lines = [l for l in lines]
+        verbose && println(" - $(get_name(arc)): ", (l->repr(typeof(l))*": "*get_name(l)).(lines))
+        pdline = get_pd_branch(arc, lines)
+        branches[get_name(arc)] = pdline
+    end
+
+    return PowerGrid(buses, branches)
 end
