@@ -68,8 +68,8 @@ function BusLoad(;P, Q, name=:load)
     pv, qv = P, Q
     @parameters t P Q u_r(t) u_i(t)
     @variables i_r(t) i_i(t)
-    block = IOBlock([0 ~ u_r*i_r + u_i*i_i - P,
-                     0 ~ u_i*i_r - u_r*i_i - Q],
+    block = IOBlock([0 ~ u_r*i_r + u_i*i_i + P,
+                     0 ~ u_i*i_r - u_r*i_i + Q],
                     [u_r, u_i],
                     [i_r, i_i];
                     name, iv=t)
@@ -113,5 +113,5 @@ function get_io_injection(gen::DynamicGenerator; verbose=false)
     verbose && @info "pss loaded:" pss
 
     MetaGenerator(mover, shaft, machine, avr, pss;
-                  verbose, name=Symbol(replace(gen.name, '-'=>'_')))
+                  verbose, name=Symbol(gen.name))
 end

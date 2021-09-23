@@ -5,11 +5,13 @@ using Reexport: @reexport
 @reexport using PowerDynamics
 using PowerDynamics.IOComponents
 using PowerSystems
+using PowerSimulationsDynamics
 
 using BlockSystems
 using ModelingToolkit
 using ModelingToolkit: getname, rename, renamespace
 using ModelingToolkit.SymbolicUtils: Symbolic
+using NetworkDynamics
 
 using OrderedCollections: OrderedDict
 

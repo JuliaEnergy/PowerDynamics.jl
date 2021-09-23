@@ -39,12 +39,11 @@ function get_pd_branch(arc::Arc,
     length(trafos)==1 || error("Multiple transformers at one Arc are not supportet atm 😔")
     trafo = trafos[1]
 
-    t_ratio = trafo.rate
     y = 1/(trafo.r + im*trafo.x)
 
     if inorder(arc)
-        return Transformer(; from=src, to=dst, y, t_ratio)
+        return Transformer(; from=src, to=dst, y, t_ratio=trafo.rate)
     else
-        return Transformer(; from=dst, to=src, y, t_ratio)
+        return Transformer(; from=dst, to=src, y, t_ratio=1/trafo.rate)
     end
 end
