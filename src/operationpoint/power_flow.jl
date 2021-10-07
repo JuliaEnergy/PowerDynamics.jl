@@ -218,8 +218,8 @@ function make_branch_ac!(data::Dict{String,Any}, dict::Dict{Any, Int}, line::Tra
     branch_dict = _make_branch_ac_header(data, dict, line)
     branch_dict["transformer"] = true
     branch_dict["tap"] = line.t_ratio
-    branch_dict["br_r"] = real(1 / line.Y)
-    branch_dict["br_x"] = imag(1 / line.Y)
+    branch_dict["br_r"] = real(1 / line.y)
+    branch_dict["br_x"] = imag(1 / line.y)
 end
 
 function make_branch_ac!(data::Dict{String,Any}, dict::Dict{Any, Int}, line::PiModelLine)
