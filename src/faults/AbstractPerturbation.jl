@@ -46,7 +46,6 @@ Simulates a [`AbstractPerturbation`](@ref)
 """
 function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1::Array, timespan; solve_kwargs...)
     @assert first(timespan) <= np.tspan_fault[1] "fault cannot begin in the past"
-    @assert np.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
 
     np_powergrid = np(powergrid)
     regular = rhs(powergrid)
