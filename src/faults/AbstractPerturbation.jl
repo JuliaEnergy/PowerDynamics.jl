@@ -46,7 +46,6 @@ Simulates a [`AbstractPerturbation`](@ref)
 """
 function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1::Array, timespan; solve_kwargs...)
     @assert first(timespan) <= np.tspan_fault[1] "fault cannot begin in the past"
-    @assert np.tspan_fault[2] <= last(timespan) "fault cannot end in the future"
 
     np_powergrid = np(powergrid)
     regular = rhs(powergrid)
@@ -56,6 +55,7 @@ function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1::Array, tim
         error("Change of MassMatrix or system size in abstract pertubation not supported!")
     end
 
+    # wrap f and introduce parameter: if p=true no error, if p=false errorstate
     _f = (dx, x, p, t) -> p ? regular(dx,x,nothing,t) : error(dx,x,nothing,t)
 
     f = ODEFunction(_f, mass_matrix = regular.mass_matrix, syms = regular.syms)
@@ -63,17 +63,21 @@ function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1::Array, tim
     problem = ODEProblem{true}(f, x1, timespan, true)
 
     function errorState(integrator)
-        sol1 = integrator.sol
-        x2 = find_valid_initial_condition(np_powergrid, sol1[end]) # Jump the state to be valid for the new system.
-        integrator.u = x2
         integrator.p = false
+        # reset the adaptive timestepping
+        if integrator.opts.adaptive
+            auto_dt_reset!(integrator)
+            set_proposed_dt!(integrator, integrator.dt)
+        end
     end
 
     function regularState(integrator)
-        sol2 = integrator.sol
-        x3 = find_valid_initial_condition(powergrid, sol2[end]) # Jump the state to be valid for the new system.
-        integrator.u = x3
         integrator.p = true
+        # reset the adaptive timestepping
+        if integrator.opts.adaptive
+            auto_dt_reset!(integrator)
+            set_proposed_dt!(integrator, integrator.dt)
+        end
     end
 
     t1 = np.tspan_fault[1]
