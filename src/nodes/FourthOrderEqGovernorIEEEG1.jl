@@ -57,26 +57,26 @@ The fourth-order equations read (according to P. Sauer, "Power System Dynamics a
 
 The IEEEG1 Governor Model applies the following equations:
 ```math
-    dx_1 &= K \cdot \left(\frac{-1}{T_1} \cdot x_1 + \left(1 - \frac{T_2}{T_1}\right) \cdot \omega\right) \text{  Block Input} \\
-    dP &= \left(\frac{1}{T_1}\right) \cdot x_1 + \left(\frac{T_2}{T_1}\right) \cdot \omega \\
-    y &= \left(\frac{1}{T_3}\right) \cdot (P_0 - P - P_m) \text{   Block Output} 
+    dx_1 = K \cdot \left(\frac{-1}{T_1} \cdot x_1 + \left(1 - \frac{T_2}{T_1}\right) \cdot \omega\right) \text{  Block Input} \\
+    dP = \left(\frac{1}{T_1}\right) \cdot x_1 + \left(\frac{T_2}{T_1}\right) \cdot \omega \\
+    y = \left(\frac{1}{T_3}\right) \cdot (P_0 - P - P_m) \text{   Block Output} 
 ```
 Limiting the valve rate of change:
 ```math
-    y_{temp} &= \begin{cases}
-            P_{up} &\mbox{if $ y > P_{up}$}  \\
-            P_{down} &\mbox{if $y < P_{down}$} \\
-            y &\mbox{else}
+    y_{temp} = \begin{cases}
+            P_{up} & \text{if } y > P_{up} \\
+            P_{down} & \text{if } y < P_{down} \\
+            y & \text{else}
         \end{cases}\\
-    dz &= y_{temp}
+    dz = y_{temp}
 ```
 Limiting the power imposed by the valve or gate control:
 ```math
     dP_m = \begin{cases}
-                (1 - P_{max}) \cdot dP_m &\mbox{if $z > P_{max}$}  \\
-                (1 - P_{min}) \cdot dP_m  &\mbox{if $z < P_{min}$} \\
-                y_{temp} &\mbox{else}
-            \end{cases}\\
+                (1 - P_{max}) \cdot dP_m & \text{if } z > P_{max} \\
+                (1 - P_{min}) \cdot dP_m & \text{if } z < P_{min} \\
+                y_{temp} & \text{else}
+            \end{cases}
 ```
 """
 @DynamicNode FourthOrderEqGovernorIEEEG1(H, D, Ω, E_f, T_d_dash, T_q_dash, X_d_dash, X_q_dash, X_d, X_q, P0, Pmax, Pmin, Pup, Pdown, T1, T2, T3, K) begin

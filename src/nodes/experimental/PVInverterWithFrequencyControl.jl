@@ -72,7 +72,7 @@ With the active power determined by the droop control the current `I_P`equals:
 
 Implementing the frequency dead band for overfrequnency control with:
 ```math
-    \frac{dP}{dt} =-k_P \cdot d\omega \cdot P_{ext} \ , \text{if ($f_m>f_s)$}\\
+    \frac{dP}{dt} =-k_P \cdot d\omega \cdot P_{ext} \ , \text{if } f_m>f_s\\
     \frac{dP}{dt}  = 0 \ , \text{else}
 ```
 where ``f_s`` is the frequency at which the active power output starts decreasing and ``k_P`` is the droop control constant (in percentage of the rated power ``P_{ext}``):

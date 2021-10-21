@@ -58,15 +58,15 @@ The fourth-order equations read (according to P. Sauer, "Power System Dynamics a
 
 The IEEE DC1A Exciter Model applies the following equations:
 ```math
-    U_x &= A_x \cdot e^{(B_x \cdot E_f)} \\
-    dU_r &= \frac{1}{T_a} \cdot (K_a \cdot (U_{ref} - U + U_{ref2} - U_f) - U_r)\\
-    dU_f &= \frac{1}{T_f} \cdot (\frac{K_f}{T_e} \cdot (U_r - U_x - K_e \cdot E_f) - U_f)
+    U_x = A_x \cdot e^{(B_x \cdot E_f)} \\
+    dU_r = \frac{1}{T_a} \cdot (K_a \cdot (U_{ref} - U + U_{ref2} - U_f) - U_r)\\
+    dU_f = \frac{1}{T_f} \cdot (\frac{K_f}{T_e} \cdot (U_r - U_x - K_e \cdot E_f) - U_f)
     U_{r2} = \begin{cases}
-                U_{rmax} &\mbox{if $U_{r} > U_{rmax}$}  \\
-                U_{rmin} &\mbox{if $U_{r} < U_{rmin}$} \\
-                U_r  &\mbox{else}
-            \end{cases}
-    dE_f = 1 / T_e \cdot ( U_{r2} - U_x - K_e \cdot E_f)
+                U_{rmax} & \text{if } U_{r} > U_{rmax}  \\
+                U_{rmin} & \text{if } U_{r} < U_{rmin} \\
+                U_r  & \text{else}
+            \end{cases}\\
+    dE_f = 1 / T_e \cdot (U_{r2} - U_x - K_e \cdot E_f)
 ```
 """
 @DynamicNode FourthOrderEqExciterIEEEDC1A(H, P, D, Ω, T_d_dash, T_q_dash, X_d_dash, X_q_dash, X_d, X_q, K_e, K_f, K_a, U, U_ref, U_ref2, U_rmax, U_rmin, T_a, T_f, T_e, S_E_max, S_E_tq, V_R_max) begin
