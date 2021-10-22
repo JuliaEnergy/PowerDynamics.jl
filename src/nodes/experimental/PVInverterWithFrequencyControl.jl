@@ -31,7 +31,7 @@ Using `PVInverterWithFrequencyControl` applies the equations
 
 The network-side power is
 ```math
-p = \Re(u \cdot i*)
+p = \Re(u \cdot i^*)
 ```
 
 The nominal current of the PV inverter, ``I_n``, is completely active current (we do not consider voltage regulation so far):
