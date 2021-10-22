@@ -24,12 +24,12 @@ real frequency ``\omega_r`` of the rotator is given as ``\omega_r = \Omega + \om
 # Mathematical Representation
 Using `SwingEq` for node ``a`` applies the equations
 ```math
-\frac{du_a}{dt} = i u_a  \omega_a, \\
+\frac{du_a}{dt} = j \omega_a u_a, \\
 \frac{2H}{\Omega}\frac{d\omega_a}{dt} = P_a - D_a\omega_a - \Re\left(u_a \cdot i_a^*\right),
 ```
 which is equivalent to
 ```math
-\frac{d\phi_a}{dt} = \omega, \\
+\frac{d\phi_a}{dt} = \omega_a, \\
 v = v(t=0) = \text{const.} \\
 \frac{2H}{\Omega}\frac{d\omega_a}{dt} = P_a - D_a\omega_a - \Re\left(u_a \cdot i_a^*\right),
 ```
@@ -73,7 +73,7 @@ real frequency ``\omega_r`` of the rotator is given as ``\omega_r = \Omega + \om
 # Mathematical Representation
 Using `SwingEq` for node ``a`` applies the equations
 ```math
-\frac{du_a}{dt} = i u_a \omega - \frac{u}{\|u\|} Γ_a  (v_a - V_a), \\
+\frac{du_a}{dt} = j \omega_a u_a - \frac{u}{\|u\|} Γ_a  (v_a - V_a), \\
 \frac{2H}{\Omega}\frac{d\omega_a}{dt} = P_a - D_a\omega_a - \Re\left(u_a \cdot i_a^*\right),
 ```
 which is equivalent to

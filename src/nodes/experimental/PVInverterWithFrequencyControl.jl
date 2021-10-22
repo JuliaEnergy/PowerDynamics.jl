@@ -25,13 +25,13 @@ Additionally to ``u``, the global network-side voltage, it has the internal dyna
 # Mathematical Representation
 Using `PVInverterWithFrequencyControl` applies the equations
 ```math
-    v_x = real(u)\\
-    v_y = imag(u)
+    v_x = \Re(u)\\
+    v_y = \Im(u)
 ```
 
 The network-side power is
 ```math
-p = real(u \cdot conj(i))
+p = \Re(u \cdot i^*)
 ```
 
 The nominal current of the PV inverter, ``I_n``, is completely active current (we do not consider voltage regulation so far):
@@ -48,8 +48,8 @@ The nominal current of the PV inverter, ``I_n``, is completely active current (w
 Since PowerDynamics is working with phasor units, this model has two d-q-systems (for the power plant and for the grid), $I_p/v_d$ and $I_q/v_q$ are the local coordinates and $i_x/v_x$ and $i_y/v_y$ are the global (grid) coordinates.
 ```math
     u_dq = (v_{xm}+j v_{ym})e^{-j\theta_{PLL}}
-    v_d = real(u_dq)\\
-    v_q = imag(u_dq)
+    v_d = \Re(u_dq)\\
+    v_q = \Im(u_dq)
 ```
 
 The local coordinates are chosen such that ``v_q=0``:
@@ -72,12 +72,12 @@ With the active power determined by the droop control the current `I_P`equals:
 
 Implementing the frequency dead band for overfrequnency control with:
 ```math
-    \frac{dP}{dt} =-k_P \cdot d\omega \cdot P_{ext} \ , \text{if ($f_m>f_s)$}\\
-    \frac{dP}{dt}  = 0 \ , \text{else}
+    \frac{dP}{dt} =-k_P \cdot d\omega \cdot P_{ext} \ , \text{ if } f_m>f_s\\
+    \frac{dP}{dt}  = 0 \ , \text{ else}
 ```
 where ``f_s`` is the frequency at which the active power output starts decreasing and ``k_P`` is the droop control constant (in percentage of the rated power ``P_{ext}``):
 ```math
-    P_{ext} = real(I_{P,max}\cdot(v_d+jv_q))= I_N v_d.
+    P_{ext} = \Re(I_{P,max}\cdot(v_d+jv_q))= I_N v_d.
 ```
 
 ```math

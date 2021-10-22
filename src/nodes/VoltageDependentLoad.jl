@@ -18,7 +18,7 @@ A node type that locally fixes the active (``P``) and reactive power (``Q``) out
 # Mathematical Representation
 Using `VoltageDependentLoad` for node ``a`` applies the equation
 ```math
-0 = S_a ( A * (u_a/U_a)^2 + B * (u_a/U_a) + 1 - A - B) - u_a \cdot i_a^*.
+0 = S_a ( A \cdot (u_a/U_a)^2 + B \cdot (u_a/U_a) + 1 - A - B) - u_a \cdot i_a^*.
 ```
 """
 @DynamicNode VoltageDependentLoad(P, Q, U, A, B) begin
