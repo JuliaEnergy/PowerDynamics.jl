@@ -38,7 +38,6 @@ Using `VSIMinimal` for node ``a`` (according to J. Schiffer et. al., eq. (7)) gi
 \tau_Q\dot{v}_a=-v_a+V_{r}-K_{Q,a} (\Im\left(u_a \cdot i_a^*\right)-Q_{a})\\
  \dot{u}_a=\dot{v_a}e^{j\phi}+j\omega_a u_a
 ```
-```
 """
 @DynamicNode VSIMinimal(τ_P,τ_Q,K_P,K_Q,V_r,P,Q) begin
     @assert τ_P > 0 "time constant active power measurement should be >0"
