@@ -68,17 +68,37 @@ u2exp = to_exp.(sol.dqsol[:u_r_2],  sol.dqsol[:u_i_2]);
 # voltage magnitude
 slack_mag = PSID.get_voltage_magnitude_series(sim, 101);
 gen_mag = PSID.get_voltage_magnitude_series(sim, 102);
-Plots.plot(slack_mag, xlabel = "time", ylabel = "Voltage Magnitude [pu]", label="PSD Slack")
-Plots.plot!(gen_mag, label="PSD Generator")
-Plots.plot!(sol.dqsol.t, getindex.(u1exp, 1), label="PD Slack")
+Plots.plot(gen_mag, xlabel = "time", ylabel = "Voltage Magnitude [pu]", label="PSD Generator")
+# Plots.plot!(slack_mag, label="PSD Slack")
+# Plots.plot!(sol.dqsol.t, getindex.(u1exp, 1), label="PD Slack")
 Plots.plot!(sol.dqsol.t, getindex.(u2exp, 1), label="PD Generator")
 Plots.savefig("OMIB_VoltageMagnitude.png")
 
 # voltage angle
 slack_angle = PSID.get_voltage_angle_series(sim, 101);
 gen_angle = PSID.get_voltage_angle_series(sim, 102);
-Plots.plot(slack_angle, xlabel = "time", ylabel = "Voltage angle [rad]", label="PSD Slack")
-Plots.plot!(gen_angle, label="PSD Generator")
-Plots.plot!(sol.dqsol.t, getindex.(u1exp, 2), label="PD Slack")
+Plots.plot(gen_angle, xlabel = "time", ylabel = "Voltage angle [rad]", label="PSD Generator")
+# Plots.plot!(slack_angle, label="PSD Slack")
+# Plots.plot!(sol.dqsol.t, getindex.(u1exp, 2), label="PD Slack")
 Plots.plot!(sol.dqsol.t, getindex.(u2exp, 2), label="PD Generator")
 Plots.savefig("OMIB_VoltageAngle.png")
+
+
+
+Plots.plot()
+for dtmax in [0.01, 0.1, 1.0]
+    # PSID.execute!(
+    #     sim, #simulation structure
+    #     IDA(), #Sundials DAE Solver
+    #     dtmax = dtmax,
+    #     reset_simulation = true
+    # ); #Arguments: Maximum timestep allowed
+    angle = PSID.get_state_series(sim, ("generator-102-1", :δ));
+    sol = simulate(fault, pg, x0, time_span; dtmax)
+    # Plots.plot!(angle, xlabel = "time", ylabel = "rotor angle [rad]", label = "PSD - dtmax = $dtmax")
+    Plots.plot!(sol.dqsol; vars=[Symbol("generator-102-1₊δ_2")], label="PD - dtmax = $dtmax")
+end
+Plots.xlims!(0.99, 1.5)
+Plots.savefig("OMIB_RotorAngle_PSD_dtmax.png")
+
+    angle = PSID.get_state_series(sim, ("generator-102-1", :δ));
