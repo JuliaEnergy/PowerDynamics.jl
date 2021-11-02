@@ -159,7 +159,7 @@ function find_operationpoint(
         throw(OperationPointError("$sol_method is not supported. Pass either `:nlsolve`, `:rootfind` or `:dynamic`"))
     end
 
-    if any(isnan.(op))
+    if any(isnan.(op.vec))
         throw(OperationPointError("The operation point search did not converge."))
     end
 
