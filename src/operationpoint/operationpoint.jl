@@ -150,14 +150,26 @@ function find_operationpoint(
     end
 
     if sol_method == :nlsolve
-        return _find_operationpoint_nlsolve(pg, ic_guess, p0, t0; sol_kwargs...)
+        op = _find_operationpoint_nlsolve(pg, ic_guess, p0, t0; sol_kwargs...)
     elseif sol_method == :rootfind
-        return _find_operationpoint_rootfind(pg, ic_guess, p0, t0; sol_kwargs...)
+        op = _find_operationpoint_rootfind(pg, ic_guess, p0, t0; sol_kwargs...)
     elseif sol_method == :dynamic
-        return _find_operationpoint_steadystate(pg, ic_guess, p0, t0; sol_kwargs...)
+        op = _find_operationpoint_steadystate(pg, ic_guess, p0, t0; sol_kwargs...)
     else
         throw(OperationPointError("$sol_method is not supported. Pass either `:nlsolve`, `:rootfind` or `:dynamic`"))
     end
+
+    if any(isnan.(op))
+        throw(OperationPointError("The operation point search did not converge."))
+    end
+
+    du = similar(op.vec)
+    rhs(pg)(du, op.vec, nothing, 0.0)
+    if maximum(abs.(du)) > 1e-4
+        @warn "The operationpoint search did not converge in a fixed point!"
+    end
+
+    return op
 end
 
 function _find_operationpoint_steadystate(pg, ic_guess, p0, t0; kwargs...)
