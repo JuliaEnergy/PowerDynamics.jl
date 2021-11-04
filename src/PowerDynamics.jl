@@ -41,6 +41,7 @@ include("nodes/experimental/CompositeNode.jl")
 
 # requirements for the IONodes
 include("nodes/experimental/IONode.jl")
+include("nodes/experimental/BusNode.jl")
 include("nodes/experimental/IOComponents.jl")
 include("nodes/experimental/GFI_MTK.jl")
 include("nodes/experimental/MTK_Load.jl")
