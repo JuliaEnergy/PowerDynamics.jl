@@ -26,7 +26,7 @@ testlist = [
     ("nodes/experimental/WindTurbineGenType4.jl","WindGenType 4 Tests"),
     ("nodes/experimental/WindTurbineGenType4_RotorControl.jl","WindGenType 4 with Rotor Control Tests"),
     ("nodes/experimental/CurtailedPowerPlantWithInertia.jl","CurtailedPowerPlantWithInertia Tests"),
-    ("nodes/experimental/GFI_MTK.jl","BlockSystems based GFI Tests"),
+    ("IONodes/GFI_MTK.jl","BlockSystems based GFI Tests"),
     ("lines/StaticLine.jl", "StaticLine tests"),
     ("lines/PiModelLine.jl", "PiModelLine tests"),
     ("lines/RLLine.jl", "RLLine tests"),

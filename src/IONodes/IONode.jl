@@ -3,6 +3,11 @@ using ModelingToolkit: getname, value
 
 export IONode
 
+"""
+    IONode{T,M} <: AbstractNode
+
+AbstractNode based on an `IOBlock`
+"""
 struct IONode{T,M} <: AbstractNode
     block::IOBlock
     generated::T
@@ -11,6 +16,23 @@ struct IONode{T,M} <: AbstractNode
     mass_matrix::M
 end
 
+"""
+    IONode(blk::IOBlock, parameters::Dict)
+
+Create an `IONode` based on an `IOBlock` and a parameter dict.
+
+The block needs to fulfil the folowing interface:
+- inputs:  `i_r`, `i_i`
+- outputs: `u_r`, `u_i`
+
+The block gets the flow sum of the connected lines as an input. It should calculate
+the resulting node voltage as an output (either per DGL or constraint).
+
+The parameters should be provided as a `Dict{Symbol,Float}` such as
+
+    p = Dict(:a => 1.0,
+             :b => -π)
+"""
 function IONode(blk::IOBlock, parameters::Dict)
     # BlockSpec: blk must by of type (i_r, i_i) ↦ (u_r, u_i)
     spec = BlockSpec([:i_r, :i_i], [:u_r, :u_i])
@@ -29,6 +51,7 @@ function IONode(blk::IOBlock, parameters::Dict)
     IONode(blk, gen, p_keys, p_vals, gen.massm)
 end
 
+# extend the necessary functions for the `AbstractNode` interface
 function construct_vertex(ion::IONode)
     gen = ion.generated
     function rhs!(dx, x, edges, _p, t)

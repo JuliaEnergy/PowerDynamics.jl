@@ -64,32 +64,9 @@ function (lf::LineFailure)(powergrid)
     PowerGrid(powergrid.nodes, filtered_lines)
 end
 
-"""
-    PartialLineFailure(;line_name, remaining_capacity, tspan_fault)
 
-Reduces the admittance `Y` of the line with `line_name` by factor
-`remaining_capacity`. Only works with `PiModelLine`.
-"""
-struct PartialLineFailure <: AbstractPerturbation
-    line_name
-    remaining_capacity
-    tspan_fault
-end
 
-function (lf::PartialLineFailure)(powergrid)
-    newlines = deepcopy(powergrid.lines)
-    line = newlines[lf.line_name]
-
-    @assert line isa PiModelLine "PartialLineFailure only implemented for PiModelLine"
-    newlines[lf.line_name] = PiModelLine(; from = line.from, to = line.to,
-                                         y=lf.remaining_capacity * line.y,
-                                         y_shunt_km = line.y_shunt_km,
-                                         y_shunt_mk = line.y_shunt_mk)
-
-    PowerGrid(powergrid.nodes, newlines)
-end
 
 export LineFault
 export LineFailure
-export PartialLineFailure
 export simulate

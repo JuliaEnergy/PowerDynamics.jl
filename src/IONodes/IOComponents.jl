@@ -5,8 +5,6 @@ using ModelingToolkit
 using ModelingToolkit.Symbolics
 using ModelingToolkit.SymbolicUtils
 
-subscript(s, i) = Symbol(s, Char(0x02080 + i))
-
 export LowPassFilter, DroopControl, VoltageSource, Power, PowerConstraint
 
 """
@@ -155,8 +153,7 @@ function VoltageSource(;name=gensym(:vsource), renamings...)
                      D(u_r) ~ -ω * u_i + A*u_r,
                      D(u_i) ~  ω * u_r + A*u_i],
                     [ω, V], [u_i, u_r]; name)
-    # TODO: reduce_eqs(voltage_source) once implemented in blocksystems to reduce the
-    # internal algebraic state A
+    block = substitute_algebraic_states(block)
     return isempty(renamings) ? block : rename_vars(block; renamings...)
 end
 
