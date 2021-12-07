@@ -47,6 +47,27 @@ Additionally to ``u``, it has the internal dynamic variables
 - `T_a`: Time constant of the voltage regulator [s]
 - `T_f`: Excitation control system stabilizer time constant [s]
 - `T_e`: Exciter time constant, integration rate associated with exciter control [s]
+
+The fourth-order equations read (according to P. Sauer, "Power System Dynamics and Stability", p. 140, eqs. (6110)-(6114)) and p. 35 eqs(3.90)-(3.91)
+```math
+    \frac{d\theta}{dt} = \omega \\
+     \frac{d\omega}{dt} = (P-D\omega - p -(X'_q-X'_d)i_d i_q)Ω_H\\
+    \frac{d e_q}{dt} = \frac{1}{T'_d} (- e_q - (X_d - X'_d) i_{d}+ E_f) \\
+    \frac{d e_d}{dt} = \frac{1}{T'_q} (- e_d + (X_q - X'_q) i_{q})  \\
+```
+
+The IEEE DC1A Exciter Model applies the following equations:
+```math
+    U_x = A_x \cdot e^{(B_x \cdot E_f)} \\
+    dU_r = \frac{1}{T_a} \cdot (K_a \cdot (U_{ref} - U + U_{ref2} - U_f) - U_r)\\
+    dU_f = \frac{1}{T_f} \cdot (\frac{K_f}{T_e} \cdot (U_r - U_x - K_e \cdot E_f) - U_f)
+    U_{r2} = \begin{cases}
+                U_{rmax} & \text{if } U_{r} > U_{rmax}  \\
+                U_{rmin} & \text{if } U_{r} < U_{rmin} \\
+                U_r  & \text{else}
+            \end{cases}\\
+    dE_f = 1 / T_e \cdot (U_{r2} - U_x - K_e \cdot E_f)
+```
 """
 @DynamicNode FourthOrderEqExciterIEEEDC1A(H, P, D, Ω, T_d_dash, T_q_dash, X_d_dash, X_q_dash, X_d, X_q, K_e, K_f, K_a, U, U_ref, U_ref2, U_rmax, U_rmin, T_a, T_f, T_e, S_E_max, S_E_tq, V_R_max) begin
     @assert H > 0 "inertia (H) should be >0"
