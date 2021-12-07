@@ -34,7 +34,7 @@ end
 
 Returns in `IOBlock` with outputs which are directly mapped to values.
 
-```jldoctest
+```jldoctest; setup = :(using ModelingToolkit)
 julia> blk = PowerDynamics.IOComponents.Constants(:a=>42, :b=>3.14; name=:const)
 IOBlock :const with 2 eqs
   ├ inputs:  (empty)
@@ -42,7 +42,7 @@ IOBlock :const with 2 eqs
   ├ istates: (empty)
   └ iparams: (empty)
 
-julia> equations(blk.system)
+julia> equations(blk)
 2-element Vector{Equation}:
  a(t) ~ 42
  b(t) ~ 3.14

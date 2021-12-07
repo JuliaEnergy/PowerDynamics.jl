@@ -1,6 +1,8 @@
-
 using Documenter
 using PowerDynamics
+using BlockSystems
+
+DocMeta.setdocmeta!(PowerDynamics, :DocTestSetup, :(using PowerDynamics); recursive=true)
 
 makedocs(
     modules = [PowerDynamics],
