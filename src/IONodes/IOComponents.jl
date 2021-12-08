@@ -5,7 +5,7 @@ using ModelingToolkit
 using ModelingToolkit.Symbolics
 using ModelingToolkit.SymbolicUtils
 
-export LowPassFilter, DroopControl, VoltageSource, Power, PowerConstraint
+export LowPassFilter, DroopControl, VoltageSource, Power, PowerConstraint, InversePowerConstraint, ImpedanceConstraint
 
 """
     Adder(n=2; name, renamings...)
@@ -211,6 +211,56 @@ function PowerConstraint(;name=gensym(:pqconstraint), renamings...)
     block = IOBlock([u_r ~ (P*i_r - Q*i_i)/(i_r^2 + i_i^2),
                      u_i ~ (P*i_i + Q*i_r)/(i_r^2 + i_i^2)],
                     [i_i, i_r], [u_i, u_r]; name)
+
+    return isempty(renamings) ? block : rename_vars(block; renamings...)
+end
+
+"""
+    InversePowerConstraint(;name, renamings...)
+
+Returns a Block that calculates complex current for fixed complex power: i = conj(S/u)
+
+    i_r = (P u_r + Q u_i)/(u_r² + u_i²)
+    i_i = (P u_i - Q u_r)/(u_r² + u_i²)
+
+             +-----+
+    u_r(t) --|  P  |-- i_r(t)
+    u_i(t) --|  Q  |-- i_i(t)
+             +-----+
+"""
+function InversePowerConstraint(;name=gensym(:inv_pqconstraint), renamings...)
+    @parameters t P Q
+    @parameters u_i(t) u_r(t)
+    @variables i_i(t) i_r(t)
+
+    block = IOBlock([i_r ~ (P*u_r + Q*u_i)/(u_r^2 + u_i^2),
+                     i_i ~ (P*u_i - Q*u_r)/(u_r^2 + u_i^2)],
+                    [u_i, u_r], [i_i, i_r]; name)
+
+    return isempty(renamings) ? block : rename_vars(block; renamings...)
+end
+
+"""
+    ImpedanceConstraint(;name, renamings...)
+
+    Returns a Block that calculates complex current for fixed impedance: i = u/Z
+
+    i_r = (R u_r + X u_i)/(R² + X²)
+    i_i = (R u_i - X u_r)/(R² + X²)
+
+             +-----+
+    u_r(t) --|  R  |-- i_r(t)
+    u_i(t) --|  X  |-- i_i(t)
+             +-----+
+"""
+function ImpedanceConstraint(;name=gensym(:rxconstraint), renamings...)
+    @parameters t R X
+    @parameters u_i(t) u_r(t)
+    @variables i_i(t) i_r(t)
+
+    block = IOBlock([i_r ~ (R*u_r + X*u_i)/(R^2 + X^2),
+                     i_i ~ (R*u_i - X*u_r)/(R^2 + X^2)],
+                    [u_i, u_r], [i_i, i_r]; name)
 
     return isempty(renamings) ? block : rename_vars(block; renamings...)
 end

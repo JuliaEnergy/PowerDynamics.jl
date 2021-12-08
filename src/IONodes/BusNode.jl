@@ -20,7 +20,7 @@ function BusNode(; name=gensym(:Bus), verbose=false)
                   [i_r, i_i], [u_r, u_i];
                   iv=t, name)
 
-    return IONode(bar, Dict{Symbolic, Float64}())
+    return IONode(bar, Dict{Symbol, Float64}())
 end
 
 function BusNode(injpairs::NTuple{N, BlockPara}; name=gensym(:Bus), verbose=false) where {N}
