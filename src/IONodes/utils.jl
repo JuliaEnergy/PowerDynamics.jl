@@ -15,8 +15,8 @@ struct BlockPara{P<:Dict}
     block::IOBlock
     para::P
     function BlockPara(block::IOBlock, para::P; strict=true) where {P<:Dict}
-        if strict && !(Set(namespace_iparams(block)) ⊆ keys(para))
-            throw(ArgumentError("There is a missmatch between given parameter dict and iparams: $(namespace_iparams(block)), $(keys(para))"))
+        if strict && !(Set(BlockSystems.namespace_iparams(block)) ⊆ keys(para))
+            throw(ArgumentError("There is a missmatch between given parameter dict and iparams: $(BlockSystems.namespace_iparams(block)), $(keys(para))"))
         end
         new{P}(block, para)
     end

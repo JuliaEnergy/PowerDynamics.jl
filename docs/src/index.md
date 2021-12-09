@@ -45,7 +45,7 @@ this video from the introduction of Pkg3, where environments are introduced, too
 
 ### Compatibility
 
-`PowerDynamics.jl` is written for Julia 1.0 and above.
+`PowerDynamics.jl` is written for Julia 1.6 and above.
 We will quickly switch to new Julia version as they come out, but support older versions and enable long transition periods for users.
 Julia versions 0.x are not supported.
 
