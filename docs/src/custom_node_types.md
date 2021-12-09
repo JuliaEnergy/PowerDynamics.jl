@@ -7,7 +7,7 @@ There are two ways to define custom node types:
 ## Custom Nodes using `BlockSystems.jl`
 `PowerDynmaics.jl` provides a node constructor to build nodes from `BlockSystem.jl` objects based on voltage setting blocks:
 ```@docs
-IONode(blk::IOBlock, parameters::Dict)
+IONode
 ```
 Check out the `examples/BlockSystems` folder for more examples.
 

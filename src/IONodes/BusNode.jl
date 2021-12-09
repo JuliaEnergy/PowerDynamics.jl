@@ -23,7 +23,7 @@ function BusNode(; name=gensym(:Bus), verbose=false)
     return IONode(bar, Dict{Symbol, Float64}())
 end
 
-function BusNode(injpairs::NTuple{N, BlockPara}; name=gensym(:Bus), verbose=false) where {N}
+function BusNode(injpairs; name=gensym(:Bus), verbose=false)
     injectors, params = mergep(injpairs)
 
     for inj in injectors
@@ -34,7 +34,7 @@ function BusNode(injpairs::NTuple{N, BlockPara}; name=gensym(:Bus), verbose=fals
     t = get_iv(injectors[1])
 
     ir, ii = Num[], Num[]
-    for i in 1:N
+    for i in 1:length(injpairs)
         irs = subscript(:i_r, i)
         iis = subscript(:i_i, i)
         append!(ir, @parameters $irs(t))

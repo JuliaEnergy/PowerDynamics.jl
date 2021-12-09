@@ -1,50 +1,71 @@
 using BlockSystems
+using BlockSystems: remove_namespace
+using ModelingToolkit
+using ModelingToolkit: Symbolic, getname
 
 export BusNode, BlockPara
 export get_block, get_parameters
 
 """
-    struct BlockPara{P<:Dict}
     BlockPara(block, para; strict=true)
 
 Composite type holdes an `IOBlock` and a parameter `Dict`.
-If `strict=true` the construtor asserts that all internal parameters
-of the `IOBlock` are given in the parameter dict.
+Parameter `Dict` may be provided with Symbols (`:a`) or Symbolic types (`blk.a`).
+The latter will be transformed to Symbols.
+
+If `strict=true` the construtor asserts that the given parameters match the
+internal parameters of the `IOBlock`.
 """
-struct BlockPara{P<:Dict}
+struct BlockPara
     block::IOBlock
-    para::P
-    function BlockPara(block::IOBlock, para::P; strict=true) where {P<:Dict}
-        if strict && !(Set(BlockSystems.namespace_iparams(block)) ⊆ keys(para))
-            throw(ArgumentError("There is a missmatch between given parameter dict and iparams: $(BlockSystems.namespace_iparams(block)), $(keys(para))"))
+    para::Dict{Symbol, Float64}
+    function BlockPara(blk::IOBlock, para; strict=true)
+        # only allow symbols as keys
+        newp = Dict(to_symbol(blk, k) => v for (k, v) in para)
+
+        allp = Set(getname.(blk.iparams))
+        givenp = keys(newp)
+        additionalp = collect(setdiff(givenp, allp))
+        if !isempty(additionalp)
+            throw(ArgumentError("Got unknown parameters $(additionalp)!"))
         end
-        new{P}(block, para)
+        if strict && !(allp == givenp)
+            missingp = collect(setdiff(allp, givenp))
+            throw(ArgumentError("Parameters $(missingp) missing!"))
+        end
+        new(blk, newp)
     end
 end
 
 get_block(bp::BlockPara) = bp.block
 get_parameters(bp::BlockPara) = bp.para
 
+"""
+    to_symbol(b::AbstractIOSystem, x)
+
+Provide `x` as Symbol or Symbolic (with or without namespace) and get a Symbol without the namespace back.
+"""
+to_symbol(b::AbstractIOSystem, x::Symbol)   = x
+to_symbol(b::AbstractIOSystem, x::Num)      = to_symbol(b, ModelingToolkit.value(x))
+to_symbol(b::AbstractIOSystem, x::Symbolic) = remove_namespace(b.name, getname(x))
 
 """
     mergep(bps::BlockPara...; strict=true)
 
 Returns tuple of `IOBlock`s ands a merged dict of all parameters.
-If `strict=true` check whether the keys in the parameterdicts are unique.
+All parameter names will get namespaced.
 """
 mergep(bps::BlockPara...; kwargs...) = mergep(bps; kwargs...)
-function mergep(bps::NTuple{N, BlockPara}; strict=true) where {N}
-    isempty(bps) && return (NTuple{0, IOBlock}(), Dict())
+function mergep(bps; strict=true)
+    isempty(bps) && return (NTuple{0, IOBlock}(), Dict{Symbol,Float64}())
 
-    paras = get_parameters.(bps)
+    pdicts = [Dict(nspc(bp.block, k)=>v for (k,v) in bp.para)
+         for bp in bps]
 
-    if strict && !allunique(vcat(collect.(keys.(paras))...))
-        throw(ArgumentError("Keys of parameter dicts not unique: $(vcat(collect.(keys.(paras))...))"))
-    end
-
-    return get_block.(bps), merge(paras...)
+    return get_block.(bps), merge(pdicts...)
 end
 
+nspc(blk::IOBlock, s::Symbol) = Symbol(String(blk.name) * "₊" * String(s))
 
 """
     subscript(s, i)

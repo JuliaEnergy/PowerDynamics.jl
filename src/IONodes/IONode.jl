@@ -5,18 +5,7 @@ export IONode
 
 """
     IONode{T,M} <: AbstractNode
-
-AbstractNode based on an `IOBlock`
-"""
-struct IONode{T,M} <: AbstractNode
-    block::IOBlock
-    generated::T
-    parameter_names::Vector{Symbol}
-    parameters::Vector{Float64}
-    mass_matrix::M
-end
-
-"""
+    IONode(bp::BlockPara)
     IONode(blk::IOBlock, parameters::Dict)
 
 Create an `IONode` based on an `IOBlock` and a parameter dict.
@@ -33,14 +22,25 @@ The parameters should be provided as a `Dict{Symbol,Float}` such as
     p = Dict(:a => 1.0,
              :b => -π)
 """
-function IONode(blk::IOBlock, parameters::Dict)
-    # BlockSpec: blk must by of type (i_r, i_i) ↦ (u_r, u_i)
-    spec = BlockSpec([:i_r, :i_i], [:u_r, :u_i])
-    @assert spec(blk) "Block has to follow PowerDynamics i/o conventions!"
+struct IONode{T,M} <: AbstractNode
+    block::IOBlock
+    generated::T
+    parameter_names::Vector{Symbol}
+    parameters::Vector{Float64}
+    mass_matrix::M
+end
 
-    # parameters may be given as Num oder Symbol types
-    p_keys = Symbol[k isa Symbol ? k : getname(value(k)) for k in keys(parameters)]
-    p_vals = collect(Float64, values(parameters))
+function IONode(bp::BlockPara)
+    blk, para = bp.block, bp.para
+
+    # BlockSpec: blk must by of type (i_r, i_i) ↦ (u_r, u_i)
+    if !fulfills(blk, BlockSpec([:i_r, :i_i], [:u_r, :u_i]))
+        throw(ArgumentError("Block has to follow PowerDynamics i/o conventions!"))
+    end
+
+    # create vectors from key, value pairs
+    p_keys = collect(keys(para))
+    p_vals = collect(Float64, values(para))
 
     gen = generate_io_function(blk,
                                f_states=[blk.u_r, blk.u_i],
@@ -50,6 +50,8 @@ function IONode(blk::IOBlock, parameters::Dict)
 
     IONode(blk, gen, p_keys, p_vals, gen.massm)
 end
+
+IONode(blk::IOBlock, para::Dict) = IONode(BlockPara(blk, para))
 
 # extend the necessary functions for the `AbstractNode` interface
 function construct_vertex(ion::IONode)
