@@ -1,5 +1,10 @@
 [deps]
+BlockSystems = "4663d367-db1f-4bef-81e7-dc1bd7f7b428"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
+ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
+OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
+PowerDynamics = "cc46b21f-1b17-51c2-b642-af74c3d3a8be"
 
 [compat]
 Documenter = "0.24"
