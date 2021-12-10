@@ -18,7 +18,7 @@ function BusNode(; name=gensym(:Bus), verbose=false)
 
     bar = IOBlock([0 ~ i_r, 0 ~ i_i],
                   [i_r, i_i], [u_r, u_i];
-                  iv=t, name)
+                  iv=t, name, warn=false)
 
     return IONode(bar, Dict{Symbol, Float64}())
 end
@@ -48,7 +48,7 @@ function BusNode(injpairs; name=gensym(:Bus), verbose=false)
                           0 ~ (+)(ii...) + i_i],
                          [i_r, i_i, ir..., ii...],
                          [u_r, u_i];
-                         iv=t)
+                         iv=t, warn=false)
 
     connections = Pair[]
     for (i, inj) in enumerate(injectors)

@@ -47,7 +47,7 @@ function cndfunction_builder!(
     rhsfunction = Expr(:function, rhscall, rhsbody)
     all_syms = [:u_r, :u_i]
     append!(all_syms, internals.vars)
-    ode_vertex = :(ODEVertex(f! = rhs!, dim = $(length(internals.vars) +2), mass_matrix=$massmatrix, sym = $all_syms))
+    ode_vertex = :(ODEVertex(f = rhs!, dim = $(length(internals.vars) +2), mass_matrix=$massmatrix, sym = $all_syms))
     append!(cndfunction.args[2].args, [rhsfunction, ode_vertex])
 
     nothing

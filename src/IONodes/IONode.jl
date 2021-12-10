@@ -60,7 +60,7 @@ function construct_vertex(ion::IONode)
         i = total_current(edges)
         gen.f_ip(dx, x, (real(i), imag(i)), ion.parameters, t)
     end
-    ODEVertex(f! = rhs!, dim = length(gen.states), mass_matrix = gen.massm, sym = Symbol.(gen.states))
+    ODEVertex(f = rhs!, dim = length(gen.states), mass_matrix = gen.massm, sym = Symbol.(gen.states))
 end
 
 symbolsof(ionode::IONode) = Symbol.(ionode.generated.states)

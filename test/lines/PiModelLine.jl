@@ -14,7 +14,7 @@ end
         v_s = [10; 5]
         v_d = [12; 2]
         # assure function call does not explode!
-        edge.f!(e, v_s, v_d, 0, 0)
+        edge.f(e, v_s, v_d, 0, 0)
 
         @test e[1] == 1230
         @test e[2] == 220
@@ -28,11 +28,11 @@ end
 
         arr = zeros(4)
         ed = construct_edge(sl)
-        ed.f!(arr, [0.1,0.2], [0.3,0.4], 0, 0)
+        ed.f(arr, [0.1,0.2], [0.3,0.4], 0, 0)
 
         arr2 = zeros(4)
         ed2 = construct_edge(pml)
-        ed2.f!(arr2, [0.1,0.2], [0.3,0.4], 0, 0)
+        ed2.f(arr2, [0.1,0.2], [0.3,0.4], 0, 0)
 
         @test isapprox(arr,arr2)
 end

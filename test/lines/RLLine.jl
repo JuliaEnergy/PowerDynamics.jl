@@ -64,7 +64,7 @@ end
 
         e = [e_star; e_star]
         de = similar(e)
-        edge.f!(de, e, v_s, v_d, 0, 0)
+        edge.f(de, e, v_s, v_d, 0, 0)
 
         @test de[1] == 0
         @test de[2] == 0
@@ -89,7 +89,7 @@ end
         v_d = [12.0; 2.0]
 
         arr = zeros(4)
-        sl_edge.f!(arr, v_s, v_d, 0, 0)
+        sl_edge.f(arr, v_s, v_d, 0, 0)
 
         # recapitulate RLLine steady state
         Zinv = [line.R line.ω0 * line.L; -line.ω0 * line.L line.R] ./

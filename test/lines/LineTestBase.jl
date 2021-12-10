@@ -10,7 +10,7 @@ function smoketest_rhs(edge; int_x=[], int_dx=[])
     v_d = [real(vd), imag(vd)]
     p = []
 
-    edge.f!(dx, x, v_s, v_d, p, t)
+    edge.f(dx, x, v_s, v_d, p, t)
 end
 
 function rand_real()

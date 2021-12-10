@@ -1,6 +1,6 @@
 using Test: @test, @testset, @test_throws
 using PowerDynamics: SlackAlgebraic,StaticLine, SwingEqLVS, PowerGrid, systemsize, rhs,PiModelLine,find_operationpoint
-using LightGraphs: edges, Edge, nv, ne
+using Graphs: edges, Edge, nv, ne
 using OrdinaryDiffEq: ODEFunction
 using OrderedCollections: OrderedDict
 
