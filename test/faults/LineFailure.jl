@@ -1,5 +1,5 @@
 using Test: @test
-using LightGraphs: edges, Edge
+using Graphs: edges, Edge
 using PowerDynamics: SlackAlgebraic, SwingEqLVS, StaticLine, LineFailure, simulate, PowerGrid, systemsize, State
 using OrderedCollections: OrderedDict
 

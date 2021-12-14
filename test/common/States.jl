@@ -1,6 +1,6 @@
 using Test: @test, @testset, @test_throws
 using PowerDynamics: SlackAlgebraic, SwingEqLVS, PowerGrid, State, startindex, StateError,StaticLine,systemsize
-using LightGraphs: SimpleGraph, add_edge!, edges
+using Graphs: SimpleGraph, add_edge!, edges
 
 
 Y = 0 + 5*im

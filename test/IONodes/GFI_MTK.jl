@@ -18,7 +18,7 @@ using LinearAlgebra: I
         ## create IONode
         nt = NamedTuple{Tuple(keys(para))}(values(para))
         node_bs = GFI(; nt...)
-        f_bs = construct_vertex(node_bs).f!
+        f_bs = construct_vertex(node_bs).f
 
         ## create PDNode
         ## the PD node does not have the explicit ω_r parameter
@@ -26,7 +26,7 @@ using LinearAlgebra: I
         nt = NamedTuple{Tuple(keys(para_pd))}(values(para_pd))
         node_pd = VSIVoltagePT1(; nt...)
 
-        f_pd = construct_vertex(node_pd).f!
+        f_pd = construct_vertex(node_pd).f
 
         ## create fake "edge data", 4 incoming, 4 outgooing with 4 states each
         edges = [randn(4) for i in 1:4]

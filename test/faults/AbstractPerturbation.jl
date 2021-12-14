@@ -1,5 +1,5 @@
 using Test: @test
-using LightGraphs: edges, Edge, SimpleGraph
+using Graphs: edges, Edge, SimpleGraph
 using PowerDynamics: SlackAlgebraic, SwingEqLVS, StaticLine, ChangeInitialConditions, Inc, Dec, simulate, PowerGrid, State, AbstractPerturbation
 
 graph = SimpleGraph(2)

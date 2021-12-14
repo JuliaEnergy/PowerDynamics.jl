@@ -1,4 +1,4 @@
-using LightGraphs: src, dst, edges, nv, AbstractGraph
+using Graphs: src, dst, edges, nv, AbstractGraph
 using NetworkDynamics: network_dynamics
 using OrderedCollections: OrderedDict
 
@@ -66,7 +66,7 @@ function PowerGrid(nodes::Array, lines::Array)
     @assert all([1 <= l.from <= length(nodes) for l in lines]) "numerical index needs to be between 1 and the number of nodes"
     @assert all([1 <= l.to <= length(nodes) for l in lines]) "numerical index needs to be between 1 and the number of nodes"
 
-    # We should enforce ordering of from/to to comply with Lightgraphs.jl. 
+    # We should enforce ordering of from/to to comply with Graphs.jl.
     # This could otherwise lead to problems for unsymmetric line types.
     @assert all([l.from < l.to for l in lines]) "the pairs (from, to) need to be ordered according to index value"
   
