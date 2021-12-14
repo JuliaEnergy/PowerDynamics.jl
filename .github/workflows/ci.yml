@@ -13,8 +13,8 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - '1.5'
-          - '1.6'
+          - '1.6' # test lts
+          - '1'   # and current version
         os:
           - ubuntu-latest
           - macOS-latest
