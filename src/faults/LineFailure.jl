@@ -7,43 +7,6 @@ function filter_lines(lines::Array, line_name)
     copy(lines[1:end.!=line_name])
 end
 
-## LineFault -> deprecation
-
-"""
-```Julia
-LineFault(;from,to)
-```
-The arguments `from` and `to` specify the line that should be disconnected from the grid.
-"""
-struct LineFault
-    from::Any
-    to::Any
-    LineFault(; from = from, to = to) = new(from, to)
-    @warn "This implementation of a line fault will be deprecated soon. Please use LineFailure instead."
-end
-
-function (lf::LineFault)(powergrid)
-    @assert lf.from < lf.to "order important to remove the line from powergrid"
-    filtered_lines =
-        filter(l -> (l.from != lf.from || l.to != lf.to), copy(powergrid.lines))
-    PowerGrid(powergrid.nodes, filtered_lines)
-end
-
-"""
-```Julia
-simulate(lf::LineFault, powergrid, x0; timespan)
-```
-Simulates a [`LineFault`](@ref)
-"""
-function simulate(lf::LineFault, powergrid, x0; timespan)
-    solve(lf(powergrid), x0, timespan)
-end
-
-function simulate(lf::LineFault, x0::State; timespan)
-    solve(lf(x0.grid), x0.vec, timespan)
-end
-
-## LineFailure
 
 @doc """
 ```Julia
@@ -65,8 +28,5 @@ function (lf::LineFailure)(powergrid)
 end
 
 
-
-
-export LineFault
 export LineFailure
 export simulate
