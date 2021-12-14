@@ -9,13 +9,16 @@ PowerDynamics.jl: An Open-Source Framework Written in Julia for Dynamic Power Gr
 
 ## Citation
 
-If you use PowerDynamics.jl in your research publications, [please cite our paper](https://arxiv.org/abs/2101.02103).
+If you use PowerDynamics.jl in your research publications, [please cite our paper](https://www.sciencedirect.com/science/article/pii/S2352711021001345).
 
 ```latex
-@article{PowerDynamics2021,
-  title={PowerDynamics. jl--An experimentally validated open-source package for the dynamical analysis of power grids},
+@article{PowerDynamics2022,
+  title={PowerDynamics.jl--An experimentally validated open-source package for the dynamical analysis of power grids},
   author={Plietzsch, Anton and Kogler, Raphael and Auer, Sabine and Merino, Julia and Gil-de-Muro, Asier and Li{\ss}e, Jan and Vogel, Christina and Hellmann, Frank},
-  journal={arXiv preprint arXiv:2101.02103},
-  year={2021}
+  journal = {SoftwareX},
+  volume = {17},
+  pages = {100861},
+  year = {2022},
+  publisher={Elsevier}
 }
 ```
