@@ -14,3 +14,6 @@ join(["* [`$n`](@ref PowerDynamics.$n)" for n in nodetypes], "\n") |> Markdown.p
 Modules = [PowerDynamics]
 Filter = t -> typeof(t) === DataType && t <: PowerDynamics.AbstractNode
 ```
+```@docs
+CompositeNode
+```
