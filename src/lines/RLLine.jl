@@ -47,7 +47,7 @@ begin
             di_left_right = (-(Z * i_left_right) .+ v_right .- v_left) ./ L
             de .= [di_left_right; -di_left_right]
         end
-        return ODEEdge(f! = rhs!, dim=4, mass_matrix=I, sym=Symbol[:id, :iq, :id_r, :iq_r], coupling = :fiducial)
+        return ODEEdge(f = rhs!, dim=4, mass_matrix=I, sym=Symbol[:id, :iq, :id_r, :iq_r], coupling = :fiducial)
     end
     symbolsof(::RLLine) = begin
             [:id, :iq, :id_r, :iq_r]

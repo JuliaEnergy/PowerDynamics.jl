@@ -32,7 +32,7 @@ include("../NodeTestBase.jl")
 
     smoketest_rhs(comp_vertex, int_x=omega, int_dx=domega)
     # smoketest not compatible with internal variables?
-    # comp_vertex.f!(ones(3), ones(3), [], [], nothing, 0.)
+    # comp_vertex.f(ones(3), ones(3), [], [], nothing, 0.)
 
     # Test vertex without voltage dynamic
     comp_node_2 = CompositeNode(CurrentNodes=[CSI, CSI2], PowerNodes=[PQ, PQ2])

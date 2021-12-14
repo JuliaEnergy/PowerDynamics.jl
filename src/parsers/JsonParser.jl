@@ -1,4 +1,4 @@
-using LightGraphs: SimpleGraph, add_edge!, add_vertices!, Edge
+using Graphs: SimpleGraph, add_edge!, add_vertices!, Edge
 using JSON: parsefile, print
 using Logging: @warn
 

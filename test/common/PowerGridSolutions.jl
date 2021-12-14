@@ -1,6 +1,6 @@
 using Test: @test, @testset, @test_nowarn, @test_throws
 using PowerDynamics: variable_index, startindex, solve, tspan, systemsize, SwingEqLVS, StaticLine, add_edge!, PowerGrid, State, StateError
-using LightGraphs: SimpleGraph
+using Graphs: SimpleGraph
 using OrderedCollections: OrderedDict
 
 import PowerDynamics.symbolsof

@@ -15,7 +15,7 @@ end
         v_s = [1.; 0]
         v_d = [sqrt(2)/2; sqrt(2)/2]
         # assure function call does not explode!
-        edge.f!(e, v_s, v_d, 0, 0)
+        edge.f(e, v_s, v_d, 0, 0)
 
         I_km = -abs2(trafo.t_ratio) * trafo.y * complex(v_s...) + conj(trafo.t_ratio) * trafo.y * complex(v_d...)
         I_mk = trafo.y * complex(v_d...) - trafo.t_ratio * trafo.y * complex(v_s...)
@@ -32,11 +32,11 @@ end
 
         arr = zeros(4)
         ed = construct_edge(trafo)
-        ed.f!(arr, [0.1,0.2], [0.3,0.4], 0, 0)
+        ed.f(arr, [0.1,0.2], [0.3,0.4], 0, 0)
 
         arr2 = zeros(4)
         ed2 = construct_edge(pml)
-        ed2.f!(arr2, [0.1,0.2], [0.3,0.4], 0, 0)
+        ed2.f(arr2, [0.1,0.2], [0.3,0.4], 0, 0)
 
         @test isapprox(arr,arr2)
 end
