@@ -151,6 +151,18 @@ state_from_dict = State(grid_fromdict, [real(u_Sl), imag(u_Sl), real(u_Sw1), ima
 @test state_from_dict["bus2", :φ] ≈ φ_Sw1
 @test state_from_dict["bus3", :φ] ≈ φ_Sw2
 
+# exchange phi
+state[2, :φ] = φ_Sw2
+@test state[2:3, :φ] ≈ [φ_Sw2, φ_Sw2]
+state[2:3, :φ] = [φ_Sw1, φ_Sw2]
+@test state[2:3, :φ] ≈ [φ_Sw1, φ_Sw2]
+
+state_from_dict["bus2", :φ] = φ_Sw2
+@test state_from_dict[["bus2","bus3"], :φ] ≈ [φ_Sw2, φ_Sw2]
+state_from_dict[["bus2","bus3"], :φ] = [φ_Sw1, φ_Sw2]
+@test state_from_dict[["bus2","bus3"], :φ] ≈ [φ_Sw1, φ_Sw2]
+
+# test currents and powers
 i_1 = -Y * (u_Sw1 - u_Sl) -Y * (u_Sw2 - u_Sl)
 i_2 = Y * (u_Sw1 - u_Sl)
 i_3 = Y * (u_Sw2 - u_Sl)
