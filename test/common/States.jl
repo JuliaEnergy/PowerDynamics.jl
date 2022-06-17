@@ -180,6 +180,17 @@ s_2 =  state_from_dict["bus2", :u] * conj(i_2)
 @test state_from_dict[:, :p] ==  real(state[:, :u] .* conj.([i_1, i_2, i_3]))
 @test state_from_dict[:, :q] ==  imag(state[:, :u] .* conj.([i_1, i_2, i_3]))
 
+# exchange phi
+state[2, :φ] = φ_Sw2
+@test state[2:3, :φ] ≈ [φ_Sw2, φ_Sw2]
+state[2:3, :φ] = [φ_Sw1, φ_Sw2]
+@test state[2:3, :φ] ≈ [φ_Sw1, φ_Sw2]
+
+state_from_dict["bus2", :φ] = φ_Sw2
+@test state_from_dict[["bus2","bus3"], :φ] ≈ [φ_Sw2, φ_Sw2]
+state_from_dict[["bus2","bus3"], :φ] = [φ_Sw1, φ_Sw2]
+@test state_from_dict[["bus2","bus3"], :φ] ≈ [φ_Sw1, φ_Sw2]
+
 ## binary operations ##
 s1 = State(grid, ones(systemsize(grid)))
 s2 = State(grid, ones(systemsize(grid)))
