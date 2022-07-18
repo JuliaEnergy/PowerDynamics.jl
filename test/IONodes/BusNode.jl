@@ -15,8 +15,8 @@ using LinearAlgebra: Diagonal
     rx_load = BlockPara(rx_constraint, rx_para)
 
     busnode = BusNode(pq_load,rx_load)
-    @test_nowarn BusNode((pq_load,rx_load))
-    @test_nowarn BusNode([pq_load,rx_load])
+    # @test_nowarn BusNode((pq_load,rx_load))
+    # @test_nowarn BusNode([pq_load,rx_load])
 
     @test symbolsof(busnode) == [:u_r, :u_i]
     @test busnode.mass_matrix == Diagonal([0,0])
