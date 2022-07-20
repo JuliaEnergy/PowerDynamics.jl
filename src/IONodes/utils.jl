@@ -1,7 +1,6 @@
 using BlockSystems
 using BlockSystems: remove_namespace
-using ModelingToolkit
-using ModelingToolkit: Symbolic, getname
+using BlockSystems.ModelingToolkit: getname, Symbolic
 
 export BusNode, BlockPara
 export get_block, get_parameters

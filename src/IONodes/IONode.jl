@@ -1,5 +1,4 @@
 using BlockSystems
-using ModelingToolkit: getname, value
 
 export IONode
 
