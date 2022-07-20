@@ -1,7 +1,7 @@
 name = "PowerDynamics"
 uuid = "cc46b21f-1b17-51c2-b642-af74c3d3a8be"
 authors = ["Tim Kittel", "Jan Liße", "Sabine Auer", "Anton Plietzsch", "Hans Würfel"]
-version = "3.0.2"
+version = "3.1.0"
 
 [deps]
 BlockSystems = "4663d367-db1f-4bef-81e7-dc1bd7f7b428"
