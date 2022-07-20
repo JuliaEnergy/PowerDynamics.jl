@@ -1,5 +1,3 @@
-using ModelingToolkit
-
 """
     BusNode(inj::BlockPara...; name=gensym(:Bus), verbose=false)
 

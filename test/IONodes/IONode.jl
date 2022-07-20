@@ -1,6 +1,5 @@
 using PowerDynamics
 using BlockSystems
-using ModelingToolkit
 using PowerDynamics.IOComponents
 
 @testset "BlockPara testes" begin

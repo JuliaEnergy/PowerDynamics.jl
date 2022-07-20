@@ -24,7 +24,6 @@ Implementation of `VSIVoltagePT1` as an IONode.
 =#
 
 using BlockSystems
-using ModelingToolkit
 using PowerDynamics.IOComponents
 using PowerDynamics: IONode, GFI, SlackAlgebraic, PiModelLine, PowerGrid, find_operationpoint, ChangeInitialConditions, simulate, Inc
 using OrderedCollections: OrderedDict

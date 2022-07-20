@@ -1,9 +1,6 @@
 module IOComponents
 
 using BlockSystems
-using ModelingToolkit
-using ModelingToolkit.Symbolics
-using ModelingToolkit.SymbolicUtils
 
 export LowPassFilter, DroopControl, VoltageSource, Power, PowerConstraint, InversePowerConstraint, ImpedanceConstraint
 
@@ -34,7 +31,7 @@ end
 
 Returns in `IOBlock` with outputs which are directly mapped to values.
 
-```jldoctest; setup = :(using ModelingToolkit)
+```jldoctest; setup = :(using BlockSystems)
 julia> blk = PowerDynamics.IOComponents.Constants(:a=>42, :b=>3.14; name=:const)
 IOBlock :const with 2 eqs
   ├ inputs:  (empty)

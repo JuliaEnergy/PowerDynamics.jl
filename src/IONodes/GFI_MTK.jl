@@ -1,5 +1,4 @@
 using BlockSystems
-using ModelingToolkit
 using PowerDynamics.IOComponents
 
 export GFI
