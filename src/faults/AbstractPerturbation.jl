@@ -91,8 +91,8 @@ function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1::Array, tim
     return PowerGridSolution(sol, powergrid)
 end
 
-simulate(np::AbstractPerturbation, op::State, timespan) = simulate(np, op.grid, op.vec, timespan)
-simulate(np::AbstractPerturbation, powergrid::PowerGrid,op::State, timespan) = simulate(np, powergrid, op.vec, timespan)
+simulate(np::AbstractPerturbation, op::State, timespan; solve_kwargs...) = simulate(np, op.grid, op.vec, timespan; solve_kwargs...)
+simulate(np::AbstractPerturbation, powergrid::PowerGrid, op::State, timespan; solve_kwargs...) = simulate(np, powergrid, op.vec, timespan; solve_kwargs...)
 
 
 "Error to be thrown if something goes wrong during power perturbation"
