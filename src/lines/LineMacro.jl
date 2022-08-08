@@ -39,7 +39,7 @@ function create_line(name, prep, parameters, func_body)
     append!(rhsbody.args, [es_real; es_imag; ed_real; ed_imag])
 
     rhs_function_exp = Expr(:function, rhscall, rhsbody)
-    edge_exp = :(return StaticEdge(f! = rhs!, dim = 4, coupling = :fiducial))
+    edge_exp = :(return StaticEdge(f = rhs!, dim = 4, coupling = :fiducial))
     append!(cl_function.args[2].args, [rhs_function_exp, edge_exp])
 
     ret = quote

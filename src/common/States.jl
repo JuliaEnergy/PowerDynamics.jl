@@ -209,6 +209,10 @@ Base.setindex!(s::State, v, n, ::Type{Val{:v}}) = begin
     u = s[n, :u]
     s[n, :u] = v.*u./abs.(u)
 end
+Base.setindex!(s::State, v, n, ::Type{Val{:φ}}) = begin
+    u = s[n, :u]
+    s[n, :u] = abs.(u).*exp.(im.*v)
+end
 Base.setindex!(s::State, v, n, ::Type{Val{:var}}, i) = begin
     s[internalindex(s, n, i)] = v
 end

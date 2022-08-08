@@ -131,8 +131,8 @@ function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IPU, _IU, _PU}
 
     all_vertices = vcat(current_vertices, power_vertices, voltage_vertex)
 
-    cfs = [n.f! for n in current_vertices]
-    pfs = [n.f! for n in power_vertices]
+    cfs = [n.f for n in current_vertices]
+    pfs = [n.f for n in power_vertices]
 
     mms = [vert.mass_matrix == I ? vert.mass_matrix * ones(Int, vert.dim) : diag(vert.mass_matrix) for vert in all_vertices]
 
@@ -168,13 +168,13 @@ function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IPU, _IU, _PU}
 
             total_i = i_injected + p_injected / u
 
-            voltage_vertex.f!(dx[cn.idxs[end]], x[cn.idxs[end]], [edges;[[-real(total_i), -imag(total_i)]]], p, t)
+            voltage_vertex.f(dx[cn.idxs[end]], x[cn.idxs[end]], [edges;[[-real(total_i), -imag(total_i)]]], p, t)
 
         end # views
 
     end
 
-    ODEVertex(f! = rhs!, dim=cn.total_dim, mass_matrix=mass_matrix, sym=cn.symbols)
+    ODEVertex(f = rhs!, dim=cn.total_dim, mass_matrix=mass_matrix, sym=cn.symbols)
 end
 
 
@@ -195,8 +195,8 @@ function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IP, _I, _P}
 
     all_vertices = vcat(current_vertices, power_vertices)
 
-    cfs = [n.f! for n in current_vertices]
-    pfs = [n.f! for n in power_vertices]
+    cfs = [n.f for n in current_vertices]
+    pfs = [n.f for n in power_vertices]
 
     mms = [vert.mass_matrix == I ? vert.mass_matrix * ones(Int, vert.dim) : diag(vert.mass_matrix) for vert in all_vertices]
 
@@ -241,7 +241,7 @@ function construct_vertex(cn::CompositeNode{T}) where T <: Union{_IP, _I, _P}
 
     end
 
-    ODEVertex(f! = rhs!, dim=cn.total_dim, mass_matrix=mass_matrix, sym=cn.symbols)
+    ODEVertex(f = rhs!, dim=cn.total_dim, mass_matrix=mass_matrix, sym=cn.symbols)
 end
 
 symbolsof(cn::CompositeNode) = cn.symbols

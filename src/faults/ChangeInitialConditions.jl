@@ -51,13 +51,13 @@ simulate(p::ChangeInitialConditions, powergrid, x0; timespan)
 Simulates a [`ChangeInitialConditions`](@ref)
 """
 function simulate(p::ChangeInitialConditions, powergrid, x0::State, timespan; solve_kwargs...)
-    solve(powergrid, p(x0), timespan);
+    solve(powergrid, p(x0), timespan; solve_kwargs...);
 end
 
 
-function solve(pg::PowerGrid, x0, timespan)
+function solve(pg::PowerGrid, x0, timespan; solve_kwargs...)
     problem = ODEProblem{iipfunc}(rhs(pg),x0.vec,timespan)
-    solution = solve(problem, Rodas4())
+    solution = solve(problem, Rodas4(); solve_kwargs...)
     PowerGridSolution(solution, pg)
 end
 

@@ -8,7 +8,7 @@ function smoketest_rhs(vertex; int_x=[], int_dx=[])
     append!(dx, int_dx)
     edges = [[real(i), imag(i), real(i), imag(i)]]
     p = []
-    vertex.f!(dx, x, edges, p, t)
+    vertex.f(dx, x, edges, p, t)
 end
 
 function rand_real()

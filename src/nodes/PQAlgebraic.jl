@@ -15,7 +15,7 @@ A node type that locally fixes the active (``P``) and reactive power (``Q``) out
 # Mathematical Representation
 Using `PQAlgebraic` for node ``a`` applies the equation
 ```math
-0 = (P_a + Q_a*im) - u_a \cdot i_a^*.
+0 = (P_a + jQ_a) - u_a \cdot i_a^*.
 ```
 """
 @DynamicNode PQAlgebraic(P,Q) begin

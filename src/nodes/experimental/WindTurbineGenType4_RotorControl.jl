@@ -3,7 +3,6 @@
 WindTurbineGenType4_RotorControl(;T_L,ω_0,T_H,K_ω,K_PPLL,K_IPLL,Q_ref,C,J,P,ω_rref,u_dcref,K_Q,K_v,K_pv,K_iv,K_ptrq,K_itrq) begin
 ```
 
-```
 """
 @DynamicNode WindTurbineGenType4_RotorControl(T_L,ω_0,T_H,K_ω,K_PPLL,K_IPLL,Q_ref,C,J,P,ω_rref,u_dcref,K_Q,K_v,K_pv,K_iv,K_ptrq,K_itrq) begin
     MassMatrix(m_u = false,m_int = [true,true,true,true,true,true,true,true,true,true])

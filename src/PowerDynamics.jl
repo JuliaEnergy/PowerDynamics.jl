@@ -40,6 +40,14 @@ include("nodes/experimental/CurtailedPowerPlantWithInertia.jl")
 include("nodes/experimental/CompositeNode.jl")
 include("nodes/experimental/FluctuationNode.jl")
 
+# requirements for the IONodes
+include("IONodes/utils.jl")
+include("IONodes/IONode.jl")
+include("IONodes/BusNode.jl")
+include("IONodes/IOComponents.jl")
+include("IONodes/GFI_MTK.jl")
+include("IONodes/MTK_Load.jl")
+
 # all line types
 
 include("lines/AbstractLine.jl")

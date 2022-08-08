@@ -1,23 +1,12 @@
 using Test: @test
-using LightGraphs: edges, Edge
-using PowerDynamics: SlackAlgebraic, SwingEqLVS, StaticLine, LineFailure,LineFault, simulate, PowerGrid, systemsize, State
+using Graphs: edges, Edge
+using PowerDynamics: SlackAlgebraic, SwingEqLVS, StaticLine, LineFailure, simulate, PowerGrid, systemsize, State
 using OrderedCollections: OrderedDict
 
 Y = 0 + 5*im
 nodes = [SlackAlgebraic(U=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1)]
 lines = [StaticLine(from=1, to=2, Y=Y),StaticLine(from=2, to=3, Y=Y)]
 grid = PowerGrid(nodes, lines)
-
-linefault = LineFault(;from=1, to=2)
-faulty_grid = linefault(grid)
-
-@test length(faulty_grid.lines) == 1
-@test collect(edges(faulty_grid.graph)) == [Edge(2,3)]
-
-x0 = State(grid, ones(systemsize(grid)))
-sol = simulate(linefault,grid,x0,timespan=(0,0.2))
-@test sol !== nothing
-@test sol.dqsol.retcode == :Success
 
 linefailure = LineFailure(;line_name=1,tspan_fault=(0,0.1))
 faulty_grid = linefailure(grid)
