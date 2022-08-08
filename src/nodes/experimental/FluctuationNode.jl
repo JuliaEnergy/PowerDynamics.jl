@@ -26,7 +26,7 @@ function construct_vertex(fn::FluctuationNode)
         nothing
     end
     
-    ODEVertex(f! = rhs!, dim=dim, mass_matrix=mass_matrix, sym=sym)
+    ODEVertex(f = rhs!, dim=dim, mass_matrix=mass_matrix, sym=sym)
 
 end
 
