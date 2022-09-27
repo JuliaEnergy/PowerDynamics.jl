@@ -218,23 +218,23 @@ function make_branch_ac!(data::Dict{String,Any}, dict::Dict{Any, Int}, line::Tra
     branch_dict = _make_branch_ac_header(data, dict, line)
     branch_dict["transformer"] = true
     branch_dict["tap"] = line.t_ratio
-    branch_dict["br_r"] = real(1 / line.Y)
-    branch_dict["br_x"] = imag(1 / line.Y)
+    branch_dict["br_r"] = real(1 / line.y)
+    branch_dict["br_x"] = imag(1 / line.y)
 end
 
 function make_branch_ac!(data::Dict{String,Any}, dict::Dict{Any, Int}, line::PiModelLine)
     branch_dict = _make_branch_ac_header(data, dict, line)
     branch_dict["g_fr"] = real(line.y_shunt_km)
     branch_dict["b_fr"] = imag(line.y_shunt_km)
-    branch_dict["br_r"] = real(1 / line.Y)
-    branch_dict["br_x"] = imag(1 / line.Y)
+    branch_dict["br_r"] = real(1 / line.y)
+    branch_dict["br_x"] = imag(1 / line.y)
     branch_dict["g_to"] = real(line.y_shunt_mk)
     branch_dict["b_to"] = imag(line.y_shunt_mk)
 end
 
 
 function power_flow(power_grid::PowerGrid)
-    # TODO write a wrapper for mapping dict strings to integer lists and remmeber it for mapping back the results to string bus names
+    # TODO write a wrapper for mapping dict strings to integer lists and remember it for mapping back the results to string bus names
     global ang_min, ang_max
     ang_min = deg2rad(60)
     ang_max = deg2rad(-60)
