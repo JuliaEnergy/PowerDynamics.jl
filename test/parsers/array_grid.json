@@ -152,13 +152,13 @@
     },
     {
       "params": {
-        "y": {
+        "Y": {
           "re": 0.1,
           "im": 5.0
         },
         "from": 1,
-        "y_shunt_mk": 300,
-        "y_shunt_km": 200,
+        "Y_shunt_mk": 300,
+        "Y_shunt_km": 200,
         "to": 3
       },
       "type": "PiModelLine"

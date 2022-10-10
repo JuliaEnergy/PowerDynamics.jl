@@ -2,7 +2,7 @@ using Test: @testset, @test
 using PowerDynamics: PiModelLine, StaticLine, PiModel, construct_edge
 using NetworkDynamics: StaticEdge
 
-line = PiModelLine(from=1, to=2, y=10*im, y_shunt_km = 10, y_shunt_mk= 100)
+line = PiModelLine(from=1, to=2, Y=10*im, Y_shunt_km = 10, Y_shunt_mk= 100)
 edge = construct_edge(line)
 
 @testset "PiModelLine construct_edge should return StaticEdge" begin
@@ -24,7 +24,7 @@ end
 
 @testset "PiModelLine should return the same result as StaticLine" begin
         sl = StaticLine(;from=1, to=4, Y = 1/(0.1152 + im*0.0458))
-        pml = PiModelLine(;from=1, to=4, y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.)
+        pml = PiModelLine(;from=1, to=4, Y = 1/(0.1152 + im*0.0458), Y_shunt_km = 0.,  Y_shunt_mk = 0.)
 
         arr = zeros(4)
         ed = construct_edge(sl)

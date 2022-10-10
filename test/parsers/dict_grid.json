@@ -165,13 +165,13 @@
     {
       "name": "branch2",
       "params": {
-        "y": {
+        "Y": {
           "re": 0.1,
           "im": 5.0
         },
         "from": "bus1",
-        "y_shunt_mk": 300,
-        "y_shunt_km": 200,
+        "Y_shunt_mk": 300,
+        "Y_shunt_km": 200,
         "to": "bus3"
       },
       "type": "PiModelLine"

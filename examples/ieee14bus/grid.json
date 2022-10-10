@@ -166,13 +166,13 @@
     {
       "name": "branch1",
       "params": {
-        "y": {
+        "Y_shunt_km": 0.0264,
+        "Y_shunt_mk": 0.0264,
+        "from": "bus1",
+        "Y": {
           "re": 4.999131600798035,
           "im": -15.263086523179553
         },
-        "from": "bus1",
-        "y_shunt_mk": 0.0264,
-        "y_shunt_km": 0.0264,
         "to": "bus2"
       },
       "type": "PiModelLine"
@@ -180,13 +180,13 @@
     {
       "name": "branch2",
       "params": {
-        "y": {
+        "Y_shunt_km": 0.0246,
+        "Y_shunt_mk": 0.0246,
+        "from": "bus1",
+        "Y": {
           "re": 1.025897454970189,
           "im": -4.234983682334831
         },
-        "from": "bus1",
-        "y_shunt_mk": 0.0246,
-        "y_shunt_km": 0.0246,
         "to": "bus5"
       },
       "type": "PiModelLine"
@@ -194,13 +194,13 @@
     {
       "name": "branch3",
       "params": {
-        "y": {
+        "Y_shunt_km": 0.0219,
+        "Y_shunt_mk": 0.0219,
+        "from": "bus2",
+        "Y": {
           "re": 1.1350191923073958,
           "im": -4.781863151757718
         },
-        "from": "bus2",
-        "y_shunt_mk": 0.0219,
-        "y_shunt_km": 0.0219,
         "to": "bus3"
       },
       "type": "PiModelLine"
@@ -208,13 +208,13 @@
     {
       "name": "branch4",
       "params": {
-        "y": {
+        "Y_shunt_km": 0.017,
+        "Y_shunt_mk": 0.017,
+        "from": "bus2",
+        "Y": {
           "re": 1.686033150614943,
           "im": -5.115838325872083
         },
-        "from": "bus2",
-        "y_shunt_mk": 0.017,
-        "y_shunt_km": 0.017,
         "to": "bus4"
       },
       "type": "PiModelLine"
@@ -222,13 +222,13 @@
     {
       "name": "branch5",
       "params": {
-        "y": {
+        "Y_shunt_km": 0.0173,
+        "Y_shunt_mk": 0.0173,
+        "from": "bus2",
+        "Y": {
           "re": 1.7011396670944048,
           "im": -5.193927397969713
         },
-        "from": "bus2",
-        "y_shunt_mk": 0.0173,
-        "y_shunt_km": 0.0173,
         "to": "bus5"
       },
       "type": "PiModelLine"
@@ -236,13 +236,13 @@
     {
       "name": "branch6",
       "params": {
-        "y": {
+        "Y_shunt_km": 0.0064,
+        "Y_shunt_mk": 0.0064,
+        "from": "bus3",
+        "Y": {
           "re": 1.9859757099255606,
           "im": -5.0688169775939205
         },
-        "from": "bus3",
-        "y_shunt_mk": 0.0064,
-        "y_shunt_km": 0.0064,
         "to": "bus4"
       },
       "type": "PiModelLine"
@@ -262,39 +262,39 @@
     {
       "name": "branch8",
       "params": {
-        "y": {
+        "from": "bus4",
+        "Y": {
           "re": 0.0,
           "im": -4.781943381790359
         },
-        "t_ratio": 0.978,
-        "from": "bus4",
-        "to": "bus7"
+        "to": "bus7",
+        "T_ratio": 0.978
       },
       "type": "Transformer"
     },
     {
       "name": "branch9",
       "params": {
-        "y": {
+        "from": "bus4",
+        "Y": {
           "re": 0.0,
           "im": -1.7979790715236075
         },
-        "t_ratio": 0.969,
-        "from": "bus4",
-        "to": "bus9"
+        "to": "bus9",
+        "T_ratio": 0.969
       },
       "type": "Transformer"
     },
     {
       "name": "branch10",
       "params": {
-        "y": {
+        "from": "bus5",
+        "Y": {
           "re": 0.0,
           "im": -3.967939052456154
         },
-        "t_ratio": 0.932,
-        "from": "bus5",
-        "to": "bus6"
+        "to": "bus6",
+        "T_ratio": 0.932
       },
       "type": "Transformer"
     },

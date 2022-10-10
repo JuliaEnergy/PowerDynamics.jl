@@ -63,11 +63,11 @@ expected_fourth_order_eq_avr = FourthOrderEqGovernorExciterAVR(
 
 expected_static_line_array = StaticLine(from = 1, to = 2, Y = 0.1 + 5im)
 expected_pimodel_line_array =
-    PiModelLine(from = 1, to = 3, y = 0.1 + 5im, y_shunt_km = 200, y_shunt_mk = 300)
+    PiModelLine(from = 1, to = 3, Y = 0.1 + 5im, Y_shunt_km = 200, Y_shunt_mk = 300)
 
 expected_static_line_dict = StaticLine(from = "bus1", to = "bus2", Y = 0.1 + 5im)
 expected_pimodel_line_dict =
-    PiModelLine(from = "bus1", to = "bus3", y = 0.1 + 5im, y_shunt_km = 200, y_shunt_mk = 300)
+    PiModelLine(from = "bus1", to = "bus3", Y = 0.1 + 5im, Y_shunt_km = 200, Y_shunt_mk = 300)
 
 expected_nodes_array = [
     expected_swing_eq,
