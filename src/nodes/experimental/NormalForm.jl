@@ -63,13 +63,13 @@ function construct_vertex(nf::NormalForm)
     Cᵤ = nf.Cᵤ
     Gᵤ = nf.Gᵤ
     Hᵤ = nf.Hᵤ
-    
     Bₓ = nf.Bₓ
     Cₓ = nf.Cₓ
     Gₓ = nf.Gₓ
     Hₓ = nf.Hₓ
 
     Y_n = nf.Y_n
+    x_dims = nf.x_dims
 
     if x_dims == 0  # Case 1: no internal variable
 
@@ -158,19 +158,19 @@ function construct_vertex(nf::NormalForm)
 end
 
 function symbolsof(nf::NormalForm)
-    @assert typeof(nf.x_dims) <: Int "The dimension of x must be an integer!"
-    @assert nf.x_dims >= 0 "The dimension of x cannot be negative!"
-
+    x_dims = nf.x_dims
+    @assert typeof(x_dims) <: Int "The dimension of x must be an integer!"
+    @assert x_dims >= 0 "The dimension of x cannot be negative!"
     symbols = [:u_r, :u_i]
     append!(symbols, [Symbol("x_$i") for i in 1:x_dims])
     return symbols
 end
 
 function dimension(nf::NormalForm)
-    @assert typeof(nf.x_dims) <: Int "The dimension of x must be an integer!"
-    @assert nf.x_dims >= 0 "The dimension of x cannot be negative!"
-
-    return 2 + nf.x_dims
+    x_dims = nf.x_dims
+    @assert typeof(x_dims) <: Int "The dimension of x must be an integer!"
+    @assert x_dims >= 0 "The dimension of x cannot be negative!"
+    return 2 + x_dims
 end
 
 export NormalForm
