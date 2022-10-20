@@ -12,12 +12,13 @@ An implementation of the normal form for grid-forming actors following the publi
 # Mathematical Representation
 The dynamics of the normal form is given by
 ```math
-    \frac{\dot{u}}{u} = B_u x + + C_u \delta v^2 + G_u \delta p + H_u \delta q\\
+    \frac{\dot{u}}{u} = B_u x + C_u \delta v^2 + G_u \delta p + H_u \delta q\\
     \dot{x} = B_x x + + C_x \delta v^2 + G_x \delta p + H_x \delta q
 ```
 where ``u`` is the complex voltage and ``x`` is a vector of internal variables
 and ``\delta v^2``, ``\delta p`` and ``\delta q`` denote the deviations of 
 squared voltage amplitude, active and reactive power from their setpoint values.
+The internal variables ``x`` are defined such that their setpoint values are zero.
 
 # Keyword Arguments
 - `B_u`: complex parameter (matrix) 
@@ -25,10 +26,13 @@ squared voltage amplitude, active and reactive power from their setpoint values.
 - `G_u`: complex parameter
 - `H_u`: complex parameter
 - `B_x`: real parameter (matrix) 
-- `C_u`: real parameter (vector)
-- `G_u`: real parameter (vector)
-- `H_u`: real parameter (vector)
+- `C_x`: real parameter (vector)
+- `G_x`: real parameter (vector)
+- `H_x`: real parameter (vector)
 - `x_dims`: number of internal variables
+
+Note: The parameters `A_x` and `A_u` in the paper are always zero in the implementation.
+(``A_x=0`` as ``x=0`` in the setpoint and ``A_u=j\omega_s`` with ``\omega_s=0`` in the co-rotating system.)
 
 """
 struct NormalForm <: AbstractNode
