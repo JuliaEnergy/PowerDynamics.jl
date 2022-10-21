@@ -9,10 +9,9 @@ include("../NodeTestBase.jl")
     P, Q, V = rand_real(3)
 
     # Case 1: no internal variable
-    x_dims = 0
     Cᵤ, Gᵤ, Hᵤ = 1im*rand_real(3)
 
-    nf = NormalForm(P=P, Q=Q, V=V, Bᵤ=nothing, Cᵤ=Cᵤ, Gᵤ=Gᵤ, Hᵤ=Hᵤ, Bₓ=nothing, Cₓ=nothing, Gₓ=nothing, Hₓ=nothing, x_dims=x_dims)
+    nf = NormalForm(P=P, Q=Q, V=V, Bᵤ=nothing, Cᵤ=Cᵤ, Gᵤ=Gᵤ, Hᵤ=Hᵤ, Bₓ=nothing, Cₓ=nothing, Gₓ=nothing, Hₓ=nothing)
     nf_vertex = construct_vertex(nf)
 
     @test dimension(nf) == 2
@@ -22,11 +21,10 @@ include("../NodeTestBase.jl")
     smoketest_rhs(nf_vertex)
 
     # Case 2: one internal variable
-    x_dims = 1
     Bᵤ, Cᵤ, Gᵤ, Hᵤ = 1im*rand_real(4)
     Bₓ, Cₓ, Gₓ, Hₓ = rand_real(4)
 
-    nf = NormalForm(P=P, Q=Q, V=V, Bᵤ=Bᵤ, Cᵤ=Cᵤ, Gᵤ=Gᵤ, Hᵤ=Hᵤ, Bₓ=Bₓ, Cₓ=Cₓ, Gₓ=Gₓ, Hₓ=Hₓ, x_dims=x_dims)
+    nf = NormalForm(P=P, Q=Q, V=V, Bᵤ=Bᵤ, Cᵤ=Cᵤ, Gᵤ=Gᵤ, Hᵤ=Hᵤ, Bₓ=Bₓ, Cₓ=Cₓ, Gₓ=Gₓ, Hₓ=Hₓ)
     nf_vertex = construct_vertex(nf)
 
     @test dimension(nf) == 3
@@ -37,7 +35,6 @@ include("../NodeTestBase.jl")
     smoketest_rhs(nf_vertex, int_x=[x_1], int_dx=[dx_1])
 
     # Case 3: two internal variables
-    x_dims = 2
     Bᵤ = 1im*rand_real(2)
     Cᵤ, Gᵤ, Hᵤ = 1im*rand_real(3)
     Bₓ = rand(2,2)
@@ -45,7 +42,7 @@ include("../NodeTestBase.jl")
     Gₓ = rand_real(2)
     Hₓ = rand_real(2)
 
-    nf = NormalForm(P=P, Q=Q, V=V, Bᵤ=Bᵤ, Cᵤ=Cᵤ, Gᵤ=Gᵤ, Hᵤ=Hᵤ, Bₓ=Bₓ, Cₓ=Cₓ, Gₓ=Gₓ, Hₓ=Hₓ, x_dims=x_dims)
+    nf = NormalForm(P=P, Q=Q, V=V, Bᵤ=Bᵤ, Cᵤ=Cᵤ, Gᵤ=Gᵤ, Hᵤ=Hᵤ, Bₓ=Bₓ, Cₓ=Cₓ, Gₓ=Gₓ, Hₓ=Hₓ)
     nf_vertex = construct_vertex(nf)
 
     @test dimension(nf) == 4

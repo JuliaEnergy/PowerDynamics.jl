@@ -1,3 +1,5 @@
+using StaticArrays
+
 @doc doc"""
 ```Julia
 NormalForm(P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims)
@@ -29,29 +31,76 @@ The internal variables ``x`` are defined such that their setpoint values are zer
 - `C_x`: real parameter (vector)
 - `G_x`: real parameter (vector)
 - `H_x`: real parameter (vector)
-- `x_dims`: number of internal variables
 
 Note: The parameters `A_x` and `A_u` in the paper are always zero in the implementation.
 (``A_x=0`` as ``x=0`` in the setpoint and ``A_u=j\omega_s`` with ``\omega_s=0`` in the co-rotating system.)
 
 """
-struct NormalForm <: AbstractNode
-    P
-    Q
-    V
-    Bᵤ
-    Cᵤ
-    Gᵤ
-    Hᵤ
-    Bₓ
-    Cₓ
-    Gₓ
-    Hₓ
-    Y_n
-    x_dims
+struct NormalForm{x_dims} <: AbstractNode
+    P::Float64
+    Q::Float64
+    V::Float64
+    Bᵤ::SMatrix{1,x_dims,ComplexF64}
+    Cᵤ::ComplexF64
+    Gᵤ::ComplexF64
+    Hᵤ::ComplexF64
+    Bₓ::SMatrix{x_dims,x_dims,Float64}
+    Cₓ::SVector{x_dims,Float64}
+    Gₓ::SVector{x_dims,Float64}
+    Hₓ::SVector{x_dims,Float64}
+    Y_n::Complex{Float64}
 end
 
-NormalForm(; P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n = 0, x_dims) = NormalForm(P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims)
+NormalForm(; P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n = 0.0im) = NormalForm(P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n)
+
+function NormalForm(P::Real, Q::Real, V::Real, Bᵤ::Any, Cᵤ::Number, Gᵤ::Number, Hᵤ::Number, Bₓ::Any, Cₓ::Any, Gₓ::Any, Hₓ::Any, Y_n::Number)
+    P = convert(Float64,P)
+    Q = convert(Float64,Q)
+    V = convert(Float64,V)
+    Bᵤ = SMatrix{1, 0, ComplexF64}()
+    Cᵤ = convert(ComplexF64,Cᵤ)
+    Gᵤ = convert(ComplexF64,Gᵤ)
+    Hᵤ = convert(ComplexF64,Hᵤ)
+    Bₓ = SMatrix{0, 0, Float64}()
+    Cₓ = SVector{0, Float64}()
+    Gₓ = SVector{0, Float64}()
+    Hₓ = SVector{0, Float64}()
+    Y_n = convert(ComplexF64,Y_n)
+    NormalForm(P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n)
+end
+
+function NormalForm(P::Real, Q::Real, V::Real, Bᵤ::Number, Cᵤ::Number, Gᵤ::Number, Hᵤ::Number, Bₓ::Real, Cₓ::Real, Gₓ::Real, Hₓ::Real, Y_n::Number)
+    P = convert(Float64,P)
+    Q = convert(Float64,Q)
+    V = convert(Float64,V)
+    Bᵤ = SMatrix{1, 1, ComplexF64}([Bᵤ])
+    Cᵤ = convert(ComplexF64,Cᵤ)
+    Gᵤ = convert(ComplexF64,Gᵤ)
+    Hᵤ = convert(ComplexF64,Hᵤ)
+    Bₓ = SMatrix{1, 1, Float64}([Bₓ])
+    Cₓ = SVector{1, Float64}([Cₓ])
+    Gₓ = SVector{1, Float64}([Gₓ])
+    Hₓ = SVector{1, Float64}([Hₓ])
+    Y_n = convert(ComplexF64,Y_n)
+    NormalForm(P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n)
+end
+
+function NormalForm(P::Real, Q::Real, V::Real, Bᵤ::Array, Cᵤ::Number, Gᵤ::Number, Hᵤ::Number, Bₓ::Matrix, Cₓ::Vector, Gₓ::Vector, Hₓ::Vector, Y_n::Number)
+    x_dims = length(Cₓ)
+    P = convert(Float64,P)
+    Q = convert(Float64,Q)
+    V = convert(Float64,V)
+    Bᵤ = SMatrix{1, x_dims, ComplexF64}(Bᵤ)
+    Cᵤ = convert(ComplexF64,Cᵤ)
+    Gᵤ = convert(ComplexF64,Gᵤ)
+    Hᵤ = convert(ComplexF64,Hᵤ)
+    Bₓ = SMatrix{x_dims, x_dims, Float64}(Bₓ)
+    Cₓ = SVector{x_dims, Float64}(Cₓ)
+    Gₓ = SVector{x_dims, Float64}(Gₓ)
+    Hₓ = SVector{x_dims, Float64}(Hₓ)
+    Y_n = convert(ComplexF64,Y_n)
+    NormalForm(P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n)
+end
 
 function construct_vertex(nf::NormalForm)
 
@@ -73,9 +122,8 @@ function construct_vertex(nf::NormalForm)
     Hₓ = nf.Hₓ
 
     Y_n = nf.Y_n
-    x_dims = nf.x_dims
 
-    if x_dims == 0  # Case 1: no internal variable
+    if dim == 2  # Case with no internal variable
 
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im)
@@ -94,53 +142,12 @@ function construct_vertex(nf::NormalForm)
             return nothing
         end
 
-    elseif x_dims == 1  # Case 2: one internal variable
-
-        @assert typeof(Bₓ) <: Real "Bₓ must be a real number."
-        @assert typeof(Cₓ) <: Real "Cₓ must be a real number."
-        @assert typeof(Gₓ) <: Real "Gₓ must be a real number."
-        @assert typeof(Hₓ) <: Real "Hₓ must be a real number."
+    elseif dim > 2 # Case with internal variable(s)
 
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im)
             u = z[1] + z[2] * im
-            x = z[3]
-            s = u * conj(i)
-
-            δp = real(s) - P
-            δq = imag(s) - Q
-            δv2 = abs2(u) - V^2
-
-            du = (Bᵤ * x + Cᵤ * δv2 + Gᵤ * δp + Hᵤ * δq) * u
-            dx = (Bₓ * x + Cₓ * δv2 + Gₓ * δp + Hₓ * δq)
-            
-            dz[1] = real(du)  
-            dz[2] = imag(du)
-            dz[3] = real(dx)          
-
-            return nothing
-        end
-
-    elseif x_dims > 1 # Case of multiple internal variables
-
-        @assert typeof(Bₓ) <: Matrix "Bₓ must be a matrix."
-        @assert all(imag(Bₓ) .== 0) "Bₓ must be real."
-        @assert size(Bₓ) == (x_dims,x_dims) "Bₓ parameters have the wrong dimension."
-        @assert typeof(Cₓ) <: Array "Cₓ must be an array."
-        @assert all(imag(Cₓ) .== 0) "Cₓ must be real."
-        @assert length(Cₓ) == x_dims "Cₓ parameters have the wrong dimension."
-        @assert typeof(Gₓ) <: Array "Gₓ must be an array."
-        @assert all(imag(Gₓ) .== 0) "Gₓ must be real."
-        @assert length(Gₓ) == x_dims "Gₓ parameters have the wrong dimension."
-        @assert typeof(Hₓ) <: Array "Hₓ must be an array."
-        @assert all(imag(Hₓ) .== 0) "Hₓ must be real."
-        @assert length(Hₓ) == x_dims "Hₓ parameters have the wrong dimension."
-        @assert length(Bᵤ) == x_dims "Bᵤ parameters have the wrong dimension."
-
-        rhs! = function (dz, z, edges, p, t)
-            i = total_current(edges) + Y_n * (z[1] + z[2] * 1im)
-            u = z[1] + z[2] * im
-            x = [z[j] for j in 3:lastindex(z)]
+            @views x = z[3:end]  # @views is needed to avoid allocations
             s = u * conj(i)
 
             δp = real(s) - P
@@ -162,19 +169,15 @@ function construct_vertex(nf::NormalForm)
 end
 
 function symbolsof(nf::NormalForm)
-    x_dims = nf.x_dims
-    @assert typeof(x_dims) <: Int "The dimension of x must be an integer!"
-    @assert x_dims >= 0 "The dimension of x cannot be negative!"
+    x_dims = length(nf.Cₓ)
     symbols = [:u_r, :u_i]
     append!(symbols, [Symbol("x_$i") for i in 1:x_dims])
     return symbols
 end
 
 function dimension(nf::NormalForm)
-    x_dims = nf.x_dims
-    @assert typeof(x_dims) <: Int "The dimension of x must be an integer!"
-    @assert x_dims >= 0 "The dimension of x cannot be negative!"
-    return 2 + x_dims
+    x_dims = length(nf.Cₓ)
+    return x_dims + 2
 end
 
 export NormalForm
