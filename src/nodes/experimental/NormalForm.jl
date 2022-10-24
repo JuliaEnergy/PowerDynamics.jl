@@ -51,54 +51,15 @@ struct NormalForm{x_dims} <: AbstractNode
     Y_n::Complex{Float64}
 end
 
-NormalForm(; P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n = 0.0im) = NormalForm(P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n)
+NormalForm(; P, Q, V, Bᵤ=[], Cᵤ, Gᵤ, Hᵤ, Bₓ=[], Cₓ=[], Gₓ=[], Hₓ=[], Y_n = 0.0im) = NormalForm(P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n)
 
-function NormalForm(P::Real, Q::Real, V::Real, Bᵤ::Any, Cᵤ::Number, Gᵤ::Number, Hᵤ::Number, Bₓ::Any, Cₓ::Any, Gₓ::Any, Hₓ::Any, Y_n::Number)
-    P = convert(Float64,P)
-    Q = convert(Float64,Q)
-    V = convert(Float64,V)
-    Bᵤ = SMatrix{1, 0, ComplexF64}()
-    Cᵤ = convert(ComplexF64,Cᵤ)
-    Gᵤ = convert(ComplexF64,Gᵤ)
-    Hᵤ = convert(ComplexF64,Hᵤ)
-    Bₓ = SMatrix{0, 0, Float64}()
-    Cₓ = SVector{0, Float64}()
-    Gₓ = SVector{0, Float64}()
-    Hₓ = SVector{0, Float64}()
-    Y_n = convert(ComplexF64,Y_n)
-    NormalForm(P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n)
-end
-
-function NormalForm(P::Real, Q::Real, V::Real, Bᵤ::Number, Cᵤ::Number, Gᵤ::Number, Hᵤ::Number, Bₓ::Real, Cₓ::Real, Gₓ::Real, Hₓ::Real, Y_n::Number)
-    P = convert(Float64,P)
-    Q = convert(Float64,Q)
-    V = convert(Float64,V)
-    Bᵤ = SMatrix{1, 1, ComplexF64}([Bᵤ])
-    Cᵤ = convert(ComplexF64,Cᵤ)
-    Gᵤ = convert(ComplexF64,Gᵤ)
-    Hᵤ = convert(ComplexF64,Hᵤ)
-    Bₓ = SMatrix{1, 1, Float64}([Bₓ])
-    Cₓ = SVector{1, Float64}([Cₓ])
-    Gₓ = SVector{1, Float64}([Gₓ])
-    Hₓ = SVector{1, Float64}([Hₓ])
-    Y_n = convert(ComplexF64,Y_n)
-    NormalForm(P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n)
-end
-
-function NormalForm(P::Real, Q::Real, V::Real, Bᵤ::Array, Cᵤ::Number, Gᵤ::Number, Hᵤ::Number, Bₓ::Matrix, Cₓ::Vector, Gₓ::Vector, Hₓ::Vector, Y_n::Number)
+function NormalForm(P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n)
     x_dims = length(Cₓ)
-    P = convert(Float64,P)
-    Q = convert(Float64,Q)
-    V = convert(Float64,V)
     Bᵤ = SMatrix{1, x_dims, ComplexF64}(Bᵤ)
-    Cᵤ = convert(ComplexF64,Cᵤ)
-    Gᵤ = convert(ComplexF64,Gᵤ)
-    Hᵤ = convert(ComplexF64,Hᵤ)
     Bₓ = SMatrix{x_dims, x_dims, Float64}(Bₓ)
     Cₓ = SVector{x_dims, Float64}(Cₓ)
     Gₓ = SVector{x_dims, Float64}(Gₓ)
     Hₓ = SVector{x_dims, Float64}(Hₓ)
-    Y_n = convert(ComplexF64,Y_n)
     NormalForm(P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n)
 end
 
@@ -123,46 +84,24 @@ function construct_vertex(nf::NormalForm)
 
     Y_n = nf.Y_n
 
-    if dim == 2  # Case with no internal variable
+    rhs! = function (dz, z, edges, p, t)
+        i = total_current(edges) + Y_n * (z[1] + z[2] * 1im)
+        u = z[1] + z[2] * im
+        @views x = z[3:end]  # @views is needed to avoid allocations
+        s = u * conj(i)
 
-        rhs! = function (dz, z, edges, p, t)
-            i = total_current(edges) + Y_n * (z[1] + z[2] * 1im)
-            u = z[1] + z[2] * im 
-            s = u * conj(i)
+        δp = real(s) - P
+        δq = imag(s) - Q
+        δv2 = abs2(u) - V^2
 
-            δp = real(s) - P
-            δq = imag(s) - Q
-            δv2 = abs2(u) - V^2
+        du = (conj(Bᵤ) ⋅ x + Cᵤ * δv2 + Gᵤ * δp + Hᵤ * δq) * u  # conj(Bᵤ) because Julia's dot-product conjugates the first vector/matrix
+        dx = (Bₓ * x + Cₓ * δv2 + Gₓ * δp + Hₓ * δq)
+        
+        dz[1] = real(du)  
+        dz[2] = imag(du)
+        dz[3:end] = real(dx)
 
-            du = (Cᵤ * δv2 + Gᵤ * δp + Hᵤ * δq) * u
-            
-            dz[1] = real(du)  
-            dz[2] = imag(du)
-
-            return nothing
-        end
-
-    elseif dim > 2 # Case with internal variable(s)
-
-        rhs! = function (dz, z, edges, p, t)
-            i = total_current(edges) + Y_n * (z[1] + z[2] * 1im)
-            u = z[1] + z[2] * im
-            @views x = z[3:end]  # @views is needed to avoid allocations
-            s = u * conj(i)
-
-            δp = real(s) - P
-            δq = imag(s) - Q
-            δv2 = abs2(u) - V^2
-
-            du = (conj(Bᵤ) ⋅ x + Cᵤ * δv2 + Gᵤ * δp + Hᵤ * δq) * u  # conj(Bᵤ) because Julia's dot-product conjugates the first vector/matrix
-            dx = (Bₓ * x + Cₓ * δv2 + Gₓ * δp + Hₓ * δq)
-            
-            dz[1] = real(du)  
-            dz[2] = imag(du)
-            dz[3:end] = real(dx)
-
-            return nothing
-        end
+        return nothing
     end
 
     ODEVertex(rhs!, dim, mass_matrix, sym)

@@ -11,7 +11,7 @@ include("../NodeTestBase.jl")
     # Case 1: no internal variable
     Cᵤ, Gᵤ, Hᵤ = 1im*rand_real(3)
 
-    nf = NormalForm(P=P, Q=Q, V=V, Bᵤ=nothing, Cᵤ=Cᵤ, Gᵤ=Gᵤ, Hᵤ=Hᵤ, Bₓ=nothing, Cₓ=nothing, Gₓ=nothing, Hₓ=nothing)
+    nf = NormalForm(P=P, Q=Q, V=V, Cᵤ=Cᵤ, Gᵤ=Gᵤ, Hᵤ=Hᵤ)
     nf_vertex = construct_vertex(nf)
 
     @test dimension(nf) == 2
