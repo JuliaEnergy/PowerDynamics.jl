@@ -52,6 +52,15 @@ function make_generator!(dict::Dict{String,Any}, key_b::Int, node::Union{VSIMini
     ((dict["gen"])[string(key)])["qmax"] = 1.5 * abs(node.Q)
 end
 
+function make_generator!(dict::Dict{String,Any}, key_b::Int, node::NormalForm)
+    make_generator_header(dict, key_b)
+    key = length(dict["gen"])
+    ((dict["gen"])[string(key)])["pg"] = node.P
+    ((dict["gen"])[string(key)])["pmin"] = 0.9 * node.P
+    ((dict["gen"])[string(key)])["pmax"] = 1.1 * node.P
+    ((dict["gen"])[string(key)])["vg"] = node.V
+end
+
 function make_shunt!(dict::Dict{String,Any}, key_b::Int, ω::Float64, node)
     key = dict["shunt"] + 1
     dict["shunt"][string(key)] = Dict{String, Any}()
@@ -137,6 +146,16 @@ function make_bus_ac!(data::Dict{String,Any}, node::Union{VSIMinimal, VSIVoltage
     bus_dict["vmin"] = 0.9 * node.V_r
     bus_dict["vmax"] = 1.1 * node.V_r
     bus_dict["va"] = 0
+    make_generator!(data, bus_dict["index"], node)
+end
+
+function make_bus_ac!(data::Dict{String,Any}, node::NormalForm)
+    bus_dict = _make_bus_ac_header(data)
+    bus_dict["bus_type"] = 2
+    bus_dict["vm"] = abs(node.V)
+    bus_dict["vmin"] = 0.9 * bus_dict["vm"]
+    bus_dict["vmax"] = 1.1 * bus_dict["vm"]
+    bus_dict["va"] = angle(node.V)
     make_generator!(data, bus_dict["index"], node)
 end
 
