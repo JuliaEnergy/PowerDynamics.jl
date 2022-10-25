@@ -39,6 +39,7 @@ include("nodes/experimental/WindTurbineGenType4_RotorControl.jl")
 include("nodes/experimental/CurtailedPowerPlantWithInertia.jl")
 include("nodes/experimental/CompositeNode.jl")
 include("nodes/experimental/FluctuationNode.jl")
+include("nodes/experimental/NormalForm.jl")
 
 # requirements for the IONodes
 include("IONodes/utils.jl")

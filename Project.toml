@@ -24,6 +24,7 @@ PowerModels = "c36e90e8-916a-50a6-bd94-075b64ef4655"
 PowerModelsACDC = "ff45984e-d068-5f4c-9e32-c4133509d236"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 Setfield = "efcf1570-3423-57d1-acb7-fd33fddbac46"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 SteadyStateDiffEq = "9672c7b4-1e72-59bd-8a11-6ac3964bc41f"
 
 [compat]
@@ -44,6 +45,7 @@ PowerModels = "0.18, 0.19"
 PowerModelsACDC = "^0.4, 0.5"
 RecipesBase = "0.7.0,0.8.0, 1.0"
 Setfield = "0.4 - 0.8"
+StaticArrays = "1"
 SteadyStateDiffEq = "^1.5.1"
 julia = "1.6"
 
