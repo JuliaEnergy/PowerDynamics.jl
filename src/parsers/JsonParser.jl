@@ -77,6 +77,8 @@ function convert_node(node)
         node = ExponentialRecoveryLoad(;sym_params...)
     elseif type == "VoltageDependentLoad"
         node = VoltageDependentLoad(;sym_params...)
+    elseif type == "NormalForm"
+        node = NormalForm(;sym_params...)
     else
         throw(ArgumentError("Invalid type: $type"))
     end
