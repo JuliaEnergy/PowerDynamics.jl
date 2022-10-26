@@ -50,7 +50,7 @@ function convert_node(node)
     name = get(node, "name", nothing)
     type = get(node, "type", nothing)
     params = get(node, "params", [])
-    sym_params = Dict(Symbol(k) => _map_complex(v) for (k, v) in params)
+    sym_params = Dict(Symbol(k) => _map_array(v) for (k, v) in params)
     if type == "SwingEq"
         node = SwingEq(;sym_params...)
     elseif type == "SwingEqLVS"
@@ -119,6 +119,17 @@ function _map_complex(v)
         Complex(get(v, "re", nothing), get(v, "im", nothing))
     else
         v
+    end
+end
+
+function _map_array(v)
+    if isa(v,Vector) && all(isa.(v,Vector))
+        M = [v...;;]
+        _map_complex.(M)
+    elseif isa(v,Vector)
+        _map_complex.(v)
+    else
+        _map_complex(v)
     end
 end
 
