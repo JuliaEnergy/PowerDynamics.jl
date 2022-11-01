@@ -1,7 +1,4 @@
-using PowerDynamics:
-    read_powergrid,
-    write_powergrid,
-    Json
+using PowerDynamics: read_powergrid, write_powergrid, Json, PowerGrid, NormalForm
 using OrderedCollections: OrderedDict
 using Test: @test, @test_throws
 
@@ -140,3 +137,25 @@ dict_grid = read_powergrid(dict_export_file, Json)
     joinpath(@__DIR__, "grid_with_invalid_params.json"),
     Json,
 )
+
+# test parsing of parameter-arrays
+
+P, Q, V = rand(3)
+Bᵤ = 1im*rand(2)
+Cᵤ, Gᵤ, Hᵤ = 1im*rand(3)
+Bₓ = rand(2,2)
+Cₓ = rand(2)
+Gₓ = rand(2)
+Hₓ = rand(2)
+
+nodes = [
+    NormalForm(P=P, Q=Q, V=V, Bᵤ=Bᵤ, Cᵤ=Cᵤ, Gᵤ=Gᵤ, Hᵤ=Hᵤ, Bₓ=Bₓ, Cₓ=Cₓ, Gₓ=Gₓ, Hₓ=Hₓ)
+]
+
+pg = PowerGrid(nodes,[])
+
+file = joinpath(@__DIR__,"testgrid.json")
+write_powergrid(pg, file, Json)
+pg_read = read_powergrid(file, Json)
+@test pg_read.nodes == pg.nodes
+rm(file)
