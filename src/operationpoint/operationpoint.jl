@@ -1,5 +1,6 @@
 using NLsolve: nlsolve, converged
 using SteadyStateDiffEq
+using SciMLNLSolve
 using OrdinaryDiffEq: ODEProblem, Rodas5
 
 """
@@ -192,7 +193,7 @@ function _find_operationpoint_rootfind(pg, ic_guess, p0, t0; kwargs...)
     op_prob = ODEProblem(ode, ic_guess, (t0, Inf), p0)
     sol = solve(
         SteadyStateProblem(op_prob),
-        SSRootfind(;kwargs...),
+        NLSolveJL(;kwargs...),
     )
     if sol.retcode == :Success
         return State(pg, sol.u)

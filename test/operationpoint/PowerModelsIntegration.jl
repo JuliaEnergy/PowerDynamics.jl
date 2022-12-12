@@ -64,8 +64,8 @@ v =   [  result["solution"]["bus"][string(k)]["vm"] for k in 1:N]
 v_2 = [result_2["solution"]["bus"][string(k)]["vm"] for k in 1:N]
 
 
-@test isapprox.(operationpoint[:, :v], v, atol = 1e-10) |> all
-@test isapprox.(operationpoint[:, :v], v_2, atol = 1e-10) |> all
+@test isapprox.(operationpoint[:, :v], v, atol = 1e-6) |> all
+@test isapprox.(operationpoint[:, :v], v_2, atol = 1e-6) |> all
 @test isapprox.(operationpoint_pf[:, :v], v, atol = 1e-10) |> all
 @test isapprox.(operationpoint_pf[:, :v], v_2, atol = 1e-10) |> all
 
@@ -73,15 +73,15 @@ v_2 = [result_2["solution"]["bus"][string(k)]["vm"] for k in 1:N]
 va =   [  result["solution"]["bus"][string(k)]["va"] for k in 1:N]
 va_2 = [result_2["solution"]["bus"][string(k)]["va"] for k in 1:N]
 
-@test isapprox.(operationpoint[:, :φ], va, atol = 1e-10) |> all
-@test isapprox.(operationpoint[:, :φ], va_2, atol = 1e-10) |> all
+@test isapprox.(operationpoint[:, :φ], va, atol = 1e-7) |> all
+@test isapprox.(operationpoint[:, :φ], va_2, atol = 1e-7) |> all
 @test isapprox.(operationpoint_pf[:, :φ], va, atol = 1e-10) |> all
 @test isapprox.(operationpoint_pf[:, :φ], va_2, atol = 1e-10) |> all
 
 p = [result["solution"]["gen"][string(k)]["pg"] for k in 1:N-1]
 
-@test isapprox.(operationpoint[:, :p][1:N - 1], p, atol = 1e-10) |> all
+@test isapprox.(operationpoint[:, :p][1:N - 1], p, atol = 1e-5) |> all
 
 q = [result["solution"]["gen"][string(k)]["qg"] for k in 1:N - 1]
 
-@test isapprox.(operationpoint[:, :q][1:N - 1], q, atol = 1e-10) |> all
+@test isapprox.(operationpoint[:, :q][1:N - 1], q, atol = 1e-4) |> all

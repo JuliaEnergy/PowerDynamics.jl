@@ -163,7 +163,7 @@ end
     @test_nowarn find_operationpoint(grid; sol_method = :nlsolve, method=:newton, autodiff = :forward, show_trace=true);
 
     # pass nlsolve arguments to SSRootfind
-    @test_nowarn find_operationpoint(grid; sol_method = :rootfind, nlsolve=(f,u0,abstol) -> (res=nlsolve(f,u0,method=:newton, autodiff = :forward, show_trace=true);res.zero));
+    @test_nowarn find_operationpoint(grid; sol_method = :rootfind, method=:newton, autodiff = :forward, show_trace=true);
 
     # pass SteadyStateDiffEq arguments to DynamicSS
     @test_nowarn find_operationpoint(grid; sol_method = :dynamic, abstol=1e-10, reltol=1e-10, tspan=Inf);
