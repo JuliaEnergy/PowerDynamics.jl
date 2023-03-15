@@ -1,6 +1,7 @@
 using Test: @test
 using Graphs: edges, Edge, SimpleGraph
 using PowerDynamics: SlackAlgebraic, SwingEqLVS, StaticLine, ChangeInitialConditions, Inc, Dec, simulate, PowerGrid, State, AbstractPerturbation
+using SciMLBase: successful_retcode
 
 graph = SimpleGraph(2)
 Y = 0 + 5 * im
@@ -22,9 +23,9 @@ end
 
 sol = simulate(DummyPerturbation(tspan_fault=(0.0, 0.1)), grid, state, (0, 0.1); reltol=1e-6)
 @test sol !== nothing
-@test sol.dqsol.retcode == :Success
+@test successful_retcode(sol.dqsol)
 
 sol = simulate(DummyPerturbation(tspan_fault=(0.0, 0.1)), state, (0, 0.1); reltol=1e-6)
 @test sol !== nothing
-@test sol.dqsol.retcode == :Success
+@test successful_retcode(sol.dqsol)
 

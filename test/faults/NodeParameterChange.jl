@@ -1,5 +1,6 @@
 using Test: @test, @testset, @test_throws
 using PowerDynamics: NodeParameterChange, simulate, SwingEqLVS, SlackAlgebraic, StaticLine, PowerGrid, State,systemsize, FieldUpdateError
+using SciMLBase: successful_retcode
 
 ##
 
@@ -12,7 +13,7 @@ using PowerDynamics: NodeParameterChange, simulate, SwingEqLVS, SlackAlgebraic, 
     npc = NodeParameterChange(node = 1, value = 0.9, tspan_fault = (0.1,1), var=:H)
     sol = simulate(npc, state, (0., 1.))
     @test sol !== nothing
-    @test sol.dqsol.retcode == :Success
+    @test successful_retcode(sol.dqsol)
 end
 
 ## 
@@ -26,7 +27,7 @@ end
     npc = NodeParameterChange(node = 1, value = -0.9, tspan_fault = (0.1,1), var=:P)
     sol = simulate(npc, state, (0., 1.))
     @test sol !== nothing
-    @test sol.dqsol.retcode == :Success
+    @test successful_retcode(sol.dqsol)
 end
 
 

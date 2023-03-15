@@ -1,6 +1,7 @@
 using NLsolve: nlsolve, converged
 using SteadyStateDiffEq
 using OrdinaryDiffEq: ODEProblem, Rodas5
+using SciMLBase: successful_retcode
 
 """
 ```Julia
@@ -179,7 +180,7 @@ function _find_operationpoint_steadystate(pg, ic_guess, p0, t0; kwargs...)
         SteadyStateProblem(op_prob),
         DynamicSS(Rodas5(); kwargs...),
     )
-    if sol.retcode == :Success
+    if successful_retcode(sol)
         return State(pg, sol.u)
     else
         @warn "The operation point search did not converge. (dynamic method, $(sol.retcode))\n Fallback to rootfinding."
@@ -194,7 +195,7 @@ function _find_operationpoint_rootfind(pg, ic_guess, p0, t0; kwargs...)
         SteadyStateProblem(op_prob),
         SSRootfind(;kwargs...),
     )
-    if sol.retcode == :Success
+    if successful_retcode(sol)
         return State(pg, sol.u)
     else
         throw(OperationPointError("The operation point search did not converge. (rootfind method, $(sol.retcode))"))

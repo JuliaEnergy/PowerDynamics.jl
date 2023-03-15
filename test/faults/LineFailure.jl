@@ -2,6 +2,7 @@ using Test: @test
 using Graphs: edges, Edge
 using PowerDynamics: SlackAlgebraic, SwingEqLVS, StaticLine, LineFailure, simulate, PowerGrid, systemsize, State
 using OrderedCollections: OrderedDict
+using SciMLBase: successful_retcode
 
 Y = 0 + 5*im
 nodes = [SlackAlgebraic(U=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1)]
@@ -28,4 +29,4 @@ faulty_grid = linefailure(grid)
 x0 = randn(systemsize(grid))
 sol = simulate(linefailure,grid,x0,(0,0.2))
 @test sol !== nothing
-@test sol.dqsol.retcode == :Success
+@test successful_retcode(sol.dqsol)

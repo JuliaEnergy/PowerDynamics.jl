@@ -1,6 +1,8 @@
 using Test: @test
 using Graphs: edges, Edge, SimpleGraph
 using PowerDynamics: SlackAlgebraic, SwingEqLVS, StaticLine, ChangeInitialConditions, Inc, Dec, simulate, PowerGrid, State
+using SciMLBase: successful_retcode
+
 
 graph = SimpleGraph(2)
 Y = 0 + 5*im
@@ -20,4 +22,4 @@ state3 = ChangeInitialConditions(2, :ω, Dec(omega1_delta))(state)
 
 sol = simulate(ChangeInitialConditions(2, :ω, Inc(omega1_delta)),grid,state,(0,0.1))
 @test sol !== nothing
-@test sol.dqsol.retcode == :Success
+@test successful_retcode(sol.dqsol)

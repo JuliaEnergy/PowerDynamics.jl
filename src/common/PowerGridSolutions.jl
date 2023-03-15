@@ -2,7 +2,7 @@ using DiffEqBase: AbstractTimeseriesSolution
 using Lazy: @>>
 using RecipesBase: @recipe, RecipesBase
 using NetworkDynamics
-
+using SciMLBase: successful_retcode
 
 """
     struct PowerGridSolution
@@ -34,7 +34,7 @@ struct PowerGridSolution
     dqsol::AbstractTimeseriesSolution
     powergrid::PowerGrid
     function PowerGridSolution(dqsol::AbstractTimeseriesSolution, powergrid::PowerGrid)
-        if dqsol.retcode != :Success
+        if ! successful_retcode(dqsol)
             throw(GridSolutionError("unsuccesful, return code is $(dqsol.retcode)"))
         end
         new(dqsol, powergrid)

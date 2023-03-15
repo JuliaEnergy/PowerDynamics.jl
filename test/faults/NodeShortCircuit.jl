@@ -12,6 +12,8 @@ using PowerDynamics:
   find_operationpoint
 using OrdinaryDiffEq: ODEProblem, Rodas4
 import DiffEqBase: solve
+using SciMLBase: successful_retcode
+using SciMLBase
 
 nodes = [
   SlackAlgebraic(; U = complex(1.0, 0.0)),
@@ -69,7 +71,7 @@ end
     sol = simulate(nsc, op, (0., 1.));
 
     @test sol !== nothing
-    @test sol.dqsol.retcode == :Success
+    @test successful_retcode(sol.dqsol)
 
     # no voltage drop
     @test all(sol(0.6, 1:2, :v) .≈ op[1:2, :v])
@@ -97,5 +99,5 @@ end
     # test alternative call signature
     sol = simulate(nsc, op.grid, op.vec, (0., 1.));
     @test sol !== nothing
-    @test sol.dqsol.retcode == :Success
+    @test successful_retcode(sol.dqsol)
 end
