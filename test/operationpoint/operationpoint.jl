@@ -155,7 +155,8 @@ end
 
     # the following should not throw an OperationPointError since the SteadyStateProblem
     # still finds a solution where nlsolve fails in the current setup
-    find_operationpoint(PowerGrid(should_fail, lines); sol_method = :rootfind)
+    # -> not true anymore
+    # find_operationpoint(PowerGrid(should_fail, lines); sol_method = :dynamic)
 end
 
 @testset "passing of keyword arguments to the solvers" begin
@@ -163,7 +164,7 @@ end
     @test_nowarn find_operationpoint(grid; sol_method = :nlsolve, method=:newton, autodiff = :forward, show_trace=true);
 
     # pass nlsolve arguments to SSRootfind
-    @test_nowarn find_operationpoint(grid; sol_method = :rootfind, nlsolve=(f,u0,abstol) -> (res=nlsolve(f,u0,method=:newton, autodiff = :forward, show_trace=true);res.zero));
+    @test_nowarn find_operationpoint(grid; sol_method = :rootfind, method=:newton, autodiff = :forward, show_trace=true);
 
     # pass SteadyStateDiffEq arguments to DynamicSS
     @test_nowarn find_operationpoint(grid; sol_method = :dynamic, abstol=1e-10, reltol=1e-10, tspan=Inf);

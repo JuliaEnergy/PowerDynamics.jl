@@ -1,4 +1,5 @@
 using DiffEqBase: AbstractTimeseriesSolution
+using SciMLBase
 using Lazy: @>>
 using RecipesBase: @recipe, RecipesBase
 using NetworkDynamics
@@ -34,7 +35,7 @@ struct PowerGridSolution
     dqsol::AbstractTimeseriesSolution
     powergrid::PowerGrid
     function PowerGridSolution(dqsol::AbstractTimeseriesSolution, powergrid::PowerGrid)
-        if dqsol.retcode != :Success
+        if !SciMLBase.successful_retcode(dqsol.retcode)
             throw(GridSolutionError("unsuccesful, return code is $(dqsol.retcode)"))
         end
         new(dqsol, powergrid)

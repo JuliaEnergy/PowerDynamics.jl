@@ -10,7 +10,7 @@ using PowerDynamics: PowerPerturbation, simulate, SwingEqLVS, SlackAlgebraic, St
     pp = PowerPerturbation(node = 1, fault_power = -0.9, tspan_fault = (0.1,1))
     sol = simulate(pp, state, (0., 1.))
     @test sol !== nothing
-@test sol.dqsol.retcode == :Success
+@test SciMLBase.successful_retcode(sol.dqsol.retcode)
 end
 
 @testset "test PowerPerturbation simulation P of type Int should also be accepted" begin
@@ -23,7 +23,7 @@ end
     pp = PowerPerturbation(node = 1, fault_power = Int(1), tspan_fault = (0.1,1))
     sol = simulate(pp, state, (0., 1.))
     @test sol !== nothing
-    @test sol.dqsol.retcode == :Success
+    @test SciMLBase.successful_retcode(sol.dqsol.retcode)
 end
 
 @testset "test PowerPerturbation simulation node without P should throw NodePerturbationError" begin
