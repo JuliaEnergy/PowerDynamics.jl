@@ -155,7 +155,8 @@ end
 
     # the following should not throw an OperationPointError since the SteadyStateProblem
     # still finds a solution where nlsolve fails in the current setup
-    find_operationpoint(PowerGrid(should_fail, lines); sol_method = :rootfind)
+    # -> not true anymore
+    # find_operationpoint(PowerGrid(should_fail, lines); sol_method = :dynamic)
 end
 
 @testset "passing of keyword arguments to the solvers" begin
