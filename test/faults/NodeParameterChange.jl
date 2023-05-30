@@ -12,7 +12,7 @@ using PowerDynamics: NodeParameterChange, simulate, SwingEqLVS, SlackAlgebraic, 
     npc = NodeParameterChange(node = 1, value = 0.9, tspan_fault = (0.1,1), var=:H)
     sol = simulate(npc, state, (0., 1.))
     @test sol !== nothing
-    @test sol.dqsol.retcode == :Success
+    @test SciMLBase.successful_retcode(sol.dqsol.retcode)
 end
 
 ## 
@@ -26,7 +26,7 @@ end
     npc = NodeParameterChange(node = 1, value = -0.9, tspan_fault = (0.1,1), var=:P)
     sol = simulate(npc, state, (0., 1.))
     @test sol !== nothing
-    @test sol.dqsol.retcode == :Success
+    @test SciMLBase.successful_retcode(sol.dqsol.retcode)
 end
 
 

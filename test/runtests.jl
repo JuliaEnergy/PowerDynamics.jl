@@ -1,5 +1,6 @@
 using Test
 using Crayons
+using SciMLBase
 
 testlist = [
     ("operationpoint/PowerModelsIntegration.jl","PowerModels Operationpoint Finder Tests"),

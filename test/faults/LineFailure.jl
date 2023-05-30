@@ -28,4 +28,4 @@ faulty_grid = linefailure(grid)
 x0 = randn(systemsize(grid))
 sol = simulate(linefailure,grid,x0,(0,0.2))
 @test sol !== nothing
-@test sol.dqsol.retcode == :Success
+@test SciMLBase.successful_retcode(sol.dqsol.retcode)
