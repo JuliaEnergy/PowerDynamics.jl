@@ -20,4 +20,4 @@ state3 = ChangeInitialConditions(2, :ω, Dec(omega1_delta))(state)
 
 sol = simulate(ChangeInitialConditions(2, :ω, Inc(omega1_delta)),grid,state,(0,0.1))
 @test sol !== nothing
-@test sol.dqsol.retcode == :Success
+@test SciMLBase.successful_retcode(sol.dqsol.retcode)
