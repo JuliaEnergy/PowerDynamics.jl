@@ -18,15 +18,15 @@ nodes = [
   CSIMinimal(; I_r = complex(0.4988, -0.4988)),
 ]
 
-y = complex(1.736, -208.326)
+Y = complex(1.736, -208.326)
 
-SL = StaticLine(; from = 1, to = 2, Y = y)
+SL = StaticLine(; from = 1, to = 2, Y = Y)
 PL = PiModelLine(;
     from = 1,
     to = 2,
-    y = y,
-    y_shunt_km = 0.0,
-    y_shunt_mk = 0.0,
+    Y = Y,
+    Y_shunt_km = 0.0,
+    Y_shunt_mk = 0.0,
   )
 
 

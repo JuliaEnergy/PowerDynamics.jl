@@ -9,11 +9,11 @@ using OrderedCollections: OrderedDict
 
 @testset "permutation tests array constructor" begin
     nodes_1 = [SlackAlgebraic(U=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1), SwingEqLVS(H=1, P=1, D=1, Ω=50, Γ=20, V=1)]
-    lines_1 = [StaticLine(from=1, to=2, Y=5im),PiModelLine(;from=2, to=3, y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.)]
+    lines_1 = [StaticLine(from=1, to=2, Y=5im),PiModelLine(;from=2, to=3, Y = 1/(0.1152 + im*0.0458), Y_shunt_km = 0.,  Y_shunt_mk = 0.)]
     power_grid_1 = PowerGrid(nodes_1,lines_1)
 
     nodes_2 = [SlackAlgebraic(U=1), SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1),SwingEqLVS(H=1, P=1, D=1, Ω=50, Γ=20, V=1)]
-    lines_2 = [PiModelLine(;from=2, to=3, y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.),StaticLine(from=1, to=2, Y=5im)]
+    lines_2 = [PiModelLine(;from=2, to=3, Y = 1/(0.1152 + im*0.0458), Y_shunt_km = 0.,  Y_shunt_mk = 0.),StaticLine(from=1, to=2, Y=5im)]
     power_grid_2 = PowerGrid(nodes_2,lines_2)
 
     @test collect(edges(power_grid_1.graph))[1]==collect(edges(power_grid_2.graph))[1]
@@ -24,7 +24,7 @@ using OrderedCollections: OrderedDict
     @test sum(abs.(op1[:]-op2[:]))<=1*10-6
 
     nodes_3 = [SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1),SlackAlgebraic(U=1), SwingEqLVS(H=1, P=1, D=1, Ω=50, Γ=20, V=1)]
-    lines_3 = [PiModelLine(;from=1, to=3, y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.),StaticLine(from=1, to=2, Y=5im)]
+    lines_3 = [PiModelLine(;from=1, to=3, Y = 1/(0.1152 + im*0.0458), Y_shunt_km = 0.,  Y_shunt_mk = 0.),StaticLine(from=1, to=2, Y=5im)]
     power_grid_3 = PowerGrid(nodes_3,lines_3)
     op3 = find_operationpoint(power_grid_3)
     @test isapprox(op2[3],op3[1],atol=1e-8)
@@ -34,11 +34,11 @@ end
 
 @testset "permutation tests OrderedDict constructor" begin
     nodes_1 = OrderedDict("bus1"=>SlackAlgebraic(U=1), "bus2"=>SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1),"bus3"=> SwingEqLVS(H=1, P=1, D=1, Ω=50, Γ=20, V=1))
-    lines_1 = OrderedDict("line1"=>StaticLine(from="bus1", to="bus2", Y=5im),"line2"=>PiModelLine(;from="bus2", to="bus3", y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.))
+    lines_1 = OrderedDict("line1"=>StaticLine(from="bus1", to="bus2", Y=5im),"line2"=>PiModelLine(;from="bus2", to="bus3", Y = 1/(0.1152 + im*0.0458), Y_shunt_km = 0.,  Y_shunt_mk = 0.))
     power_grid_1 = PowerGrid(nodes_1,lines_1)
 
     nodes_2 = OrderedDict("bus1"=>SlackAlgebraic(U=1), "bus2"=>SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1),"bus3"=> SwingEqLVS(H=1, P=1, D=1, Ω=50, Γ=20, V=1))
-    lines_2 = OrderedDict("line1"=>PiModelLine(;from="bus2", to="bus3", y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.),"line2"=>StaticLine(from="bus1", to="bus2", Y=5im))
+    lines_2 = OrderedDict("line1"=>PiModelLine(;from="bus2", to="bus3", Y = 1/(0.1152 + im*0.0458), Y_shunt_km = 0.,  Y_shunt_mk = 0.),"line2"=>StaticLine(from="bus1", to="bus2", Y=5im))
     power_grid_2 = PowerGrid(nodes_2,lines_2)
 
     @test collect(edges(power_grid_1.graph))[1]==collect(edges(power_grid_2.graph))[1]
@@ -49,7 +49,7 @@ end
 
 
     nodes_3 = OrderedDict("bus1"=>SwingEqLVS(H=1, P=-1, D=1, Ω=50, Γ=20, V=1),"bus2"=>SlackAlgebraic(U=1), "bus3"=> SwingEqLVS(H=1, P=1, D=1, Ω=50, Γ=20, V=1))
-    lines_3 = OrderedDict("line1"=>PiModelLine(;from="bus1", to="bus3", y = 1/(0.1152 + im*0.0458), y_shunt_km = 0.,  y_shunt_mk = 0.),"line2"=>StaticLine(from="bus1", to="bus2", Y=5im))
+    lines_3 = OrderedDict("line1"=>PiModelLine(;from="bus1", to="bus3", Y = 1/(0.1152 + im*0.0458), Y_shunt_km = 0.,  Y_shunt_mk = 0.),"line2"=>StaticLine(from="bus1", to="bus2", Y=5im))
 
     power_grid_3 = PowerGrid(nodes_3, lines_3)
     op3 = find_operationpoint(power_grid_3)
