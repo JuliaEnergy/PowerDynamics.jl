@@ -1,3 +1,5 @@
+#! julia --startup-file=no
+
 #=
 julia localmake.jl PORT(optional)
 
@@ -27,7 +29,12 @@ Pkg.update()
 menu = RadioMenu(["Run again!", "Quit!"])
 while true
     revise()
-    include("make.jl")
+    @info "Start building docs..."
+    try
+        include("make.jl")
+    catch e
+        @info "make.jl error" e
+    end
 
     println("\nDocs are served at http://localhost:$port")
 

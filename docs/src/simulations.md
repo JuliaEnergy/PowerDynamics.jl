@@ -30,6 +30,3 @@ Filter = t -> typeof(t) === DataType && t<:PowerDynamics.AbstractPerturbation
 
 ### LineFault
 Deprecated! Use [`LineFailure`](@ref) instead!
-```@docs
-LineFault
-```
