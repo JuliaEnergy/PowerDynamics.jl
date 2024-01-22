@@ -179,7 +179,8 @@ function _find_operationpoint_steadystate(pg, ic_guess, p0, t0; kwargs...)
     op_prob = ODEProblem(ode, ic_guess, (t0, Inf), p0)
     sol = solve(
         SteadyStateProblem(op_prob),
-        DynamicSS(Rodas5(); kwargs...),
+        DynamicSS(Rodas5());
+        kwargs...
     )
     if SciMLBase.successful_retcode(sol.retcode)
         return State(pg, sol.u)

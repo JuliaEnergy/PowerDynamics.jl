@@ -15,7 +15,7 @@ The main components of PowerDynamics are
 
 For a typical simulation the data flow between some of the components is illustrated in the figure below:
 
-![Data flow diagram for PowerDynamics.jl](../figures/PowerDynamics_Architecturemd.svg)
+![Data flow diagram for PowerDynamics.jl](figures/PowerDynamics_Architecturemd.svg)
 
 
 ### nodes

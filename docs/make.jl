@@ -24,7 +24,8 @@ makedocs(
         "fullindex.md",
         "contact.md",
     ],
-   format = Documenter.HTML(canonical = "https://juliaenergy.github.io/PowerDynamics.jl/stable/"),
+    format = Documenter.HTML(canonical = "https://juliaenergy.github.io/PowerDynamics.jl/stable/"),
+    warnonly=[:missing_docs]
    )
 deploydocs(
     repo = "github.com/JuliaEnergy/PowerDynamics.jl.git",
