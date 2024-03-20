@@ -27,4 +27,4 @@ If you use PowerDynamics.jl in your research publications, [please cite our pape
 
 Development of `PowerDynamics.jl` was funded by the *German Federal Ministry for Economic Affairs and Climate Action*
 
-![BMWK Logo](bmwk_logo_en.svg)
+<img src="bmwk_logo_en.svg" width="300"/>

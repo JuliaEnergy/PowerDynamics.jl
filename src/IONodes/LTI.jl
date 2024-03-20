@@ -136,7 +136,18 @@ function IOBlock(A::Matrix,B::Matrix,C::Matrix,D::Matrix,x,y,u; name=gensym(:LTI
     IOBlock(eqs, u, y; name, warn, rem_eqs)
 end
 
-function balresid(blk::IOBlock, order; warn=BlockSystems.WARN[], verbose=false, reconstruct=true, getT=false)
+"""
+    balresid(blk::IOBlock, order; warn=BlockSystems.WARN[], verbose=false, reconstruct=false)
+
+This function creates a model reduced version of `blk` of given order using the balanced residualization method.
+Only works for linear systems. Internaly, it uses the `baltrunc` function from `ControlSystems.jl`
+to apply the method to an LTI. The LTI system matrices A,B,C and D are determined symbolicially from the
+`IOBlock` object.
+
+If `reconstruct=true` the resulting system will include `removed_eqs` to reconstruct the original states from the projected states `z_i`.
+
+"""
+function balresid(blk::IOBlock, order; warn=BlockSystems.WARN[], verbose=false, reconstruct=false, getT=false)
     @check isempty(blk.iparams) "In order to balresid a system it can not have any internal parameters!"
     A, B, C, D, x, y, u = identify_lti(blk)
     verbose && @info "Block is LTI of order $(length(x))"

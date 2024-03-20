@@ -6,7 +6,7 @@ using PowerDynamics.IOComponents
 export MIParameters
 export Inverter, InverterCS
 export VSwithLoad, DroopControl, Synchronverter, FixedVoltage, FixedCurrent, PLLCurrent
-export PerfectSource, PerfectCSource, PT1Source, VoltageControlFOM, CurrentControlFOM, VoltageControlCSFOM, ConstantPower
+export IdealSource, IdealCSource, PT1Source, CascadedVoltageControl, CascadedCurrentControl, CascadedVoltageControlCS, ConstantPower, FiltConstantPower
 
 MIBase = let ω0base = 2π*50u"rad/s",
              Sbase = 10000u"W",
@@ -50,6 +50,33 @@ MIParameters = Dict(
     :CC2₊KI => 10 * ustrip(u"A/V", MIBase.Ibase/MIBase.Vbase)
 )
 
+"""
+   Inverter(inner, outer; name))
+
+Combines an inner and an outer loop to a closed loop model of an voltage-srouce-inverter.
+
+Both inner and outer loops musst be `IOBlock` objects adhering to the interface
+
+Inner loop inputs/outputs:
+```
+           +---------+
+u_r_ref -->|         |
+u_i_ref -->| Voltage |--> u_r
+    i_r -->| Source  |--> u_i
+    i_i -->|         |
+           +---------+
+```
+Outer loop inputs/outputs:
+
+```
+            +---------+
+i_r_meas -->|         |
+i_i_meas -->|  Outer  |--> u_r_ref
+u_r_meas -->|  Loop   |--> u_i_ref
+u_i_meas -->|         |
+            +---------+
+```
+"""
 function Inverter(inner, outer; name=Symbol(string(outer.name)*"_"*string(inner.name)))
     @assert BlockSpec([:i_i, :i_r, :u_ref_r, :u_ref_i], [:u_r, :u_i])(inner) "Inner ctrl loop :$(inner.name)  does not meet expectation."
     @assert BlockSpec([], [:u_ref_r, :u_ref_i]; in_strict=false)(outer)  "Outer ctrl loop :$(outer.name) does not meet expectation."
@@ -73,6 +100,33 @@ function Inverter(inner, outer; name=Symbol(string(outer.name)*"_"*string(inner.
     return closed
 end
 
+"""
+   InverterCS(inner, outer; name))
+
+Combines an inner and an outer loop to a closed loop model of an current-source-inverter.
+
+Both inner and outer loops musst be `IOBlock` objects adhering to the interface
+
+Inner loop inputs/outputs:
+```
+           +---------+
+i_r_ref -->|         |
+i_i_ref -->| Current |--> i_r
+    u_r -->| Source  |--> i_i
+    u_i -->|         |
+           +---------+
+```
+Outer loop inputs/outputs:
+
+```
+            +---------+
+i_r_meas -->|         |
+i_i_meas -->|  Outer  |--> i_r_ref
+u_r_meas -->|  Loop   |--> i_i_ref
+u_i_meas -->|         |
+            +---------+
+```
+"""
 function InverterCS(inner, outer; name=Symbol(string(outer.name)*"_"*string(inner.name)))
     # @assert BlockSpec([:u_i, :u_r, :i_ref_r, :i_ref_i], [:i_r, :i_i])(inner) "Inner ctrl loop :$(inner.name)  does not meet expectation."
     # @assert BlockSpec([], [:i_ref_r, :i_ref_i]; in_strict=false)(outer)  "Outer ctrl loop :$(outer.name) does not meet expectation."
@@ -101,7 +155,22 @@ end
 """
     DroopControl(; params...)
 
-Return block for droop control outer ocntrol.
+Return block for droop control outer control.
+
+
+```
+                ω_ref, V_ref, P_ref, Q_ref, K_P, K_Q, τ_P, τ_Q
+                                     v
+            +-----------------------------------------------------+
+            |     P_meas = u_meas_r*i_meas_r + i_meas_i*u_meas_i  |
+i_r_meas -->|     Q_meas = -u_meas_r*i_meas_i + i_meas_r*u_meas_i |
+i_i_meas -->| d/dt P_fil = (P_meas - P_fil) / τ_P                 |--> u_r_ref
+u_r_meas -->| d/dt Q_fil = (Q_meas - Q_fil) / τ_P                 |--> u_i_ref
+u_i_meas -->|     d/dt δ = ω_ref - K_P*(-P_ref + P_fil)           |
+            |          V = V_ref - K_Q*(-Q_ref + Q_fil)           |
+            +-----------------------------------------------------+
+```
+
 """
 function DroopControl(; params...)
     @named Pfil = IOComponents.LowPassFilter(; τ=:τ_P, input=:P_meas, output=:P_fil)
@@ -115,6 +184,8 @@ function DroopControl(; params...)
     @named PQmeas = IOComponents.Power(; u_r=:u_meas_r, u_i=:u_meas_i,
                                      i_r=:i_meas_r, i_i=:i_meas_i,
                                      P=:P_meas, Q=:Q_meas)
+                                     equations(PQmeas)
+
 
     refgen = MIComponents.VRefGen()
 
@@ -124,6 +195,27 @@ function DroopControl(; params...)
     return replace_vars(con, params)
 end
 
+"""
+    Synchronverter(; params...)
+
+Synchronverter outer loop control for a voltage controlled converter.
+
+```
+                     ω0, V_ref, P_ref, Q_ref, Dp, Kq, Kv
+                                     v
+            +---------------------------------------------------------------------+
+            |         V = sqrt(u_meas_r^2 + u_meas_i^2)                           |
+            |         Q = -sqrt(3/2) * MfIf * (ω0 + ω)                            |
+            |             * (-sin(θ)*i_meas_r + cos(θ)*i_meas_i)                  |
+i_r_meas -->|        Te =  sqrt(3/2) * MfIf * (cos(θ)*i_meas_r + sin(θ)*i_meas_i) |
+i_i_meas -->|    d/dt ω = 1/J * P_ref/ω0 - Dp*ω - Te,                             |--> u_r_ref
+u_r_meas -->|    d/dt θ = ω                                                       |--> u_i_ref
+u_i_meas -->| d/dt MfIf = (Q_ref - Q + Dq*(V_ref - V))/Kv],                       |
+            |   u_ref_r = sqrt(3/2) * MfIf * (ω0 + ω) * cos(θ)                    |
+            |   u_ref_i = sqrt(3/2) * MfIf * (ω0 + ω) * sin(θ)                    |
+            +---------------------------------------------------------------------+
+```
+"""
 function Synchronverter(; params...)
     # Frequency Loop
     @variables t ΔT(t) ω(t) θ(t)
@@ -160,6 +252,23 @@ function Synchronverter(; params...)
     return replace_vars(con, params)
 end
 
+"""
+    FixedVoltage(; params...)
+
+Outer loop control for a voltage source which tries to keep voltage constant (slack like behavior).
+
+
+```
+  u_d_fix, u_i_fix
+          v
++-------------------+
+|                   |
+| u_r_ref = u_d_fix |--> u_r_ref
+| u_i_ref = u_i_fix |--> u_i_ref
+|                   |
++-------------------+
+```
+"""
 function FixedVoltage(; params...)
     @variables t u_ref_r(t) u_ref_i(t)
     @parameters u_fix_r u_fix_i
@@ -170,6 +279,13 @@ function FixedVoltage(; params...)
     replace_vars(blk, params)
 end
 
+"""
+    PLLCurrent(; params...)
+
+Outer loop control for a current source inverter, which employs a dynamic PLL to estimate
+the phase and frequency of the voltage at PCC. The single parameter, `i_mag_ref` is interpeted
+as current reference in `d` component (pure active power injection with fixed current).
+"""
 function PLLCurrent(; params...)
     pll = MIComponents.JuanPLL(; Kp=250, Ki=1000, u_r=:u_meas_r, u_i=:u_meas_i)
 
@@ -182,6 +298,12 @@ function PLLCurrent(; params...)
     con = make_iparam(con, :i_mag_ref)
 end
 
+"""
+    ConstantPower(; params...)
+
+Outer loop control for a current source inverter, which measures the voltage at PCC
+and commands the `i_ref_r` and `i_ref_i` such that the desired power at PCC is achived.
+"""
 function ConstantPower(; params...)
     @variables t i_ref_r(t) i_ref_i(t)
     @parameters u_meas_r(t) u_meas_i(t) P_ref Q_ref
@@ -191,7 +313,14 @@ function ConstantPower(; params...)
         name = :ConstantPower)
 end
 
-export FiltConstantPower
+"""
+    FiltConstantPower(; params...)
+
+Outer loop control for a current source inverter, which measures the voltage at PCC
+and commands the `i_ref_r` and `i_ref_i` such that the desired power at PCC is achived.
+In contrast to the `ConstantPower`-outer loop, the current references follow a PT1 behavior
+with time constant τ.
+"""
 function FiltConstantPower(; params...)
     lpf_r = IOComponents.LowPassFilter(input=:u_meas_r, output=:u_filt_r)
     lpf_i = IOComponents.LowPassFilter(input=:u_meas_i, output=:u_filt_i)
@@ -216,8 +345,8 @@ end
 """
     PT1Source(; params...)
 
-Create Schiffer Voltage source which follows angle directly but
-amplitude with lag.
+Create Voltage source which follows angle directly but
+amplitude with a PT1-lag.
 """
 function PT1Source(; params...)
     @variables t A(t) u_r(t) u_i(t)
@@ -238,11 +367,11 @@ function PT1Source(; params...)
 end
 
 """
-    PerfectSource()
+    IdealSource()
 
-Perfect Voltage source which follows the reference directly.
+Ideal voltage source which follows the reference directly.
 """
-function PerfectSource(; params...)
+function IdealSource(; params...)
     @variables t u_r(t) u_i(t)
     @parameters u_ref_r(t) u_ref_i(t) i_r(t) i_i(t)
     Vsource = IOBlock([u_r ~ u_ref_r,
@@ -254,11 +383,11 @@ function PerfectSource(; params...)
 end
 
 """
-    PerfectCSource()
+    IdealCSource()
 
-Perfect current source which follows the reference directly.
+Ideal current source which follows the reference directly.
 """
-function PerfectCSource(; params...)
+function IdealCSource(; params...)
     @variables t i_r(t) i_i(t)
     @parameters i_ref_r(t) i_ref_i(t) u_r(t) u_i(t)
     Vsource = IOBlock([i_r ~ i_ref_r,
@@ -271,10 +400,12 @@ end
 
 
 """
-    VoltageControlFOM(;params..)
+    CascadedVoltageControl(;pr=true, ff=true)
 
+Cascaded voltage controler over a LC filter, which controlls the output
+voltage using 2 levels of cascaded dq controllers.
 """
-function VoltageControlFOM(;pr=true, ff=true)
+function CascadedVoltageControl(;pr=true, ff=true)
     LC  = MIComponents.LC()
     CC1 = if pr
         MIComponents.CC1_PR()
@@ -303,10 +434,14 @@ function VoltageControlFOM(;pr=true, ff=true)
 end
 
 """
-    VoltageControlCSFOM(;params..)
+    CascadedVoltageControlCS(;pr=true, ff=true)
 
+Cascaded voltage controler over a LCL filter, which controlls the filter
+voltage using 2 levels of cascaded dq controllers.
+
+Acts as a current source because of the second L in the filter.
 """
-function VoltageControlCSFOM(;pr=true, ff=true, params...)
+function CascadedVoltageControlCS(;pr=true, ff=true)
     LCL = MIComponents.LCL()
     CC1 = if pr
         MIComponents.CC1_PR()
@@ -335,10 +470,12 @@ function VoltageControlCSFOM(;pr=true, ff=true, params...)
 end
 
 """
-    CurrentControlFOM(;params..)
+    CascadedCurrentControl(;pr=true)
 
+Cascaded current controler over a LCL filter, which controlls the output
+current using 3 levels of cascaded dq controllers.
 """
-function CurrentControlFOM(; pr=true)
+function CascadedCurrentControl(; pr=true)
     LCL = MIComponents.LCL()
     CC1 = if pr
         MIComponents.CC1_PR()
