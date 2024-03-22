@@ -51,6 +51,7 @@ function IONode(bp::BlockPara)
 end
 
 IONode(blk::IOBlock, para::Dict) = IONode(BlockPara(blk, para))
+IONode(blk::IOBlock) = IONode(BlockPara(blk, Dict()))
 
 # extend the necessary functions for the `AbstractNode` interface
 function construct_vertex(ion::IONode)

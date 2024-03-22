@@ -49,6 +49,12 @@ include("IONodes/IOComponents.jl")
 include("IONodes/GFI_MTK.jl")
 include("IONodes/MTK_Load.jl")
 
+module ModularInverter
+include("IONodes/MIComponents.jl")
+include("IONodes/ModularInverter.jl")
+include("IONodes/LTI.jl")
+end
+
 # all line types
 
 include("lines/AbstractLine.jl")
