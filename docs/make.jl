@@ -1,8 +1,11 @@
 using Documenter
 using PowerDynamics
 using BlockSystems
+using Literate
 
 DocMeta.setdocmeta!(PowerDynamics, :DocTestSetup, :(using PowerDynamics); recursive=true)
+
+Literate.markdown(joinpath(@__DIR__, "src", "MARiE.jl"), joinpath(@__DIR__, "src", "generated"))
 
 makedocs(
     modules = [PowerDynamics],
@@ -16,6 +19,7 @@ makedocs(
         "powergrid_model.md",
         "node_types.md",
         "custom_node_types.md",
+        "Modular Inverters" => "generated/MARiE.md",
         "line_types.md",
         "states_solutions.md",
         "simulations.md",

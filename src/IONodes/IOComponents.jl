@@ -262,4 +262,34 @@ function ImpedanceConstraint(;name=gensym(:rxconstraint), renamings...)
     return isempty(renamings) ? block : rename_vars(block; renamings...)
 end
 
+"""
+    Cart2Polar(;name=:c2p, renamings...)
+
+(X, Y) ↦ (mag, arg) transformation
+"""
+function Cart2Polar(;name=:c2p, renamings...)
+    @variables t arg(t) mag(t)
+    @parameters x(t) y(t)
+    block = IOBlock([mag ~ √(x^2 + y^2),
+                     arg ~ atan(y, x)],
+                    [x, y], [mag, arg]; name)
+
+    replace_vars(block; renamings...)
+end
+
+"""
+    Polar2Cart(;name=:p2c, renamings...)
+
+(mag, arg) ↦ (X, Y) transformation
+"""
+function Polar2Cart(;name=:p2c, renamings...)
+    @variables t x(t) y(t)
+    @parameters arg(t) mag(t)
+    block = IOBlock([x ~ mag * cos(arg),
+                     y ~ mag * sin(arg)],
+                    [mag, arg], [x, y]; name)
+
+    replace_vars(block; renamings...)
+end
+
 end # module

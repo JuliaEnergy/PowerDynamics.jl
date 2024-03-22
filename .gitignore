@@ -21,3 +21,4 @@ Manifest.toml
 
 target/
 .vscode/
+/docs/src/generated/

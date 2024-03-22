@@ -10,18 +10,19 @@ At the end of each run the user is prompted to rerun the make process. Using rev
 use the updated `*.md` and source files. This way the Julia session keeps alive and the
 individual builds are much faster.
 =#
-using Revise
-using LiveServer
-using REPL.TerminalMenus
-
-port = isempty(ARGS) ? 8000 : parse(Int, ARGS[1])
-@assert 8000 ≤ port ≤ 9000 "port has to be in range 8000..9000!"
 
 using Pkg
 Pkg.activate(@__DIR__)
 Pkg.develop(PackageSpec(path=dirname(@__DIR__))) # adds the package this script is called from
 Pkg.instantiate()
 Pkg.update()
+
+using Revise
+using LiveServer
+using REPL.TerminalMenus
+
+port = isempty(ARGS) ? 8000 : parse(Int, ARGS[1])
+@assert 8000 ≤ port ≤ 9000 "port has to be in range 8000..9000!"
 
 @info "Start server..."
 @async serve(;dir=joinpath(@__DIR__, "build"), port)
