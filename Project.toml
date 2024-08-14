@@ -1,0 +1,13 @@
+name = "PowerDynamicsPrototype"
+uuid = "88be6d57-9a19-43dd-942c-8912817e6f84"
+authors = ["Hans Würfel <git@wuerfel.io> and contributors"]
+version = "0.1.0-DEV"
+
+[compat]
+julia = "1.10"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
