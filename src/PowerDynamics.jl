@@ -5,6 +5,8 @@ module PowerDynamics
 
 using Markdown # for the @doc
 
+using DataFrames
+
 include("common/Errors.jl")
 include("common/Helpers.jl")
 include("common/PowerGrid.jl")
@@ -34,6 +36,10 @@ include("nodes/FourthOrderEqGovernorIEEEG1.jl")
 include("nodes/ExciterSaturtionEq.jl")
 include("nodes/experimental/RLCLoad.jl")
 include("nodes/experimental/PVInverterWithFrequencyControl.jl")
+include("nodes/experimental/LinearGenerator.jl")
+include("nodes/experimental/LinearPTO.jl")
+include("nodes/experimental/HydraulicPTO.jl")
+include("nodes/experimental/DirectDrivePTO.jl")
 include("nodes/experimental/WindTurbineGenType4.jl")
 include("nodes/experimental/WindTurbineGenType4_RotorControl.jl")
 include("nodes/experimental/CurtailedPowerPlantWithInertia.jl")
@@ -99,6 +105,26 @@ export rhs
 export systemsize
 export symbolsof
 export total_current
+export LinearGenerator
+export HydraulicPTO
 
+global wec_simulation_df = DataFrame()
+global pto_elec = []
+global pto_mech = []
+global pto_time = []
+global pto_p = []
+# global pto_di = []
+# global pto_du = []
+# global pto_i = []
+global ts = 0.0
+global initial_pressure_A = 1.0e7  # Initial pressure at point A in Pascals (e.g., 10 MPa)
+global initial_pressure_B = 1.0e7  # Initial pressure at point B in Pascals (e.g., 10 MPa)
+ # Initial pressure at point B in Pascals (e.g., 10 MPa)
+global temp = 0       # Initial angular velocity (e.g., start at rest)
 
+# Initialize the log file globally
+# global log_file
+# log_file = open("simulation_log.txt", "w")
+# write(log_file, "Time, Closest Time, Current Velocity\n")
+# #global itr = 0
 end

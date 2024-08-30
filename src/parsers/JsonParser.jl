@@ -79,6 +79,14 @@ function convert_node(node)
         node = VoltageDependentLoad(;sym_params...)
     elseif type == "NormalForm"
         node = NormalForm(;sym_params...)
+    elseif type == "LinearGenerator"  
+        node = LinearGenerator(;sym_params...)
+    elseif type == "LinearPTO"  
+        node = LinearPTO(;sym_params...)
+    elseif type == "HydraulicPTO"  
+        node = HydraulicPTO(;sym_params...)
+    elseif type == "DirectDrivePTO"  
+        node = DirectDrivePTO(;sym_params...)
     else
         throw(ArgumentError("Invalid type: $type"))
     end

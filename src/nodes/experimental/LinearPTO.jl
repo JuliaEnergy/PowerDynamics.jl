@@ -1,0 +1,581 @@
+
+
+@doc doc"""
+```Julia
+LinearPTO(;τ_P,τ_Q,K_P,K_Q,V_r,Q,K_pto, C_pto, η, base_power)
+```
+A node type that applies frequency and voltage droop control to regulate the dynamics of a wave energy converter's (WEC) linear Power Take-Off (PTO) system.
+
+LinearPTO models the PTO system as an AC voltage source, allowing control over amplitude and frequency (grid-forming mode). The model incorporates time series data from WEC simulations, adjusting power output based on relative velocity and displacement. Power is converted to per-unit using a specified base_power.
+
+this node is based on VSIMinimal
+
+Keyword Arguments
+- τ_P: Time constant for active power measurement
+- τ_Q: Time constant for reactive power measurement
+- K_P: Droop constant for frequency control
+- K_Q: Droop constant for voltage control
+- V_r: Reference/desired voltage
+- Q: Reactive power infeed
+- K_pto: Stiffness of the PTO
+- C_pto: Damping of the PTO
+- η: Efficiency of the PTO system
+- base_power: Base power for per-unit conversion
+
+"""
+@DynamicNode LinearPTO(τ_P,τ_Q,K_P,K_Q,V_r,Q,K_pto, C_pto, η, base_power) begin
+    @assert τ_P > 0 "time constant active power measurement should be >0"
+    @assert τ_Q > 0 "time constant reactive power measurement should be >0"
+    @assert K_Q > 0 "reactive power droop constant should be >0"
+    @assert K_P > 0 "active power droop constant reactive power measurement should be >0"
+end [[ω, dω]] begin
+
+    # handle time series from WEC simulation 
+    current_time = PowerDynamics.ts
+    closest_time_index = argmin(abs.(wec_simulation_df.Time .- current_time))
+    relative_velocity = wec_simulation_df[closest_time_index, :Relative_Velocity]
+    relative_displacement = wec_simulation_df[closest_time_index, :Relative_Displacement]
+
+    hs = PowerDynamics.wave_data_df[closest_time_index, :Wave_Height]
+
+    # Calculate the power from the PTO 
+    F_pto = -K_pto * relative_displacement - C_pto * relative_velocity
+    P_mech = F_pto * relative_velocity
+    P_elec = η * P_mech
+
+    # Convert to per-unit
+    P = P_elec / base_power
+
+    p = real(u * conj(i))
+    q = imag(u * conj(i))
+    dϕ = ω
+    v = abs(u)
+    dv = 1/τ_Q*(-v + V_r- K_Q *(q-Q))
+    du = u * 1im * dϕ + dv*(u/v)
+    dω = 1/τ_P*(-ω-K_P*(p-P))
+
+    # @info "P_mech : $P_mech"
+    # @info "P_elec : $P_elec"
+    # @info "P : $P"
+    # @info "ts : $current_time"
+    # @info "Time index: $closest_time_index"
+    # @info "hs : $hs"
+    # @info "Relative Velocity: $relative_velocity"
+    # @info "Relative Displacement: $relative_displacement"
+    # @info "Call number: $(PowerDynamics.temp)"
+    # @info "---- End of Step ----"
+    # PowerDynamics.temp += 1
+end
+
+export LinearPTO
+
+
+
+
+
+# @DynamicNode LinearPTO(c, R, L) begin
+#     @assert c > 0 "Damping coefficient (c) should be >0"
+#     @assert R >= 0 "Resistance (R) should be >=0"
+#     @assert L > 0 "Inductance (L) should be >0"
+#     MassMatrix(m_int=[true]) # Indicates that 'i' has an associated mass
+# end [[i, di]] begin
+#     velocity_df = PowerDynamics.velocity_df
+
+#     # Ensure the velocity DataFrame is not empty
+#     @assert !isempty(velocity_df) "Velocity DataFrame should not be empty"
+
+#     # Fetch the closest time index and corresponding velocity value
+#     current_time = PowerDynamics.ts
+#     closest_time_index = argmin(abs.(velocity_df.Time .- current_time))
+#     velocity = velocity_df[closest_time_index, :Velocity]
+    
+#     # log_data = "Time: $(PowerDynamics.ts), Closest Time: $(velocity_df[closest_time_index, :Time]), Current velocity: $velocity\n"
+#     # write(log_file, log_data)
+    
+#     # Calculate PTO force as a linear damper
+#     force = c * velocity
+    
+#     # Calculate electromotive force (emf)
+#     emf = force
+    
+#     # Rate of change of current (di/dt)
+#     di = (emf - R * i[1]) / L
+    
+#     # Voltage (du) across the PTO
+#     du = emf - R * i[1] - L * di
+# end
+
+# using Logging
+
+# @DynamicNode LinearPTO(K_pto, C_pto, R, L) begin
+#     @assert C_pto > 0 "Damping coefficient (C_pto) should be >0"
+#     @assert K_pto >= 0 "Stiffness (K_pto) should be >=0"
+#     MassMatrix(m_int=[true])  # Indicates that 'i' has an associated mass
+# end [[relative_velocity, relative_displacement], [i, di]] begin
+#     # Fetch the current simulation time
+#     current_time = PowerDynamics.ts
+
+#     # Find the closest time index
+#     closest_time_index = argmin(abs.(wec_simulation_df.Time .- current_time))
+
+#     # Fetch the relative velocity and displacement from the DataFrame
+#     relative_velocity = wec_simulation_df[closest_time_index, :Relative_Velocity]
+#     relative_displacement = wec_simulation_df[closest_time_index, :Relative_Displacement]
+
+#     # # Calculate the force
+#     #F_pto = -C_pto * relative_velocity
+
+#     # # Calculate the electrical power output
+#     P_pto = C_pto * relative_velocity^2
+
+#     # # Set the output to be the electrical power
+#     du = P_pto
+
+#     # # Electromotive force (emf) generated by the PTO
+#     # emf = F_pto * relative_velocity  # Simplified example
+
+#     # Calculate the PTO force using both stiffness and damping
+#     force = -K_pto * relative_displacement - C_pto * relative_velocity
+    
+#     # Calculate the instantaneous power absorbed by the PTO
+#     #P_pto = force * relative_velocity
+    
+#     # Set the output du to be the electrical power (P_pto)
+#     du = P_pto
+
+#     # Calculate the electromotive force (emf) generated by the PTO
+#     emf = force  # Assuming emf is directly related to the force
+
+#     # Calculate the rate of change of current (di/dt)
+#     di = (emf - R * i[1]) / L
+
+#     # Return the differential (since there's no actual dynamics for displacement in this model, we'll just pass the velocity)
+#     dx_rel = relative_velocity  # Placeholder for internal variable dynamics, if needed
+
+#     # # Logging statements
+#     # @info "Current Time: $current_time"
+#     # @info "Closest Time Index: $closest_time_index"
+#     # @info "Relative Velocity: $relative_velocity"
+#     # @info "Relative Displacement: $relative_displacement"
+#     # @info "Force (F_pto): $F_pto"
+#     # @info "electrical power output (P_pto): $P_pto"
+#     # @info "Call number: $(PowerDynamics.temp)"
+#     # @info "---- End of Step ----"
+#     # PowerDynamics.temp += 1
+# end
+
+
+
+# @DynamicNode LinearPTO(K_pto, C_pto, η) begin
+#     @assert K_pto >= 0 "Stiffness (K_pto) should be >= 0"
+#     @assert C_pto > 0 "Damping coefficient (C_pto) should be > 0"
+#     @assert η > 0 && η <= 1 "Efficiency (η) should be in the range (0,1]"
+#     MassMatrix()
+# end [] begin
+#     base_power = 100e6  # 100 MVA base power
+#     base_voltage = 138e3  # 138 kV base voltage
+#     current_time = PowerDynamics.ts
+#     closest_time_index = argmin(abs.(wec_simulation_df.Time .- current_time))
+#     relative_velocity = wec_simulation_df[closest_time_index, :Relative_Velocity]
+#     relative_displacement = wec_simulation_df[closest_time_index, :Relative_Displacement]
+
+#     # Mechanical force and power
+#     F_pto = -K_pto * relative_displacement - C_pto * relative_velocity
+#     P_mech = F_pto * relative_velocity
+#     p_elec = η * P_mech
+
+#     # Convert electrical power to per unit
+#     p_elec_pu = p_elec / base_power
+
+#     # Update the active power (P)
+#     #dP = p_elec_pu - P
+#     P = p_elec_pu  # Update P directly
+
+#     # Voltage dynamics fixed to 1.0 pu
+#     V = 1.0  # Fixing voltage to 1.0 pu
+#     v = abs(u) # from the grid
+#     p = real(u*conj(i)) # from the grid ? 
+#     du = (v-V) + im*(p - P)  # Ensure that imaginary part relates to power
+
+#     # # Logging real values
+#     # @info "Voltage v [pu]: $V"
+#     # @info "Active Power [pu]: $P"
+#     # @info "Delta Active Power [pu]: $dP"
+#     @info "p_elec [pu]: $p_elec_pu"
+#     @info "Call number: $(PowerDynamics.temp)"
+#     @info "---- End of Step ----"
+#     PowerDynamics.temp += 1
+# end
+
+# export LinearPTO
+
+
+# @DynamicNode LinearPTO(K_pto, C_pto, R, L) begin
+#     @assert K_pto >= 0 "Stiffness (K_pto) should be >= 0"
+#     @assert C_pto > 0 "Damping coefficient (C_pto) should be > 0"
+#     @assert R > 0 "Resistance (R) should be > 0"
+#     @assert L >= 0 "Inductance (L) should be >= 0"
+#     MassMatrix()
+# end [[relative_velocity, relative_displacement], [i, di], [u, du]] begin
+#     current_time = PowerDynamics.ts
+#     closest_time_index = argmin(abs.(wec_simulation_df.Time .- current_time))
+#     relative_velocity = wec_simulation_df[closest_time_index, :Relative_Velocity]
+#     relative_displacement = wec_simulation_df[closest_time_index, :Relative_Displacement]
+
+#     # Mechanical force applied by the PTO
+#     F_pto = -K_pto * relative_displacement - C_pto * relative_velocity
+    
+#     # Mechanical power extracted by the PTO
+#     P_mech = F_pto * relative_velocity
+
+#     # Efficiency of the PTO
+#     η = 0.8  # Assuming 80% efficiency
+
+#     # Electrical power output
+#     p_elec = η * P_mech
+
+#     # Voltage and current dynamics
+#     i = abs(u) > 1e-6 ? p_elec / u : 0.0
+#     di = L > 0 ? (u - R * i) / L : 0
+#     du = R * i + L * di
+
+#     # Real and reactive power
+#     p = real(u * conj(i))
+#     q = imag(u * conj(i))
+
+#     push!(PowerDynamics.pto_elec, p_elec)
+#     push!(PowerDynamics.pto_mech, P_mech)
+#     push!(PowerDynamics.pto_time, current_time)
+    
+
+#     # Log these values for debugging
+#     @info "Voltage (u): $u"
+#     @info "Current (i): $i"
+#     @info "Real Power (p): $p"
+#     @info "Reactive Power (q): $q"
+#     @info "Mechanical Power (P_mech): $P_mech"
+#     @info "Electrical Power Output (p_elec): $p_elec"
+#     @info "Force (F_pto): $F_pto"
+#     @info "Relative Velocity: $relative_velocity"
+#     @info "Relative Displacement: $relative_displacement"
+#     @info "Call number: $(PowerDynamics.temp)"
+#     @info "---- End of Step ----"
+#     PowerDynamics.temp += 1
+# end
+
+
+
+# @DynamicNode LinearPTO(K_pto, C_pto, R, L) begin
+
+#     # Ensuring valid inputs
+#     @assert K_pto >= 0 "Stiffness (K_pto) should be >= 0"
+#     @assert C_pto > 0 "Damping coefficient (C_pto) should be > 0"
+#     @assert R > 0 "Resistance (R) should be > 0"
+#     @assert L >= 0 "Inductance (L) should be >= 0"
+
+# end [[relative_velocity, relative_displacement], [i, di], [u, du]] begin
+
+#     @info "Checking values before calculation"
+#     @info "u: $u, i: $i"
+
+#     # Fetch the current simulation time and related data
+#     current_time = PowerDynamics.ts
+
+#     # Find the closest time index
+#     closest_time_index = argmin(abs.(wec_simulation_df.Time .- current_time))
+
+#     # Fetch the relative velocity and displacement from the DataFrame
+#     relative_velocity = wec_simulation_df[closest_time_index, :Relative_Velocity]
+#     relative_displacement = wec_simulation_df[closest_time_index, :Relative_Displacement]
+
+#     # Calculate the PTO force using both stiffness and damping
+#     F_pto = -K_pto * relative_displacement - C_pto * relative_velocity
+  
+#     P_pto = -F_pto * relative_velocity
+
+#     η = 0.8  # Assuming 80% efficiency for simplicity, adjust as needed
+
+#     p_elec = η * P_pto
+
+#     # Prevent division by zero or very small u
+#     i = abs(u) > 1e-8 ? p_elec / u : 0.0
+
+#     # Check that i is finite before proceeding
+#     @assert isfinite(i) "Current i became non-finite after division"
+
+#     # Compute di/dt using the RL circuit equation, handling L = 0 case
+#     di = L > 0 ? (u - R * i) / L : 0
+
+#     # Compute du based on the RL circuit model
+#     du = R * i + L * di
+
+#     # Ensure no non-finite values
+#     @assert isfinite(di) "Change in Current di became non-finite"
+#     @assert isfinite(du) "Voltage differential du became non-finite"
+
+#     # Logging statements
+#     @info "Current Time: $current_time"
+#     @info "Closest Time Index: $closest_time_index"
+#     @info "Relative Velocity: $relative_velocity"
+#     @info "Relative Displacement: $relative_displacement"
+#     @info "Force (F_pto): $F_pto"
+#     @info "Mechanical Power (P_pto): $P_pto"
+#     @info "Electrical Power Output (p_elec): $p_elec"
+#     @info "Current (i): $i"
+#     @info "Change in Current (di): $di"
+#     @info "Voltage differential (du): $du"
+#     @info "Call number: $(PowerDynamics.temp)"
+#     @info "---- End of Step ----"
+
+#     PowerDynamics.temp += 1
+
+# end
+
+
+# @DynamicNode LinearPTO(K_pto, C_pto) begin
+#     @assert K_pto >= 0 "Stiffness (K_pto) should be >= 0"
+#     @assert C_pto > 0 "Damping coefficient (C_pto) should be > 0"
+# end [[du, p]] begin
+#     # Fetch simulation data
+#     wec_simulation_df = PowerDynamics.wec_simulation_df
+#     current_time = PowerDynamics.ts
+
+#     # Find the closest time index and corresponding values
+#     closest_time_index = argmin(abs.(wec_simulation_df.Time .- current_time))
+#     X_rel = wec_simulation_df[closest_time_index, :Relative_Displacement]
+#     dX_rel = wec_simulation_df[closest_time_index, :Relative_Velocity]
+
+#     # Calculate the PTO force using both stiffness and damping
+#     F_pto = -K_pto * X_rel - C_pto * dX_rel
+
+#     # Instantaneous mechanical power absorbed by the PTO
+#     P_mech = -F_pto * dX_rel
+
+#     # Convert mechanical power to electrical power considering efficiency
+#     η = 0.8  # Assuming 80% efficiency for simplicity, adjust as needed
+#     P_elec = η * P_mech
+
+#     # Set the output variables
+#     p = P_elec  # Electrical power output
+
+#     # Calculate du based on system dynamics
+#     Z_grid = 121
+#     du = -p / Z_grid  # Simplified example, depends on your system dynamics
+# end
+
+# export LinearPTO
+
+
+
+
+
+# using Logging
+
+# @DynamicNode LinearPTO(K_pto, C_pto, R, L) begin
+#     @assert C_pto > 0 "Damping coefficient (C_pto) should be >0"
+#     @assert K_pto >= 0 "Stiffness (K_pto) should be >=0"
+#     MassMatrix(m_int=[true])  # Indicates that 'i' has an associated mass
+# end [[relative_velocity, relative_displacement], [i, di]] begin
+#     # Fetch the current simulation time
+#     current_time = PowerDynamics.ts
+
+#     # Find the closest time index
+#     closest_time_index = argmin(abs.(wec_simulation_df.Time .- current_time))
+
+#     # Fetch the relative velocity and displacement from the DataFrame
+#     relative_velocity = wec_simulation_df[closest_time_index, :Relative_Velocity]
+#     relative_displacement = wec_simulation_df[closest_time_index, :Relative_Displacement]
+
+#     # # Calculate the force
+#     # F_pto = -C_pto * relative_velocity
+
+#     # # Calculate the electrical power output
+#     # P_pto = C_pto * relative_velocity^2
+
+#     # # Set the output to be the electrical power
+#     # du = P_pto
+
+#     # # Electromotive force (emf) generated by the PTO
+#     # emf = F_pto * relative_velocity  # Simplified example
+
+#     # Calculate the PTO force using both stiffness and damping
+#     force = -K_pto * relative_displacement - C_pto * relative_velocity
+    
+#     # Calculate the instantaneous power absorbed by the PTO
+#     P_pto = force * relative_velocity
+    
+#     # Set the output du to be the electrical power (P_pto)
+#     du = P_pto
+
+#     # Calculate the electromotive force (emf) generated by the PTO
+#     emf = force  # Assuming emf is directly related to the force
+
+#     # Calculate the rate of change of current (di/dt)
+#     di = (emf - R * i[1]) / L
+
+#     # Return the differential (since there's no actual dynamics for displacement in this model, we'll just pass the velocity)
+#     dx_rel = relative_velocity  # Placeholder for internal variable dynamics, if needed
+
+#     # Logging statements
+#     @info "Current Time: $current_time"
+#     @info "Closest Time Index: $closest_time_index"
+#     @info "Relative Velocity: $relative_velocity"
+#     @info "Relative Displacement: $relative_displacement"
+#     @info "Force (F_pto): $F_pto"
+#     @info "electrical power output (P_pto): $P_pto"
+#     @info "Call number: $(PowerDynamics.temp)"
+#     @info "---- End of Step ----"
+#     PowerDynamics.temp += 1
+# end
+
+# export LinearPTO
+
+
+# using ForwardDiff
+# using Logging
+
+# # Using the simplified approach to log only the actual values
+
+# @DynamicNode LinearPTO(K_pto, C_pto, R, L) begin
+#     @assert C_pto > 0 "Damping coefficient (C_pto) should be >0"
+#     @assert R >= 0 "Resistance (R) should be >=0" 
+#     @assert L > 0 "Inductance (L) should be >0"
+#     @assert K_pto >= 0 "Stiffness (K_pto) should be >=0"
+#     MassMatrix(m_int=[true])  # Indicates that 'i' has an associated mass
+# end begin 
+#     # prep block
+#     p = 0.0
+#     i = 0.0
+#     u = 0.0
+#     du = 0.0
+#     di = 0.0
+# end [[i, di]] begin
+#     # Fetch the simulation data
+#     wec_simulation_df = PowerDynamics.wec_simulation_df
+
+#     # Ensure the data is not empty
+#     @assert !isempty(wec_simulation_df) "Velocity DataFrame should not be empty"
+
+#     # Get the closest time index and corresponding values
+#     current_time = PowerDynamics.ts
+#     closest_time_index = argmin(abs.(wec_simulation_df.Time .- current_time))
+#     relative_velocity = wec_simulation_df[closest_time_index, :Relative_Velocity]
+#     relative_displacement = wec_simulation_df[closest_time_index, :Relative_Displacement]
+
+#     # Logging statements
+#     @info "Current Time: $current_time"
+#     @info "Closest Time Index: $closest_time_index"
+#     @info "Relative Velocity: $relative_velocity"
+#     @info "Relative Displacement: $relative_displacement"
+
+#     # Calculate PTO force using stiffness and damping
+#     force = -K_pto * relative_displacement - C_pto * relative_velocity
+#     @info "Calculated Force: $force"
+
+#     # Ensure power_absorbed is zero when the force or velocity is too small
+#     power_absorbed = abs(relative_velocity) < 1e-6 || abs(force) < 1e-6 ? 0.0 : -force * relative_velocity
+#     @info "Power Absorbed: $power_absorbed"
+
+#     # Calculate electromotive force (emf)
+#     emf = force
+#     @info "Electromotive Force (emf): $emf"
+
+#     # Rate of change of current (di/dt)
+#     di = (emf - R * i[1]) / L
+#     @info "Rate of Change of Current (di/dt): $(ForwardDiff.value(di))"
+
+#     # Voltage (du) across the PTO
+#     du = emf - R * i[1] - L * di
+#     @info "Voltage (du) across PTO: $(ForwardDiff.value(du))"
+
+#     # Extract and log actual values of u and conj(i)
+#     u_value = ForwardDiff.value(u)
+#     conj_i_value = ForwardDiff.value(conj(i))
+#     @info "Voltage (u): $u_value"
+#     @info "Conjugate of Current (conj(i)): $conj_i_value"
+
+#     # Calculate active power based on current and voltage
+#     p = real(u * conj(i))  # Assuming `u` is the voltage across the PTO and `i` is the current through it
+#     @info "Active Power (p): $(ForwardDiff.value(p))"
+
+#     # Set the output differential variables
+#     du = ForwardDiff.value(du)  # Ensure du is set correctly
+#     di = ForwardDiff.value(di)  # Ensure di is set correctly
+
+#     @info "Call number: $(PowerDynamics.temp)"
+#     PowerDynamics.temp += 1
+
+#     @info "---- End of Step ----"
+# end
+
+# export LinearPTO
+
+
+
+
+
+# using ForwardDiff
+
+# @DynamicNode LinearPTO(K_pto, C_pto, R, L) begin
+#     @assert C_pto > 0 "Damping coefficient (C_pto) should be >0"
+#     @assert R >= 0 "Resistance (R) should be >=0"
+#     @assert L > 0 "Inductance (L) should be >0"
+#     @assert K_pto >= 0 "Stiffness (K_pto) should be >=0"
+#     MassMatrix(m_int=[true]) # Indicates that 'i' has an associated mass
+# end [[i, di]] begin
+#     # Assuming wec_simulation_df contains both Relative_Displacement and Relative_Velocity
+#     wec_simulation_df = PowerDynamics.wec_simulation_df
+
+#     # Ensure the velocity DataFrame is not empty
+#     @assert !isempty(wec_simulation_df) "Velocity DataFrame should not be empty"
+
+#     # Fetch the closest time index and corresponding velocity and displacement values
+#     current_time = PowerDynamics.ts
+#     closest_time_index = argmin(abs.(wec_simulation_df.Time .- current_time))
+#     relative_velocity = wec_simulation_df[closest_time_index, :Relative_Velocity]
+#     relative_displacement = wec_simulation_df[closest_time_index, :Relative_Displacement]
+
+#     # Debugging print statements
+#     println("Current Time: ", current_time)
+#     println("Closest Time Index: ", closest_time_index)
+#     println("Relative Velocity: ", relative_velocity)
+#     println("Relative Displacement: ", relative_displacement)
+
+#     # Calculate PTO force using both stiffness and damping
+#     force = -K_pto * relative_displacement - C_pto * relative_velocity
+#     println("Calculated Force: ", force)
+
+#     # Ensure power_absorbed is zero when the force or velocity is too small
+#     if abs(relative_velocity) < 1e-6 || abs(force) < 1e-6
+#         power_absorbed = 0.0
+#     else
+#         power_absorbed = -force * relative_velocity
+#     end
+#     println("Power Absorbed: ", power_absorbed)
+    
+#     # Calculate electromotive force (emf) proportional to the force
+#     emf = force
+#     println("Electromotive Force (emf): ", emf)
+    
+#     # Rate of change of current (di/dt)
+#     di = (emf - R * i[1]) / L
+#     di_value = ForwardDiff.value(di)  # Extract the plain value
+#     println("Rate of Change of Current (di/dt): ", di_value)
+    
+#     # Voltage (du) across the PTO
+#     du = emf - R * i[1] - L * di
+#     du_value = ForwardDiff.value(du)  # Extract the plain value
+#     println("Voltage (du) across PTO: ", du_value)
+
+#     # Calculate active power based on current and voltage
+#     p = real(u * conj(i))  # Assuming `u` is the voltage across the PTO and `i` is the current through it
+#     p_value = ForwardDiff.value(p)  # Extract the plain value
+#     println("Active Power (p): ", p_value)
+
+#     println("Call number: ", PowerDynamics.temp)
+#     PowerDynamics.temp += 1
+
+#     println("---- End of Step ----")
+# end
+
+# export LinearPTO

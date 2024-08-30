@@ -155,6 +155,7 @@ function find_operationpoint(
         op = _find_operationpoint_nlsolve(pg, ic_guess, p0, t0; sol_kwargs...)
     elseif sol_method == :rootfind
         op = _find_operationpoint_rootfind(pg, ic_guess, p0, t0; sol_kwargs...)
+        #loops over to find operating point here
     elseif sol_method == :dynamic
         op = _find_operationpoint_steadystate(pg, ic_guess, p0, t0; sol_kwargs...)
     else
