@@ -40,13 +40,13 @@ end [[ω, dω]] begin
 
     # Calculate the power from the PTO 
     F_pto = -K_pto * relative_displacement - C_pto * relative_velocity
-    P_mech = F_pto * relative_velocity
+    P_mech = -F_pto * relative_velocity
     P_elec = η * P_mech
 
-    P_elec_scaled = scaling_factor * P_elec
-
+    #P_elec_scaled = scaling_factor * P_elec
+    pre =  (P_elec / base_power)
     # Convert to per-unit
-    P = P_elec / base_power
+    P = (P_elec / base_power) * scaling_factor
 
     p = real(u * conj(i))
     q = imag(u * conj(i))
@@ -56,17 +56,18 @@ end [[ω, dω]] begin
     du = u * 1im * dϕ + dv*(u/v)
     dω = 1/τ_P*(-ω-K_P*(p-P))
 
-    # @info "P_mech : $P_mech"
-    # @info "P_elec : $P_elec"
-    # @info "P : $P"
-    # @info "ts : $current_time"
+    @info "P_mech : $P_mech"
+    @info "P_elec : $P_elec"
+    @info "P no scale: $pre"
+    @info "P : $P"
+    @info "ts : $current_time"
     # @info "Time index: $closest_time_index"
     # @info "hs : $hs"
     # @info "Relative Velocity: $relative_velocity"
     # @info "Relative Displacement: $relative_displacement"
-    # @info "Call number: $(PowerDynamics.temp)"
-    # @info "---- End of Step ----"
-    # PowerDynamics.temp += 1
+    @info "Call number: $(PowerDynamics.temp)"
+    @info "---- End of Step ----"
+    PowerDynamics.temp += 1
 end
 
 export LinearPTO
