@@ -85,7 +85,7 @@ function (::NFRhs{N})(dz, z, esum, p, t) where {N}
 
     i = _tocomplex(esum) + Y_n * (z[1] + z[2] * 1im)
     u = z[1] + z[2] * im
-    @views x = z[3:end]  # @views is needed to avoid allocations
+    x = view(z, 3:3+N-1)
     s = u * conj(i)
 
     δp = real(s) - P
@@ -93,7 +93,7 @@ function (::NFRhs{N})(dz, z, esum, p, t) where {N}
     δv2 = abs2(u) - V^2
 
     du = (conj(Bᵤ) ⋅ x + Cᵤ * δv2 + Gᵤ * δp + Hᵤ * δq) * u  # conj(Bᵤ) because Julia's dot-product conjugates the first vector/matrix
-    dx = (Bₓ * x + Cₓ * δv2 + Gₓ * δp + Hₓ * δq)
+    dx = Bₓ * x + Cₓ * δv2 + Gₓ * δp + Hₓ * δq
 
     dz[1] = real(du)
     dz[2] = imag(du)
@@ -119,7 +119,7 @@ function tocomponent(nf::NormalForm{N}) where {N}
     append!(psym, [:Y_N_r => real(nf.Y_n), :Y_N_i => imag(nf.Y_n)])
     @assert length(psym) == _getpdim(N)
 
-    ODEVertex(NFRhs{N}(); sym, psym)
+    ODEVertex(NFRhs{N}(); sym, psym, name=Symbol("NormalForm{$N}"))
 end
 
 # @mtkmodel NormalFormSystem begin

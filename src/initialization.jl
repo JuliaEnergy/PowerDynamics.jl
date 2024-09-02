@@ -2,18 +2,19 @@ using NonlinearSolve
 using NetworkDynamics: LazyBufferCache
 using LinearAlgebra: norm
 
-export find_operationpoint
-function find_operationpoint(nw; sol_method=:rootfind, solve_powerflow=false)
-    if sol_method == :rootfind
-        find_fixpoint(nw, alg=NewtonRaphson())
-    elseif sol_method == :dynamic
-        find_fixpoint(nw)
-    else
-        error("Don't know sol method $sol_method")
-    end
+export UnsuccessfullError
+struct UnsuccessfullError <: Exception
+   msg::String
+end
+function Base.showerror(io::IO, err::UnsuccessfullError)
+    print(io, "UnsuccesffulError: ")
+    print(io, err.msg)
 end
 
-function find_operationpoint(nw, guess; sol_method=:rootfind)
+
+export find_operationpoint
+
+function find_operationpoint(nw, guess)
     # nw = safehouse.pg
     # guess = safehouse.ic_guess
     init = deepcopy(guess)
@@ -33,10 +34,24 @@ function find_operationpoint(nw, guess; sol_method=:rootfind)
         end
     end
 
-    println("Relax network to steady state...")
-    init2 = find_fixpoint(nw, init)
-
-    init
+    du = [Inf for i in 1:dim(nw)]
+    nw(du, uflat(init), pflat(init), init.t)
+    residual = maximum(abs.(du))
+    if residual < 1e-8
+        println("Component wise initialization reached NW steady state. Residual: $residual")
+        return init
+    else
+        println("Component wise initialisation did not reach state state Residual: $residual. Attempt dynamic relaxation...")
+        relax = find_fixpoint(nw, init)
+        du = [Inf for i in 1:dim(nw)]
+        nw(du, uflat(relax), pflat(relax), relax.t)
+        relaxresidual = maximum(abs.(du))
+        if relaxresidual > 1e-8
+            throw(UnsuccessfullError("Dynamic relaxation did not converge. Residual: $relaxresidual"))
+        end
+        println("Dynamic relaxation reached NW steady state. Residual: $residual")
+        return relax
+    end
 end
 
 
@@ -62,9 +77,12 @@ function initialize_vertex(v::ODEVertex, u, esum, p, t)
     unew = copy(u)
     unew[initmask] .= sol.u
 
-    # du = [Inf for i in 1:length(u)]
-    # v.f(du, unew, esum, p, t)
-    # l2 = norm(du)
+    du = [Inf for i in 1:length(u)]
+    v.f(du, unew, esum, p, t)
+    err = maximum(abs.(du))
+    if err > 1e-6
+        @warn "Initialisation of node $(v.name) lead to residual of $err"
+    end
 
     unew, success
 end
