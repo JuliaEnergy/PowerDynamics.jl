@@ -265,18 +265,30 @@ function fix_metadata!(invalid_eqs, sys)
     if isempty(missingmetadata)
         return invalid_eqs
     end
-    Main.@infiltrate
 
     metadatasubs = Dict()
+    allsyms = ModelingToolkit.all_symbols(sys)
+    allnames = string.(ModelingToolkit.getname.(allsyms))
     for invalids in missingmetadata
-        metadatasubs[invalids] = getproperty(sys, getname(invalids); namespace=false)
+        invalidname = getname(invalids)
+        valid = if hasproperty(sys, getname(invalidname))
+            getproperty(sys, getname(invalidname); namespace=false)
+        else
+            idxs = findall(contains(string(invalidname)), allnames)
+            if length(idxs) == 1
+                allsyms[only(idxs)]
+            else
+                @warn "Could not resolve invalid symbol $invalidname, options are $(allsyms[idxs])"
+            end
+        end
+        metadatasubs[invalids] = valid
     end
-    sys
+
     fixedeqs = [Symbolics.fast_substitute(eq, metadatasubs) for eq in invalid_eqs]
     if !isempty(check_metadata(fixedeqs))
-        @warn "Some transformation droped metadata! Could NOT be fixed. $(check_metadata(fixedeqs))"
+        @warn "Some transformation droped metadata ($missingmetadata)! Could NOT be fixed. $(check_metadata(fixedeqs))"
     else
-        @warn "Some transformation droped metadata! Could be fixed."
+        @warn "Some transformation droped metadata ($missingmetadata)! Could be fixed."
     end
     invalid_eqs .= fixedeqs
 end
