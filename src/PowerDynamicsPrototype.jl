@@ -6,7 +6,7 @@ using ModelingToolkit: t_nounits as t, D_nounits as Dt
 using Graphs: SimpleGraph, add_edge!, nv
 
 include("utils.jl")
-include("library.jl")
+include("Library/Library.jl")
 
 ####
 #### Synthetic Power Grids Compat

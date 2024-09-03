@@ -292,3 +292,9 @@ function fix_metadata!(invalid_eqs, sys)
     end
     invalid_eqs .= fixedeqs
 end
+
+export structural_simplify_bus
+function structural_simplify_bus(sys, busbar=:busbar)
+    io = ([getproperty(sys, busbar; namespace=false).i_r, getproperty(sys, busbar; namespace=false).i_i], [])
+    structural_simplify(sys, io)[1]
+end
