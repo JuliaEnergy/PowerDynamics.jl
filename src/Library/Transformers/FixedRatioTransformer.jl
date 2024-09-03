@@ -1,9 +1,22 @@
+#=
+* Copyright (c) 2015-2019, RTE (http://www.rte-france.com)
+* See AUTHORS.txt
+* All rights reserved.
+* This Source Code Form is subject to the terms of the Mozilla Public
+* License, v. 2.0. If a copy of the MPL was not distributed with this
+* file, you can obtain one at http://mozilla.org/MPL/2.0/.
+* SPDX-License-Identifier: MPL-2.0
+*
+* This file is based on Dynawo, an hybrid C++/Modelica open source time domain simulation tool for power systems.
+* It was ported to the Julia Programming language by the authors of PowerDynamics.jl.
+=#
+
 @mtkmodel TransformerParameters begin
     @parameters begin
-        RPu, [description="Resistance of the generator transformer in pu (base U2Nom, SnRef)"]
-        XPu, [description="Reactance of the generator transformer in pu (base U2Nom, SnRef)"]
-        GPu, [description="Conductance of the generator transformer in pu (base U2Nom, SnRef)"]
-        BPu, [description="Susceptance of the generator transformer in pu (base U2Nom, SnRef)"]
+        RPu=0, [description="Resistance of the generator transformer in pu (base U2Nom, SnRef)"]
+        XPu=0.00675, [description="Reactance of the generator transformer in pu (base U2Nom, SnRef)"]
+        GPu=0, [description="Conductance of the generator transformer in pu (base U2Nom, SnRef)"]
+        BPu=0, [description="Susceptance of the generator transformer in pu (base U2Nom, SnRef)"]
     end
 end
 
@@ -14,7 +27,7 @@ end
         terminal2 = Terminal()
     end
     @parameters begin
-        rTfoPu, [description="Transformation ratio in pu: U2/U1 in no load conditions"]
+        rTfoPu=1, [description="Transformation ratio in pu: U2/U1 in no load conditions"]
     end
     @equations begin
         (rTfoPu^2)*terminal1.u_r ~ RPu*terminal1.i_r - XPu*terminal1.i_i + rTfoPu*terminal2.u_r

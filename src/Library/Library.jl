@@ -3,7 +3,7 @@ module Library
 using ModelingToolkit: ModelingToolkit
 using ModelingToolkit: @connector, @mtkmodel, @variables, @parameters
 using ModelingToolkit: @named, @unpack, ODESystem, Equation, Num
-using ModelingToolkit: connect
+using ModelingToolkit: connect, simplify
 using ModelingToolkit: t_nounits as t, D_nounits as Dt
 using ModelingToolkitStandardLibrary.Blocks: RealInput
 
@@ -27,6 +27,9 @@ end
 export BusBar, Bus
 include("Bus.jl")
 
+export LineEnd, Line
+include("Lines.jl")
+
 export SauerPaiMachine
 include("Machines/SauerPaiMachine.jl")
 
@@ -35,5 +38,8 @@ include("Machines/DynawoMachine.jl")
 
 export FixedRatioTransformer
 include("Transformers/FixedRatioTransformer.jl")
+
+export DynawoPiLine
+include("Lines/DynawoPiLine.jl")
 
 end

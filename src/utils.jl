@@ -119,16 +119,17 @@ function compare_execution_styles(prob)
     return results, gpuresults
 end
 
-export pinparameters
+export pin_parameters
 
-function pinparameters(sys::ODESystem, sub::Pair)
-    pinparameters(sys, Dict(sub.first => sub.second))
+pin_parameters(sys::ODESystem) = pin_parameters(sys, defaults(sys))
+function pin_parameters(sys::ODESystem, sub::Pair)
+    pin_parameters(sys, Dict(sub.first => sub.second))
 end
-function pinparameters(sys::ODESystem, subs::Dict)
+function pin_parameters(sys::ODESystem, subs::Dict)
     _dict = Dict(_resolve_to_namespaced_symbolic(sys, k) => v for (k,v) in subs)
 
     if any(isterm, values(_dict))
-        @info "Parameter map for pinparameters cannot include any terms in the rhs. Try to resolve..."
+        @info "Parameter map for pin_parameters cannot include any terms in the rhs. Try to resolve..."
         __dict = Dict()
         for (k,v) in _dict
             _fullname = string(getname(k))
@@ -147,7 +148,7 @@ function pinparameters(sys::ODESystem, subs::Dict)
     _pinparameters(sys, _dict)
 end
 
-function _pinparameters(sys::ODESystem, _subs::Dict{<:Symbolic, <:Any})
+function _pinparameters(sys::ODESystem, _subs::Dict)
     isempty(_subs) && return sys
 
     subs = Dict{Symbolic, Any}()
@@ -164,7 +165,6 @@ function _pinparameters(sys::ODESystem, _subs::Dict{<:Symbolic, <:Any})
         applicable[k] = subs[k]
     end
 
-    @info "$(sys.name): substitute following parameters $(keys(applicable))"
     if isempty(applicable)
         _eqs = unwrap(sys.eqs)
         _observed = unwrap(sys.observed)
@@ -173,14 +173,12 @@ function _pinparameters(sys::ODESystem, _subs::Dict{<:Symbolic, <:Any})
         _defaults = sys.defaults
     else
         _eqs = [fixpoint_sub(eq, applicable) for eq in unwrap(sys.eqs)]
-
         # FIXME: check something drops the metadata
         # missingmetadata = check_metadata(_eqs)
         # if !isempty(missingmetadata)
         #     @warn "Metadata was dropped from the equations: $missingmetadata"
         #     _eqs = try_fix_metadata(_eqs, unwrap(sys.eqs))
         # end
-        @info check_metadata(_eqs)
         fix_metadata!(_eqs, sys)
 
 
@@ -226,8 +224,6 @@ function _pinparameters(sys::ODESystem, _subs::Dict{<:Symbolic, <:Any})
             checks = true,
             metadata = sys.metadata,
             gui_metadata = sys.gui_metadata)
-    @info "after" check_metadata(_eqs) check_metadata(newsys.eqs) check_metadata(full_equations(newsys))
-    newsys
 end
 function _resolve_to_namespaced_symbolic(sys, var)
     ns = string(getname(sys))
@@ -295,6 +291,22 @@ end
 
 export structural_simplify_bus
 function structural_simplify_bus(sys, busbar=:busbar)
-    io = ([getproperty(sys, busbar; namespace=false).i_r, getproperty(sys, busbar; namespace=false).i_i], [])
+    io = ([getproperty(sys, busbar; namespace=false).i_r,
+           getproperty(sys, busbar; namespace=false).i_i],
+          [getproperty(sys, busbar; namespace=false).u_r,
+           getproperty(sys, busbar; namespace=false).u_i])
+    structural_simplify(sys, io)[1]
+end
+
+export structural_simplify_line
+function structural_simplify_line(sys, src=:src, dst=:dst)
+    io = ([getproperty(sys, src; namespace=false).u_r,
+           getproperty(sys, src; namespace=false).u_i,
+           getproperty(sys, dst; namespace=false).u_r,
+           getproperty(sys, dst; namespace=false).u_i],
+          [getproperty(sys, src; namespace=false).i_r,
+           getproperty(sys, src; namespace=false).i_i,
+           getproperty(sys, dst; namespace=false).i_r,
+           getproperty(sys, dst; namespace=false).i_i])
     structural_simplify(sys, io)[1]
 end

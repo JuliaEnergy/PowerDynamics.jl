@@ -34,12 +34,12 @@ using Test
         end
         @named outer = Outer()
         full_equations(outer)
-        sys1 = pinparameters(outer, :a => 1)
-        sys2 = pinparameters(outer, :outer₊b => 1)
+        sys1 = pin_parameters(outer, :a => 1)
+        sys2 = pin_parameters(outer, :outer₊b => 1)
         full_equations(sys1)
         full_equations(sys2)
-        sys1 = pinparameters(outer, outer.inner.a => 1)
-        sys2 = pinparameters(outer, :inner₊a => 1)
+        sys1 = pin_parameters(outer, outer.inner.a => 1)
+        sys2 = pin_parameters(outer, :inner₊a => 1)
         @test full_equations(sys1) == full_equations(sys2)
     end
 end

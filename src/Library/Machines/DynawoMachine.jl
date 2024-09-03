@@ -1,3 +1,16 @@
+#=
+* Copyright (c) 2015-2019, RTE (http://www.rte-france.com)
+* See AUTHORS.txt
+* All rights reserved.
+* This Source Code Form is subject to the terms of the Mozilla Public
+* License, v. 2.0. If a copy of the MPL was not distributed with this
+* file, you can obtain one at http://mozilla.org/MPL/2.0/.
+* SPDX-License-Identifier: MPL-2.0
+*
+* This file is based on Dynawo, an hybrid C++/Modelica open source time domain simulation tool for power systems.
+* It was ported to the Julia Programming language by the authors of PowerDynamics.jl.
+=#
+
 @mtkmodel DynawoMachineParameterBase begin
     @parameters begin
         # General parameters of the synchronous machine
@@ -29,8 +42,9 @@
         RTfoPu = RTfPu * (UNomHV / UBaseHV) ^ 2 * (SNom / SnTfo), [description="Resistance of the generator transformer in pu (base SNom, UNom)"]
         XTfoPu = XTfPu * (UNomHV / UBaseHV) ^ 2 * (SNom / SnTfo), [description="Reactance of the generator transformer in pu (base SNom, UNom)"]
         # HACK: hardcoed one case
-        # rTfoPu = ifelse(RTfPu > 0.0 || XTfPu > 0.0, UNomHV / UBaseHV / (UNomLV / UBaseLV), 1.0), [description="Ratio of the generator transformer in pu (base UBaseHV, UBaseLV)"]
-        rTfoPu = UNomHV / UBaseHV / (UNomLV / UBaseLV), [description="Ratio of the generator transformer in pu (base UBaseHV, UBaseLV)"]
+        # rTfoPu = ifelse((RTfPu > 0.0 || XTfPu > 0.0), UNomHV / UBaseHV / (UNomLV / UBaseLV), 1.0)#, [description="Ratio of the generator transformer in pu (base UBaseHV, UBaseLV)"]
+        rTfoPu = ifelse((RTfPu > 0) | (XTfPu > 0), UNomHV / UBaseHV / (UNomLV / UBaseLV), 1.0)#, [description="Ratio of the generator transformer in pu (base UBaseHV, UBaseLV)"]
+        # rTfoPu = UNomHV / UBaseHV / (UNomLV / UBaseLV), [description="Ratio of the generator transformer in pu (base UBaseHV, UBaseLV)"]
     end
 end
 
