@@ -117,7 +117,7 @@ end
         # Saturated mutual inductances and related variables
         MdSat′Pu(t), [description="Direct axis saturated mutual inductance in pu"]
         MqSat′Pu(t), [description="Quadrature axis saturated mutual inductance in pu"]
-        λ_AirGa′Pu(t), [description="Total air gap flux in pu"]
+        λ_AirGapPu(t), [description="Total air gap flux in pu"]
         λ_ADPu(t), [description="Common flux of direct axis in pu"]
         λ_AQPu(t), [description="Common flux of quadrature axis in pu"]
         mdsPu(t), [description="Direct axis saturated mutual inductance in the case when the total air gap flux is aligned on the direct axis in pu"]
@@ -151,7 +151,10 @@ end
         2 * H * Dt(ωPu) ~ cmPu * PNomTurb / SNom - cePu - DPu * (ωPu - ωRefPu.u);
         cePu ~ λ_qPu * idPu - λ_dPu * iqPu;
         PePu ~ cePu * ωPu;
-        PmPu.u ~ cmPu * ωPu;
+
+        # PmPu.u ~ cmPu * ωPu;
+        cmPu ~ PmPu.u / ωPu;
+
         # Excitation voltage pu conversion
         # ufPu ~ efdPu.u * (Kuf * rTfoPu);
         # HACK: fixed to excitation type "noload"
@@ -172,11 +175,11 @@ end
         # Mutual inductances saturation
         λ_ADPu ~ MdSat′Pu * (idPu + ifPu + iDPu);
         λ_AQPu ~ MqSat′Pu * (iqPu + iQ1Pu + iQ2Pu);
-        λ_AirGa′Pu ~ sqrt(λ_ADPu ^ 2 + λ_AQPu ^ 2);
-        mdsPu ~ Md′Pu / (1 + md * λ_AirGa′Pu ^ nd);
-        mqsPu ~ Mq′Pu / (1 + mq * λ_AirGa′Pu ^ nq);
-        cos2Eta ~ λ_ADPu ^ 2 / λ_AirGa′Pu ^ 2;
-        sin2Eta ~ λ_AQPu ^ 2 / λ_AirGa′Pu ^ 2;
+        λ_AirGapPu ~ sqrt(λ_ADPu ^ 2 + λ_AQPu ^ 2);
+        mdsPu ~ Md′Pu / (1 + md * λ_AirGapPu ^ nd);
+        mqsPu ~ Mq′Pu / (1 + mq * λ_AirGapPu ^ nq);
+        cos2Eta ~ λ_ADPu ^ 2 / λ_AirGapPu ^ 2;
+        sin2Eta ~ λ_AQPu ^ 2 / λ_AirGapPu ^ 2;
         miPu ~ mdsPu * cos2Eta + mqsPu * sin2Eta;
         MdSat′Pu ~ miPu + MsalPu * sin2Eta;
         MqSat′Pu ~ miPu - MsalPu * cos2Eta;
