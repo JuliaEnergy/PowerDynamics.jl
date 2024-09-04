@@ -1,20 +1,9 @@
-# OpPoDyn
+# OpPoDyn Development Repository
 
 [![Build Status](https://github.com/hexaeder/OpPoDyn.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/hexaeder/OpPoDyn.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
-# Basic model
+This is an experimental repository for exploration of the new PowerDynamics design as part of the OpPoDyn Project.
 
-I think the core functionality of PowerDynamics should be to provide a "Bus" type/constructor.
+Once the design converges the code will be moved to the PowerDynamics.jl repository, essentially replacing it. Thus, the `OpPoDyn.jl`-Package won't be registered and is for experimental use only.
 
-Each bus, contains a list of devices, devices can be probably pure MTK models. They should be either qualified as "current sources" or "voltage sources".
-
-The bus itself can posess meta fields like the "static model" (PV, PQ, ...)
-
-In order to generate the dynamic models there are essentialy 3 ways:
-- error if more then 2 devices are voltage sources
-- if one device is voltage source
-  - voltage source device 
-  - current source devices are added like power lines
-- if all devices are current sources
-  - bus voltage is implicitly give as algebraic constraint
-  - alternatively: EMT bus: bus voltage is generated over capacity
+During development, this Github Repository will be also used for tracking issues/features of for the new PowerDynamics/NetworkDynamics stack.
