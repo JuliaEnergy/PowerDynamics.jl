@@ -282,8 +282,8 @@ function powermodels_pf(nodes, lines)
         branch["t_bus"] = line.to
         branch["br_status"] = 1
         branch["index"] = i
-        branch["angmin"] = PowerDynamicsPrototype.ang_min
-        branch["angmax"] = PowerDynamicsPrototype.ang_max
+        branch["angmin"] = OpPoDyn.ang_min
+        branch["angmax"] = OpPoDyn.ang_max
         branch["tap"] = 1
         branch["shift"] = 0
         if line isa StaticLine
@@ -319,7 +319,7 @@ end
 
 export power_flow
 function power_flow(nodes, lines)
-    voltages = PowerDynamicsPrototype.powermodels_pf(nodes, lines)
+    voltages = OpPoDyn.powermodels_pf(nodes, lines)
 
     nw = Network(nodes, lines)
     s = NWState(nw)

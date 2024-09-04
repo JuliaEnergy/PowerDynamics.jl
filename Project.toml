@@ -1,4 +1,4 @@
-name = "PowerDynamicsPrototype"
+name = "OpPoDyn"
 uuid = "88be6d57-9a19-43dd-942c-8912817e6f84"
 authors = ["Hans Würfel <git@wuerfel.io> and contributors"]
 version = "0.1.0-DEV"

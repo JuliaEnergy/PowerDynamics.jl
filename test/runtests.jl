@@ -1,9 +1,9 @@
-using PowerDynamicsPrototype
+using OpPoDyn
 using ModelingToolkit
 using ModelingToolkit: t_nounits as t
 using Test
 
-@testset "PowerDynamicsPrototype.jl" begin
+@testset "OpPoDyn.jl" begin
     @testset "pin parameters" begin
         @mtkmodel Inner begin
             @parameters begin

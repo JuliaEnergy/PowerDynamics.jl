@@ -49,7 +49,7 @@ idx_Yn(N) = 4 + 2*N + 6 + N^2 + N + N + N : 4 + 2*N + 6 + N^2 + N + N + N + 1
 _getpdim(N) = 3 + 4*2 + 5*N + N^2
 
 #=
-using PowerDynamicsPrototype: idx_P , idx_Q , idx_V , idx_Bᵤ_re, idx_Bᵤ_im, idx_Cᵤ, idx_Gᵤ, idx_Hᵤ, idx_Bₓ, idx_Cₓ, idx_Gₓ, idx_Hₓ, idx_Yn
+using OpPoDyn: idx_P , idx_Q , idx_V , idx_Bᵤ_re, idx_Bᵤ_im, idx_Cᵤ, idx_Gᵤ, idx_Hᵤ, idx_Bₓ, idx_Cₓ, idx_Gₓ, idx_Hₓ, idx_Yn
 
 N = 3
 idxs = Int[]

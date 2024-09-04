@@ -1,4 +1,4 @@
-module PowerDynamicsPrototype
+module OpPoDyn
 
 using NetworkDynamics
 using ModelingToolkit
