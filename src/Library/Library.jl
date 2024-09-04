@@ -24,7 +24,7 @@ end
    end
 end
 
-export BusBar, Bus
+export BusBar, Bus, SlackAlgebraic, SlackDifferential
 include("Bus.jl")
 
 export LineEnd, Line

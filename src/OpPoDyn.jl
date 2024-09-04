@@ -135,22 +135,22 @@ n = PVAlgebraic(P=1.0, V=1.0)
 tocomponent(n)
 =#
 
-export SlackAlgebraic
-@kwdef struct SlackAlgebraic <: NodeWrapper
-    U::Complex{Float64}
-end
-function _slackf(dx, x, edges, p, t)
-    u = _tocomplex(x)
-    Uref = _tocomplex(p)
-    du = u - Uref
-    dx[1], dx[2] = _toreal(du)
-    nothing
-end
-function tocomponent(n::SlackAlgebraic)
-    ODEVertex(_slackf; sym=[:u_r=>real(n.U), :u_i=>imag(n.U)],
-        psym=[:u_ref_r=>real(n.U), :u_ref_i=>imag(n.U)], mass_matrix=zeros(2),
-        name=:SlackAlgebraic)
-end
+# export SlackAlgebraic
+# @kwdef struct SlackAlgebraic <: NodeWrapper
+#     U::Complex{Float64}
+# end
+# function _slackf(dx, x, edges, p, t)
+#     u = _tocomplex(x)
+#     Uref = _tocomplex(p)
+#     du = u - Uref
+#     dx[1], dx[2] = _toreal(du)
+#     nothing
+# end
+# function tocomponent(n::SlackAlgebraic)
+#     ODEVertex(_slackf; sym=[:u_r=>real(n.U), :u_i=>imag(n.U)],
+#         psym=[:u_ref_r=>real(n.U), :u_ref_i=>imag(n.U)], mass_matrix=zeros(2),
+#         name=:SlackAlgebraic)
+# end
 #=
 n = SlackAlgebraic(U=1.0-im)
 tocomponent(n)
