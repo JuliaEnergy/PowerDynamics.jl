@@ -11,7 +11,7 @@
 * It was ported to the Julia Programming language by the authors of PowerDynamics.jl.
 =#
 
-@mtkmodel TransformerParameters begin
+@mtkmodel DynawoTransformerParameters begin
     @parameters begin
         RPu=0, [description="Resistance of the generator transformer in pu (base U2Nom, SnRef)"]
         XPu=0.00675, [description="Reactance of the generator transformer in pu (base U2Nom, SnRef)"]
@@ -20,8 +20,8 @@
     end
 end
 
-@mtkmodel FixedRatioTransformer begin
-    @extend TransformerParameters()
+@mtkmodel DynawoFixedRatioTransformer begin
+    @extend DynawoTransformerParameters()
     @components begin
         terminal1 = Terminal()
         terminal2 = Terminal()

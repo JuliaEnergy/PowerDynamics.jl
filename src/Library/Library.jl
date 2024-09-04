@@ -36,8 +36,8 @@ include("Machines/SauerPaiMachine.jl")
 export DynawoMachine
 include("Machines/DynawoMachine.jl")
 
-export FixedRatioTransformer
-include("Transformers/FixedRatioTransformer.jl")
+export DynawoFixedRatioTransformer
+include("Transformers/DynawoFixedRatioTransformer.jl")
 
 export DynawoPiLine
 include("Lines/DynawoPiLine.jl")
