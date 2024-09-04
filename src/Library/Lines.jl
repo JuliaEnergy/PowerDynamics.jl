@@ -9,10 +9,10 @@
         i_i(t), [description="line end d-current", output=true]
     end
     @equations begin
-        u_r ~ terminal.u_r
-        u_i ~ terminal.u_i
-        i_r ~ terminal.i_r
-        i_i ~ terminal.i_i
+        u_r ~  terminal.u_r
+        u_i ~  terminal.u_i
+        i_r ~ -terminal.i_r
+        i_i ~ -terminal.i_i
     end
 end
 

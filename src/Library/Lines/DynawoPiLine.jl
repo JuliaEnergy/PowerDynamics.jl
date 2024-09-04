@@ -31,10 +31,10 @@
         # (terminal1.i_r + im*terminal1.i_i) ~ ((terminal1.u_r + im*terminal1.u_i) - (terminal2.u_r + im*terminal2.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (terminal1.u_r + im*terminal1.u_i)
         # (terminal2.i_r + im*terminal2.i_i) ~ ((terminal2.u_r + im*terminal2.u_i) - (terminal1.u_r + im*terminal1.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (terminal2.u_r + im*terminal2.u_i)
 
-        simplify(terminal1.i_r ~ real(((terminal1.u_r + im*terminal1.u_i) - (terminal2.u_r + im*terminal2.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (terminal1.u_r + im*terminal1.u_i)))
-        simplify(terminal1.i_i ~ imag(((terminal1.u_r + im*terminal1.u_i) - (terminal2.u_r + im*terminal2.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (terminal1.u_r + im*terminal1.u_i)))
-        simplify(terminal2.i_r ~ real(((terminal2.u_r + im*terminal2.u_i) - (terminal1.u_r + im*terminal1.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (terminal2.u_r + im*terminal2.u_i)))
-        simplify(terminal2.i_i ~ imag(((terminal2.u_r + im*terminal2.u_i) - (terminal1.u_r + im*terminal1.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (terminal2.u_r + im*terminal2.u_i)))
+        simplify(-terminal1.i_r ~ real(((terminal1.u_r + im*terminal1.u_i) - (terminal2.u_r + im*terminal2.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (terminal1.u_r + im*terminal1.u_i)))
+        simplify(-terminal1.i_i ~ imag(((terminal1.u_r + im*terminal1.u_i) - (terminal2.u_r + im*terminal2.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (terminal1.u_r + im*terminal1.u_i)))
+        simplify(-terminal2.i_r ~ real(((terminal2.u_r + im*terminal2.u_i) - (terminal1.u_r + im*terminal1.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (terminal2.u_r + im*terminal2.u_i)))
+        simplify(-terminal2.i_i ~ imag(((terminal2.u_r + im*terminal2.u_i) - (terminal1.u_r + im*terminal1.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (terminal2.u_r + im*terminal2.u_i)))
     end
 end
 

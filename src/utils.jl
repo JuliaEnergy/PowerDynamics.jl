@@ -290,23 +290,42 @@ function fix_metadata!(invalid_eqs, sys)
 end
 
 export structural_simplify_bus
-function structural_simplify_bus(sys, busbar=:busbar)
-    io = ([getproperty(sys, busbar; namespace=false).i_r,
-           getproperty(sys, busbar; namespace=false).i_i],
-          [getproperty(sys, busbar; namespace=false).u_r,
-           getproperty(sys, busbar; namespace=false).u_i])
-    structural_simplify(sys, io)[1]
+function structural_simplify_bus(sys; busbar=:busbar)
+    io = _busio(sys, busbar)
+    structural_simplify(sys, (io.in, io.out))[1]
+end
+function _busio(sys, busbar)
+    (;in=[getproperty(sys, busbar; namespace=false).i_r,
+          getproperty(sys, busbar; namespace=false).i_i],
+     out=[getproperty(sys, busbar; namespace=false).u_r,
+          getproperty(sys, busbar; namespace=false).u_i])
 end
 
 export structural_simplify_line
-function structural_simplify_line(sys, src=:src, dst=:dst)
-    io = ([getproperty(sys, src; namespace=false).u_r,
-           getproperty(sys, src; namespace=false).u_i,
-           getproperty(sys, dst; namespace=false).u_r,
-           getproperty(sys, dst; namespace=false).u_i],
-          [getproperty(sys, src; namespace=false).i_r,
-           getproperty(sys, src; namespace=false).i_i,
-           getproperty(sys, dst; namespace=false).i_r,
-           getproperty(sys, dst; namespace=false).i_i])
-    structural_simplify(sys, io)[1]
+function structural_simplify_line(sys; src=:src, dst=:dst)
+    io = _lineio(sys, src, dst)
+    in = vcat(io.srcin, io.dstin)
+    structural_simplify(sys, (in, io.out))[1]
+end
+function _lineio(sys, src, dst)
+    (;srcin=[getproperty(sys, src; namespace=false).u_r,
+             getproperty(sys, src; namespace=false).u_i],
+     dstin=[getproperty(sys, dst; namespace=false).u_r,
+            getproperty(sys, dst; namespace=false).u_i],
+     out=[getproperty(sys, dst; namespace=false).i_r,
+          getproperty(sys, dst; namespace=false).i_i,
+          getproperty(sys, src; namespace=false).i_r,
+          getproperty(sys, src; namespace=false).i_i])
+end
+
+export vertex_model
+function vertex_model(sys, busbar=:busbar)
+    io = _busio(sys, busbar)
+    ODEVertex(sys, io.in, io.out)
+end
+
+export edge_model
+function edge_model(sys, src=:src, dst=:dst)
+    io = _lineio(sys, src, dst)
+    StaticEdge(sys, io.srcin, io.dstin, io.out, Fiducial())
 end

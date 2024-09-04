@@ -130,8 +130,8 @@ end
         # Park's transformations
         terminal.u_r ~ sin(θ) * udPu + cos(θ) * uqPu;
         terminal.u_i ~ (-cos(θ) * udPu) + sin(θ) * uqPu;
-        terminal.i_r * systembase.SnRef / SNom ~ sin(θ) * idPu + cos(θ) * iqPu;
-        terminal.i_i * systembase.SnRef / SNom ~ (-cos(θ) * idPu) + sin(θ) * iqPu;
+        -terminal.i_r * systembase.SnRef / SNom ~ sin(θ) * idPu + cos(θ) * iqPu;
+        -terminal.i_i * systembase.SnRef / SNom ~ (-cos(θ) * idPu) + sin(θ) * iqPu;
         # Flux linkages
         λ_dPu ~ (MdSat′Pu + Ld′Pu + XTfoPu) * idPu + MdSat′Pu * ifPu + MdSat′Pu * iDPu;
         λ_fPu ~ MdSat′Pu * idPu + (MdSat′Pu + Lf′Pu + Mrc′Pu) * ifPu + (MdSat′Pu + Mrc′Pu) * iDPu;
