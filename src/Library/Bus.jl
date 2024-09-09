@@ -6,10 +6,19 @@
         i_i(t), [description="bus d-current", input=true]
         P(t), [description="bus active power"]
         Q(t), [description="bus reactive power"]
+        u_mag(t), [description="bus voltage magnitude"]
+        u_arg(t), [description="bus voltage argument"]
+        i_mag(t), [description="bus current magnitude"]
+        i_arg(t), [description="bus current argument"]
     end
     @equations begin
+        #observed equations
         P ~ u_r * i_r + u_i * i_i
         Q ~ u_i * i_r - u_r * i_i
+        u_mag ~ sqrt(u_r^2 + u_i^2)
+        u_arg ~ atan(u_i, u_r)
+        i_mag ~ sqrt(i_r^2 + i_i^2)
+        i_arg ~ atan(i_i, i_r)
     end
 end
 
@@ -55,10 +64,10 @@ end
 end
 
 function BusModel(injectors...; name=:bus)
-    if !all(iscomponentmodel.(b))
+    if !all(iscomponentmodel.(injectors))
         throw(ArgumentError("All components must satisfy the bus component model interface!"))
     end
     @named busbar = BusBar()
     eqs = [connect(busbar.terminal, inj.terminal) for inj in injectors]
-    ODESystem(eqs, t; systems=[busbar, first.(injectors)...], name)
+    ODESystem(eqs, t; systems=[busbar, injectors...], name)
 end

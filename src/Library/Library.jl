@@ -1,5 +1,6 @@
 module Library
 
+using ArgCheck: @argcheck
 using ModelingToolkit: ModelingToolkit
 using ModelingToolkit: @connector, @mtkmodel, @variables, @parameters
 using ModelingToolkit: @named, @unpack, ODESystem, Equation, Num
@@ -32,6 +33,9 @@ include("Lines.jl")
 
 export iscomponentmodel, isbusmodel, isbranchmodel, islinemodel
 include("Interfaces.jl")
+
+export pin_parameters
+include("lib_utils.jl")
 
 ####
 #### Machine Models

@@ -5,6 +5,8 @@ using ModelingToolkit
 using ModelingToolkit: t_nounits as t, D_nounits as Dt
 using ModelingToolkitStandardLibrary
 using ModelingToolkitStandardLibrary.Blocks
+using Makie
+using GLMakie
 
 
 systems = @named begin
@@ -63,8 +65,8 @@ ODEVertex(bus, )
 # line model
 @named branchA = DynawoPiLine(XPu=0.022522)
 @named branchB = DynawoPiLine(XPu=0.04189)
-@named line = Line(branchA, branchB)
-line = pin_parameters(line)
+line = Line(LineModel(branchA, branchB));
+
 
 # genbus model
 @mtkmodel GenBus begin
@@ -140,6 +142,7 @@ sol = solve(prob, Rodas5P())
     end
 end
 @named swingbus = SwingBus()
+
 simp = structural_simplify_bus(swingbus)
 
 
@@ -164,3 +167,8 @@ swingbus
 
 
 vertex_model(swingbus)
+
+
+@named swing = Swing(Pm=1, D=00.1, M=0.001)
+bus = Bus(BusModel(swing));
+OpPoDyn.ModelChecks.bus_on_slack(bus)

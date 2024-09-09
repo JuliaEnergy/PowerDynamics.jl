@@ -2,7 +2,7 @@
 #### Network level Bus representation
 ####
 struct Bus{VF<:VertexFunction}
-    vertexf::VF
+    compf::VF
 end
 function Bus(sys::ODESystem)
     if !isbusmodel(sys)
@@ -12,8 +12,9 @@ function Bus(sys::ODESystem)
         end
         throw(ArgumentError("The system must satisfy the bus model interface!"))
     end
-    io = _busio(sys, busbar)
+    io = _busio(sys, :busbar)
     vertexf = ODEVertex(sys, io.in, io.out)
+    Bus(vertexf)
 end
 
 function simplify_busmodel(sys; busbar=:busbar)
@@ -34,7 +35,7 @@ end
 #### Network level Line representation
 ####
 struct Line{EF<:EdgeFunction}
-    edgef::EF
+    compf::EF
 end
 function Line(sys::ODESystem)
     if !islinemodel(sys)
@@ -44,8 +45,9 @@ function Line(sys::ODESystem)
         end
         throw(ArgumentError("The system must satisfy the bus model interface!"))
     end
-    io = _lineio(sys, src, dst)
-    StaticEdge(sys, io.srcin, io.dstin, io.out, Fiducial())
+    io = _lineio(sys, :src, :dst)
+    edgef = StaticEdge(sys, io.srcin, io.dstin, io.out, Fiducial())
+    Line(edgef)
 end
 
 function simplify_linemodel(sys; src=:src, dst=:dst)
