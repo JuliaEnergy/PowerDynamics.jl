@@ -54,16 +54,11 @@ end
     end
 end
 
-function Bus(_injectors...; name=:bus)
-    injectors = Tuple[]
-    for injector in _injectors
-        if injector isa Tuple
-            push!(injectors, injector)
-        else
-            push!(injectors, (injector, injector.terminal))
-        end
+function BusModel(injectors...; name=:bus)
+    if !all(iscomponentmodel.(b))
+        throw(ArgumentError("All components must satisfy the bus component model interface!"))
     end
     @named busbar = BusBar()
-    eqs = [connect(busbar.terminal, inj[2]) for inj in injectors]
+    eqs = [connect(busbar.terminal, inj.terminal) for inj in injectors]
     ODESystem(eqs, t; systems=[busbar, first.(injectors)...], name)
 end

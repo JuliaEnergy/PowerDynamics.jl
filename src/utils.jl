@@ -4,120 +4,7 @@ using NetworkDynamics.Adapt
 using NetworkDynamics: iscudacompatible
 import ArgCheck: @argcheck
 import Symbolics: Symbolics, Symbolic, fixpoint_sub, simplify, isterm
-import ModelingToolkit: getname, unwrap, rename
-
-export get_PQV
-function get_PQV(s::NWState)
-    us = s[VIndex(:, :u_r)] .+ im.*s[VIndex(:, :u_i)]
-    ubuf, aggbuf = NetworkDynamics.get_ustacked_buf(s)
-    P = zeros(Float64, length(us))
-    Q = zeros(Float64, length(us))
-    for i in 1:nv(s.nw)
-        aggr = s.nw.im.v_aggr[i]
-        current = _tocomplex(@views aggbuf[aggr])
-        S = us[i] * conj(current)
-        P[i], Q[i] = _toreal(S)
-    end
-    V = abs.(us)
-    P, Q, V
-end
-
-export get_VΘ
-function get_VΘ(s::NWState)
-    us = s[VIndex(:, :u_r)] .+ im.*s[VIndex(:, :u_i)]
-    abs.(us), angle.(us)
-end
-
-export compare_execution_styles
-function compare_execution_styles(prob)
-    styles = [
-              KAExecution{true}(),
-              # KAExecution{false}(),
-              SequentialExecution{true}(),
-              # SequentialExecution{false}(),
-              PolyesterExecution{true}(),
-              PolyesterExecution{false}(),
-              # ThreadedExecution{true}(),
-              # ThreadedExecution{false}()
-              ]
-
-    aggregators = [
-        KAAggregator,
-        SequentialAggregator,
-        PolyesterAggregator,
-        # ThreadedAggregator,
-        SparseAggregator
-    ]
-
-    @assert prob isa ODEProblem "test_execution_styles only works for ODEProblems"
-
-    u = copy(prob.u0)
-    du = zeros(eltype(u), length(u))
-    t = 0.0
-    p = copy(prob.p)
-    nw = prob.f.f
-    nw(du, u, p, t)
-    @assert u==prob.u0
-    @assert p==prob.p
-
-    exsaggs = [(ex, agg) for ex in styles for agg in aggregators]
-
-    results = Dict()
-
-    println("CPU benchmarks")
-    for (execution, aggregator) in exsaggs
-        _nw = Network(nw; execution, aggregator=aggregator(nw.layer.aggregator.f))
-        _du = zeros(eltype(u), length(u))
-        try
-            println("$execution\t $aggregator")
-            b = @b $_nw($_du, $u, $p, $t) seconds=1
-            # show(b)
-            results[(execution,aggregator)] = b
-        catch e
-            # XXX: fix for https://github.com/JuliaLang/julia/issues/55075
-            if e isa MethodError && e.f == Base.elsize
-                continue
-            end
-            println("Error in $execution with $aggregator: $e")
-            @assert false
-            continue
-        end
-        issame = isapprox(_du, du; atol=1e-10)
-        if !issame
-            println("$execution with $aggregator lead to different results: extrema(Δ) = $(extrema(_du - du))")
-        end
-        @assert issame
-    end
-
-    gpuresults = Dict()
-    if CUDA.functional()
-        println("GPU benchmarks")
-        to = CuArray
-        u_d = adapt(to, u)
-        p_d = adapt(to, p)
-
-        for (execution, aggregator) in exsaggs
-            (iscudacompatible(execution) && iscudacompatible(aggregator)) || continue
-
-            _nw = Network(nw; execution, aggregator=aggregator(nw.layer.aggregator.f))
-            _nw_d = adapt(to, _nw)
-            _du_d = adapt(to, zeros(eltype(u), length(u)))
-
-
-            println("$execution\t $aggregator")
-            b = @b $_nw_d($_du_d, $u_d, $p_d, $t) seconds=1
-            # show(b)
-            gpuresults[(execution,aggregator)] = b
-            # b =@b_nw_d(_du_d, u_d, p_d, t)
-            issame = isapprox(Vector(_du_d), du; atol=1e-10)
-            if !issame
-                println("CUDA execution lead to different results: extrema(Δ) = $(extrema(_du - du))")
-            end
-            @assert issame
-        end
-    end
-    return results, gpuresults
-end
+import ModelingToolkit: getname, unwrap, rename, iscomplete
 
 export pin_parameters
 
@@ -150,6 +37,7 @@ end
 
 function _pinparameters(sys::ODESystem, _subs::Dict)
     isempty(_subs) && return sys
+    iscomplete(sys) && ArgumentError("pin_parameters does not handle complete/simplified systems")
 
     subs = Dict{Symbolic, Any}()
     for (k,v) in _subs
@@ -168,26 +56,13 @@ function _pinparameters(sys::ODESystem, _subs::Dict)
     if isempty(applicable)
         _eqs = unwrap(sys.eqs)
         _observed = unwrap(sys.observed)
-        # _ps = sys.ps
-        # _var_to_name = sys.var_to_name
         _defaults = sys.defaults
     else
         _eqs = [fixpoint_sub(eq, applicable) for eq in unwrap(sys.eqs)]
         # FIXME: check something drops the metadata
-        # missingmetadata = check_metadata(_eqs)
-        # if !isempty(missingmetadata)
-        #     @warn "Metadata was dropped from the equations: $missingmetadata"
-        #     _eqs = try_fix_metadata(_eqs, unwrap(sys.eqs))
-        # end
         fix_metadata!(_eqs, sys)
 
-
         _observed = [fixpoint_sub(eq, applicable) for eq in unwrap(sys.observed)]
-        # missingmetadata = check_metadata(_observed)
-        # if !isempty(missingmetadata)
-        #     @warn "Metadata was dropped from the observed equations: $missingmetadata"
-        #     _observed = try_fix_metadata(_observed, unwrap(sys.observed))
-        # end
         fix_metadata!(_observed, sys)
 
         @argcheck unwrap(isempty(sys.ctrls)) "pin_parameters does not handle control variables"
@@ -287,45 +162,4 @@ function fix_metadata!(invalid_eqs, sys)
         @warn "Some transformation droped metadata ($missingmetadata)! Could be fixed."
     end
     invalid_eqs .= fixedeqs
-end
-
-export structural_simplify_bus
-function structural_simplify_bus(sys; busbar=:busbar)
-    io = _busio(sys, busbar)
-    structural_simplify(sys, (io.in, io.out))[1]
-end
-function _busio(sys, busbar)
-    (;in=[getproperty(sys, busbar; namespace=false).i_r,
-          getproperty(sys, busbar; namespace=false).i_i],
-     out=[getproperty(sys, busbar; namespace=false).u_r,
-          getproperty(sys, busbar; namespace=false).u_i])
-end
-
-export structural_simplify_line
-function structural_simplify_line(sys; src=:src, dst=:dst)
-    io = _lineio(sys, src, dst)
-    in = vcat(io.srcin, io.dstin)
-    structural_simplify(sys, (in, io.out))[1]
-end
-function _lineio(sys, src, dst)
-    (;srcin=[getproperty(sys, src; namespace=false).u_r,
-             getproperty(sys, src; namespace=false).u_i],
-     dstin=[getproperty(sys, dst; namespace=false).u_r,
-            getproperty(sys, dst; namespace=false).u_i],
-     out=[getproperty(sys, dst; namespace=false).i_r,
-          getproperty(sys, dst; namespace=false).i_i,
-          getproperty(sys, src; namespace=false).i_r,
-          getproperty(sys, src; namespace=false).i_i])
-end
-
-export vertex_model
-function vertex_model(sys, busbar=:busbar)
-    io = _busio(sys, busbar)
-    ODEVertex(sys, io.in, io.out)
-end
-
-export edge_model
-function edge_model(sys, src=:src, dst=:dst)
-    io = _lineio(sys, src, dst)
-    StaticEdge(sys, io.srcin, io.dstin, io.out, Fiducial())
 end

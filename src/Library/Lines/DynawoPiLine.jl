@@ -13,8 +13,8 @@
 
 @mtkmodel DynawoPiLine begin
     @components begin
-        terminal1 = Terminal()
-        terminal2 = Terminal()
+        src = Terminal()
+        dst = Terminal()
     end
     @parameters begin
         RPu=0, [description="Resistance in pu (base SnRef)"]
@@ -23,18 +23,18 @@
         BPu=0, [description="Half-susceptance in pu (base SnRef)"]
     end
     @equations begin
-        # (terminal2.i_r + BPu*terminal2.u_i - GPu*terminal2.u_r)*RPu - (terminal2.i_i - BPu*terminal2.u_r - GPu*terminal2.u_i)*XPu ~ terminal2.u_r - terminal1.u_r
-        # (terminal2.i_r + BPu*terminal2.u_i - GPu*terminal2.u_r)*XPu + (terminal2.i_i - BPu*terminal2.u_r - GPu*terminal2.u_i)*RPu ~ terminal2.u_i - terminal1.u_i
-        # (terminal1.i_r + BPu*terminal1.u_i - GPu*terminal1.u_r)*RPu - (terminal1.i_i - BPu*terminal1.u_r - GPu*terminal1.u_i)*XPu ~ -terminal2.u_r + terminal1.u_r
-        # (terminal1.i_r + BPu*terminal1.u_i - GPu*terminal1.u_r)*XPu + (terminal1.i_i - BPu*terminal1.u_r - GPu*terminal1.u_i)*RPu ~ -terminal2.u_i + terminal1.u_i
+        # (dst.i_r + BPu*dst.u_i - GPu*dst.u_r)*RPu - (dst.i_i - BPu*dst.u_r - GPu*dst.u_i)*XPu ~ dst.u_r - src.u_r
+        # (dst.i_r + BPu*dst.u_i - GPu*dst.u_r)*XPu + (dst.i_i - BPu*dst.u_r - GPu*dst.u_i)*RPu ~ dst.u_i - src.u_i
+        # (src.i_r + BPu*src.u_i - GPu*src.u_r)*RPu - (src.i_i - BPu*src.u_r - GPu*src.u_i)*XPu ~ -dst.u_r + src.u_r
+        # (src.i_r + BPu*src.u_i - GPu*src.u_r)*XPu + (src.i_i - BPu*src.u_r - GPu*src.u_i)*RPu ~ -dst.u_i + src.u_i
 
-        # (terminal1.i_r + im*terminal1.i_i) ~ ((terminal1.u_r + im*terminal1.u_i) - (terminal2.u_r + im*terminal2.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (terminal1.u_r + im*terminal1.u_i)
-        # (terminal2.i_r + im*terminal2.i_i) ~ ((terminal2.u_r + im*terminal2.u_i) - (terminal1.u_r + im*terminal1.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (terminal2.u_r + im*terminal2.u_i)
+        # (src.i_r + im*src.i_i) ~ ((src.u_r + im*src.u_i) - (dst.u_r + im*dst.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (src.u_r + im*src.u_i)
+        # (dst.i_r + im*dst.i_i) ~ ((dst.u_r + im*dst.u_i) - (src.u_r + im*src.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (dst.u_r + im*dst.u_i)
 
-        simplify(-terminal1.i_r ~ real(((terminal1.u_r + im*terminal1.u_i) - (terminal2.u_r + im*terminal2.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (terminal1.u_r + im*terminal1.u_i)))
-        simplify(-terminal1.i_i ~ imag(((terminal1.u_r + im*terminal1.u_i) - (terminal2.u_r + im*terminal2.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (terminal1.u_r + im*terminal1.u_i)))
-        simplify(-terminal2.i_r ~ real(((terminal2.u_r + im*terminal2.u_i) - (terminal1.u_r + im*terminal1.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (terminal2.u_r + im*terminal2.u_i)))
-        simplify(-terminal2.i_i ~ imag(((terminal2.u_r + im*terminal2.u_i) - (terminal1.u_r + im*terminal1.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (terminal2.u_r + im*terminal2.u_i)))
+        simplify(-src.i_r ~ real(((src.u_r + im*src.u_i) - (dst.u_r + im*dst.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (src.u_r + im*src.u_i)))
+        simplify(-src.i_i ~ imag(((src.u_r + im*src.u_i) - (dst.u_r + im*dst.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (src.u_r + im*src.u_i)))
+        simplify(-dst.i_r ~ real(((dst.u_r + im*dst.u_i) - (src.u_r + im*src.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (dst.u_r + im*dst.u_i)))
+        simplify(-dst.i_i ~ imag(((dst.u_r + im*dst.u_i) - (src.u_r + im*src.u_i))/(RPu+im*XPu) + (GPu+im*BPu) * (dst.u_r + im*dst.u_i)))
     end
 end
 

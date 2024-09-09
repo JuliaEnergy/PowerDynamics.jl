@@ -23,17 +23,17 @@ end
 @mtkmodel DynawoFixedRatioTransformer begin
     @extend DynawoTransformerParameters()
     @components begin
-        terminal1 = Terminal()
-        terminal2 = Terminal()
+        src = Terminal()
+        dst = Terminal()
     end
     @parameters begin
         rTfoPu=1, [description="Transformation ratio in pu: U2/U1 in no load conditions"]
     end
     @equations begin
-        (rTfoPu^2)*terminal1.u_r ~ RPu*terminal1.i_r - XPu*terminal1.i_i + rTfoPu*terminal2.u_r
-        (rTfoPu^2)*terminal1.u_i ~ RPu*terminal1.i_i + XPu*terminal1.i_r + rTfoPu*terminal2.u_i
-        terminal1.i_r ~ (-terminal2.i_r - BPu*terminal2.u_i + GPu*terminal2.u_r)*rTfoPu
-        terminal1.i_i ~ (-terminal2.i_i + BPu*terminal2.u_r + GPu*terminal2.u_i)*rTfoPu
+        (rTfoPu^2)*src.u_r ~ RPu*src.i_r - XPu*src.i_i + rTfoPu*dst.u_r
+        (rTfoPu^2)*src.u_i ~ RPu*src.i_i + XPu*src.i_r + rTfoPu*dst.u_i
+        src.i_r ~ (-dst.i_r - BPu*dst.u_i + GPu*dst.u_r)*rTfoPu
+        src.i_i ~ (-dst.i_i + BPu*dst.u_r + GPu*dst.u_i)*rTfoPu
     end
 end
 

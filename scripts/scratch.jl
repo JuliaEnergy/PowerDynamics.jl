@@ -4,7 +4,7 @@ using NetworkDynamics
 using ModelingToolkit
 using ModelingToolkit: t_nounits as t, D_nounits as Dt
 using ModelingToolkitStandardLibrary
-using ModelingToolkitStandardLibrary: Blocks
+using ModelingToolkitStandardLibrary.Blocks
 
 
 systems = @named begin
@@ -127,3 +127,40 @@ u0 = NWState(nw)
 
 prob = ODEProblem(nw, uflat(u0), (0, 10), pflat(u0))
 sol = solve(prob, Rodas5P())
+
+@named swing = Swing()
+
+@mtkmodel SwingBus begin
+    @components begin
+        busbar = BusBar()
+        swing = Swing()
+    end
+    @equations begin
+        connect(swing.terminal, busbar.terminal)
+    end
+end
+@named swingbus = SwingBus()
+simp = structural_simplify_bus(swingbus)
+
+
+Library.hasterminal(swing)
+Library.hasbusbar(swingbus)
+
+Library.isbusbar(simp.busbar)
+
+swing.terminal
+
+unknowns(swingbus.busbar)
+
+sys = swing
+if hasproperty(swing, :terminal)
+    swing.terminal
+end
+sys=swing.terminal
+
+    unknowns(swing.terminal)
+
+swingbus
+
+
+vertex_model(swingbus)

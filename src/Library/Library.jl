@@ -3,7 +3,7 @@ module Library
 using ModelingToolkit: ModelingToolkit
 using ModelingToolkit: @connector, @mtkmodel, @variables, @parameters
 using ModelingToolkit: @named, @unpack, ODESystem, Equation, Num
-using ModelingToolkit: connect, simplify
+using ModelingToolkit: connect, simplify, getname, unknowns
 using ModelingToolkit: t_nounits as t, D_nounits as Dt
 using ModelingToolkitStandardLibrary.Blocks: RealInput
 
@@ -24,22 +24,34 @@ end
    end
 end
 
-export BusBar, Bus, SlackAlgebraic, SlackDifferential
+export BusBar, BusModel, SlackAlgebraic, SlackDifferential
 include("Bus.jl")
 
-export LineEnd, Line
+export LineEnd, LineModel
 include("Lines.jl")
 
+export iscomponentmodel, isbusmodel, isbranchmodel, islinemodel
+include("Interfaces.jl")
+
+####
+#### Machine Models
+####
 export SauerPaiMachine
 include("Machines/SauerPaiMachine.jl")
 
 export DynawoMachine
 include("Machines/DynawoMachine.jl")
 
-export DynawoFixedRatioTransformer
-include("Transformers/DynawoFixedRatioTransformer.jl")
+export Swing
+include("Machines/Swing.jl")
 
+####
+#### Line Models
+####
 export DynawoPiLine
 include("Lines/DynawoPiLine.jl")
+
+export DynawoFixedRatioTransformer
+include("Transformers/DynawoFixedRatioTransformer.jl")
 
 end
