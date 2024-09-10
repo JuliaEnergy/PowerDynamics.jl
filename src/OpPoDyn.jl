@@ -1,7 +1,7 @@
 module OpPoDyn
 
 using NetworkDynamics: VertexFunction, EdgeFunction, ODEVertex, StaticEdge, Fiducial
-using ModelingToolkit: ODESystem
+using ModelingToolkit: ODESystem, structural_simplify
 using Graphs: SimpleGraph, add_edge!, nv
 using ArgCheck: @argcheck
 

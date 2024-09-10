@@ -2,23 +2,26 @@
     @variables begin
         u_r(t)=1, [description="bus d-voltage", output=true]
         u_i(t)=0, [description="bus q-voltage", output=true]
-        i_r(t), [description="bus d-current", input=true]
-        i_i(t), [description="bus d-current", input=true]
-        P(t), [description="bus active power"]
-        Q(t), [description="bus reactive power"]
+        i_r(t), [description="bus d-current (flowing into bus)", input=true]
+        i_i(t), [description="bus d-current (flowing into bus)", input=true]
+        P(t), [description="bus active power (flowing into network)"]
+        Q(t), [description="bus reactive power (flowing into network)"]
         u_mag(t), [description="bus voltage magnitude"]
         u_arg(t), [description="bus voltage argument"]
         i_mag(t), [description="bus current magnitude"]
         i_arg(t), [description="bus current argument"]
+        ω(t), [description="bus angular frequency"]
     end
     @equations begin
         #observed equations
-        P ~ u_r * i_r + u_i * i_i
-        Q ~ u_i * i_r - u_r * i_i
+        # attension: flipped sign in P and Q, flow direction opposite to i
+        P ~ u_r * (-i_r) + u_i * (-i_i)
+        Q ~ u_i * (-i_r) - u_r * (-i_i)
         u_mag ~ sqrt(u_r^2 + u_i^2)
         u_arg ~ atan(u_i, u_r)
         i_mag ~ sqrt(i_r^2 + i_i^2)
         i_arg ~ atan(i_i, i_r)
+        ω ~ Dt(u_arg)
     end
 end
 
@@ -30,8 +33,8 @@ end
     @equations begin
         u_r ~ terminal.u_r
         u_i ~ terminal.u_i
-        i_r ~ -terminal.i_r
-        i_i ~ -terminal.i_i
+        i_r ~ terminal.i_r
+        i_i ~ terminal.i_i
     end
 end
 

@@ -119,20 +119,42 @@ function bus_on_slack(bus::Bus)
     sol = solve(prob, Rodas5P())
 
     ts = range(0, 6, length=1000)
-    P = sol(ts, idxs=vidxs(nw, 2, :busbar₊P))
-    Q = sol(ts, idxs=vidxs(nw, 2, :busbar₊Q))
-    δ = sol(ts, idxs=vidxs(nw, 2, :busbar₊u_arg))
-    δslack = sol(ts, idxs=vidxs(nw, 1, :busbar₊u_arg))
 
     fig = Figure(size=(2000,1000))
-    ax1 = Axis(fig[1,1], title="active power")
-    lines!(ax1, P.t, P.u; label="injection at bus")
-    axislegend(ax1)
 
-    ax2 = Axis(fig[1,2], title="voltage angle")
-    lines!(ax2, δ.t, δ.u; label="angle at bus")
-    # lines!(ax2, δslack.t, δslack.u; label="angle at slack")
-    axislegend(ax2)
+    ax = Axis(fig[1,1], title="active power")
+    P = sol(ts, idxs=vidxs(nw, 2, :busbar₊P))
+    Pline = sol(ts, idxs=eidxs(nw, 1, :dst₊P))
+    # Pe = sol(ts, idxs=vidxs(nw, 2, :swing₊Pel))
+    lines!(ax, P.t, P.u; label="injection from bus")
+    # lines!(ax, Pe.t, Pe.u; label="electrical power in swing")
+    axislegend(ax)
+
+    ax = Axis(fig[2,1], title="reactive power")
+    Q = sol(ts, idxs=vidxs(nw, 2, :busbar₊Q))
+    lines!(ax, Q.t, Q.u; label="injection from bus")
+    axislegend(ax)
+
+
+    ax = Axis(fig[1,2], title="voltage angle")
+    δ = sol(ts, idxs=vidxs(nw, 2, :busbar₊u_arg))
+    δslack = sol(ts, idxs=vidxs(nw, 1, :busbar₊u_arg))
+    lines!(ax, δ.t, δ.u; label="angle at bus")
+    lines!(ax, δslack.t, δslack.u; label="angle at slack")
+    axislegend(ax)
+
+    ax = Axis(fig[2,2], title="voltage magnitude")
+    V = sol(ts, idxs=vidxs(nw, 2, :busbar₊u_mag))
+    Vslack = sol(ts, idxs=vidxs(nw, 1, :busbar₊u_mag))
+    lines!(ax, V.t, V.u; label="magnitude at bus")
+    lines!(ax, Vslack.t, Vslack.u; label="magnitude at slack")
+    axislegend(ax)
+
+    ax = Axis(fig[1,3], title="frequency")
+    ω = sol(ts, idxs=vidxs(nw, 2, :busbar₊ω))
+    lines!(ax, ω.t, ω.u; label="frequency at bus")
+    axislegend(ax)
+
     fig
 end
 

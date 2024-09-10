@@ -15,7 +15,7 @@
     @variables begin
         ω(t)=0.0, [description="Rotor frequency"]
         θ(t)=0.0, [description="Rotor angle"]
-        Pel(t), [description="Electrical Power"]
+        Pel(t), [description="Electrical Power injected into the grid"]
     end
     @parameters begin
         M=1, [description="Inertia"]
@@ -35,12 +35,12 @@
             Dt(θ) ~ ω - ω_ref
         end
         if Pm_input
-            Dt(ω) ~ 1/M * (Pm.u - D*ω + Pel)
+            Dt(ω) ~ 1/M * (Pm.u - D*ω - Pel)
         else
-            Dt(ω) ~ 1/M * (Pm - D*ω + Pel)
+            Dt(ω) ~ 1/M * (Pm - D*ω - Pel)
         end
 
-        Pel ~ simplify(real(Complex(terminal.u_r, terminal.u_i) * conj(Complex(terminal.i_r, terminal.i_i))))
+        Pel ~ terminal.u_r*terminal.i_r + terminal.u_i*terminal.i_i
         terminal.u_r ~ V*cos(θ)
         terminal.u_i ~ V*sin(θ)
     end

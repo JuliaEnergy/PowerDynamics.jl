@@ -169,6 +169,13 @@ swingbus
 vertex_model(swingbus)
 
 
-@named swing = Swing(Pm=1, D=00.1, M=0.001)
+@named swing = Swing(Pm=1, D=0.1, M=0.005)
 bus = Bus(BusModel(swing));
 OpPoDyn.ModelChecks.bus_on_slack(bus)
+
+bm = BusModel(swing)
+simp = simplify_busmodel(bm)
+
+
+# full_equations(simp)
+# observed(simp)
