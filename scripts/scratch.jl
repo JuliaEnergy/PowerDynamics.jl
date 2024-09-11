@@ -1,6 +1,5 @@
 using OpPoDyn
 using OpPoDyn.Library
-using OpPoDyn.ModelChecks
 using NetworkDynamics
 using ModelingToolkit
 using ModelingToolkit: t_nounits as t, D_nounits as Dt
