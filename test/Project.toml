@@ -1,0 +1,11 @@
+name = "OpPoDyn-Tests"
+
+[deps]
+OpPoDyn = "88be6d57-9a19-43dd-942c-8912817e6f84"
+OpPoDynTesting = "97638210-66c4-447f-990e-d00c2b05d7ca"
+OrdinaryDiffEqRosenbrock = "43230ef6-c299-4910-a778-202eb28ce4ce"
+OrdinaryDiffEqTsit5 = "b1df2697-797e-41e3-8120-5422d3b24e4a"
+
+[sources]
+OpPoDyn = {path = ".."}
+OpPoDynTesting = {path = "../OpPoDynTesting"}

@@ -1,5 +1,6 @@
 using OpPoDyn
 using OpPoDyn.Library
+using OpPoDyn.ModelChecks
 using NetworkDynamics
 using ModelingToolkit
 using ModelingToolkit: t_nounits as t, D_nounits as Dt
@@ -7,6 +8,7 @@ using ModelingToolkitStandardLibrary
 using ModelingToolkitStandardLibrary.Blocks
 using Makie
 using GLMakie
+using OrderedCollections
 
 
 systems = @named begin
@@ -169,12 +171,36 @@ swingbus
 vertex_model(swingbus)
 
 
+
 @named swing = Swing(Pm=1, D=0.1, M=0.005)
 bus = Bus(BusModel(swing));
-OpPoDyn.ModelChecks.bus_on_slack(bus)
+toi = OpPoDyn.ModelChecks.bus_on_slack(bus)
+toi2 = OpPoDyn.ModelChecks.bus_on_slack(bus)
 
-bm = BusModel(swing)
-simp = simplify_busmodel(bm)
+@named swing = Swing(Pm=1.5, D=0.1, M=0.005)
+bus = Bus(BusModel(swing));
+toi2 = OpPoDyn.ModelChecks.bus_on_slack(bus)
+
+plottoi(toi, toi2)
+
+using Serialization
+serialize("toi.jls", toi)
+
+similartoi(toi, toi2; verbose=true)
+similartoi(toi, toi2)
+
+
+plotspec = OrderedDict("active power" =>      OrderedDict("injection from bus" => VIndex(2, :busbar₊P),
+                                                          "electrical power in swing" => VIndex(2, :swing₊Pel)),
+                       "reactive power" =>    OrderedDict("injection from bus" => VIndex(2, :busbar₊Q)),
+                       "voltage angle" =>     OrderedDict("angle at bus" => VIndex(2, :busbar₊u_arg),
+                                                          "angle at slack" => VIndex(1, :busbar₊u_arg)),
+                       "voltage magnitude" => OrderedDict("magnitude at bus" => VIndex(2, :busbar₊u_mag),
+                                                          "magnitude at slack" => VIndex(1, :busbar₊u_mag)),
+                       "frequency" =>         OrderedDict("frequency at bus" => VIndex(2, :busbar₊ω)))
+
+toi = ModelChecks.TrajectoriesOfInterest(sol, plotspec)
+ModelChecks.plottoi(toi)
 
 
 # full_equations(simp)

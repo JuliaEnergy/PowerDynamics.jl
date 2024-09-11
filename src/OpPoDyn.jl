@@ -13,6 +13,4 @@ export Line, Bus
 export simplify_linemodel, simplify_busmodel
 include("network_components.jl")
 
-include("ModelChecks.jl")
-
 end
