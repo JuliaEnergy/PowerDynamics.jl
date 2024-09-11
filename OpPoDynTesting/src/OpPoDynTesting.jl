@@ -6,18 +6,26 @@ using NetworkDynamics: SymbolicIndex, VIndex, EIndex, vidxs, eidxs
 using SciMLBase: SciMLBase, ODEProblem, solve, auto_dt_reset!
 using OrdinaryDiffEqRosenbrock: Rodas5P, Rosenbrock23
 using OrdinaryDiffEqTsit5: Tsit5
+using OrdinaryDiffEqNonlinearSolve: OrdinaryDiffEqNonlinearSolve
 using DiffEqCallbacks: PresetTimeCallback
 using ModelingToolkit: @named
-using Makie: lines, Figure, Axis, axislegend, lines!, Cycled
+using Makie: Makie, lines, Figure, Axis, axislegend, lines!, Cycled
 using OrderedCollections: OrderedDict
 
 using OpPoDyn: OpPoDyn, Bus, Line
 using OpPoDyn.Library: DynawoPiLine, LineModel, SlackDifferential
 
-export TrajectoriesOfInterest, plottoi, similartoi
+using Serialization: serialize, deserialize
+using Test: Test, @test
+
+export TrajectoriesOfInterest, plottoi, compare
 include("utils.jl")
 
 export line_between_slacks, bus_on_slack
 include("scenarios.jl")
+
+export @reftest, set_reference_dir, refup
+include("reftests.jl")
+
 
 end # module OpPoDynTesting

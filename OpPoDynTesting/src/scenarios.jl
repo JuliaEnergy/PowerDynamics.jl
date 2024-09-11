@@ -40,17 +40,17 @@ function line_between_slacks(line::Line)
     sol = solve(prob, Rodas5P())
 
     plotspec = OrderedDict(
+        "voltage angle" => OrderedDict(
+            "angle at dst" => VIndex(2, :busbar₊u_arg)),
+        "voltage magnitude" => OrderedDict(
+            "magnitude at dst" => VIndex(2, :busbar₊u_mag)),
         "src end active power" => OrderedDict(
-            "injection at bus 1" => VIndex(1, :busbar₊P),
             "line injection toward bus" => EIndex(1, :src₊P)),
         "dst end active power" => OrderedDict(
-            "injection at bus 2" => VIndex(2, :busbar₊P),
             "line injection toward bus" => EIndex(1, :dst₊P)),
         "src end reactive power" => OrderedDict(
-            "injection at bus 1" => VIndex(1, :busbar₊Q),
             "line injection toward bus" => EIndex(1, :src₊Q)),
         "dst end reactive power" => OrderedDict(
-            "injection at bus 2" => VIndex(2, :busbar₊Q),
             "line injection toward bus" => EIndex(1, :dst₊Q))
     )
 

@@ -1,4 +1,5 @@
 using Test
+using SafeTestsets
 using Aqua
 using ExplicitImports
 using NetworkDynamics
@@ -13,6 +14,7 @@ using OrderedCollections
 using OpPoDyn
 using OpPoDyn.Library
 using OpPoDynTesting
+set_reference_dir(OpPoDyn)
 
 @testset "OpPoDyn.jl Tests" begin
     @testset "Package Quality Tests" begin
@@ -38,6 +40,8 @@ using OpPoDynTesting
         @test check_no_implicit_imports(OpPoDynTesting) === nothing
         @test_broken check_no_stale_explicit_imports(OpPoDynTesting) === nothing
     end
+
+    @safetestset "Library tests" begin include("Library_test.jl") end
 
 
     @testset "pin parameters" begin

@@ -2,7 +2,8 @@ struct TrajectoriesOfInterest
     sol::SciMLBase.ODESolution
     syms::OrderedDict
 end
-function plottoi(tois...)
+
+function plottoi(tois...; names=["timeseries $i" for i in 1:length(tois)])
     @assert allequal(getproperty.(tois, :syms)) "All TOI musst have the same symbols of interest."
     toi = tois[1]
     row = 1
@@ -13,7 +14,7 @@ function plottoi(tois...)
             for (toii, toi) in enumerate(tois)
                 ts = range(toi.sol.t[begin], toi.sol.t[end], length=1000)
                 data = toi.sol(ts, idxs=sidx)
-                label =  length(tois) > 1 ? _label*" (timeseries $toii)" : _label
+                label =  length(tois) > 1 ? _label*" ("*names[toii]*")" : _label
                 lines!(ax, data.t, data.u; label,
                     color=Cycled(seriesi),
                     linestyle=ax.scene.theme.palette.linestyle[][toii])
@@ -24,8 +25,12 @@ function plottoi(tois...)
     end
     fig
 end
-function similartoi(toi1, toi2; tol=1e-5, verbose=false)
-    @assert toi1.syms == toi2.syms "All TOI musst have the same symbols of interest."
+
+function compare(toi1, toi2; verbose=false)
+    if toi1.syms != toi2.syms
+        @warn "TOIs have different symbols of interest and are thus incomparable."
+        return Inf
+    end
     ts = Float64[]
     for toi in (toi1, toi2)
         append!(ts, toi.sol.t)
@@ -45,7 +50,21 @@ function similartoi(toi1, toi2; tol=1e-5, verbose=false)
             absres += res
         end
     end
-    absres = absres/N
-    verbose && println("Total L²/N error = $absres")
-    absres < tol
+    absres/N
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", toi::TrajectoriesOfInterest)
+    compact = get(io, :compact, false)::Bool
+    print("ODESolution with trajectories of interest:")
+    Nplots = length(toi.syms)
+    for (i, plot) in enumerate(keys(toi.syms))
+        s = i == Nplots ? "└" : "├"
+        print(io, "\n ",s,"─ Plot: $plot")
+        Nseries = length(toi.syms[plot])
+        for (is, series) in enumerate(toi.syms[plot])
+            pre = i == Nplots ? " " : "│"
+            s = is == Nseries ? "└" : "├"
+            print(io, "\n ", pre, "  ", s, "─ ", series.second, " (", series.first, ")")
+        end
+    end
 end
