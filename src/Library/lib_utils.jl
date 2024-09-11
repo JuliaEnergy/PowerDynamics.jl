@@ -5,12 +5,12 @@ end
 function pin_parameters(sys::ODESystem, subs::Dict)
     _dict = Dict(_resolve_to_namespaced_symbolic(sys, k) => v for (k,v) in subs)
 
-    if any(isterm, values(_dict))
+    if any(iscall, values(_dict))
         @info "Parameter map for pin_parameters cannot include any terms in the rhs. Try to resolve..."
         __dict = Dict()
         for (k,v) in _dict
             _fullname = string(getname(k))
-            newname = replace(_fullname, r"^"*string(sys.name)*"₊" => "")
+            newname = replace(_fullname, r"^"*string(get_name(sys))*"₊" => "")
             __dict[rename(k, Symbol(newname))] = v
         end
         for (k,v) in _dict
@@ -32,8 +32,8 @@ function _pinparameters(sys::ODESystem, _subs::Dict)
     subs = Dict{Symbolic, Any}()
     for (k,v) in _subs
         _fullname = string(getname(k))
-        contains(_fullname, r"^"*string(sys.name)*"₊") || continue
-        newname = replace(_fullname, r"^"*string(sys.name)*"₊" => "")
+        contains(_fullname, r"^"*string(get_name(sys))*"₊") || continue
+        newname = replace(_fullname, r"^"*string(get_name(sys))*"₊" => "")
         subs[rename(k, Symbol(newname))] = v
     end
 
@@ -75,7 +75,7 @@ function _pinparameters(sys::ODESystem, _subs::Dict)
             observed = _observed,
             systems = _systems,
             tspan = sys.tspan,
-            name = sys.name,
+            name = get_name(sys),
             defaults = _defaults,
             guesses = sys.guesses,
             # initializesystem = nothing,

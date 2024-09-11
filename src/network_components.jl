@@ -8,7 +8,7 @@ function Bus(sys::ODESystem)
     if !isbusmodel(sys)
         msg = "The system must satisfy the bus model interface!"
         if iscomponentmodel(sys)
-            msg *= " $(sys.name) satisfies the component interface, did you mean to use `BusModel`?"
+            msg *= " $(get_name(sys)) satisfies the component interface, did you mean to use `BusModel`?"
         end
         throw(ArgumentError("The system must satisfy the bus model interface!"))
     end
@@ -41,7 +41,7 @@ function Line(sys::ODESystem)
     if !islinemodel(sys)
         msg = "The system must satisfy the ine model interface!"
         if isbranchmodel(sys)
-            msg *= " $(sys.name) satisfies the branch interface, did you mean to use `LineModel`?"
+            msg *= " $(get_name(sys)) satisfies the branch interface, did you mean to use `LineModel`?"
         end
         throw(ArgumentError("The system must satisfy the bus model interface!"))
     end

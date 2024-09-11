@@ -1,6 +1,8 @@
 using OpPoDyn
 using OpPoDyn.Library
 using OpPoDynTesting
+using ModelingToolkit
+
 if isinteractive()
     using GLMakie
 end
@@ -20,7 +22,7 @@ end
     @reftest "DynawoPiLine_2" toi
 end
 
-@testest "Swing bus" begin
+@testset "Swing bus" begin
     @named swing = Swing(Pm=1, D=0.1, M=0.005)
     bus = Bus(BusModel(swing));
     toi = bus_on_slack(bus)

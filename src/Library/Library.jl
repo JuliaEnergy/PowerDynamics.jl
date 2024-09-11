@@ -4,8 +4,9 @@ using ArgCheck: @argcheck
 using ModelingToolkit: ModelingToolkit
 using ModelingToolkit: @connector, @mtkmodel, @variables, @parameters
 using ModelingToolkit: @named, @unpack, ODESystem, Equation, Num, unwrap
-using ModelingToolkit: connect, simplify, getname, unknowns
+using ModelingToolkit: connect, simplify, getname, unknowns, parameters, iscomplete, rename, get_name
 using ModelingToolkit: t_nounits as t, D_nounits as Dt
+using Symbolics: Symbolics, Symbolic, iscall, fixpoint_sub
 using ModelingToolkitStandardLibrary.Blocks: RealInput
 
 @connector Terminal begin
