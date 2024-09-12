@@ -1,6 +1,6 @@
-struct TrajectoriesOfInterest
-    sol::SciMLBase.ODESolution
-    syms::OrderedDict
+struct TrajectoriesOfInterest{T<:SciMLBase.ODESolution,S<:OrderedDict}
+    sol::T
+    syms::S
 end
 
 function plottoi(tois...; names=["timeseries $i" for i in 1:length(tois)])
@@ -27,6 +27,9 @@ function plottoi(tois...; names=["timeseries $i" for i in 1:length(tois)])
 end
 
 function compare(toi1, toi2; verbose=false)
+    if isnothing(toi1) || isnothing(toi2)
+        return Inf
+    end
     if toi1.syms != toi2.syms
         @warn "TOIs have different symbols of interest and are thus incomparable."
         return Inf

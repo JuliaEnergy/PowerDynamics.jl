@@ -8,7 +8,6 @@ using ModelingToolkit: t_nounits as t, D_nounits as Dt
 using ModelingToolkitStandardLibrary
 using ModelingToolkitStandardLibrary.Blocks
 using Makie
-# using GLMakie
 using OrderedCollections
 
 using OpPoDyn
