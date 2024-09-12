@@ -2,6 +2,8 @@ struct TrajectoriesOfInterest{T<:SciMLBase.ODESolution,S<:OrderedDict}
     sol::T
     syms::S
 end
+Base.getindex(toi::TrajectoriesOfInterest, plot) = toi.syms[plot]
+Base.setindex!(toi::TrajectoriesOfInterest, val, plot) = toi.syms[plot] = val
 
 function plottoi(tois...; names=["timeseries $i" for i in 1:length(tois)])
     @assert allequal(getproperty.(tois, :syms)) "All TOI musst have the same symbols of interest."

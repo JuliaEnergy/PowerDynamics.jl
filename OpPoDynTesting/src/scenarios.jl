@@ -66,8 +66,16 @@ function bus_on_slack(bus::Bus)
 
     nw = Network(g, [slack, busf], edgef)
     u0 = NWState(nw)
-    any(isnan.(uflat(u0))) && error("Initial conditions contain NaNs")
-    any(isnan.(pflat(u0))) && error("Parameters contain NaNs")
+    if any(isnan.(uflat(u0)))
+        show(stderr, MIME"text/plain"(), u0)
+        println(stderr)
+        error("Initial conditions contain NaNs")
+    end
+    if any(isnan.(pflat(u0)))
+        show(stderr, MIME"text/plain"(), u0.p)
+        println(stderr)
+        error("Parameters contain NaNs")
+    end
 
     affect = function(integrator)
         u = NWState(integrator)

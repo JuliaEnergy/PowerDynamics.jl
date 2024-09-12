@@ -55,6 +55,12 @@ export Swing
 include("Machines/Swing.jl")
 
 ####
+#### Load Models
+####
+export PQLoad
+include("Loads/PQLoad.jl")
+
+####
 #### Line Models
 ####
 export DynawoPiLine
