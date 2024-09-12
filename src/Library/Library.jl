@@ -4,7 +4,11 @@ using ArgCheck: @argcheck
 using ModelingToolkit: ModelingToolkit
 using ModelingToolkit: @connector, @mtkmodel, @variables, @parameters
 using ModelingToolkit: @named, @unpack, ODESystem, Equation, Num, unwrap
-using ModelingToolkit: connect, simplify, getname, unknowns, parameters, iscomplete, rename, get_name
+using ModelingToolkit: connect, simplify, getname, unknowns, parameters, iscomplete, rename
+using ModelingToolkit: get_name, get_eqs, get_observed, get_ctrls, get_defaults, get_schedule,
+                       get_connector_type, get_metadata, get_gui_metadata, get_preface, get_initializesystem,
+                       get_continuous_events, get_discrete_events, get_parameter_dependencies, get_iv,
+                       get_discrete_subsystems, get_solved_unknowns, get_systems, get_tspan, get_guesses
 using ModelingToolkit: t_nounits as t, D_nounits as Dt
 using Symbolics: Symbolics, Symbolic, iscall, fixpoint_sub
 using ModelingToolkitStandardLibrary.Blocks: RealInput

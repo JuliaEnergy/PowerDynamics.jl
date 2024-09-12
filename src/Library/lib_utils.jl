@@ -44,51 +44,51 @@ function _pinparameters(sys::ODESystem, _subs::Dict)
     end
 
     if isempty(applicable)
-        _eqs = unwrap(sys.eqs)
-        _observed = unwrap(sys.observed)
-        _defaults = sys.defaults
+        _eqs = unwrap(get_eqs(sys))
+        _observed = unwrap(get_observed(sys))
+        _defaults = get_defaults(sys)
     else
-        _eqs = [fixpoint_sub(eq, applicable) for eq in unwrap(sys.eqs)]
+        _eqs = [fixpoint_sub(eq, applicable) for eq in unwrap(get_eqs(sys))]
         # FIXME: check something drops the metadata
         fix_metadata!(_eqs, sys)
 
-        _observed = [fixpoint_sub(eq, applicable) for eq in unwrap(sys.observed)]
+        _observed = [fixpoint_sub(eq, applicable) for eq in unwrap(get_observed(sys))]
         fix_metadata!(_observed, sys)
 
-        @argcheck unwrap(isempty(sys.ctrls)) "pin_parameters does not handle control variables"
-        _defaults = copy(sys.defaults)
+        @argcheck unwrap(isempty(get_ctrls(sys))) "pin_parameters does not handle control variables"
+        _defaults = copy(get_defaults(sys))
         for k in keys(applicable)
             delete!(_defaults, k)
         end
-        @argcheck isnothing(sys.initializesystem) "pin_parameters does not handle initializesystem"
-        @argcheck unwrap(isempty(sys.continuous_events)) "pin_parameters does not handle continuous events"
-        @argcheck unwrap(isempty(sys.discrete_events)) "pin_parameters does not handle discrete events"
-        @argcheck unwrap(isempty(sys.parameter_dependencies)) "pin_parameters does not parameter_dependencies"
-        @argcheck isnothing(sys.discrete_subsystems) "pin_parameters does not handle discrete subsystems"
-        @argcheck isnothing(sys.solved_unknowns) "pin_parameters does not handle solved unknowns"
+        @argcheck isnothing(get_initializesystem(sys)) "pin_parameters does not handle initializesystem"
+        @argcheck unwrap(isempty(get_continuous_events(sys))) "pin_parameters does not handle continuous events"
+        @argcheck unwrap(isempty(get_discrete_events(sys))) "pin_parameters does not handle discrete events"
+        @argcheck unwrap(isempty(get_parameter_dependencies(sys))) "pin_parameters does not parameter_dependencies"
+        @argcheck isnothing(get_discrete_subsystems(sys)) "pin_parameters does not handle discrete subsystems"
+        @argcheck isnothing(get_solved_unknowns(sys)) "pin_parameters does not handle solved unknowns"
     end
 
-    _systems = [_pinparameters(s, subs) for s in sys.systems]
+    _systems = [_pinparameters(s, subs) for s in get_systems(sys)]
 
-    newsys = ODESystem(_eqs, sys.iv;
+    newsys = ODESystem(_eqs, get_iv(sys);
             # controls = Num[],
             observed = _observed,
             systems = _systems,
-            tspan = sys.tspan,
+            tspan = get_tspan(sys),
             name = get_name(sys),
             defaults = _defaults,
-            guesses = sys.guesses,
+            guesses = get_guesses(sys),
             # initializesystem = nothing,
             # initialization_eqs = Equation[],
-            schedule = sys.schedule,
-            connector_type = sys.connector_type,
-            preface = sys.preface,
+            schedule = get_schedule(sys),
+            connector_type = get_connector_type(sys),
+            preface = get_preface(sys),
             # continuous_events = nothing,
             # discrete_events = nothing,
             # parameter_dependencies = nothing,
             checks = true,
-            metadata = sys.metadata,
-            gui_metadata = sys.gui_metadata)
+            metadata = get_metadata(sys),
+            gui_metadata = get_gui_metadata(sys))
 end
 function _resolve_to_namespaced_symbolic(sys, var)
     ns = string(getname(sys))
