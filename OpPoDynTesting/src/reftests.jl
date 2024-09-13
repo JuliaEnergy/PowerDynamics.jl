@@ -24,9 +24,16 @@ serialized and compared to the existing reference if available.
 macro reftest(name, toi)
     quote
         _toi = $(esc(toi))
-        result = _save_and_compare($(esc(name)), _toi)
-        if _intestset()
-            @test result
+        if VERSION < v"1.11-"
+            @warn "Reference tests require julia 1.11 or higher"
+            if _intestset()
+                @test_broken false
+            end
+        else
+            result = _save_and_compare($(esc(name)), _toi)
+            if _intestset()
+                @test result
+            end
         end
         _toi
     end
