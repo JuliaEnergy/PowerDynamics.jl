@@ -37,10 +37,14 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v2
-      - name: Add NetworkDynamics#main
-        shell: julia --project=@. --color=yes {0}
+      - name: Test with specific test dep versions
+        shell: julia --project=test --color=yes {0}
         run: |
           using Pkg
           pkg"add NetworkDynamics#main"
-      - uses: julia-actions/julia-buildpkg@v1
-      - uses: julia-actions/julia-runtest@v1
+          pkg"add ./OpPoDynTesting"
+          Pkg.test("OpPoDyn"; coverage=true)
+      - uses: julia-actions/julia-processcoverage@v1
+      - uses: codecov/codecov-action@v4
+        with:
+          file: lcov.info
