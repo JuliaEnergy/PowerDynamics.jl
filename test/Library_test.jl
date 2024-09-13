@@ -2,6 +2,7 @@ using OpPoDyn
 using OpPoDyn.Library
 using OpPoDynTesting
 using ModelingToolkit
+using NetworkDynamics
 isinteractive() && using GLMakie
 
 @testset "DynawoPiLine" begin

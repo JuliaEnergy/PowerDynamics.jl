@@ -38,10 +38,11 @@ jobs:
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v2
       - name: Test with specific test dep versions
-        shell: julia --project=@. --color=yes {0}
+        shell: julia --project=testenv --color=yes {0}
         run: |
           using Pkg
           pkg"add NetworkDynamics#main"
+          pkg"dev ."
           pkg"dev ./OpPoDynTesting"
           Pkg.test("OpPoDyn"; coverage=true)
       - uses: julia-actions/julia-processcoverage@v1
