@@ -38,7 +38,7 @@ jobs:
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v2
       - name: Test with specific test dep versions
-        shell: julia --project=test --color=yes {0}
+        shell: julia --project=@. --color=yes {0}
         run: |
           using Pkg
           pkg"add NetworkDynamics#main"
