@@ -36,5 +36,10 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v2
+      - name: Add NetworkDynamics#main
+        shell: julia --project=@. --color=yes {0}
+        run: |
+          using Pkg
+          pkg"add NetworkDynamics#main"
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
