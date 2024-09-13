@@ -16,7 +16,7 @@ using OpPoDyn: OpPoDyn, Bus, Line
 using OpPoDyn.Library: DynawoPiLine, LineModel, SlackDifferential
 
 using Serialization: serialize, deserialize
-using Test: Test, @test
+using Test: Test, @test, @test_broken
 
 export TrajectoriesOfInterest, plottoi, compare
 include("utils.jl")
