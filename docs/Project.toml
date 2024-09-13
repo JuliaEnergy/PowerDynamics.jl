@@ -1,0 +1,8 @@
+[deps]
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+OpPoDyn = "88be6d57-9a19-43dd-942c-8912817e6f84"
+OpPoDynTesting = "97638210-66c4-447f-990e-d00c2b05d7ca"
+
+[sources]
+OpPoDyn = {path = ".."}
+OpPoDynTesting = {path = "../OpPoDynTesting"}

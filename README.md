@@ -1,6 +1,8 @@
 # OpPoDyn Development Repository
-
-[![Build Status](https://github.com/hexaeder/OpPoDyn.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/hexaeder/OpPoDyn.jl/actions/workflows/CI.yml?query=branch%3Amain)
+<!-- [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliaenergy.github.io/OpPoDyn.jl/stable/) -->
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliaenergy.github.io/OpPoDyn.jl/dev/)
+[![Build Status](https://github.com/JuliaEnergy/OpPoDyn.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/JuliaEnergy/OpPoDyn.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Coverage](https://codecov.io/gh/JuliaEnergy/OpPoDyn.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaEnergy/OpPoDyn.jl)
 
 This is an experimental repository for exploration of the new PowerDynamics design as part of the OpPoDyn Project.
 
