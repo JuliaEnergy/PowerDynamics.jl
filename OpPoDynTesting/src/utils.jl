@@ -6,16 +6,23 @@ Base.getindex(toi::TrajectoriesOfInterest, plot) = toi.syms[plot]
 Base.setindex!(toi::TrajectoriesOfInterest, val, plot) = toi.syms[plot] = val
 
 function plottoi(tois...; names=["timeseries $i" for i in 1:length(tois)])
-    @assert allequal(getproperty.(tois, :syms)) "All TOI musst have the same symbols of interest."
+    # @assert allequal(getproperty.(tois, :syms)) "All TOI musst have the same symbols of interest."
+    allsyms = getproperty.(tois, :syms)
+    syms = mergewith(merge, allsyms...)
     toi = tois[1]
     row = 1
-    fig = Figure(size=(1000,min(2000, 500*length(toi.syms))))
-    for (title, series) in toi.syms
+    fig = Figure(size=(1000,min(2000, 500*length(syms))))
+    for (title, series) in syms
         ax = Axis(fig[row, 1], title=title)
         for (seriesi, (_label, sidx)) in enumerate(series)
             for (toii, toi) in enumerate(tois)
                 ts = range(toi.sol.t[begin], toi.sol.t[end], length=1000)
-                data = toi.sol(ts, idxs=sidx)
+                data = try
+                    toi.sol(ts, idxs=sidx)
+                catch e
+                    @warn "Could not extract data for $title: $e from series $(names[toii])"
+                    continue
+                end
                 label =  length(tois) > 1 ? _label*" ("*names[toii]*")" : _label
                 lines!(ax, data.t, data.u; label,
                     color=Cycled(seriesi),

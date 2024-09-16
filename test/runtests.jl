@@ -8,12 +8,12 @@ using ModelingToolkit: t_nounits as t, D_nounits as Dt
 using ModelingToolkitStandardLibrary
 using ModelingToolkitStandardLibrary.Blocks
 using Makie
+isinteractive() ? using GLMakie : using CairoMakie
 using OrderedCollections
 
 using OpPoDyn
 using OpPoDyn.Library
 using OpPoDynTesting
-set_reference_dir(OpPoDyn)
 
 @testset "OpPoDyn.jl Tests" begin
     @testset "Package Quality Tests" begin
