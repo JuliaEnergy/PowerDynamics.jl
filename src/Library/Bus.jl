@@ -10,7 +10,7 @@
         u_arg(t), [description="bus voltage argument"]
         i_mag(t), [description="bus current magnitude"]
         i_arg(t), [description="bus current argument"]
-        ω(t), [description="bus angular frequency"]
+        # ω(t), [description="bus angular frequency"]
     end
     @equations begin
         #observed equations
@@ -21,7 +21,7 @@
         u_arg ~ atan(u_i, u_r)
         i_mag ~ sqrt(i_r^2 + i_i^2)
         i_arg ~ atan(i_i, i_r)
-        ω ~ Dt(u_arg)
+        # ω ~ Dt(u_arg) # this can lead to Dt(i_r) and Dt(i_i) in the rhs of the equations
     end
 end
 

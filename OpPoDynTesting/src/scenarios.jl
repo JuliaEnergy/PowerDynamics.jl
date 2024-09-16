@@ -105,8 +105,9 @@ function bus_on_slack(bus::Bus)
             "angle at slack" => VIndex(1, :busbar₊u_arg)),
         "voltage magnitude" => OrderedDict(
             "magnitude at bus" => VIndex(2, :busbar₊u_mag),
-            "magnitude at slack" => VIndex(1, :busbar₊u_mag)),
-        "frequency" => OrderedDict("frequency at bus" => VIndex(2, :busbar₊ω)))
+            "magnitude at slack" => VIndex(1, :busbar₊u_mag)))
+        # ,
+        # "frequency" => OrderedDict("frequency at bus" => VIndex(2, :busbar₊ω)))
 
     return TrajectoriesOfInterest(sol, plotspec)
 end
