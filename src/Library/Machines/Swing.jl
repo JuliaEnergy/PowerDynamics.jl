@@ -18,7 +18,7 @@
         Pel(t), [description="Electrical Power injected into the grid"]
     end
     @parameters begin
-        M=1, [description="Inertia"]
+        M=0.005, [description="Inertia"]
         D=0.1, [description="Damping"]
         V=1.0, [description="Voltage magnitude"]
         if !ω_ref_input

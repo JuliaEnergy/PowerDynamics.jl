@@ -27,13 +27,13 @@ end
         dst = Terminal()
     end
     @parameters begin
-        rTfoPu=1, [description="Transformation ratio in pu: U2/U1 in no load conditions"]
+        rTfoPu=1, [description="Transformation ratio in pu: Udst/Usrc in no load conditions"]
     end
     @equations begin
-        (rTfoPu^2)*src.u_r ~ RPu*src.i_r - XPu*src.i_i + rTfoPu*dst.u_r
-        (rTfoPu^2)*src.u_i ~ RPu*src.i_i + XPu*src.i_r + rTfoPu*dst.u_i
-        src.i_r ~ (-dst.i_r - BPu*dst.u_i + GPu*dst.u_r)*rTfoPu
-        src.i_i ~ (-dst.i_i + BPu*dst.u_r + GPu*dst.u_i)*rTfoPu
+        src.i_r ~ simplify(real(-rTfoPu*(rTfoPu*(src.u_r + im*src.u_i) - (dst.u_r +im*dst.u_i))/(RPu+im*XPu)))
+        src.i_i ~ simplify(imag(-rTfoPu*(rTfoPu*(src.u_r + im*src.u_i) - (dst.u_r +im*dst.u_i))/(RPu+im*XPu)))
+        dst.i_r ~ simplify(real((rTfoPu*(src.u_r + im*src.u_i) - (dst.u_r +im*dst.u_i))/(RPu+im*XPu) - (GPu+im*BPu) * (dst.u_r + im*dst.u_i)))
+        dst.i_i ~ simplify(imag((rTfoPu*(src.u_r + im*src.u_i) - (dst.u_r +im*dst.u_i))/(RPu+im*XPu) - (GPu+im*BPu) * (dst.u_r + im*dst.u_i)))
     end
 end
 

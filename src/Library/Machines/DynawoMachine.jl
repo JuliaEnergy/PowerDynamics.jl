@@ -114,6 +114,14 @@ end
         cePu(t), [description="Electrical torque in pu (base SNom/ωNom)"]
         PePu(t), [description="Electrical active power in pu (base SNom)"]
 
+        # observables for inrospection
+        PGenPu(t), [description="Active power generated in pu"]
+        QGenPu(t), [description="Reactive power generated in pu"]
+        PGen(t), [description="Active power generated in MW"]
+        QGen(t), [description="Reactive power generated in Mvar"]
+        UStatorPu(t), [description="Stator voltage magnitude in pu"]
+        IStatorPu(t), [description="Stator current magnitude in pu"]
+
         # Saturated mutual inductances and related variables
         MdSat′Pu(t), [description="Direct axis saturated mutual inductance in pu"]
         MqSat′Pu(t), [description="Quadrature axis saturated mutual inductance in pu"]
@@ -127,11 +135,19 @@ end
         miPu(t), [description="Intermediate axis saturated mutual inductance in pu"]
     end
     @equations begin
+        # some observables
+        PGenPu ~ terminal.u_r * terminal.i_r + terminal.u_i * terminal.i_i
+        QGenPu ~ terminal.u_i * terminal.i_r - terminal.u_r * terminal.i_i
+        PGen ~ PGenPu*systembase.SnRef;
+        QGen ~ QGenPu*systembase.SnRef;
+        UStatorPu ~ abs(1 / rTfoPu * (terminal.u_r + im*terminal.u_i - (terminal.i_r+im*terminal.i_i) * Complex(RTfoPu, XTfoPu) * systembase.SnRef / SNom))
+        IStatorPu ~ abs(rTfoPu * (terminal.i_r+im*terminal.i_i));
+
         # Park's transformations
         terminal.u_r ~ sin(θ) * udPu + cos(θ) * uqPu;
         terminal.u_i ~ (-cos(θ) * udPu) + sin(θ) * uqPu;
-        -terminal.i_r * systembase.SnRef / SNom ~ sin(θ) * idPu + cos(θ) * iqPu;
-        -terminal.i_i * systembase.SnRef / SNom ~ (-cos(θ) * idPu) + sin(θ) * iqPu;
+        - terminal.i_r * systembase.SnRef / SNom ~ sin(θ) * idPu + cos(θ) * iqPu;
+        - terminal.i_i * systembase.SnRef / SNom ~ (-cos(θ) * idPu) + sin(θ) * iqPu;
         # Flux linkages
         λ_dPu ~ (MdSat′Pu + Ld′Pu + XTfoPu) * idPu + MdSat′Pu * ifPu + MdSat′Pu * iDPu;
         λ_fPu ~ MdSat′Pu * idPu + (MdSat′Pu + Lf′Pu + Mrc′Pu) * ifPu + (MdSat′Pu + Mrc′Pu) * iDPu;

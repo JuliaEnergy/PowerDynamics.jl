@@ -4,7 +4,7 @@
 struct Bus{VF<:VertexFunction}
     compf::VF
 end
-function Bus(sys::ODESystem)
+function Bus(sys::ODESystem; verbose=false)
     if !isbusmodel(sys)
         msg = "The system must satisfy the bus model interface!"
         if iscomponentmodel(sys)
@@ -13,7 +13,7 @@ function Bus(sys::ODESystem)
         throw(ArgumentError("The system must satisfy the bus model interface!"))
     end
     io = _busio(sys, :busbar)
-    vertexf = ODEVertex(sys, io.in, io.out)
+    vertexf = ODEVertex(sys, io.in, io.out; verbose)
     Bus(vertexf)
 end
 
@@ -37,7 +37,7 @@ end
 struct Line{EF<:EdgeFunction}
     compf::EF
 end
-function Line(sys::ODESystem)
+function Line(sys::ODESystem; verbose=false)
     if !islinemodel(sys)
         msg = "The system must satisfy the ine model interface!"
         if isbranchmodel(sys)
@@ -46,7 +46,7 @@ function Line(sys::ODESystem)
         throw(ArgumentError("The system must satisfy the bus model interface!"))
     end
     io = _lineio(sys, :src, :dst)
-    edgef = StaticEdge(sys, io.srcin, io.dstin, io.out, Fiducial())
+    edgef = StaticEdge(sys, io.srcin, io.dstin, io.out, Fiducial(); verbose)
     Line(edgef)
 end
 
