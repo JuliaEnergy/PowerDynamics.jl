@@ -46,6 +46,7 @@ The current for injectors is always in injector convention, i.e. positive curren
             terminal.i_i ~ (Pset*terminal.u_i - Qset*terminal.u_r)/(terminal.u_r^2 + terminal.u_i^2)
         end
     end
+    MyPQLoad(name=:pqload) #hide
     nothing #hide
     ```
 
@@ -78,13 +79,14 @@ For simple models (direct connections of a few injectors) it is possible to use 
         @components begin
             busbar = BusBar()
             swing = Swing()
-            laod = PQLoad()
+            load = PQLoad()
         end
         @equations begin
             connect(busbar.terminal, swing.terminal)
             connect(busbar.terminal, load.terminal)
         end
     end
+    MyMTKBus(name=:bus) #hide
     nothing #hide
     ```
     Alternativly, for that system you could have just called
@@ -127,6 +129,7 @@ Examples for branches are: PI─Model branches, dynamic RL branches or transform
             src.i_i ~ -dst.i_i
         end
     end
+    MyRLine(name=:rline) #hide
     nothing #hide
     ```
 
@@ -173,6 +176,7 @@ LineEnd(:src) ──o── Transformer ──o── Pi─Line ──o── Li
             connect(dst.terminal, branch2.dst)
         end
     end
+    MyMTKLine(name=:mtkline) #hide
     nothing #hide
     ```
     Alternatively, an equivalent model with multiple valid branch models in parallel could be created and instantiated with the convenience constructor

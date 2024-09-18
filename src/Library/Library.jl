@@ -13,6 +13,7 @@ using ModelingToolkit: t_nounits as t, D_nounits as Dt
 using Symbolics: Symbolics, Symbolic, iscall, fixpoint_sub
 using ModelingToolkitStandardLibrary.Blocks: RealInput
 
+export Terminal
 @connector Terminal begin
     u_r(t), [description="d-voltage"]
     u_i(t), [description="q-voltage"]
