@@ -24,7 +24,7 @@ The current for injectors is always in injector convention, i.e. positive curren
     For example, any `ODESystem` is considered an "Injector" if it contains a connector `Terminal()` called `:terminal`.
 
 !!! details "Code example: definition of PQ load as injector"
-    ```example concepts
+    ```@example concepts
     using OpPoDyn, OpPoDyn.Library, ModelingToolkit
     @mtkmodel MyPQLoad begin
         @components begin
@@ -72,7 +72,7 @@ As long as the `:busbar` is present at the toplevel, there are few limitations o
 For simple models (direct connections of a few injectors) it is possible to use the convenience method `MTKBus(injectors...)` to create the composite model based on provide injector models.
 
 !!! details "Code example: definition of a Bus containing a swing equation and a load"
-    ```example concepts
+    ```@example concepts
     using OpPoDyn, OpPoDyn.Library, ModelingToolkit
     @mtkmodel MyMTKBus begin
         @components begin
@@ -88,7 +88,7 @@ For simple models (direct connections of a few injectors) it is possible to use 
     nothing #hide
     ```
     Alternativly, for that system you could have just called
-    ```example concepts
+    ```@example concepts
     mybus = MTKBus(Swing(;name=:swing), PQLoad(;name=:load))
     nothing #hide
     ```
@@ -157,7 +157,7 @@ LineEnd(:src) ──o── Transformer ──o── Pi─Line ──o── Li
 ```
 
 !!! details "Code example: Transmission line with two pi-branches"
-    ```example concepts
+    ```@example concepts
     using OpPoDyn, OpPoDyn.Library, ModelingToolkit
     @mtkmodel MyMTKLine begin
         @components begin
@@ -176,7 +176,7 @@ LineEnd(:src) ──o── Transformer ──o── Pi─Line ──o── Li
     nothing #hide
     ```
     Alternatively, an equivalent model with multiple valid branch models in parallel could be created and instantiated with the convenience constructor
-    ```example concepts
+    ```@example concepts
     line = MTKLine(DynawoPiLine(;name=:branch1), DynawoPiLine(;name=:branch2))
     nothing #hide
     ```
@@ -197,7 +197,7 @@ Eventually, those models will contain more metadata. For example
 The exact structure here is not clear yet!
 
 The result would look something like that:
-```example concepts
+```@example concepts
 using OpPoDyn, OpPoDyn.Library, ModelingToolkit
 using Graphs, NetworkDynamics
 using OrdinaryDiffEqRosenbrock, OrdinaryDiffEqNonlinearSolve
@@ -206,7 +206,7 @@ nothing #hide
 ```
 
 Define a swing bus with load
-```example concepts
+```@example concepts
 # define injectors
 @named swing = Swing(; Pm=1)
 @named load = PQLoad(; Pset=-.5, Qset=0)
@@ -215,13 +215,13 @@ bus1 = Bus(bus1mtk)
 vertex1f = bus1.compf # extract component function
 ```
 Define a second bus as a slack
-```example concepts
+```@example concepts
 bus2mtk = SlackDifferential(; name=:slackbus)
 bus2 = Bus(bus2mtk)
 vertex2f = bus2.compf # extract component function
 ```
 Define the powerline connecting both nodes
-```example concepts
+```@example concepts
 @named branch1 = DynawoPiLine()
 @named branch2 = DynawoPiLine()
 linemtk = MTKLine(branch1, branch2; name=:powerline)
@@ -229,13 +229,13 @@ line = Line(linemtk)
 edgef = line.compf # extract component function
 ```
 Define the graph, the network and extract initial conditions
-```example concepts
+```@example concepts
 g = complete_graph(2)
 nw = Network(g, [vertex1f, vertex2f], edgef)
 u0 = NWState(nw) # extract parameters and state from modesl
 ```
 Then we can solve the problem
-```example concepts
+```@example concepts
 prob = ODEProblem(nw, uflat(u0), (0,1), pflat(u0))
 sol = solve(prob, Rodas5P())
 nothing #hide
