@@ -241,7 +241,7 @@ sol = solve(prob, Rodas5P())
 nothing #hide
 ```
 And finally we can plot the solution:
-```example concepts
+```@example concepts
 fig = Figure();
 ax = Axis(fig[1,1])
 lines!(ax, sol; idxs=VIndex(1,:busbar₊P), label="Power injection Bus", color=Cycled(1))
@@ -280,7 +280,7 @@ It represents one end of a transmission line.
 ```
           ┌───────────┐
  u_bus ──→│           │  (t)
-          │ LineEnd   ├───o
+          │  LineEnd  ├───o
 i_line ←──│           │
           └───────────┘
 ```
