@@ -66,7 +66,7 @@ ODEVertex(bus, )
 # line model
 @named branchA = DynawoPiLine(XPu=0.022522)
 @named branchB = DynawoPiLine(XPu=0.04189)
-line = Line(LineModel(branchA, branchB));
+line = Line(MTKLine(branchA, branchB));
 
 
 # genbus model
@@ -172,12 +172,12 @@ vertex_model(swingbus)
 
 
 @named swing = Swing(Pm=1, D=0.1, M=0.005)
-bus = Bus(BusModel(swing));
+bus = Bus(MTKBus(swing));
 toi = OpPoDyn.ModelChecks.bus_on_slack(bus)
 toi2 = OpPoDyn.ModelChecks.bus_on_slack(bus)
 
 @named swing = Swing(Pm=1.5, D=0.1, M=0.005)
-bus = Bus(BusModel(swing));
+bus = Bus(MTKBus(swing));
 toi2 = OpPoDyn.ModelChecks.bus_on_slack(bus)
 
 plottoi(toi, toi2)

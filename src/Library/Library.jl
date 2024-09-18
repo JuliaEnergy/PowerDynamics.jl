@@ -30,10 +30,10 @@ end
    end
 end
 
-export BusBar, BusModel, SlackAlgebraic, SlackDifferential
+export BusBar, MTKBus, SlackAlgebraic, SlackDifferential
 include("Bus.jl")
 
-export LineEnd, LineModel
+export LineEnd, MTKLine
 include("Lines.jl")
 
 export iscomponentmodel, isbusmodel, isbranchmodel, islinemodel

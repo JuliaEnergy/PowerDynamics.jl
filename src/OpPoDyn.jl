@@ -10,7 +10,7 @@ include("Library/Library.jl")
 using .Library
 
 export Line, Bus
-export simplify_linemodel, simplify_busmodel
+export simplify_mtkline, simplify_mtkbus
 include("network_components.jl")
 
 end

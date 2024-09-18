@@ -15,13 +15,13 @@ isinteractive() && using GLMakie
 @testset "DynawoPiLine" begin
     @named branchA = DynawoPiLine(XPu=0.022522)
     @named branchB = DynawoPiLine(XPu=0.04189)
-    line = Line(LineModel(branchA, branchB));
+    line = Line(MTKLine(branchA, branchB));
     toi = line_between_slacks(line)
     # isinteractive() && plottoi(toi)
     @reftest "DynawoPiLine_1" toi
 
     @named branchA = DynawoPiLine(XPu=0.022522, RPu=0.01)
-    line = Line(LineModel(branchA));
+    line = Line(MTKLine(branchA));
     toi = line_between_slacks(line)
     # isinteractive() && plottoi(toi)
     @reftest "DynawoPiLine_2" toi
@@ -29,7 +29,7 @@ end
 
 @testset "Swing bus" begin
     @named swing = Swing(Pm=1, D=0.1, M=0.005)
-    bus = Bus(BusModel(swing));
+    bus = Bus(MTKBus(swing));
     toi = bus_on_slack(bus)
     # isinteractive() && plottoi(toi)
     @reftest "SwingBus_1" toi
@@ -37,8 +37,8 @@ end
     # swing bus with load
     @named swing = Swing(Pm=1, D=0.1, M=0.005)
     @named pqload = PQLoad(Pset=-0.5, Qset=-0.2)
-    bm = BusModel(swing, pqload)
-    @test length(full_equations(simplify_busmodel(bm))) == 2
+    bm = MTKBus(swing, pqload)
+    @test length(full_equations(simplify_mtkbus(bm))) == 2
     bus = Bus(bm)
     toi = bus_on_slack(bus)
     toi["active power"]["electric power of swing"] = VIndex(2,:swing₊Pel)
@@ -52,7 +52,7 @@ end
     # line model
     @named branchA = DynawoPiLine(XPu=0.022522)
     @named branchB = DynawoPiLine(XPu=0.04189)
-    linem = LineModel(branchA, branchB)
+    linem = MTKLine(branchA, branchB)
     linef = Line(linem);
 
     # genbus model

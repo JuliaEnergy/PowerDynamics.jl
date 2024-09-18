@@ -8,7 +8,7 @@ function Bus(sys::ODESystem; verbose=false)
     if !isbusmodel(sys)
         msg = "The system must satisfy the bus model interface!"
         if iscomponentmodel(sys)
-            msg *= " $(get_name(sys)) satisfies the component interface, did you mean to use `BusModel`?"
+            msg *= " $(get_name(sys)) satisfies the component interface, did you mean to use `MTKBus`?"
         end
         throw(ArgumentError("The system must satisfy the bus model interface!"))
     end
@@ -17,7 +17,7 @@ function Bus(sys::ODESystem; verbose=false)
     Bus(vertexf)
 end
 
-function simplify_busmodel(sys; busbar=:busbar)
+function simplify_mtkbus(sys; busbar=:busbar)
     @argcheck isbusmodel(sys) "The system must satisfy the bus model interface!"
     io = _busio(sys, busbar)
     structural_simplify(sys, (io.in, io.out))[1]
@@ -41,7 +41,7 @@ function Line(sys::ODESystem; verbose=false)
     if !islinemodel(sys)
         msg = "The system must satisfy the ine model interface!"
         if isbranchmodel(sys)
-            msg *= " $(get_name(sys)) satisfies the branch interface, did you mean to use `LineModel`?"
+            msg *= " $(get_name(sys)) satisfies the branch interface, did you mean to use `MTKLine`?"
         end
         throw(ArgumentError("The system must satisfy the bus model interface!"))
     end
@@ -50,7 +50,7 @@ function Line(sys::ODESystem; verbose=false)
     Line(edgef)
 end
 
-function simplify_linemodel(sys; src=:src, dst=:dst)
+function simplify_mtkline(sys; src=:src, dst=:dst)
     @argcheck islinemodel(sys) "The system must satisfy the lie model interface!"
     io = _lineio(sys, src, dst)
     in = vcat(io.srcin, io.dstin)

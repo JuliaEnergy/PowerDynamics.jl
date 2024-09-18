@@ -1,10 +1,15 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
+ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 NetworkDynamics = "22e9dc34-2a0d-11e9-0de0-8588d035468b"
 OpPoDyn = "88be6d57-9a19-43dd-942c-8912817e6f84"
 OpPoDynTesting = "97638210-66c4-447f-990e-d00c2b05d7ca"
+OrdinaryDiffEqNonlinearSolve = "127b3ac7-2247-4354-8eb6-78cf4e7c58e8"
+OrdinaryDiffEqRosenbrock = "43230ef6-c299-4910-a778-202eb28ce4ce"
+OrdinaryDiffEqTsit5 = "b1df2697-797e-41e3-8120-5422d3b24e4a"
 
 [sources]
-NetworkDynamics = {url = "https://github.com/JuliaDynamics/NetworkDynamics.jl", rev = "main"}
+NetworkDynamics = {rev = "main", url = "https://github.com/JuliaDynamics/NetworkDynamics.jl"}
 OpPoDyn = {path = ".."}
 OpPoDynTesting = {path = "../OpPoDynTesting"}

@@ -66,7 +66,7 @@ end
     end
 end
 
-function BusModel(injectors...; name=:bus)
+function MTKBus(injectors...; name=:bus)
     if !all(iscomponentmodel.(injectors))
         throw(ArgumentError("All components must satisfy the bus component model interface!"))
     end

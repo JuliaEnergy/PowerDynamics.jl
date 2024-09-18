@@ -60,7 +60,7 @@ end
 function bus_on_slack(bus::Bus)
     slack = Bus(SlackDifferential(name=:slack_src)).compf
     @named branch = DynawoPiLine(XPu=0.04189)
-    edgef = Line(LineModel(branch)).compf
+    edgef = Line(MTKLine(branch)).compf
     busf = bus.compf
     g = path_graph(2)
 

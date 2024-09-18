@@ -29,7 +29,7 @@
     end
 end
 
-function LineModel(branches...; name=:line)
+function MTKLine(branches...; name=:line)
     if !all(isbranchmodel.(branches))
         throw(ArgumentError("All components must satisfy the branch model interface!"))
     end
