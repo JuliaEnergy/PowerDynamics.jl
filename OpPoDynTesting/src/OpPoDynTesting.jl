@@ -15,11 +15,11 @@ using OrderedCollections: OrderedDict
 using OpPoDyn: OpPoDyn, Bus, Line
 using OpPoDyn.Library: DynawoPiLine, MTKLine, SlackDifferential
 
-using Serialization: serialize, deserialize
+using JLD2: JLD2
 using Test: Test, @test, @test_broken
 
 export TrajectoriesOfInterest, plottoi, compare
-include("utils.jl")
+include("TrajectoriesOfInterest.jl")
 
 export line_between_slacks, bus_on_slack
 include("scenarios.jl")
