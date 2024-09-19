@@ -41,6 +41,7 @@ using OpPoDynTesting
     end
 
     @safetestset "Library tests" begin include("Library_test.jl") end
+    @safetestset "utils tests" begin include("utils_test.jl") end
 
 
     @testset "pin parameters" begin
