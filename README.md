@@ -9,3 +9,8 @@ This is an experimental repository for exploration of the new PowerDynamics desi
 Once the design converges the code will be moved to the PowerDynamics.jl repository, essentially replacing it. Thus, the `OpPoDyn.jl`-Package won't be registered and is for experimental use only.
 
 During development, this Github Repository will be also used for tracking issues/features of for the new PowerDynamics/NetworkDynamics stack.
+
+## Funding
+Development of this project was in part funded by the *German Federal Ministry for Economic Affairs and Climate Action* as part of the *OpPoDyn*-Project ([Project ID 01258425/1](https://www.enargus.de/pub/bscw.cgi/?op=enargus.eps2&q=%2201258425/1%22), 2024-2027).
+
+<img src="docs/src/assets/bmwk_logo_en.svg" width="300"/>
