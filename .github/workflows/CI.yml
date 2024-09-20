@@ -74,12 +74,12 @@ jobs:
           Pkg.instantiate()
       # - uses: julia-actions/julia-buildpkg@v1 # not necessary and complicated with ND#main
       - uses: julia-actions/julia-docdeploy@v1
-        continue-on-error: true
+        # continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
       - name: Run doctests
-        continue-on-error: true
+        # continue-on-error: true
         shell: julia --project=docs --color=yes {0}
         run: |
           using Documenter: DocMeta, doctest
