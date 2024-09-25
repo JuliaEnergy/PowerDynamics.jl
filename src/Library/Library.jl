@@ -11,7 +11,7 @@ using ModelingToolkit: get_name, get_eqs, get_observed, get_ctrls, get_defaults,
                        get_discrete_subsystems, get_solved_unknowns, get_systems, get_tspan, get_guesses
 using ModelingToolkit: t_nounits as t, D_nounits as Dt
 using Symbolics: Symbolics, Symbolic, iscall, fixpoint_sub
-using ModelingToolkitStandardLibrary.Blocks: RealInput
+using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 
 export Terminal
 @connector Terminal begin
@@ -30,6 +30,20 @@ end
         ω0Pu = 1, [description="System angular frequency (pu base ωNom)"]
    end
 end
+
+@mtkmodel PUBase begin
+    @parameters begin
+        S, [description="Base power in MVA"]
+        V, [description="Base voltage in kV"]
+        ω, [description="System angular frequency in rad/s"]
+        I=S/V, [description="Base current in kA"]
+        Z=V^2/S, [description="Base impedance in Ω"]
+        Y=S/V^2, [description="Base admittance in S"]
+    end
+end
+Ibase(S, V) = S/V
+Zbase(S, V) = V^2/S
+Ybase(S, V) = S/V^2
 
 export BusBar, MTKBus, SlackAlgebraic, SlackDifferential
 include("Bus.jl")
@@ -55,6 +69,15 @@ include("Machines/DynawoMachine.jl")
 export Swing
 include("Machines/Swing.jl")
 
+export IPSLPSATOrder4
+include("Machines/IPSLPSAT.jl")
+
+####
+#### Control Models
+####
+export AVRTypeI
+include("Controls/AVRTypeI.jl")
+
 ####
 #### Load Models
 ####
@@ -65,7 +88,7 @@ include("Loads/PQLoad.jl")
 #### Line Models
 ####
 export DynawoPiLine
-include("Lines/DynawoPiLine.jl")
+include("Branches/DynawoPiLine.jl")
 
 export DynawoFixedRatioTransformer
 include("Transformers/DynawoFixedRatioTransformer.jl")

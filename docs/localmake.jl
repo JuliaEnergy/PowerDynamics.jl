@@ -18,7 +18,11 @@ if VERSION ≤ v"1.11-"
     Pkg.develop(PackageSpec(path=dirname(@__DIR__))) # adds the package this script is called from
 end
 Pkg.instantiate()
-# Pkg.update()
+print("Do you want to update docs environment? [y/n] ")
+answer = readline()
+if !isempty(answer) && answer[1] == 'y'
+    Pkg.update()
+end
 
 using Revise
 using LiveServer

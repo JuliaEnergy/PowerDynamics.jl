@@ -131,3 +131,60 @@ end
     isinteractive() && plottoi(toi)
     @reftest "dynawomachine_on_slack_prefstep" toi
 end
+
+@testset "IPSLPSAT" begin
+    @mtkmodel GenBus begin
+        @components begin
+            machine = OpPoDyn.Library.IPSLPSATOrder4(;
+                Sn=100,
+                Vn=18,
+                V_b=18,
+                ra=0,
+                xd=0.8958,
+                xq=0.8645,
+                x1d=0.1198,
+                x1q=0.1969,
+                T1d0=6,
+                T1q0=0.5350,
+                M=12.8,
+                D=0,
+                ω_b=2π*50,
+                S_b=100)
+            avr = AVRTypeI(
+                vr_min=-5,
+                vr_max=5,
+                Ka=20,
+                Ta=0.2,
+                Kf=0.063,
+                Tf=0.35,
+                Ke=1,
+                Te=0.314,
+                Tr=0.001,
+                Ae=0.0039,
+                Be=1.555)
+            pmech = Blocks.Constant(k=1.63)
+            vref = Blocks.Constant(k=1.120103884682511)
+            busbar = BusBar()
+        end
+        @equations begin
+            connect(vref.output, avr.vref)
+            connect(avr.vf, machine.vf)
+            connect(machine.v_mag_out, avr.vh)
+            connect(pmech.output, machine.pm)
+            connect(machine.terminal, busbar.terminal)
+        end
+    end
+    @named mtkbus = GenBus()
+    bus = Bus(mtkbus);
+    cf = bus.compf
+
+    # obtained from steadystate for now
+    set_default!(cf, :busbar₊u_r, 1.0189261518036425)
+    set_default!(cf, :busbar₊u_i, 0.06828069999522467)
+    set_default!(cf, :busbar₊i_r, -1.6299999998860033)
+    set_default!(cf, :busbar₊i_i, 0.4518059633240033)
+    initialize_component!(cf)
+
+    toi = bus_on_slack(bus; tmax=600, toilength=10_000)
+    isinteractive() && plottoi(toi)
+end

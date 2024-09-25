@@ -57,7 +57,7 @@ function line_between_slacks(line::Line)
     return TrajectoriesOfInterest(sol, plotspec)
 end
 
-function bus_on_slack(bus::Bus)
+function bus_on_slack(bus::Bus; tmax=6, toilength=1000, argscale=1, magscale=1)
     slack = Bus(SlackDifferential(name=:slack_src)).compf
     @named branch = DynawoPiLine(XPu=0.04189)
     edgef = Line(MTKLine(branch)).compf
@@ -77,24 +77,25 @@ function bus_on_slack(bus::Bus)
         error("Parameters contain NaNs")
     end
 
+    tstops = collect(range(0,tmax, length=7))[2:end-1]
     affect = function(integrator)
         u = NWState(integrator)
-        if integrator.t == 1
-           _set_voltage(u, 1, 1,  1/360*2π)
-        elseif integrator.t == 2
-           _set_voltage(u, 1, 1, -1/360*2π)
-        elseif integrator.t == 3
-           _set_voltage(u, 1, 1.1, 0)
-        elseif integrator.t == 4
-           _set_voltage(u, 1, 1.1,  1/360*2π)
-        elseif integrator.t == 5
-           _set_voltage(u, 1, 1.1, -1/360*2π)
+        if integrator.t == tstops[1]
+           _set_voltage(u, 1, 1,  1/360*2π*argscale)
+        elseif integrator.t == tstops[2]
+           _set_voltage(u, 1, 1, -1/360*2π*argscale)
+        elseif integrator.t == tstops[3]
+           _set_voltage(u, 1, 1+0.1*magscale, 0)
+        elseif integrator.t == tstops[4]
+           _set_voltage(u, 1, 1+0.1*magscale,  1/360*2π*argscale)
+        elseif integrator.t == tstops[5]
+           _set_voltage(u, 1, 1+0.1*magscale, -1/360*2π*argscale)
         end
         auto_dt_reset!(integrator)
     end
-    cb = PresetTimeCallback([1,2,3,4,5], affect)
+    cb = PresetTimeCallback(tstops, affect)
 
-    prob = ODEProblem(nw, uflat(u0), (0,6), pflat(u0); callback=cb)
+    prob = ODEProblem(nw, uflat(u0), (0,tmax), pflat(u0); callback=cb)
     sol = solve(prob, Rodas5P())
 
     plotspec = OrderedDict(
@@ -109,7 +110,7 @@ function bus_on_slack(bus::Bus)
         # ,
         # "frequency" => OrderedDict("frequency at bus" => VIndex(2, :busbar₊ω)))
 
-    return TrajectoriesOfInterest(sol, plotspec)
+    return TrajectoriesOfInterest(sol, plotspec; length=toilength)
 end
 
 
