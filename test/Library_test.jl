@@ -227,3 +227,65 @@ end
     toi = bus_on_slack(bus; tmax=600, toilength=10_000)
     isinteractive() && plottoi(toi)
 end
+
+@testset "SauerPai Generator with AVR and GOV" begin
+    Ae, Be = Library.solve_ceilf(3.3 => 0.6602, 4.5 => 4.2662)
+
+    @mtkmodel GenBus begin
+        @components begin
+            machine = OpPoDyn.Library.SauerPaiMachine(;
+                vf_input=true,
+                τ_m_input=true,
+                S_b=100,
+                V_b=18,
+                ω_b=2π*60,
+                X_d=0.146, X′_d=0.0608, X″_d=0.06,
+                X_q=0.1, X′_q=0.0969, X″_q=0.06,
+                R_s=0.000124,
+                X_ls=0.01460,
+                T′_d0=8.96,
+                T″_d0=0.01,
+                T′_q0=0.31,
+                T″_q0=0.01,
+                H=23.64,
+            )
+            avr = AVRTypeI(
+                vr_min=-5,
+                vr_max=5,
+                Ka=20,
+                Ta=0.2,
+                Kf=0.063,
+                Tf=0.35,
+                Ke=1,
+                Te=0.314,
+                Ae, Be,
+                tmeas_lag=false)
+            gov = TGOV1(
+                R=0.05,
+                T1=0.05,
+                T2=2.1,
+                T3=7.0,
+                DT=0,
+                V_max=5,
+                V_min=-5)
+            busbar = BusBar()
+        end
+        @equations begin
+            connect(machine.terminal, busbar.terminal)
+            connect(machine.v_mag_out, avr.vh)
+            connect(avr.vf, machine.vf_in)
+            connect(gov.τ_m, machine.τ_m_in)
+            connect(machine.ωout, gov.ω_meas)
+        end
+    end
+    @named mtkbus = GenBus()
+
+    bus = Bus(mtkbus);
+    cf = bus.compf
+    set_voltage!(cf; mag=1.017, arg=0.0295)
+    set_current!(cf; P=0.716, Q=0.3025)
+    initialize_component!(cf)
+
+    toi = bus_on_slack(bus; tmax=600, toilength=10_000)
+    isinteractive() && plottoi(toi)
+end

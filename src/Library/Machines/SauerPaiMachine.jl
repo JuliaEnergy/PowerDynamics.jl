@@ -20,7 +20,6 @@
         Qout = RealOutput() # reactive power [pu]
     end
     @parameters begin
-        ω_s=1, [description="synchronous speed [pu]"]
         R_s, [description="stator resistance"]
         X_d, [description="d-axis synchronous reactance"]
         X_q, [description="q-axis synchronous reactance"]
@@ -85,7 +84,7 @@
         [I_d, I_q] .~ -T_park(-δ)*[terminal.i_r, terminal.i_i] * Ibase(Sn, Vn)/Ibase(S_b, V_b)
 
         # mechanical swing equation
-        Dt(δ) ~ ω_b*(ω - ω_s)
+        Dt(δ) ~ ω_b*(ω - 1)
         2*H * Dt(ω) ~ τ_m  - (ψ_d*I_q - ψ_q*I_d)
 
         # stator equations

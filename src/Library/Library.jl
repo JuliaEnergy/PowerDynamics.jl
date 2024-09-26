@@ -12,6 +12,8 @@ using ModelingToolkit: get_name, get_eqs, get_observed, get_ctrls, get_defaults,
 using ModelingToolkit: t_nounits as t, D_nounits as Dt
 using Symbolics: Symbolics, Symbolic, iscall, fixpoint_sub
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
+using NonlinearSolve: NonlinearProblem
+using SciMLBase: SciMLBase, solve
 
 export Terminal
 @connector Terminal begin
@@ -76,7 +78,10 @@ include("Machines/IPSLPSAT.jl")
 #### Control Models
 ####
 export AVRTypeI
-include("Controls/AVRTypeI.jl")
+include("Controls/AVRs.jl")
+
+export TGovTypeI, TGOV1
+include("Controls/Govs.jl")
 
 ####
 #### Load Models
