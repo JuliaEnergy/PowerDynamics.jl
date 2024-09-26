@@ -1,3 +1,6 @@
+"""
+  - Inputs vf and output v_mag_out in system base not machien base
+"""
 @mtkmodel IPSLPSATOrder4 begin
     @components begin
         terminal = Terminal()

@@ -1,12 +1,13 @@
 module OpPoDyn
 
 using NetworkDynamics: VertexFunction, EdgeFunction, ODEVertex, StaticEdge, Fiducial
+using NetworkDynamics: has_default, set_default!, get_default
 using ModelingToolkit: ModelingToolkit, ODESystem, structural_simplify
 using Graphs: SimpleGraph, add_edge!, nv
 using ArgCheck: @argcheck
 using Setfield: @set, @set!
 
-export @attach_metadata!
+export @attach_metadata!, set_voltage!, set_current!
 include("utils.jl")
 include("Library/Library.jl")
 using .Library

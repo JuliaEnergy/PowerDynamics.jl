@@ -62,3 +62,28 @@ function _attach_metadata(model::ModelingToolkit.Model, metadata::NamedTuple)
     mc = ModelMetadataConstructor(model, metadata)
     @set model.f = mc
 end
+
+
+function freep(sys)
+    return filter(p -> !haskey(ModelingToolkit.defaults(sys), p), ModelingToolkit.parameters(sys))
+end
+
+set_voltage!(cf::VertexFunction; mag, arg) = set_voltage!(cf, mag * exp(im * arg))
+function set_voltage!(cf::VertexFunction, c::Complex)
+    set_default!(cf, :busbar₊u_r, real(c))
+    set_default!(cf, :busbar₊u_i, imag(c))
+    c
+end
+
+function set_current!(cf::VertexFunction; P, Q)
+    @assert has_default(cf, :busbar₊u_r) && has_default(cf, :busbar₊u_i)
+    u = get_default(cf, :busbar₊u_r) + im * get_default(cf, :busbar₊u_i)
+    i = conj((P + im * Q) / u)
+    set_current!(cf, -i)
+end
+# set_current!(cf::VertexFunction; mag, arg) = set_current!(cf, mag * exp(im * arg))
+function set_current!(cf::VertexFunction, c::Complex)
+    set_default!(cf, :busbar₊i_r, real(c))
+    set_default!(cf, :busbar₊i_i, imag(c))
+    c
+end

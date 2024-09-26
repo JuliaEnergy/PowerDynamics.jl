@@ -188,3 +188,42 @@ end
     toi = bus_on_slack(bus; tmax=600, toilength=10_000)
     isinteractive() && plottoi(toi)
 end
+
+
+@testset "SauerPai Generator" begin
+    @mtkmodel GenBus begin
+        @components begin
+            machine = OpPoDyn.Library.SauerPaiMachine(;
+                vf_input=false,
+                τ_m_input=false,
+                S_b=100,
+                V_b=18,
+                ω_b=2π*60,
+                X_d=0.146, X′_d=0.0608, X″_d=0.06,
+                X_q=0.1, X′_q=0.0969, X″_q=0.06,
+                R_s=0.000124,
+                X_ls=0.01460,
+                T′_d0=8.96,
+                T″_d0=0.01,
+                T′_q0=0.31,
+                T″_q0=0.01,
+                H=23.64,
+            )
+            busbar = BusBar()
+        end
+        @equations begin
+            connect(machine.terminal, busbar.terminal)
+        end
+    end
+    @named mtkbus = GenBus()
+    bus = Bus(mtkbus);
+    cf = bus.compf
+
+
+    set_voltage!(cf; mag=1.017, arg=0.0295)
+    set_current!(cf; P=0.716, Q=0.3025)
+    initialize_component!(cf)
+
+    toi = bus_on_slack(bus; tmax=600, toilength=10_000)
+    isinteractive() && plottoi(toi)
+end
