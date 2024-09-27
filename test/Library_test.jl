@@ -289,3 +289,16 @@ end
     toi = bus_on_slack(bus; tmax=600, toilength=10_000)
     isinteractive() && plottoi(toi)
 end
+
+@testest "test loads" begin
+    @named load = PQLoad(Pset=-0.5, Qset=-0.5)
+    bus = Bus(MTKBus(load));
+    toi = bus_on_slack(bus)
+    isinteractive() && plottoi(toi)
+    # @reftest "SwingBus_1" toi
+
+    @named load = VoltageDependentLoad(Pset=-0.5, Qset=-0.5, Vn=1, αP=1, αQ=1)
+    bus = Bus(MTKBus(load));
+    toi = bus_on_slack(bus)
+    isinteractive() && plottoi(toi)
+end

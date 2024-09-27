@@ -10,7 +10,7 @@ function Bus(sys::ODESystem; verbose=false)
         if iscomponentmodel(sys)
             msg *= " $(get_name(sys)) satisfies the component interface, did you mean to use `MTKBus`?"
         end
-        throw(ArgumentError("The system must satisfy the bus model interface!"))
+        throw(ArgumentError(msg))
     end
     io = _busio(sys, :busbar)
     vertexf = ODEVertex(sys, io.in, io.out; verbose)
@@ -43,7 +43,7 @@ function Line(sys::ODESystem; verbose=false)
         if isbranchmodel(sys)
             msg *= " $(get_name(sys)) satisfies the branch interface, did you mean to use `MTKLine`?"
         end
-        throw(ArgumentError("The system must satisfy the bus model interface!"))
+        throw(ArgumentError(msg))
     end
     io = _lineio(sys, :src, :dst)
     edgef = StaticEdge(sys, io.srcin, io.dstin, io.out, Fiducial(); verbose)

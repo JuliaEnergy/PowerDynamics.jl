@@ -18,3 +18,36 @@
         terminal.i_i ~ -simplify(imag((Pset + im*Qset)/(terminal.u_r + im*terminal.u_i)))
     end
 end
+
+@mtkmodel VoltageDependentLoad begin
+    @parameters begin
+        Pset, [description="Active Power demand"]
+        Qset, [description="Reactive Power demand"]
+        αP, [description="Active Power exponent"]
+        αQ, [description="Reactive Power exponent"]
+        Vn, [description="Nominal voltage (where real power equals set power)"]
+    end
+    @components begin
+        terminal = Terminal()
+    end
+    @variables begin
+        P(t), [description="Active Power [pu]"]
+        Q(t), [description="Reactive Power [pu]"]
+    end
+    begin
+        v = sqrt(terminal.u_r^2 + terminal.u_i^2)
+        Pload = Pset * (v/Vn)^αP
+        Qload = Qset * (v/Vn)^αQ
+        Sload = Pload + im*Qload
+        vcomplex = terminal.u_r + im*terminal.u_i
+        iout = conj(Sload/vcomplex)
+    end
+    @equations begin
+         terminal.i_r ~ simplify(real(iout))
+         terminal.i_i ~ simplify(imag(iout))
+
+        # observables
+        P ~ terminal.u_r*terminal.i_r + terminal.u_i*terminal.i_i
+        Q ~ terminal.u_i*terminal.i_r - terminal.u_r*terminal.i_i
+    end
+end
