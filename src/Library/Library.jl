@@ -100,4 +100,10 @@ include("Branches/PiLine.jl")
 export DynawoFixedRatioTransformer
 include("Transformers/DynawoFixedRatioTransformer.jl")
 
+####
+#### Fault models
+####
+export RXGroundFault
+include("Faults/Faults.jl")
+
 end

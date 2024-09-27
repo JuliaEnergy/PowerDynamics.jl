@@ -21,7 +21,7 @@ end
 function isbusbar(sys::ODESystem)
     # TODO: consider overloading constructors in libary to add metadata
     # @set! busbar.metadata = (; modelname=:busbar)
-    vars = getname.(unknowns(sys)) ⊇ Set([:u_r, :u_i, :i_r, :i_i, :P, :Q])
+    vars = getname.(unknowns(sys)) ⊇ Set([:u_r, :u_i, :i_r, :i_i])
     inputs = Set(getname.(ModelingToolkit.unbound_inputs(sys))) == Set([:i_r, :i_i])
     outputs = Set(getname.(ModelingToolkit.unbound_outputs(sys))) == Set([:u_r, :u_i])
     vars && inputs && outputs

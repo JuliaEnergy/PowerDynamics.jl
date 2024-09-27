@@ -67,6 +67,12 @@ end
 function freep(sys)
     return filter(p -> !haskey(ModelingToolkit.defaults(sys), p), ModelingToolkit.parameters(sys))
 end
+function freep(nw::Network)
+    setdiff(NetworkDynamics.SII.parameter_symbols(nw), keys(NetworkDynamics.SII.default_values(nw)))
+end
+function freeu(nw::Network)
+    setdiff(NetworkDynamics.SII.variable_symbols(nw), keys(NetworkDynamics.SII.default_values(nw)))
+end
 
 set_voltage!(cf::VertexFunction; mag, arg) = set_voltage!(cf, mag * exp(im * arg))
 function set_voltage!(cf::VertexFunction, c::Complex)

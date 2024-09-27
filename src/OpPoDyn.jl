@@ -1,8 +1,9 @@
 module OpPoDyn
 
-using NetworkDynamics: VertexFunction, EdgeFunction, ODEVertex, StaticEdge, Fiducial
-using NetworkDynamics: has_default, set_default!, get_default
-using ModelingToolkit: ModelingToolkit, ODESystem, structural_simplify, get_name
+using NetworkDynamics: NetworkDynamics, VertexFunction, EdgeFunction, ODEVertex, StaticEdge, Fiducial,
+                       has_default, set_default!, get_default,
+                       has_graphelement, set_graphelement!, get_graphelement, Network
+using ModelingToolkit: ModelingToolkit, ODESystem, structural_simplify, get_name, getname
 using Graphs: SimpleGraph, add_edge!, nv
 using ArgCheck: @argcheck
 using Setfield: @set, @set!
