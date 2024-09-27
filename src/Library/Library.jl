@@ -94,6 +94,8 @@ include("Loads/PQLoad.jl")
 ####
 export DynawoPiLine
 include("Branches/DynawoPiLine.jl")
+export PiLine
+include("Branches/PiLine.jl")
 
 export DynawoFixedRatioTransformer
 include("Transformers/DynawoFixedRatioTransformer.jl")

@@ -27,6 +27,28 @@ isinteractive() && using GLMakie
     @reftest "DynawoPiLine_2" toi
 end
 
+@testset "PiLineTest" begin
+    X = 0.1
+    R = 0.2
+    G = 0.3
+    B = 0.4
+    @named refbranch = DynawoPiLine(XPu=X, RPu=R, GPu=G, BPu=B)
+    @named branch = PiLine(X=X, R=R, G_src=G, G_dst=G, B_src=B, B_dst=B)
+
+    line1 = Line(MTKLine(refbranch)).compf
+    line2 = Line(MTKLine(branch)).compf
+    p1 = get_default.(Ref(line1), psym(line1))
+    p2 = get_default.(Ref(line2), psym(line2))
+
+    du1 = zeros(4)
+    du2 = zeros(4)
+    usrc = rand(2)
+    udst = rand(2)
+    line1.f(du1, usrc, udst, p1, NaN)
+    line2.f(du2, usrc, udst, p2, NaN)
+    @test du1 ≈ du2
+end
+
 @testset "Swing bus" begin
     @named swing = Swing(Pm=1, D=0.1, M=0.005)
     bus = Bus(MTKBus(swing));
