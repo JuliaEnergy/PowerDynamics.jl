@@ -17,7 +17,7 @@ Ae, Be = Library.solve_ceilf(3.3 => 0.6602, 4.5 => 4.2662)
             S_b=100,
             V_b=1,
             ω_b=2π*60,
-            R_s=0.000124,
+            R_s=0.000125,
             T″_d0=0.01,
             T″_q0=0.01,
             X_d, X′_d, X″_d, X_q, X′_q, X″_q, X_ls, T′_d0, T′_q0, H # free per machine parameter
@@ -57,7 +57,7 @@ gen3p = (;machine__X_ls=0.13125, machine__X_d=1.3125, machine__X′_d=0.1813, ma
 @named mtkbus5 = LoadBus(;load__Pset=-1.25, load__Qset=-0.5)
 @named mtkbus6 = LoadBus(;load__Pset=-0.90, load__Qset=-0.3)
 @named mtkbus7 = MTKBus()
-@named mtkbus8 = LoadBus(;load__Pset=-1, load__Qset=-0.35)
+@named mtkbus8 = LoadBus(;load__Pset=-1.0, load__Qset=-0.35)
 @named mtkbus9 = MTKBus()
 
 # now we're creating the networkdynamic models from the mtk models

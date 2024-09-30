@@ -215,22 +215,19 @@ Define a swing bus with load
 @named swing = Swing(; Pm=1)
 @named load = PQLoad(; Pset=-.5, Qset=0)
 bus1mtk = MTKBus(swing, load; name=:swingbus)
-bus1 = Bus(bus1mtk)
-vertex1f = bus1.compf # extract component function
+vertex1f = Bus(bus1mtk) # extract component function
 ```
 Define a second bus as a slack
 ```@example concepts
 bus2mtk = SlackDifferential(; name=:slackbus)
-bus2 = Bus(bus2mtk)
-vertex2f = bus2.compf # extract component function
+vertex2f = Bus(bus2mtk) # extract component function
 ```
 Define the powerline connecting both nodes
 ```@example concepts
 @named branch1 = DynawoPiLine()
 @named branch2 = DynawoPiLine()
 linemtk = MTKLine(branch1, branch2; name=:powerline)
-line = Line(linemtk)
-edgef = line.compf # extract component function
+edgef = Line(linemtk) # extract component function
 ```
 Define the graph, the network and extract initial conditions
 ```@example concepts

@@ -35,8 +35,8 @@ end
     @named refbranch = DynawoPiLine(XPu=X, RPu=R, GPu=G, BPu=B)
     @named branch = PiLine(X=X, R=R, G_src=G, G_dst=G, B_src=B, B_dst=B)
 
-    line1 = Line(MTKLine(refbranch)).compf
-    line2 = Line(MTKLine(branch)).compf
+    line1 = Line(MTKLine(refbranch))
+    line2 = Line(MTKLine(branch))
     p1 = get_default.(Ref(line1), psym(line1))
     p2 = get_default.(Ref(line2), psym(line2))
 
@@ -105,7 +105,7 @@ end
     slackf = Bus(slack)
 
     g = path_graph(2)
-    nw = Network(g, [slackf.compf, genf.compf], linef.compf)
+    nw = Network(g, [slackf, genf], linef)
     u0 = NWState(nw)
     u0.v[2, :machine₊θ]        = 1.2107
     u0.v[2, :machine₊λ_fPu]    = 1.1458
@@ -173,6 +173,7 @@ end
                 ω_b=2π*50,
                 S_b=100)
             avr = AVRTypeI(
+                vref_input=true,
                 vr_min=-5,
                 vr_max=5,
                 Ka=20,
@@ -198,14 +199,13 @@ end
     end
     @named mtkbus = GenBus()
     bus = Bus(mtkbus);
-    cf = bus.compf
 
     # obtained from steadystate for now
-    set_default!(cf, :busbar₊u_r, 1.0189261518036425)
-    set_default!(cf, :busbar₊u_i, 0.06828069999522467)
-    set_default!(cf, :busbar₊i_r, -1.6299999998860033)
-    set_default!(cf, :busbar₊i_i, 0.4518059633240033)
-    initialize_component!(cf)
+    set_default!(bus, :busbar₊u_r, 1.0189261518036425)
+    set_default!(bus, :busbar₊u_i, 0.06828069999522467)
+    set_default!(bus, :busbar₊i_r, -1.6299999998860033)
+    set_default!(bus, :busbar₊i_i, 0.4518059633240033)
+    initialize_component!(bus)
 
     toi = bus_on_slack(bus; tmax=600, toilength=10_000)
     isinteractive() && plottoi(toi)
@@ -239,12 +239,10 @@ end
     end
     @named mtkbus = GenBus()
     bus = Bus(mtkbus);
-    cf = bus.compf
 
-
-    set_voltage!(cf; mag=1.017, arg=0.0295)
-    set_current!(cf; P=0.716, Q=0.3025)
-    initialize_component!(cf)
+    set_voltage!(bus; mag=1.017, arg=0.0295)
+    set_current!(bus; P=0.716, Q=0.3025)
+    initialize_component!(bus)
 
     toi = bus_on_slack(bus; tmax=600, toilength=10_000)
     isinteractive() && plottoi(toi)
@@ -303,16 +301,15 @@ end
     @named mtkbus = GenBus()
 
     bus = Bus(mtkbus);
-    cf = bus.compf
-    set_voltage!(cf; mag=1.017, arg=0.0295)
-    set_current!(cf; P=0.716, Q=0.3025)
-    initialize_component!(cf)
+    set_voltage!(bus; mag=1.017, arg=0.0295)
+    set_current!(bus; P=0.716, Q=0.3025)
+    initialize_component!(bus)
 
     toi = bus_on_slack(bus; tmax=600, toilength=10_000)
     isinteractive() && plottoi(toi)
 end
 
-@testest "test loads" begin
+@testset "test loads" begin
     @named load = PQLoad(Pset=-0.5, Qset=-0.5)
     bus = Bus(MTKBus(load));
     toi = bus_on_slack(bus)

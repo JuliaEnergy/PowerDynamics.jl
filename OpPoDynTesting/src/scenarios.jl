@@ -1,5 +1,5 @@
 """
-    line_between_slacks(l::Line)
+    line_between_slacks(l)
 
 This function puts the line model between two slack nodes. The simulation consists of 3 phases:
  - 0-1s: Both slack nodes show the same voltage
@@ -9,10 +9,9 @@ This function puts the line model between two slack nodes. The simulation consis
  - 4-5s: `dst` end +10% magnitude, `dst` end +1 degree phase lead
  - 5-6s: `dst` end +10% magnitude, `dst` end -1 degree phase lag
 """
-function line_between_slacks(line::Line)
-    src = Bus(SlackDifferential(name=:slack_src)).compf
-    dst = Bus(SlackDifferential(name=:slack_dst)).compf
-    edgef = line.compf
+function line_between_slacks(edgef)
+    src = Bus(SlackDifferential(name=:slack_src))
+    dst = Bus(SlackDifferential(name=:slack_dst))
     g = path_graph(2)
     nw = Network(g, [src, dst], edgef)
     u0 = NWState(nw)
@@ -57,11 +56,10 @@ function line_between_slacks(line::Line)
     return TrajectoriesOfInterest(sol, plotspec)
 end
 
-function bus_on_slack(bus::Bus; tmax=6, toilength=1000, argscale=1, magscale=1)
-    slack = Bus(SlackDifferential(name=:slack_src)).compf
+function bus_on_slack(busf; tmax=6, toilength=1000, argscale=1, magscale=1)
+    slack = Bus(SlackDifferential(name=:slack_src))
     @named branch = DynawoPiLine(XPu=0.04189)
-    edgef = Line(MTKLine(branch)).compf
-    busf = bus.compf
+    edgef = Line(MTKLine(branch))
     g = path_graph(2)
 
     nw = Network(g, [slack, busf], edgef)

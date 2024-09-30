@@ -80,7 +80,7 @@ include("Machines/IPSLPSAT.jl")
 export AVRTypeI
 include("Controls/AVRs.jl")
 
-export TGovTypeI, TGOV1
+export TurbineGovTypeI, TGOV1
 include("Controls/Govs.jl")
 
 ####
