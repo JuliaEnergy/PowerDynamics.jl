@@ -1,7 +1,20 @@
 using OpPoDyn
 using Documenter
+using Literate
 
 DocMeta.setdocmeta!(OpPoDyn, :DocTestSetup, :(using OpPoDyn); recursive=true)
+
+# generate examples
+example_dir = joinpath(@__DIR__, "examples")
+outdir = joinpath(@__DIR__, "src", "generated")
+isdir(outdir) && rm(outdir, recursive=true)
+mkpath(outdir)
+
+for example in filter(contains(r".jl$"), readdir(example_dir, join=true))
+    Literate.markdown(example, outdir)
+    Literate.script(example, outdir; keep_comments=true)
+end
+
 
 makedocs(;
     modules=[OpPoDyn],
@@ -17,7 +30,10 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         "Modeling Concepts" => "ModelingConcepts.md",
+        "Examples" => [
+            "generated/ieee9bus.md",]
     ],
+    warnonly=[:cross_references, :missing_docs, :docs_block],
 )
 
 deploydocs(;
