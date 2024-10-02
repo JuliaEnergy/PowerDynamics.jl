@@ -320,7 +320,7 @@ end
     toi = bus_on_slack(bus)
     isinteractive() && plottoi(toi)
 
-    @named load = ConstantYLoad(Pset=-0.5, Qset=-0.5, Vn=1)
+    @named load = ConstantYLoad(Pset=-0.5, Qset=-0.5, Vset=1)
     bus = Bus(MTKBus(load));
     toi = bus_on_slack(bus)
     isinteractive() && plottoi(toi)
