@@ -74,6 +74,9 @@ include("Machines/Swing.jl")
 export IPSLPSATOrder4
 include("Machines/IPSLPSAT.jl")
 
+export ClassicalMachine
+include("Machines/ClassicalMachine.jl")
+
 ####
 #### Control Models
 ####

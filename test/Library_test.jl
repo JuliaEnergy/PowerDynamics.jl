@@ -325,4 +325,36 @@ end
     toi = bus_on_slack(bus)
     isinteractive() && plottoi(toi)
 end
+
+@testset "Classical machine" begin
+    @mtkmodel GenBus begin
+        @components begin
+            machine = Library.ClassicalMachine(;
+                τ_m_input=false,
+                S_b=100,
+                V_b=18,
+                ω_b=2π*60,
+                X′_d=0.0608,
+                R_s=0.000124,
+                H=23.64,
+            )
+            busbar = BusBar()
+        end
+        @equations begin
+            connect(machine.terminal, busbar.terminal)
+        end
+    end
+    @named mtkbus = GenBus()
+
+    simp = simplify_mtkbus(mtkbus)
+    full_equations(simp)
+    observed(simp)
+
+    bus = Bus(mtkbus)
+    set_voltage!(bus; mag=1.017, arg=0.0295)
+    set_current!(bus; P=0.716, Q=0.3025)
+    initialize_component!(bus)
+
+    toi = bus_on_slack(bus; tmax=600, toilength=10_000)
+    isinteractive() && plottoi(toi)
 end
