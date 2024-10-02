@@ -87,7 +87,7 @@ function _pinparameters(sys::ODESystem, _subs::Dict)
             # discrete_events = nothing,
             # parameter_dependencies = nothing,
             checks = true,
-            metadata = get_metadata(sys),
+            metadata = ModelingToolkit.get_metadata(sys),
             gui_metadata = get_gui_metadata(sys))
 end
 function _resolve_to_namespaced_symbolic(sys, var)

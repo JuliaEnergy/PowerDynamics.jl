@@ -51,14 +51,14 @@ end
 
 
 # generate the dynamic component functions
-@named bus1 = Bus(mtkbus1; vidx=1)
-@named bus2 = Bus(mtkbus2; vidx=2)
-@named bus3 = Bus(mtkbus3; vidx=3)
+@named bus1 = Bus(mtkbus1; vidx=1, pf=pfSlack(V=1.04))
+@named bus2 = Bus(mtkbus2; vidx=2, pf=pfPV(V=1.025, P=1.63))
+@named bus3 = Bus(mtkbus3; vidx=3, pf=pfPV(V=1.025, P=0.85))
 @named bus4 = Bus(mtkbus4; vidx=4)
-@named bus5 = Bus(mtkbus5; vidx=5)
-@named bus6 = Bus(mtkbus6; vidx=6)
+@named bus5 = Bus(mtkbus5; vidx=5, pf=pfPQ(P=-1.25, Q=-0.5))
+@named bus6 = Bus(mtkbus6; vidx=6, pf=pfPQ(P=-0.9, Q=-0.3))
 @named bus7 = Bus(mtkbus7; vidx=7)
-@named bus8 = Bus(mtkbus8; vidx=8)
+@named bus8 = Bus(mtkbus8; vidx=8, pf=pfPQ(P=-1.0, Q=-0.35))
 @named bus9 = Bus(mtkbus9; vidx=9)
 
 # Branches
@@ -81,39 +81,16 @@ end
 @named t27 = Line(transformer(; R=0, X=0.0625), src=2, dst=7)
 @named t39 = Line(transformer(; R=0, X=0.0586), src=3, dst=9)
 
-# set powerflow for initialization
-set_voltage!(bus1; mag=1.040, arg=deg2rad( 0.0))
-set_voltage!(bus2; mag=1.025, arg=deg2rad( 9.3))
-set_voltage!(bus3; mag=1.025, arg=deg2rad( 4.7))
-set_voltage!(bus4; mag=1.026, arg=deg2rad(-2.2))
-set_voltage!(bus5; mag=0.996, arg=deg2rad(-4.0))
-set_voltage!(bus6; mag=1.013, arg=deg2rad(-3.7))
-set_voltage!(bus7; mag=1.026, arg=deg2rad( 3.7))
-set_voltage!(bus8; mag=1.016, arg=deg2rad( 0.7))
-set_voltage!(bus9; mag=1.032, arg=deg2rad( 2.0))
-
-# set currents (via PQ) for buses which need initialization
-set_current!(bus1; P=0.716, Q= 0.270)
-set_current!(bus2; P=1.630, Q= 0.067)
-set_current!(bus3; P=0.850, Q=-0.109)
-set_current!(bus5; P=-1.25, Q=-0.5)
-set_current!(bus6; P=-0.90, Q=-0.3)
-set_current!(bus8; P=-1.00, Q=-0.35)
-
-# initialize generators
-initialize_component!(bus1)
-initialize_component!(bus2)
-initialize_component!(bus3)
-
-# we also initialize the loads to get the correct nominal voltage
-initialize_component!(bus5)
-initialize_component!(bus6)
-initialize_component!(bus8)
-
 # build network
 vertexfs = [bus1, bus2, bus3, bus4, bus5, bus6, bus7, bus8, bus9];
 edgefs = [l45, l46, l57, l69, l78, l89, t14, t27, t39];
 nw = Network(vertexfs, edgefs)
+
+# solve powerflow and initialize
+OpPoDyn.solve_powerflow!(nw)
+OpPoDyn.initialize!(nw)
+
+# get state for actual calculation
 u0 = NWState(nw)
 
 # create fault

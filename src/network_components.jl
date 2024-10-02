@@ -1,7 +1,7 @@
 ####
 #### Network level Bus representation
 ####
-function Bus(sys::ODESystem; verbose=false, vidx=nothing, name=getname(sys))
+function Bus(sys::ODESystem; verbose=false, vidx=nothing, pf=nothing, name=getname(sys))
     if !isbusmodel(sys)
         msg = "The system must satisfy the bus model interface!"
         if iscomponentmodel(sys)
@@ -13,6 +13,13 @@ function Bus(sys::ODESystem; verbose=false, vidx=nothing, name=getname(sys))
     vertexf = ODEVertex(sys, io.in, io.out; verbose, name)
     if !isnothing(vidx)
         set_graphelement!(vertexf, vidx)
+    end
+    if !isnothing(pf)
+        if ispfmodel(pf)
+            set_metadata!(vertexf, :pfmodel, pf)
+        else
+            throw(ArgumentError("The provided pf model is invalid!"))
+        end
     end
     vertexf
 end

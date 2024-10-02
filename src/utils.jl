@@ -64,14 +64,20 @@ function _attach_metadata(model::ModelingToolkit.Model, metadata::NamedTuple)
 end
 
 
-function freep(sys)
+function freep(sys::ODESystem)
     return filter(p -> !haskey(ModelingToolkit.defaults(sys), p), ModelingToolkit.parameters(sys))
+end
+function freep(cf::NetworkDynamics.ComponentFunction)
+    return filter(p -> !NetworkDynamics.has_default(cf, p), NetworkDynamics.psym(cf))
 end
 function freep(nw::Network)
     setdiff(NetworkDynamics.SII.parameter_symbols(nw), keys(NetworkDynamics.SII.default_values(nw)))
 end
 function freeu(nw::Network)
     setdiff(NetworkDynamics.SII.variable_symbols(nw), keys(NetworkDynamics.SII.default_values(nw)))
+end
+function freeu(cf::NetworkDynamics.ComponentFunction)
+    return filter(u -> !NetworkDynamics.has_default(cf, u), NetworkDynamics.sym(cf))
 end
 
 set_voltage!(cf::VertexFunction; mag, arg) = set_voltage!(cf, mag * exp(im * arg))

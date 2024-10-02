@@ -5,6 +5,7 @@ version = "0.1.0-DEV"
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DiffEqCallbacks = "459566f4-90b8-5000-8ac3-15dfb0a30def"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
@@ -22,6 +23,7 @@ Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [compat]
 ArgCheck = "2.3.0"
+DataFrames = "1.7.0"
 DiffEqCallbacks = "3.7.0"
 ForwardDiff = "0.10.36"
 Graphs = "1.9.0"

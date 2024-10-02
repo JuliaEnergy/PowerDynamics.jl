@@ -3,6 +3,7 @@ name = "OpPoDyn-Tests"
 [deps]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DiffEqCallbacks = "459566f4-90b8-5000-8ac3-15dfb0a30def"
 ExplicitImports = "7d51a73a-1435-4ff3-83d9-f097790105c7"
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
@@ -20,6 +21,6 @@ SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [sources]
-NetworkDynamics = {url = "https://github.com/JuliaDynamics/NetworkDynamics.jl", rev = "main"}
+NetworkDynamics = {rev = "main", url = "https://github.com/JuliaDynamics/NetworkDynamics.jl"}
 OpPoDyn = {path = ".."}
 OpPoDynTesting = {path = "../OpPoDynTesting"}
