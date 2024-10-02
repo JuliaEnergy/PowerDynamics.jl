@@ -8,6 +8,7 @@
         B_dst, [description="Susceptance of dst shunt (base unclear?)"]
         r_src=1, [description="Src end transformation ratio"]
         r_dst=1, [description="Src end transformation ratio"]
+        active=1, [description="Line active or at fault"]
     end
     @components begin
         src = Terminal()
@@ -28,9 +29,9 @@
         idst =  iₘ - i₂
     end
     @equations begin
-        src.i_r ~ simplify(real(isrc))
-        src.i_i ~ simplify(imag(isrc))
-        dst.i_r ~ simplify(real(idst))
-        dst.i_i ~ simplify(imag(idst))
+        src.i_r ~ active * simplify(real(isrc))
+        src.i_i ~ active * simplify(imag(isrc))
+        dst.i_r ~ active * simplify(real(idst))
+        dst.i_i ~ active * simplify(imag(idst))
     end
 end
