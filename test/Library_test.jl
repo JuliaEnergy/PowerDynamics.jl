@@ -50,14 +50,14 @@ end
 end
 
 @testset "Swing bus" begin
-    @named swing = Swing(Pm=1, D=0.1, M=0.005)
+    @named swing = Swing(Pm=1, D=0.1, M=0.005, θ=0, ω=1, V=1)
     bus = Bus(MTKBus(swing));
     toi = bus_on_slack(bus)
     # isinteractive() && plottoi(toi)
     @reftest "SwingBus_1" toi
 
     # swing bus with load
-    @named swing = Swing(Pm=1, D=0.1, M=0.005)
+    @named swing = Swing(Pm=1, D=0.1, M=0.005, θ=0, ω=1, V=1)
     @named pqload = PQLoad(Pset=-0.5, Qset=-0.2)
     bm = MTKBus(swing, pqload)
     @test length(full_equations(simplify_mtkbus(bm))) == 2
@@ -66,7 +66,7 @@ end
     toi["active power"]["electric power of swing"] = VIndex(2,:swing₊Pel)
     toi["active power"]["electric power of load"] = VIndex(2,:pqload₊P)
     toi["reactive power"]["electric power of load"] = VIndex(2,:pqload₊Q)
-    isinteractive() && plottoi(toi)
+    # isinteractive() && plottoi(toi)
     @reftest "Swing_and_load" toi
 end
 
