@@ -43,11 +43,40 @@ end
         iout = conj(Sload/vcomplex)
     end
     @equations begin
-         terminal.i_r ~ simplify(real(iout))
-         terminal.i_i ~ simplify(imag(iout))
+        terminal.i_r ~ simplify(real(iout))
+        terminal.i_i ~ simplify(imag(iout))
 
         # observables
         P ~ terminal.u_r*terminal.i_r + terminal.u_i*terminal.i_i
         Q ~ terminal.u_i*terminal.i_r - terminal.u_r*terminal.i_i
     end
+end
+
+@mtkmodel ConstantYLoad begin
+    @components begin
+        terminal = Terminal()
+    end
+    @parameters begin
+        Pset, [description="Active Power demand [pu]"]
+        Qset, [description="Reactive Power demand [pu]"]
+        Vset, [guess=1,description="Nominal voltage [pu]"]
+    end
+    @variables begin
+        P(t), [description="Active Power [pu]"]
+        Q(t), [description="Reactive Power [pu]"]
+    end
+    begin
+        S = Pset + im*Qset
+        Y = conj(S)/Vset^2
+        iload = Y * (terminal.u_r + im*terminal.u_i)
+    end
+    @equations begin
+        terminal.i_r ~ simplify(real(iload))
+        terminal.i_i ~ simplify(imag(iload))
+
+        # observables
+        P ~ terminal.u_r*terminal.i_r + terminal.u_i*terminal.i_i
+        Q ~ terminal.u_i*terminal.i_r - terminal.u_r*terminal.i_i
+    end
+
 end

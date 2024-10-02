@@ -86,7 +86,7 @@ include("Controls/Govs.jl")
 ####
 #### Load Models
 ####
-export PQLoad, VoltageDependentLoad
+export PQLoad, VoltageDependentLoad, ConstantYLoad
 include("Loads/PQLoad.jl")
 
 ####

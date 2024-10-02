@@ -314,10 +314,15 @@ end
     bus = Bus(MTKBus(load));
     toi = bus_on_slack(bus)
     isinteractive() && plottoi(toi)
-    # @reftest "SwingBus_1" toi
 
     @named load = VoltageDependentLoad(Pset=-0.5, Qset=-0.5, Vn=1, αP=1, αQ=1)
     bus = Bus(MTKBus(load));
     toi = bus_on_slack(bus)
     isinteractive() && plottoi(toi)
+
+    @named load = ConstantYLoad(Pset=-0.5, Qset=-0.5, Vn=1)
+    bus = Bus(MTKBus(load));
+    toi = bus_on_slack(bus)
+    isinteractive() && plottoi(toi)
+end
 end
