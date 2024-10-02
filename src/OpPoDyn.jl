@@ -4,6 +4,9 @@ using NetworkDynamics: NetworkDynamics, VertexFunction, EdgeFunction, ODEVertex,
                        has_default, set_default!, get_default,
                        has_graphelement, set_graphelement!, get_graphelement, Network
 using ModelingToolkit: ModelingToolkit, ODESystem, structural_simplify, get_name, getname
+using SciMLBase: SciMLBase
+using ForwardDiff: ForwardDiff
+using LinearAlgebra: LinearAlgebra, Diagonal, diag, pinv, eigvals
 using Graphs: SimpleGraph, add_edge!, nv
 using ArgCheck: @argcheck
 using Setfield: @set, @set!
