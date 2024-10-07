@@ -7,6 +7,8 @@ using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 using DiffEqCallbacks
 using CairoMakie
+using CSV
+using DataFrames
 
 @mtkmodel LoadBus begin
     @components begin
@@ -111,35 +113,37 @@ nothing
 
 break # stop execution of script here
 
+#### Machine Angle
+ref = CSV.read("RotorAngle.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Läuferwinkel")
 ts = range(0,2,length=1000)
 δ2 = sol(ts, idxs=VIndex(2, :machine₊δ)).u - sol(ts, idxs=VIndex(1, :machine₊δ)).u
 δ3 = sol(ts, idxs=VIndex(3, :machine₊δ)).u - sol(ts, idxs=VIndex(1, :machine₊δ)).u
-lines!(ax, ts, rad2deg.(δ2))
-lines!(ax, ts, rad2deg.(δ3))
+lines!(ax, ts, rad2deg.(δ2); label="Bus 2")
+lines!(ax, ref."Zeitpunkt in s", ref."firel in deg", color=Cycled(1), linestyle=:dash, label="Bus 2 ref")
+lines!(ax, ts, rad2deg.(δ3); label="Bus 3")
+lines!(ax, ref."Zeitpunkt in s", ref."firel in deg_1", color=Cycled(2), linestyle=:dash, label="Bus 3 ref")
+axislegend(ax; position=:lt)
 fig
 
-# get first and maximum value
-rad2deg(first(δ2)) => rad2deg(maximum(δ2))
-rad2deg(first(δ3)) => rad2deg(maximum(δ3))
 
-
+#### Voltage Magnitude
+ref = CSV.read("Bus5-7_voltage.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Bus voltage magnitude")
 ts = range(0,2,length=1000)
 umag5 = sqrt.(sol(ts; idxs=VIndex(5, :busbar₊u_r)).^2 + sol(ts; idxs=VIndex(5, :busbar₊u_i)).^2)
 umag7 = sqrt.(sol(ts; idxs=VIndex(7, :busbar₊u_r)).^2 + sol(ts; idxs=VIndex(7, :busbar₊u_i)).^2)
 lines!(ax, ts, umag5.u; label="Bus5")
+lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u._1", color=Cycled(1), linestyle=:dash, label="Bus 5 ref")
 lines!(ax, ts, umag7.u; label="Bus7")
+lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u.", color=Cycled(2), linestyle=:dash, label="Bus 7 ref")
 axislegend(ax)
 fig
 
-i = findfirst(>(0.0833), ts)
-umag5[1] => umag5[i]
-umag7[1] => umag7[i]
 
-
+#=
 # Plotting the Solution
 fig = Figure(size=(1000,2000));
 ax = Axis(fig[1, 1]; title="Active power")
@@ -163,3 +167,4 @@ for i in 1:3
 end
 axislegend(ax)
 fig
+=#

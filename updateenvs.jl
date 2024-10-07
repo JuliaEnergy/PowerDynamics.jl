@@ -4,6 +4,7 @@ using Pkg
 cd(@__DIR__)
 Pkg.activate(@__DIR__)
 @assert Pkg.TOML.parsefile(Base.active_project())["name"] == "OpPoDyn"
+Pkg.update()
 
 subp = ["OpPoDyntesting", "test", "docs"]
 for p in subp

@@ -23,7 +23,7 @@ NetworkDynamics = {rev = "main", url = "https://github.com/JuliaDynamics/Network
 OpPoDyn = {path = ".."}
 
 [compat]
-DiffEqCallbacks = "3.9.1"
+DiffEqCallbacks = "3.9.1, 4"
 Graphs = "1.11.2"
 JLD2 = "0.5.2"
 Makie = "0.21.9"
