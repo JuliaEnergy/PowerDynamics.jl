@@ -32,6 +32,7 @@ end
             vf_set=nothing,
             τ_m_set=nothing,
             H,
+            # D=1.5
         )
         busbar = BusBar()
     end
@@ -117,7 +118,7 @@ break # stop execution of script here
 ref = CSV.read("RotorAngle.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Läuferwinkel")
-ts = range(0,2,length=1000)
+ts = range(sol.t[begin],sol.t[end],length=1000)
 δ2 = sol(ts, idxs=VIndex(2, :machine₊δ)).u - sol(ts, idxs=VIndex(1, :machine₊δ)).u
 δ3 = sol(ts, idxs=VIndex(3, :machine₊δ)).u - sol(ts, idxs=VIndex(1, :machine₊δ)).u
 lines!(ax, ts, rad2deg.(δ2); label="Bus 2")
@@ -132,7 +133,7 @@ fig
 ref = CSV.read("Bus5-7_voltage.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Bus voltage magnitude")
-ts = range(0,2,length=1000)
+ts = range(sol.t[begin],sol.t[end],length=1000)
 umag5 = sqrt.(sol(ts; idxs=VIndex(5, :busbar₊u_r)).^2 + sol(ts; idxs=VIndex(5, :busbar₊u_i)).^2)
 umag7 = sqrt.(sol(ts; idxs=VIndex(7, :busbar₊u_r)).^2 + sol(ts; idxs=VIndex(7, :busbar₊u_i)).^2)
 lines!(ax, ts, umag5.u; label="Bus5")
