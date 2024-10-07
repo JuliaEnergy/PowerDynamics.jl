@@ -212,7 +212,7 @@ nothing #hide
 Define a swing bus with load
 ```@example concepts
 # define injectors
-@named swing = Swing(; Pm=1)
+@named swing = Swing(; Pm=1, V=1, D=0.1)
 @named load = PQLoad(; Pset=-.5, Qset=0)
 bus1mtk = MTKBus(swing, load; name=:swingbus)
 vertex1f = Bus(bus1mtk) # extract component function
@@ -234,11 +234,14 @@ Define the graph, the network and extract initial conditions
 g = complete_graph(2)
 nw = Network(g, [vertex1f, vertex2f], edgef)
 u0 = NWState(nw) # extract parameters and state from modesl
+u0.v[1, :swing₊θ] = 0 # set missing initial conditions
+u0.v[1, :swing₊ω] = 1
 ```
 Then we can solve the problem
 ```@example concepts
 prob = ODEProblem(nw, uflat(u0), (0,1), pflat(u0))
 sol = solve(prob, Rodas5P())
+@assert OrdinaryDiffEqRosenbrock.SciMLBase.successful_retcode(sol) # hide
 nothing #hide
 ```
 And finally we can plot the solution:
