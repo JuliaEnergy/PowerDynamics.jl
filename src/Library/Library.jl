@@ -77,6 +77,9 @@ include("Machines/IPSLPSAT.jl")
 export ClassicalMachine
 include("Machines/ClassicalMachine.jl")
 
+export ClassicalMachine_pf
+include("Machines/ClassicalMachine_pf.jl")
+
 ####
 #### Control Models
 ####
@@ -99,6 +102,8 @@ export DynawoPiLine
 include("Branches/DynawoPiLine.jl")
 export PiLine
 include("Branches/PiLine.jl")
+export PiLine_fault
+include("Branches/PiLine_fault.jl")
 
 export DynawoFixedRatioTransformer
 include("Transformers/DynawoFixedRatioTransformer.jl")
