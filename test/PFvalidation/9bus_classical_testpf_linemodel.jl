@@ -22,7 +22,7 @@ end
 
 @mtkmodel ClassicBus begin
     @components begin
-        machine = Library.ClassicalMachine_openelectrical(;
+        machine = Library.ClassicalMachine_powerfactory(;
             p_m_input=false,
             S_b=100,
             V_b=18,
@@ -71,12 +71,12 @@ function piline(; R, X, B)
 end
 
 function piline_shortcircuit(; R, X, B, pos, G_fault=0, B_fault=0)
-    faultimp = if (G_fault + B_fault) == 0
-        0
-    else
-        1
-    end
-    @named pibranch = PiLine_fault(;R, X, B_src=B/2, B_dst=B/2, G_src=0, G_dst=0, G_fault, B_fault, pos, faultimp)
+    #faultimp = if (G_fault + B_fault) == 0
+       # 0
+    #else
+        #1
+    #end
+    @named pibranch = PiLine_fault(;R, X, B_src=B/2, B_dst=B/2, G_src=0, G_dst=0, G_fault, B_fault, pos)#, faultimp)
     MTKLine(pibranch)
 end
 
@@ -140,7 +140,7 @@ nothing
 break # stop execution of script here
 
 #### Machine Angle
-ref = CSV.read("RotorAngle_shortcircuit_faultimp.csv", DataFrame; header=2, decimal=',')
+ref = CSV.read("RotorAngle_shortcircuit.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Läuferwinkel")
 ts = range(sol.t[begin],sol.t[end],length=1000)
@@ -155,7 +155,7 @@ fig
 
 
 #### Voltage Magnitude
-ref = CSV.read("Bus5-7_shortcircuit_faultimp.csv", DataFrame; header=2, decimal=',') #ref = CSV.read("Bus5-7_voltage.csv", DataFrame; header=2, decimal=',')
+ref = CSV.read("Bus5-7_shortcircuit.csv", DataFrame; header=2, decimal=',') #_faultimp #ref = CSV.read("Bus5-7_voltage.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Bus voltage magnitude")
 ts = range(sol.t[begin],sol.t[end],length=1000)

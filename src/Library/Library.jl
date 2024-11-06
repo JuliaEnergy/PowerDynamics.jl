@@ -77,8 +77,8 @@ include("Machines/IPSLPSAT.jl")
 export ClassicalMachine
 include("Machines/ClassicalMachine.jl")
 
-export ClassicalMachine_pf
-include("Machines/ClassicalMachine_pf.jl")
+export ClassicalMachine_classicalMachine_powerfactory
+include("Machines/ClassicalMachine_powerfactory.jl")
 
 ####
 #### Control Models
