@@ -77,7 +77,7 @@ include("Machines/IPSLPSAT.jl")
 export ClassicalMachine
 include("Machines/ClassicalMachine.jl")
 
-export ClassicalMachine_classicalMachine_powerfactory
+export ClassicalMachine_powerfactory
 include("Machines/ClassicalMachine_powerfactory.jl")
 
 ####
@@ -117,7 +117,7 @@ include("Faults/Faults.jl")
 ####
 #### Powerflow models
 ####
-using NetworkDynamics: ComponentFunction, has_metadata, get_metadata
+using NetworkDynamics: ComponentModel, has_metadata, get_metadata
 include("powerflow_models.jl")
 
 end

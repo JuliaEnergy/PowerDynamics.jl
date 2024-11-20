@@ -190,7 +190,7 @@ LineEnd(:src) ──o── Transformer ──o── Pi─Line ──o── Li
 Valid `MTKLine` and `MTKBus` can be transformed into so called `Line` and `Bus` objects.
 
 `Line` and `Bus` structs are no MTK models anymore, but rather containers.
-Currently, they mainly contain a NetworkDynamics component function (`ODEVertex`, `StaticEdge`).
+Currently, they mainly contain a NetworkDynamics component function (`VertexModel`, `EdgeModel`).
 
 Eventually, those models will contain more metadata. For example
 

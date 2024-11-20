@@ -1,6 +1,6 @@
 module OpPoDyn
 
-using NetworkDynamics: NetworkDynamics, VertexFunction, EdgeFunction, ODEVertex, StaticEdge, Fiducial,
+using NetworkDynamics: NetworkDynamics, VertexModel, EdgeModel,
                        has_default, set_default!, get_default,
                        has_graphelement, set_graphelement!, get_graphelement, Network,
                        has_metadata, get_metadata, set_metadata!, NWState, uflat, pflat

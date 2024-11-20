@@ -22,7 +22,7 @@ function pfPQ(; P=0, Q=0)
     b
 end
 
-function ispfmodel(cf::NetworkDynamics.ComponentFunction)
+function ispfmodel(cf::NetworkDynamics.ComponentModel)
     isempty(freep(cf)) || return false
     NetworkDynamics.isstatic(cf) && return true
     isempty(freeu(cf)) || return false
@@ -30,7 +30,7 @@ function ispfmodel(cf::NetworkDynamics.ComponentFunction)
     return false
 end
 
-function powerflow_model(cf::NetworkDynamics.ComponentFunction)
+function powerflow_model(cf::NetworkDynamics.ComponentModel)
     if NetworkDynamics.has_metadata(cf, :pfmodel)
         pfm = NetworkDynamics.get_metadata(cf, :pfmodel)
         if !ispfmodel(pfm)

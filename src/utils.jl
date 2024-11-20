@@ -67,7 +67,7 @@ end
 function freep(sys::ODESystem)
     return filter(p -> !haskey(ModelingToolkit.defaults(sys), p), ModelingToolkit.parameters(sys))
 end
-function freep(cf::NetworkDynamics.ComponentFunction)
+function freep(cf::NetworkDynamics.ComponentModel)
     return filter(p -> !NetworkDynamics.has_default(cf, p), NetworkDynamics.psym(cf))
 end
 function freep(nw::Network)
@@ -76,25 +76,25 @@ end
 function freeu(nw::Network)
     setdiff(NetworkDynamics.SII.variable_symbols(nw), keys(NetworkDynamics.SII.default_values(nw)))
 end
-function freeu(cf::NetworkDynamics.ComponentFunction)
+function freeu(cf::NetworkDynamics.ComponentModel)
     return filter(u -> !NetworkDynamics.has_default(cf, u), NetworkDynamics.sym(cf))
 end
 
-set_voltage!(cf::VertexFunction; mag, arg) = set_voltage!(cf, mag * exp(im * arg))
-function set_voltage!(cf::VertexFunction, c::Complex)
+set_voltage!(cf::VertexModel; mag, arg) = set_voltage!(cf, mag * exp(im * arg))
+function set_voltage!(cf::VertexModel, c::Complex)
     set_default!(cf, :busbar₊u_r, real(c))
     set_default!(cf, :busbar₊u_i, imag(c))
     c
 end
 
-function set_current!(cf::VertexFunction; P, Q)
+function set_current!(cf::VertexModel; P, Q)
     @assert has_default(cf, :busbar₊u_r) && has_default(cf, :busbar₊u_i)
     u = get_default(cf, :busbar₊u_r) + im * get_default(cf, :busbar₊u_i)
     i = conj((P + im * Q) / u)
     set_current!(cf, -i)
 end
-# set_current!(cf::VertexFunction; mag, arg) = set_current!(cf, mag * exp(im * arg))
-function set_current!(cf::VertexFunction, c::Complex)
+# set_current!(cf::VertexModel; mag, arg) = set_current!(cf, mag * exp(im * arg))
+function set_current!(cf::VertexModel, c::Complex)
     set_default!(cf, :busbar₊i_r, real(c))
     set_default!(cf, :busbar₊i_i, imag(c))
     c
