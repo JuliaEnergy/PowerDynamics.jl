@@ -23,10 +23,13 @@ function pfPQ(; P=0, Q=0)
 end
 
 function ispfmodel(cf::NetworkDynamics.ComponentModel)
+    # cannot have freep nor freeu
     isempty(freep(cf)) || return false
-    NetworkDynamics.isstatic(cf) && return true
     isempty(freeu(cf)) || return false
-    cf.mass_matrix==LinearAlgebra.UniformScaling(0) && return true
+    # no states or mass matrix 0
+    if NetworkDynamics.dim(cf) == 0 || cf.mass_matrix==LinearAlgebra.UniformScaling(0)
+        return true
+    end
     return false
 end
 
@@ -45,8 +48,8 @@ end
 
 function powerflow_model(nw::Network)
     g = nw.im.g
-    vfs = powerflow_model.(nw.im.vertexf);
-    efs = powerflow_model.(nw.im.edgef);
+    vfs = powerflow_model.(nw.im.vertexm);
+    efs = powerflow_model.(nw.im.edgem);
     Network(g, vfs, efs)
 end
 
@@ -66,12 +69,12 @@ function solve_powerflow!(nw::Network; verbose=true)
     end
     pfs = NWState(pfnw, sol.u, pf)
     # TODO: get input states as observables
-    _, aggbuf = NetworkDynamics.get_ustacked_buf(pfs)
+    _, aggbuf = NetworkDynamics.get_buffers(pfnw, uflat(pfs), pflat(pfs), NaN; initbufs=true)
 
     for i in 1:nv(nw)
-        set_voltage!(nw.im.vertexf[i], pfs.v[i, :busbar₊u_r] + im * pfs.v[i, :busbar₊u_i])
+        set_voltage!(nw.im.vertexm[i], pfs.v[i, :busbar₊u_r] + im * pfs.v[i, :busbar₊u_i])
         ir, ii = aggbuf[nw.im.v_aggr[i]]
-        set_current!(nw.im.vertexf[i], ir + im*ii)
+        set_current!(nw.im.vertexm[i], ir + im*ii)
     end
 
     println("Found powerflow solution:")
@@ -84,10 +87,11 @@ function show_powerflow(nw::Network)
     # df = DataFrame()
     dict = OrderedDict()
     dict["N"] = 1:nv(nw)
-    dict["Bus Names"] = [cf.name for cf in nw.im.vertexf]
+    dict["Bus Names"] = [cf.name for cf in nw.im.vertexm]
     s = NWState(nw)
     u = Complex.(s.v[:, :busbar₊u_r], s.v[:, :busbar₊u_i])
-    _, aggbuf = NetworkDynamics.get_ustacked_buf(s)
+    _, aggbuf = NetworkDynamics.get_buffers(s.nw, uflat(s), pflat(s), NaN; initbufs=true)
+
     i = [Complex(aggbuf[nw.im.v_aggr[k]]...) for k in 1:nv(nw)]
     S = u .* conj.(i)
 
@@ -100,7 +104,7 @@ function show_powerflow(nw::Network)
 end
 
 function initialize!(nw::Network; verbose=true)
-    for cf in nw.im.vertexf
+    for cf in nw.im.vertexm
         NetworkDynamics.initialize_component!(cf; verbose=false)
         res = LinearAlgebra.norm(get_metadata(cf, :init_residual))
         if verbose
