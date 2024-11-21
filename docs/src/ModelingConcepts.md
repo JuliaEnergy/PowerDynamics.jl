@@ -24,31 +24,32 @@ The current for injectors is always in injector convention, i.e. positive curren
     For example, any `ODESystem` is considered an "Injector" if it contains a connector `Terminal()` called `:terminal`.
 
 !!! details "Code example: definition of PQ load as injector"
-    ```@example concepts
-    using OpPoDyn, OpPoDyn.Library, ModelingToolkit
-    @mtkmodel MyPQLoad begin
-        @components begin
-            terminal = Terminal()
-        end
-        @parameters begin
-            Pset, [description="Active Power demand"]
-            Qset, [description="Reactive Power demand"]
-        end
-        @variables begin
-            P(t), [description="Active Power"]
-            Q(t), [description="Reactive Power"]
-        end
-        @equations begin
-            P ~ terminal.u_r*terminal.i_r + terminal.u_i*terminal.i_i
-            Q ~ terminal.u_i*terminal.i_r - terminal.u_r*terminal.i_i
-            # if possible, its better for the solver to explicitly provide algebraic equations for the current
-            terminal.i_r ~ (Pset*terminal.u_r + Qset*terminal.u_i)/(terminal.u_r^2 + terminal.u_i^2)
-            terminal.i_i ~ (Pset*terminal.u_i - Qset*terminal.u_r)/(terminal.u_r^2 + terminal.u_i^2)
-        end
+```@example concepts
+using OpPoDyn, OpPoDyn.Library, ModelingToolkit
+using ModelingToolkit: D_nounits as Dt, t_nounits as t
+@mtkmodel MyPQLoad begin
+    @components begin
+        terminal = Terminal()
     end
-    MyPQLoad(name=:pqload) #hide
-    nothing #hide
-    ```
+    @parameters begin
+        Pset, [description="Active Power demand"]
+        Qset, [description="Reactive Power demand"]
+    end
+    @variables begin
+        P(t), [description="Active Power"]
+        Q(t), [description="Reactive Power"]
+    end
+    @equations begin
+        P ~ terminal.u_r*terminal.i_r + terminal.u_i*terminal.i_i
+        Q ~ terminal.u_i*terminal.i_r - terminal.u_r*terminal.i_i
+        # if possible, its better for the solver to explicitly provide algebraic equations for the current
+        terminal.i_r ~ (Pset*terminal.u_r + Qset*terminal.u_i)/(terminal.u_r^2 + terminal.u_i^2)
+        terminal.i_i ~ (Pset*terminal.u_i - Qset*terminal.u_r)/(terminal.u_r^2 + terminal.u_i^2)
+    end
+end
+MyPQLoad(name=:pqload) #hide
+nothing #hide
+```
 
 ### Model class `MTKBus`
 A `MTKBus` isa class of models, which are used to describe the dynamic behavior of a full bus in a power grid.
@@ -73,28 +74,28 @@ As long as the `:busbar` is present at the toplevel, there are few limitations o
 For simple models (direct connections of a few injectors) it is possible to use the convenience method `MTKBus(injectors...)` to create the composite model based on provide injector models.
 
 !!! details "Code example: definition of a Bus containing a swing equation and a load"
-    ```@example concepts
-    using OpPoDyn, OpPoDyn.Library, ModelingToolkit
-    @mtkmodel MyMTKBus begin
-        @components begin
-            busbar = BusBar()
-            swing = Swing()
-            load = PQLoad()
-        end
-        @equations begin
-            connect(busbar.terminal, swing.terminal)
-            connect(busbar.terminal, load.terminal)
-        end
+```@example concepts
+using OpPoDyn, OpPoDyn.Library, ModelingToolkit
+@mtkmodel MyMTKBus begin
+    @components begin
+        busbar = BusBar()
+        swing = Swing()
+        load = PQLoad()
     end
-    MyMTKBus(name=:bus) #hide
-    nothing #hide
-    ```
-    Alternativly, for that system you could have just called
-    ```@example concepts
-    mybus = MTKBus(Swing(;name=:swing), PQLoad(;name=:load))
-    nothing #hide
-    ```
-    to get an instance of a model which is structually aquivalent to `MyMTKBus`.
+    @equations begin
+        connect(busbar.terminal, swing.terminal)
+        connect(busbar.terminal, load.terminal)
+    end
+end
+MyMTKBus(name=:bus) #hide
+nothing #hide
+```
+Alternativly, for that system you could have just called
+```@example concepts
+mybus = MTKBus(Swing(;name=:swing), PQLoad(;name=:load))
+nothing #hide
+```
+to get an instance of a model which is structually aquivalent to `MyMTKBus`.
 
 ## Line Modeling
 ### Model class `Branch`
@@ -112,26 +113,26 @@ Examples for branches are: PI─Model branches, dynamic RL branches or transform
 *Both* ends follow the injector interface, i.e. current leaving the device towards the terminals is always positive.
 
 !!! details "Code example: algebraic R-line" 
-    ```@example conceps
-    using OpPoDyn, OpPoDyn.Library, ModelingToolkit
-    @mtkmodel MyRLine begin
-        @components begin
-            src = Terminal()
-            dst = Terminal()
-        end
-        @parameters begin
-            R=0, [description="Resistance"]
-        end
-        @equations begin
-            dst.i_r ~ (dst.u_r - src.u_r)/R
-            dst.i_i ~ (dst.u_i - src.u_i)/R
-            src.i_r ~ -dst.i_r
-            src.i_i ~ -dst.i_i
-        end
+```@example conceps
+using OpPoDyn, OpPoDyn.Library, ModelingToolkit
+@mtkmodel MyRLine begin
+    @components begin
+        src = Terminal()
+        dst = Terminal()
     end
-    MyRLine(name=:rline) #hide
-    nothing #hide
-    ```
+    @parameters begin
+        R=0, [description="Resistance"]
+    end
+    @equations begin
+        dst.i_r ~ (dst.u_r - src.u_r)/R
+        dst.i_i ~ (dst.u_i - src.u_i)/R
+        src.i_r ~ -dst.i_r
+        src.i_i ~ -dst.i_i
+    end
+end
+MyRLine(name=:rline) #hide
+nothing #hide
+```
 
 ### Model class: `MTKLine`
 Similar to the `MTKBus`, a `MTKLine` is a model class which represents a transmission line in the network.
@@ -160,30 +161,30 @@ LineEnd(:src) ──o── Transformer ──o── Pi─Line ──o── Li
 ```
 
 !!! details "Code example: Transmission line with two pi-branches"
-    ```@example concepts
-    using OpPoDyn, OpPoDyn.Library, ModelingToolkit
-    @mtkmodel MyMTKLine begin
-        @components begin
-            src = LineEnd()
-            dst = LineEnd()
-            branch1 = DynawoPiLine()
-            branch2 = DynawoPiLine()
-        end
-        @equations begin
-            connect(src.terminal, branch1.src)
-            connect(src.terminal, branch2.src)
-            connect(dst.terminal, branch1.dst)
-            connect(dst.terminal, branch2.dst)
-        end
+```@example concepts
+using OpPoDyn, OpPoDyn.Library, ModelingToolkit
+@mtkmodel MyMTKLine begin
+    @components begin
+        src = LineEnd()
+        dst = LineEnd()
+        branch1 = DynawoPiLine()
+        branch2 = DynawoPiLine()
     end
-    MyMTKLine(name=:mtkline) #hide
-    nothing #hide
-    ```
-    Alternatively, an equivalent model with multiple valid branch models in parallel could be created and instantiated with the convenience constructor
-    ```@example concepts
-    line = MTKLine(DynawoPiLine(;name=:branch1), DynawoPiLine(;name=:branch2))
-    nothing #hide
-    ```
+    @equations begin
+        connect(src.terminal, branch1.src)
+        connect(src.terminal, branch2.src)
+        connect(dst.terminal, branch1.dst)
+        connect(dst.terminal, branch2.dst)
+    end
+end
+MyMTKLine(name=:mtkline) #hide
+nothing #hide
+```
+Alternatively, an equivalent model with multiple valid branch models in parallel could be created and instantiated with the convenience constructor
+```@example concepts
+line = MTKLine(DynawoPiLine(;name=:branch1), DynawoPiLine(;name=:branch2))
+nothing #hide
+```
 
 
 ## From MTK Models to NetworkDynamics
@@ -233,7 +234,7 @@ Define the graph, the network and extract initial conditions
 ```@example concepts
 g = complete_graph(2)
 nw = Network(g, [vertex1f, vertex2f], edgef)
-u0 = NWState(nw) # extract parameters and state from modesl
+u0 = NWState(nw) # extract parameters and state from models
 u0.v[1, :swing₊θ] = 0 # set missing initial conditions
 u0.v[1, :swing₊ω] = 1
 ```
