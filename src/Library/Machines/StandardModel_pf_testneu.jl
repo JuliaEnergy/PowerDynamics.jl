@@ -78,6 +78,7 @@
         end
         if !τ_m_input
             τ_m_set, [guess=1, bounds=(0,Inf), description="mechanical torque"]
+
         end
     end
     @variables begin
@@ -180,6 +181,7 @@
         #τ_m ~ τ_m_input ? τ_m_in.u : τ_m_set
         #Alternativ: (102)
         τ_m ~ pt/n - xmdm - dpu * n + addmt #xmdm Torque input signal; addmt additional torque parameter; dpu * n turbine shaft friction torque
+
 
         # observables
         v_mag ~ sqrt(V_d^2 + V_q^2)
