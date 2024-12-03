@@ -96,6 +96,7 @@
         E′_q(t), [guess=1, description="transient voltage behind transient reactance in q-axis"]
         δ(t), [guess=0, description="rotor angle"]
         ϕ(t), [guess=0, description="angle between d-axis and reference voltage of network"]
+        ϕ(t), [guess=0, description="angle between d-axis and reference voltage of network"]
         ω(t), [guess=1, description="rotor speed"]
         ψ_fd(t), [guess=1, description=" flux linkage"]
         ψ_1d(t), [guess=1, description=" flux linkage"]
@@ -120,6 +121,8 @@
         n(t), [guess=1, description="rotor speed"]
     end
     begin
+        T_park(α) = [sin(α) cos(α); -cos(α) sin(α)] #α and q-axis aligned, Inverse ist -α einsetzen und Matrix *(-1)
+        #T_park(α) = [cos(α) sin(α); -sin(α) cos(α)] #α and d-axis aligned, Inverse ist -α einsetzen
         T_to_loc(α)  = [ sin(α) -cos(α);
                          cos(α)  sin(α)]
         T_to_glob(α) = [ sin(α)  cos(α);
