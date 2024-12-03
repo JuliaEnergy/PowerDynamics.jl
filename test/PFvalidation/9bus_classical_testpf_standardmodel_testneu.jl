@@ -134,8 +134,8 @@ function create_standardgenerator(; ω_b, H, S_b, V_b, D, R_s, X_rld, X_rlq, X_d
     R_1qs = X″_q / X_q * (X_q - X_ls + X_1qs) / (ω_b * T″_q) #salient pole
     X_1q = salientpole * X_1qs + (1-salientpole) * X_1qr
     R_1q = salientpole * R_1qs + (1-salientpole) * R_1qr
-    X_2q = (1-salientpole) * X_2qr #funktioniert so wahrscheinlich/ggf nicht!
-    R_2q = (1-salientpole) * R_2qr #funktioneirt so wahrscheinlich nicht, da dann Kurzschluss wenn R_2q und X_2q =0 sind im salientpole Fall... Tatsächlich sind sie dann aber einfach gar nicht da (also -> unendlich?? Oder ergibt sich das einfach durch Fallunterscheidung im weiteren Verlauf, sodass das hier keine Rolle spielt und einfach immer den Wert X_2qr haben könnte?)
+    X_2q = (1-salientpole) * X_2qr 
+    R_2q = (1-salientpole) * R_2qr 
 
     #(63)-(65)
     k_fd = (X_ad * X_1d) / ((X_ad + X_rld) * (X_1d + X_fd) + X_fd * X_1d)
@@ -146,7 +146,7 @@ function create_standardgenerator(; ω_b, H, S_b, V_b, D, R_s, X_rld, X_rlq, X_d
     #X″_qs = X_aq + X_ls - k_1qs * X_aq #salient pole
     k_1qr = (X_aq * X_2q)/((X_aq + X_rlq) * (X_2q + X_1q) + X_2q * X_1q) #round rotor
     k_2qr = (X_aq * X_1q)/((X_aq + X_rlq) * (X_2q + X_1q) + X_2q * X_1q) #round rotor
-    #X″_qr = X_aq + X_ls - (k_1qr + k_2qr) * X_aq #round rotor
+    #X″_qr = X_aq + X_ls - (k_2qr + k_1qr) * X_aq #round rotor
     k_1q = salientpole * k_1qs + (1-salientpole) * k_1qr
     k_2q = (1-salientpole) * k_2qr
     #X″_q = salientpole * X″_qs + (1-salientpole)* X″_qr
@@ -170,11 +170,12 @@ end
     create_standardgenerator(; ω_b=2π*60, H=6.40, S_b=192, V_b=18, D=0, R_s=0.005, X_rld=0, X_rlq=0, X_d=1.719936, X_q=1.65984, X′_d=0.230016, X′_q=0.378048, X″_d=0.2, X″_q=0.2, X_ls=0.100032, T′_d0=6, T″_d0=0.0575, T′_q0=0.535, T″_q0=0.0945, cosn=0.85, dkd=0, dpe=0, salientpole=0, pt=1.003, dpu=0, addmt=0, xmdm=0)
 @named mtkbus2 = StandardBus(; machine__S_b=S_b, machine__V_b=V_b, machine__H=H, machine__D=D, machine__R_s=R_s, machine__X_rld=X_rld, machine__X_rlq=X_rlq, machine__X″_d=X″_d, machine__X″_q=X″_q, machine__X_ls=X_ls, machine__X_ad=X_ad, machine__X_aq=X_aq, machine__X_1q=X_1q, machine__X_det_d=X_det_d, machine__X_det_q=X_det_q, machine__X_fd_loop=X_fd_loop, machine__X_1d_loop=X_1d_loop, machine__X_1q_loop=X_1q_loop, machine__X_2q_loop=X_2q_loop, machine__k_fd=k_fd, machine__k_1d=k_1d, machine__k_1q=k_1q, machine__k_2q=k_2q, machine__R_fd=R_fd, machine__R_1d=R_1d, machine__R_1q=R_1q, machine__R_2q=R_2q, machine__cosn=cosn, machine__dkd=dkd, machine__dpe=dpe, machine__salientpole=salientpole, machine__pt=pt, machine__dpu=dpu, machine__addmt=addmt, machine__xmdm=xmdm)  
 
-#Problem bei Initialisierung, wenn R_s=0 gewählt wird. Was eigentlich keinen Sinn ergibt, da es bei Bus 1 ja auch geht, und es wird nirgends durch R_s geteilt bei salientpole... Wenn bus 1 R_s=0 und salientpole=0, dann funktioniert es auch nicht; wenn Bus 2 oder 3 R_s=0 haben fuktioniert kein Maschinentyp...Bus 3 mit R_s=0.0001 geht, aber dann Warning: Initialization for componend stalled with residual 9.349725949840043e-13. Und Abbruch bei Simulation At t=0.000700..
 (ω_b, X_rld, X_rlq, X″_d, X″_q, X_ls, X_ad, X_aq, X_det_d, X_det_q, X_fd_loop, X_1d_loop, X_1q_loop, X_2q_loop, k_fd, k_1d, k_1q, k_2q, X_1q, R_1q, X_2q, R_2q, X_fd, R_1d, R_fd, X_1d, R_s, H, S_b, V_b, D, cosn, dkd, dpe, salientpole, pt, dpu, addmt, xmdm) = 
     create_standardgenerator(; ω_b=2π*60, H=3.01, S_b=128, V_b=13.8, D=0, R_s=0.0001, X_rld=0, X_rlq=0, X_d=1.68, X_q=1.609984, X′_d=0.232064, X′_q=0.32, X″_d=0.2, X″_q=0.2, X_ls=0.094976, T′_d0=5.89, T″_d0=0.0575, T′_q0=0.6, T″_q0=0.08, cosn=0.85, dkd=0, dpe=0, salientpole=0, pt=0.7813, dpu=0, addmt=0, xmdm=0)
 @named mtkbus3 = StandardBus(; machine__S_b=S_b, machine__V_b=V_b, machine__H=H, machine__D=D, machine__R_s=R_s, machine__X_rld=X_rld, machine__X_rlq=X_rlq, machine__X″_d=X″_d, machine__X″_q=X″_q, machine__X_ls=X_ls, machine__X_ad=X_ad, machine__X_aq=X_aq, machine__X_1q=X_1q, machine__X_det_d=X_det_d, machine__X_det_q=X_det_q, machine__X_fd_loop=X_fd_loop, machine__X_1d_loop=X_1d_loop, machine__X_1q_loop=X_1q_loop, machine__X_2q_loop=X_2q_loop, machine__k_fd=k_fd, machine__k_1d=k_1d, machine__k_1q=k_1q, machine__k_2q=k_2q, machine__R_fd=R_fd, machine__R_1d=R_1d, machine__R_1q=R_1q, machine__R_2q=R_2q, machine__cosn=cosn, machine__dkd=dkd, machine__dpe=dpe, machine__salientpole=salientpole, machine__pt=pt, machine__dpu=dpu, machine__addmt=addmt, machine__xmdm=xmdm)  
-
+#@named mtkbus1 = ClassicBus(; machine__H=23.64, machine__X′_d=0.0608)
+#@named mtkbus2 = ClassicBus(; machine__H= 6.40, machine__X′_d=0.1198)
+#@named mtkbus3 = ClassicBus(; machine__H= 3.01, machine__X′_d=0.1813)
 @named mtkbus4 = MTKBus()
 @named mtkbus5 = LoadBus(;load__Pset=-1.25, load__Qset=-0.5)
 @named mtkbus6 = LoadBus(;load__Pset=-0.90, load__Qset=-0.3)
@@ -261,15 +262,15 @@ affect2! = (integrator) -> begin
 end
 cb_deactivate = PresetTimeCallback([0.05], affect2!)
 
-cb_set = CallbackSet(cb_shortcircuit, cb_deactivate)
+cb_set = CallbackSet() #CallbackSet(cb_shortcircuit, cb_deactivate)
 prob = ODEProblem(nw, uflat(u0), (0,2), copy(pflat(u0)) ; callback=cb_set)
-sol = solve(prob, Rosenbrock23()); #funktioniert zumindest ohne cb #solve(prob, Rodas5P());
+sol = solve(prob, Rodas5P());
 nothing
 
 break # stop execution of script here
 
 #### Machine Angle
-ref = CSV.read("RotorAngle_standardModelPF.csv", DataFrame; header=2, decimal=',')
+ref = CSV.read("RotorAngle_standardModelPF_ohneAusfall.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Läuferwinkel (Power Factory Standard Model)")
 ts = range(sol.t[begin],sol.t[end],length=1000)
@@ -284,7 +285,7 @@ fig
 
 
 #### Voltage Magnitude
-ref = CSV.read("Bus5-7_standardModelPF.csv", DataFrame; header=2, decimal=',') #_faultimp #ref = CSV.read("Bus5-7_voltage.csv", DataFrame; header=2, decimal=',')
+ref = CSV.read("Bus5-7_standardModelPF_ohneAusfall.csv", DataFrame; header=2, decimal=',') #_faultimp #ref = CSV.read("Bus5-7_voltage.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Bus voltage magnitude (Power Factory Standard Model)")
 ts = range(sol.t[begin],sol.t[end],length=1000)

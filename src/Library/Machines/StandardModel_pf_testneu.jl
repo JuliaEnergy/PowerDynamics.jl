@@ -94,6 +94,7 @@
         E′_d(t), [guess=0, description="transient voltage behind transient reactance in d-axis"]
         E′_q(t), [guess=1, description="transient voltage behind transient reactance in q-axis"]
         δ(t), [guess=0, description="rotor angle"]
+        ϕ(t), [guess=0, description="angle between d-axis and reference voltage of network"]
         ω(t), [guess=1, description="rotor speed"]
         ψ_fd(t), [guess=1, description=" flux linkage"]
         ψ_1d(t), [guess=1, description=" flux linkage"]
@@ -118,14 +119,15 @@
         n(t), [guess=1, description="rotor speed"] 
     end
     begin
-        T_park(α) = [sin(α) cos(α); -cos(α) sin(α)]
+        T_park(α) = [sin(α) cos(α); -cos(α) sin(α)] #α and q-axis aligned, Inverse ist -α einsetzen und Matrix *(-1)
+        #T_park(α) = [cos(α) sin(α); -sin(α) cos(α)] #α and d-axis aligned, Inverse ist -α einsetzen
     end
     @equations begin
         # Park's transformations
         [terminal.u_r, terminal.u_i] .~ T_park(δ)*[V_d, V_q] * V_b/Vn
         # [terminal.i_r, terminal.i_i] .~ T_park(δ)*[I_d, I_q] * Ibase(S_b, V_b)/Ibase(Sn, Vn)
         # [V_d, V_q] .~ T_park(-δ)*[terminal.u_r, terminal.u_i] * Vn/V_b
-        [I_d, I_q] .~ -T_park(-δ)*[terminal.i_r, terminal.i_i] * Ibase(Sn, Vn)/Ibase(S_b, V_b)
+        [I_d, I_q] .~ T_park(-δ)*[terminal.i_r, terminal.i_i] * Ibase(Sn, Vn)/Ibase(S_b, V_b)
         
         #stator flux equations (55), (60) ((59) wird indirekt über ks und Definitionen von ψ_1d abgedeckt?, (56) und (57) sind nur andere Darstellungsform)
         ψ_d ~ -(X_ls + X_ad) * I_d + X_ad * I_fd + X_ad * I_1d
@@ -148,11 +150,12 @@
         #mechanical equation motor (103), (104), (105)
         τ_dkd ~ dkd * (n - n_ref)
         τ_dpe ~ dpe/n * (n - n_ref)
-        τ_ag ~ 2 * H        
-        Dt(n) ~ (- τ_m - τ_e - τ_dkd - τ_dpe) / τ_ag #(100), (101) wird gar nicht gebraucht (t_base?)
+        τ_ag ~ 2 * H * 100 / (S_b * cosn)   #τ_ag und H werden dann hier auf Pgn bezogen - ist das richtig??     
+        Dt(n) ~ (τ_m - τ_e - τ_dkd - τ_dpe) / τ_ag #(100), (101) wird gar nicht gebraucht (t_base?)
         
-        Dt(δ) ~ ω_b * (n - ω_b/(2*π)) #(115) wenn δ = ϕ -> stimmt nicht. ϕ ist rotor Position im Vergleich zur Referenz-Spannung des Netzes. Ich brauche aber firel, also Winkel zwischen Refernzmaschine d-Achse und Generator d-Achse
-        #Dt(δ) ~ ω_b * (ω - 1) #dann zu wenig Gleichungen
+        #Dt(ϕ) ~ ω_b * (n - ω_b/(2*π)) #(115) wenn δ = ϕ -> stimmt nicht. ϕ ist rotor Position im Vergleich zur Referenz-Spannung des Netzes. Ich brauche aber firel, also Winkel zwischen Refernzmaschine d-Achse und Generator d-Achse
+        #δ ~ ϕ + π/2 #- phiu #phiu is the voltage angle of the machine terminal m:phiu (scheint 0 zu sein #(112), passt das mit den Achsen überhaupt?; δ hier in rad; fipol ist von Generator terminal zu q-Achse, δ in Milano zur d-Achse, und da sind d- und q-Achse auch vertauscht
+        Dt(δ) ~ ω_b * (n - 1) 
 
         #rotor flux linkage (58), überflüssig
         #ψ_fd ~ -X_ad * I_d + (X_ad + X_rld + X_fd) * I_fd + (X_ad + X_rld) * I_1d
