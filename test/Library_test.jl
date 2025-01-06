@@ -329,6 +329,42 @@ end
     isinteractive() && plottoi(toi)
 end
 
+@testset "test zip load" begin
+    # constant power
+    @named load = ZIPLoad(Pset=-1, Qset=-1, Vset=1,
+                          KpZ=0, KpI=0, KpC=1,
+                          KqZ=0, KqI=0, KqC=1)
+    bus = Bus(MTKBus(load))
+    toi = bus_on_slack(bus)
+    isinteractive() && plottoi(toi)
+
+    # constant current
+    @named load = ZIPLoad(Pset=-1, Qset=-1, Vset=1,
+                          KpZ=0, KpI=1, KpC=0,
+                          KqZ=0, KqI=1, KqC=0)
+    bus = Bus(MTKBus(load))
+    toi = bus_on_slack(bus)
+    toi["current"] = OrderedDict(
+        "current magnitude at bus" => VIndex(2,:busbar₊i_mag),
+        "real current" => VIndex(2,:load₊terminal₊i_r),
+        "imaginary current" => VIndex(2,:load₊terminal₊i_i),
+    )
+    isinteractive() && plottoi(toi)
+
+    # constant Z
+    @named load = ZIPLoad(Pset=-1, Qset=-1, Vset=1,
+                          KpZ=1, KpI=0, KpC=0,
+                          KqZ=1, KqI=0, KqC=0)
+    bus = Bus(MTKBus(load))
+    toi = bus_on_slack(bus)
+    toi["current"] = OrderedDict(
+        "current magnitude at bus" => VIndex(2,:busbar₊i_mag),
+        "real current" => VIndex(2,:load₊terminal₊i_r),
+        "imaginary current" => VIndex(2,:load₊terminal₊i_i),
+    )
+    isinteractive() && plottoi(toi) # neither i nor p is constant
+end
+
 @testset "Classical machine" begin
     @mtkmodel GenBus begin
         @components begin
