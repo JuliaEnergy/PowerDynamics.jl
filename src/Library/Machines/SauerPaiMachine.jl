@@ -74,14 +74,13 @@
         γ_q1 = (X″_q - X_ls)/(X′_q - X_ls)
         γ_d2 = (X′_d-X″_d)/(X′_d-X_ls)^2 # ~ (1 - γ_d1)/(X′_d - X_ls)
         γ_q2 = (X′_q-X″_q)/(X′_q-X_ls)^2 # ~ (1 - γ_q1)/(X′_q - X_ls)
-        T_park(α) = [sin(α) cos(α); -cos(α) sin(α)]
+        T_to_loc(α)  = [sin(α) -cos(α);  cos(α) sin(α)]
+        T_to_glob(α) = [sin(α)  cos(α); -cos(α) sin(α)]
     end
     @equations begin
         # Park's transformations
-        [terminal.u_r, terminal.u_i] .~ T_park(δ)*[V_d, V_q] * V_b/Vn
-        # [terminal.i_r, terminal.i_i] .~ T_park(δ)*[I_d, I_q] * Ibase(S_b, V_b)/Ibase(Sn, Vn)
-        # [V_d, V_q] .~ T_park(-δ)*[terminal.u_r, terminal.u_i] * Vn/V_b
-        [I_d, I_q] .~ -T_park(-δ)*[terminal.i_r, terminal.i_i] * Ibase(Sn, Vn)/Ibase(S_b, V_b)
+        [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q] * Vn/V_b
+        [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i] * Ibase(S_b, V_b)/Ibase(Sn, Vn)
 
         # mechanical swing equation
         Dt(δ) ~ ω_b*(ω - 1)
