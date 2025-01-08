@@ -98,7 +98,7 @@ end
        DT, [description="Turbine Damping"]
     end
     @variables begin
-        p_droop(t), [description="P after droop (not limited)"]
+        ref_sig(t), [description="Internal reference signal"]
         xg1(t), [guess=0]
         xg1_sat(t)
         xg2(t), [guess=0]
@@ -108,10 +108,11 @@ end
         _p_ref = p_ref_input ? p_ref.u : p_ref
     end
     @equations begin
-        p_droop ~ _p_ref + 1/R * (_ω_ref - ω_meas.u)
-        T1 * Dt(xg1) ~ (p_droop - xg1)
+        ref_sig ~ 1/R*(_p_ref  - (ω_meas.u - _ω_ref))
+        T1 * Dt(xg1) ~ (ref_sig - xg1)
         xg1_sat ~ _clamp(xg1, V_min, V_max)
         T3 * Dt(xg2) ~ xg1_sat*(1-T2/T3) - xg2
-        τ_m.u ~ xg2 + T2/T3*xg1 - DT*(ω_meas.u - 1)
+        # TODO: check units, might need multiplication by omega ref to get from p to tau
+        τ_m.u ~ xg2 + T2/T3*xg1_sat - DT*(ω_meas.u - _ω_ref)
     end
 end
