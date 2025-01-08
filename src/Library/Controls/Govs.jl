@@ -1,3 +1,15 @@
+@mtkmodel GovFixed begin
+    @components begin
+        τ_m = RealOutput()
+    end
+    @parameters begin
+        τ_m_fixed, [guess=0, description="Fixed mechanical torque"]
+    end
+    @equations begin
+        τ_m.u ~ τ_m_fixed
+    end
+end
+
 _clamp(u, u_min, u_max) = max(min(u, u_max), u_min)
 
 # from Milano P. 359

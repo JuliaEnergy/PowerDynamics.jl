@@ -92,3 +92,44 @@ ModelingToolkit.@register_symbolic _to_zero(x)::Float64
 end
 
 MTKBus(; name=:bus) = KirchoffBus(; name)
+
+"""
+    CompositeInjector(systems, eqs; name=Symbol(join(getname.(systems), "_")))
+
+Create a injector object which contains several subsystems. Every subsystem which has a `terminal` will be connected
+to a newly created terminal of the composite injector. Can contain further systems, such as controllers, with the
+additional connection equations `eqs`.
+
+For example, one could create a composite injector with three subsustens:
+- a generator,
+- a controller, and
+- a load;
+which is augmented with 2 equations
+- one for the measurments, and
+- one for the actuation.
+
+The returned `CompositeInjector` system has the following structure:
+It will automaticially create a new terminal `t` (thus satisfing the [Injector
+Interface](@ref)) which will be connected to the terminals of the subsystems
+which have a terminal (machine and load in this case).
+
+        ┌────────────────────────────────────┐
+        │ CompositeInjector                  │
+        │              ╭───→───╮ measurements│
+        │    ┌─────────┴─┐   ┌─┴──────────┐  │
+    (t) │  o─┤ Generator │   │ Controller │  │
+     o──┼──┤ └─────────┬─┘   └─┬──────────┘  │
+        │  │           ╰───←───╯ actuation   │
+        │  │ ┌──────┐                        │
+        │  o─┤ Load │                        │
+        │    └──────┘                        │
+        └────────────────────────────────────┘
+"""
+function CompositeInjector(systems, eqs; name=Symbol(join(ModelingToolkit.getname.(systems), "_")))
+    @named terminal = Terminal()
+    ivs = ModelingToolkit.get_iv.(systems)
+    @assert allequal(ivs) "Systems have different independent variables! $ivs"
+    iv = first(ivs)
+    termeqs = [connect(sys.terminal, terminal) for sys in systems if iscomponentmodel(sys)]
+    ODESystem(vcat(termeqs,eqs), iv; systems=vcat(terminal, systems), name)
+end

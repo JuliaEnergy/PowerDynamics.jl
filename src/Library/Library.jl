@@ -47,7 +47,7 @@ Ibase(S, V) = S/V
 Zbase(S, V) = V^2/S
 Ybase(S, V) = S/V^2
 
-export BusBar, MTKBus, SlackAlgebraic, SlackDifferential
+export BusBar, MTKBus, SlackAlgebraic, SlackDifferential, CompositeInjector
 include("Bus.jl")
 
 export LineEnd, MTKLine
@@ -83,10 +83,10 @@ include("Machines/ClassicalMachine_powerfactory.jl")
 ####
 #### Control Models
 ####
-export AVRTypeI
+export AVRFixed, AVRTypeI
 include("Controls/AVRs.jl")
 
-export TurbineGovTypeI, TGOV1
+export GovFixed, TurbineGovTypeI, TGOV1
 include("Controls/Govs.jl")
 
 ####

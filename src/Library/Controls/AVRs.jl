@@ -1,3 +1,15 @@
+@mtkmodel AVRFixed begin
+    @components begin
+        vf = RealOutput()
+    end
+    @parameters begin
+        vf_fixed, [guess=1, description="Fixed field voltage"]
+    end
+    @equations begin
+        vf.u ~ vf_fixed
+    end
+end
+
 @mtkmodel AVRTypeI begin
     @structural_parameters begin
        vref_input=false
