@@ -12,6 +12,20 @@
     end
 end
 
+@mtkmodel UrUiConstraint begin
+    @components begin
+        terminal = Terminal()
+    end
+    @parameters begin
+        u_r
+        u_i
+    end
+    @equations begin
+        terminal.u_r ~ u_r
+        terminal.u_i ~ u_i
+    end
+end
+
 @mtkmodel PVConstraint begin
     @components begin
         terminal = Terminal()

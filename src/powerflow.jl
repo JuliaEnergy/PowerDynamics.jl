@@ -1,8 +1,18 @@
-function pfSlack(; V, δ=0)
-    @named slack = Library.VδConstraint(; V, δ)
+function pfSlack(; V=missing, δ=missing, u_r=missing, u_i=missing)
+    if !ismissing(V) && ismissing(u_r) && ismissing(u_i)
+        δ = ismissing(δ) ? 0 : δ
+        @named slack = Library.VδConstraint(; V, δ)
+        u_r = V * cos(δ)
+        u_i = V * sin(δ)
+    elseif ismissing(V) && ismissing(δ) && !ismissing(u_r) && !ismissing(u_i)
+        @named slack = Library.UrUiConstraint(; u_r, u_i)
+    else
+        throw(ArgumentError("Either Provide V or δ, or u_r and u_i. But not both!"))
+    end
+
     mtkbus = MTKBus(slack, name=:slackbus)
     b = Bus(mtkbus)
-    set_voltage!(b; mag=V, arg=δ)
+    set_voltage!(b, u_r + im * u_i)
     b
 end
 
@@ -34,16 +44,19 @@ function ispfmodel(cf::NetworkDynamics.ComponentModel)
 end
 
 function powerflow_model(cf::NetworkDynamics.ComponentModel)
-    if NetworkDynamics.has_metadata(cf, :pfmodel)
-        pfm = NetworkDynamics.get_metadata(cf, :pfmodel)
+    if has_metadata(cf, :pfmodel)
+        pfm = get_metadata(cf, :pfmodel)
         if !ispfmodel(pfm)
-            error("Provided :pfmodel for $(cf.name) is no valid powerflow model!")
+            error("Provided :pfmodel for :$(cf.name) is no valid powerflow model!")
         end
         return pfm
     elseif ispfmodel(cf)
         return cf
+    elseif cf isa VertexModel && has_default(cf, :busbar₊u_r) && has_default(cf, :busbar₊u_i)
+        @warn "No powerflow model given for :$(cf.name), using slack with default voltage!"
+        return pfSlack(u_r=get_default(cf, :busbar₊u_r), u_i=get_default(cf, :busbar₊u_i))
     end
-    error("Cannot create PF component model from $(cf.name)! Please proved :pfmodel metadata!")
+    error("Cannot create PF component model from :$(cf.name)! Please proved :pfmodel metadata!")
 end
 
 function powerflow_model(nw::Network)
@@ -67,14 +80,11 @@ function solve_powerflow!(nw::Network; verbose=true)
     if !SciMLBase.successful_retcode(sol.retcode)
         error("Powerflow did not converge! Retcode $(sol.retcode)")
     end
-    pfs = NWState(pfnw, sol.u, pf)
-    # TODO: get input states as observables
-    _, aggbuf = NetworkDynamics.get_buffers(pfnw, uflat(pfs), pflat(pfs), NaN; initbufs=true)
 
+    pfs = NWState(pfnw, sol.u, pf)
     for i in 1:nv(nw)
         set_voltage!(nw.im.vertexm[i], pfs.v[i, :busbar₊u_r] + im * pfs.v[i, :busbar₊u_i])
-        ir, ii = aggbuf[nw.im.v_aggr[i]]
-        set_current!(nw.im.vertexm[i], ir + im*ii)
+        set_current!(nw.im.vertexm[i], pfs.v[i, :busbar₊i_r] + im * pfs.v[i, :busbar₊i_i])
     end
 
     println("Found powerflow solution:")
@@ -88,12 +98,20 @@ function show_powerflow(nw::Network)
     dict = OrderedDict()
     dict["N"] = 1:nv(nw)
     dict["Bus Names"] = [cf.name for cf in nw.im.vertexm]
-    s = NWState(nw)
-    u = Complex.(s.v[:, :busbar₊u_r], s.v[:, :busbar₊u_i])
-    _, aggbuf = NetworkDynamics.get_buffers(s.nw, uflat(s), pflat(s), NaN; initbufs=true)
+    # s = NWState(nw)
+    u = Vector{Complex{Float64}}(undef, nv(nw))
+    S = Vector{Complex{Float64}}(undef, nv(nw))
 
-    i = [Complex(aggbuf[nw.im.v_aggr[k]]...) for k in 1:nv(nw)]
-    S = u .* conj.(i)
+    try
+        for (i, cf) in pairs(nw.im.vertexm)
+            u[i] = get_voltage(cf)
+            S[i] = get_power(cf)
+        end
+    catch e
+        throw(ArgumentError("Could not extract voltage and power from vertex
+            models, make sure that all bus models have default voltage and current
+            set. For example by calling `solve_powerflow!`"))
+    end
 
     dict["vm [pu]"] = abs.(u)
     dict["varg [deg]"] = rad2deg.(angle.(u))
@@ -105,13 +123,20 @@ end
 
 function initialize!(nw::Network; verbose=true)
     for cf in nw.im.vertexm
-        NetworkDynamics.initialize_component!(cf; verbose=false)
+        fp = length(freep(cf))
+        fu = length(freeu(cf))
+        try
+            NetworkDynamics.initialize_component!(cf; verbose=false)
+        catch e
+            println(e.msg)
+            set_metadata!(cf, :init_residual, Inf)
+        end
         res = LinearAlgebra.norm(get_metadata(cf, :init_residual))
         if verbose
             if res < 1e-8
-                printstyled("$(cf.name) successful! (residual=$res)\n", color=:green)
+                printstyled("$(cf.name) successful! ($fu/$fp free states/p; residual=$res)\n", color=:green)
             else
-                printstyled("$(cf.name) failed! (residual=$res)\n", color=:red)
+                printstyled("$(cf.name) failed! ($fu/$fp free states/p; residual=$res)\n", color=:red)
             end
         else
             res > 1e-8 && @warn "Initialization of $(cf.name) failed! Residual: $res"

@@ -19,8 +19,8 @@ export Terminal
 @connector Terminal begin
     u_r(t), [description="d-voltage"]
     u_i(t), [description="q-voltage"]
-    i_r(t), [description="d-current", connect=Flow]
-    i_i(t), [description="q-current", connect=Flow]
+    i_r(t), [guess=0, description="d-current", connect=Flow]
+    i_i(t), [guess=0, description="q-current", connect=Flow]
 end
 
 @mtkmodel SystemBase begin
