@@ -164,3 +164,126 @@ function separate_differential_constraint_eqs(M, p=nothing)
 
     return c_idx, d_idx
 end
+
+
+using NetworkDynamics: StyledStrings, @styled_str, str_significant, AnnotatedString
+function dump_state(cf::NetworkDynamics.ComponentModel; sigdigits=5)
+    lns = AnnotatedString[]
+    symidx  = _append_states!(lns, cf, sort(NetworkDynamics.sym(cf)); sigdigits)
+    psymidx = _append_states!(lns, cf, sort(NetworkDynamics.psym(cf)); sigdigits)
+    insymidx = _append_states!(lns, cf, sort(NetworkDynamics.insym_all(cf)); sigdigits)
+    outsymidx = _append_states!(lns, cf, sort(NetworkDynamics.outsym_flat(cf)); sigdigits)
+
+    obsidx = try
+        obsidx = _append_observed!(lns, cf; sigdigits)
+    catch e
+        nothing
+    end
+
+    aligned = NetworkDynamics.align_strings(lns)
+
+    printstyled("Inputs:\n", bold=true)
+    printlines(aligned, insymidx)
+    printstyled("States:\n", bold=true)
+    printlines(aligned, symidx)
+    printstyled("Outputs:\n", bold=true)
+    printlines(aligned, outsymidx)
+    printstyled("Parameters:\n", bold=true)
+    printlines(aligned, psymidx)
+    if !isnothing(obsidx)
+        printstyled("Observed:\n", bold=true)
+        printlines(aligned, obsidx; newline=false)
+    else
+        printstyled("Cannot show observed of non-initialized system!", bold=true)
+    end
+end
+
+function _append_states!(lns, cf, syms; sigdigits)
+    fidx = length(lns)+1
+    for sym in syms
+        str = "  &" * string(sym) * " &&= "
+        if has_default(cf, sym)
+            def = str_significant(get_default(cf, sym); sigdigits, phantom_minus=true)
+            str*= styled"{blue:$(def)}"
+        elseif has_init(cf, sym)
+            init = str_significant(get_init(cf, sym); sigdigits, phantom_minus=true)
+            str *= styled"{yellow:$(init)}"
+            if has_guess(cf ,sym)
+                guess = str_significant(get_guess(cf, sym); sigdigits, phantom_minus=true)
+                str *= "&& (from $guess)"
+            end
+        else
+            str *= styled"{red:uninitialized}"
+            if has_guess(cf ,sym)
+                guess = str_significant(get_guess(cf, sym); sigdigits, phantom_minus=true)
+                str *= "&& (guess $guess)"
+            end
+        end
+        push!(lns, str)
+    end
+    fidx:length(lns)
+end
+
+function _append_observed!(lns, cf; sigdigits)
+    fidx = length(lns)+1
+    syms = NetworkDynamics.obssym(cf)
+    obs = default_or_init_observed(cf)
+    perm = sortperm(syms)
+    for (sym, val) in zip(syms[perm], obs[perm])
+        str = "  &" * string(sym) * " &&= " * str_significant(val; sigdigits, phantom_minus=true)
+        push!(lns, str)
+    end
+    fidx:length(lns)
+end
+
+function default_or_init_observed(cf)
+    obs = Vector{Float64}(undef, length(NetworkDynamics.obssym(cf)))
+    u = default_or_init_state(cf)
+    ins = default_or_init_input(cf)
+    p = default_or_init_param(cf)
+    cf.obsf(obs, u, ins..., p, NaN)
+    obs
+end
+function default_or_init_state(cf)
+    all(NetworkDynamics.has_default_or_init.(Ref(cf) , cf.sym)) || error("Model not fully initialized")
+    NetworkDynamics.get_default_or_init.(Ref(cf), cf.sym)
+end
+function default_or_init_param(cf)
+    all(NetworkDynamics.has_default_or_init.(Ref(cf) , cf.psym)) || error("Model not fully initialized")
+    NetworkDynamics.get_default_or_init.(Ref(cf), cf.psym)
+end
+function default_or_init_input(cf::EdgeModel)
+    all(NetworkDynamics.has_default_or_init.(Ref(cf) , NetworkDynamics.insym_all(cf))) || error("Model not fully initialized")
+    (NetworkDynamics.get_default_or_init.(Ref(cf), NetworkDynamics.insym(cf).src),
+     NetworkDynamics.get_default_or_init.(Ref(cf), NetworkDynamics.insym(cf).dst))
+end
+function default_or_init_input(cf::VertexModel)
+    all(NetworkDynamics.has_default_or_init.(Ref(cf) , NetworkDynamics.insym(cf))) || error("Model not fully initialized")
+    (NetworkDynamics.get_default_or_init.(Ref(cf), NetworkDynamics.insym(cf)), )
+end
+
+function get_initial_state(cf::NetworkDynamics.ComponentModel, sym)
+    if (idx = findfirst(isequal(sym), NetworkDynamics.obssym(cf))) !== nothing
+        default_or_init_observed(cf)[idx]
+    else
+        NetworkDynamics.get_default_or_init(cf, sym)
+    end
+end
+
+function printlines(aligned, range; newline=true)
+    lines = @views aligned[range]
+    for i in eachindex(lines)
+        if newline == false && i == lastindex(lines)
+            print(lines[i])
+        else
+            println(lines[i])
+        end
+    end
+end
+
+function normalize_angle(θ)
+    θ = mod2pi(θ)
+    θ >= π ? θ - 2π : θ
+end
+
+# _pretty_number(x::Real) = x >= 0 ? " "*string(x) : string(x)

@@ -52,12 +52,12 @@
         ψ_q(t), [description="q-axis flux linkage"]
         ψ″_d(t), [guess=1, description="flux linkage assosciated with X″_d"]
         ψ″_q(t), [guess=0, description="flux linkage assosciated with X″_q"]
-        I_d(t), [description="d-axis current"]
-        I_q(t), [description="q-axis current"]
-        V_d(t), [description="d-axis voltage"]
-        V_q(t), [description="q-axis voltage"]
-        E′_d(t), [guess=0, description="transient voltage behind transient reactance in d-axis"]
-        E′_q(t), [guess=1, description="transient voltage behind transient reactance in q-axis"]
+        I_d(t), [guess=0, description="d-axis current"]
+        I_q(t), [guess=0, description="q-axis current"]
+        V_d(t), [guess=0, description="d-axis voltage"]
+        V_q(t), [guess=1, description="q-axis voltage"]
+        E′_d(t), [guess=1, description="transient voltage behind transient reactance in d-axis"]
+        E′_q(t), [guess=0, description="transient voltage behind transient reactance in q-axis"]
         δ(t), [guess=0, description="rotor angle"]
         ω(t), [guess=1, description="rotor speed"]
         # observables
@@ -74,8 +74,12 @@
         γ_q1 = (X″_q - X_ls)/(X′_q - X_ls)
         γ_d2 = (X′_d-X″_d)/(X′_d-X_ls)^2 # ~ (1 - γ_d1)/(X′_d - X_ls)
         γ_q2 = (X′_q-X″_q)/(X′_q-X_ls)^2 # ~ (1 - γ_q1)/(X′_q - X_ls)
+        # does not work
         T_to_loc(α)  = [sin(α) -cos(α);  cos(α) sin(α)]
         T_to_glob(α) = [sin(α)  cos(α); -cos(α) sin(α)]
+        # does not work, looks even strange. Steady satet is no steady state
+        # T_to_loc(α)  = [ cos(α) sin(α); sin(α) -cos(α)];
+        # T_to_glob(α) = [ cos(α) sin(α); sin(α) -cos(α)];
     end
     @equations begin
         # Park's transformations
@@ -90,16 +94,22 @@
         # TODO: stator equations only work with Dt(ψ_d) ~ 0
         # 1/ω_b * Dt(ψ_d) ~ R_s*I_d + ω * ψ_q + V_d
         # 1/ω_b * Dt(ψ_q) ~ R_s*I_q - ω * ψ_d + V_q
-        0 ~ R_s*I_d + ω * ψ_q + V_d
-        0 ~ R_s*I_q - ω * ψ_d + V_q
+        # static fomulation
+        # 0 ~ R_s*I_d + ω * ψ_q + V_d
+        # 0 ~ R_s*I_q - ω * ψ_d + V_q
+        # static formualion in ψ
+        ψ_q ~ (-R_s*I_d  - V_d)/ω
+        ψ_d ~ ( R_s*I_q  + V_q)/ω
 
         T′_d0 * Dt(E′_q) ~ -E′_q - (X_d - X′_d)*(I_d - γ_d2*ψ″_d - (1-γ_d1)*I_d + γ_d2*E′_q) + vf
         T′_q0 * Dt(E′_d) ~ -E′_d - (X_q - X′_q)*(I_q - γ_q2*ψ″_q - (1-γ_q1)*I_q - γ_q2*E′_d)
         T″_d0 * Dt(ψ″_d) ~ -ψ″_d + E′_q - (X′_d - X_ls)*I_d
         T″_q0 * Dt(ψ″_q) ~ -ψ″_q - E′_d - (X′_q - X_ls)*I_q
 
-        ψ_d ~ -X″_d*I_d + γ_d1*E′_q + (1-γ_d1)*ψ″_d
-        ψ_q ~ -X″_q*I_q - γ_q1*E′_d + (1-γ_q1)*ψ″_q
+        # ψ_d ~ -X″_d*I_d + γ_d1*E′_q + (1-γ_d1)*ψ″_d
+        # ψ_q ~ -X″_q*I_q - γ_q1*E′_d + (1-γ_q1)*ψ″_q
+        I_d ~ (-ψ_d + γ_d1*E′_q + (1-γ_d1)*ψ″_d)/X″_d
+        I_q ~ (-ψ_q - γ_q1*E′_d + (1-γ_q1)*ψ″_q)/X″_q
 
         # inputs
         vf ~ vf_input ? vf_in.u : vf_set

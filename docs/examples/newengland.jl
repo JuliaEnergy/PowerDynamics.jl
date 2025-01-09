@@ -14,6 +14,8 @@ function load_model(dict)
     p = dict["dynamic_model"]["parameters"]
     ZIPLoad(; KpZ=p["Kpz"],KpI=p["Kpi"], KqZ=p["Kqz"], KqI=p["Kqi"],
             Pset=-dict["pd"], Qset=-dict["qd"], name=:load)
+    # PQLoad(; Pset=-dict["pd"], Qset=-dict["qd"], name=:load)
+    # Library.PQFiltLoad(; Pset=-dict["pd"], Qset=-dict["qd"], τ=0.1, name=:load)
 end
 
 function gen_model(dict)
@@ -68,29 +70,29 @@ function gen_model(dict)
         append!(controleqs, [connect(avr.vf, machine.vf_in)])
     end
 
-    if haskey(controllers, "TGOV1")
-        govp = controllers["TGOV1"]["parameters"]
-        @named gov = TGOV1(;
-            p_ref = govp["P_set"],
-            V_min = govp["Vmin"],
-            V_max = govp["Vmax"],
-            R = govp["Rd"],
-            T1 = govp["T1"],
-            T2 = govp["T2"],
-            T3 = govp["T3"],
-            DT = 0,
-        )
-        append!(controleqs, [connect(gov.τ_m, machine.τ_m_in), connect(machine.ωout, gov.ω_meas)])
-    else
-        @assert isempty(controllers)
-        @named gov = GovFixed()
-        append!(controleqs, [connect(gov.τ_m, machine.τ_m_in)])
-    end
+    # if haskey(controllers, "TGOV1")
+    #     govp = controllers["TGOV1"]["parameters"]
+    #     @named gov = TGOV1(;
+    #         # p_ref = govp["P_set"],
+    #         V_min = govp["Vmin"],
+    #         V_max = govp["Vmax"],
+    #         R = govp["Rd"],
+    #         T1 = govp["T1"],
+    #         T2 = govp["T2"],
+    #         T3 = govp["T3"],
+    #         DT = 0,
+    #     )
+    #     append!(controleqs, [connect(gov.τ_m, machine.τ_m_in), connect(machine.ωout, gov.ω_meas)])
+    # else
+    #     @assert isempty(controllers)
+    #     @named gov = GovFixed()
+    #     append!(controleqs, [connect(gov.τ_m, machine.τ_m_in)])
+    # end
 
     # @named avr = AVRFixed()
     # append!(controleqs, [connect(avr.vf, machine.vf_in)])
-    # @named gov = GovFixed()
-    # append!(controleqs, [connect(gov.τ_m, machine.τ_m_in)])
+    @named gov = GovFixed()
+    append!(controleqs, [connect(gov.τ_m, machine.τ_m_in)])
 
     CompositeInjector(
         [machine, avr, gov],
@@ -100,8 +102,54 @@ end
 
 json = JSON.parsefile(joinpath(pkgdir(OpPoDyn), "docs", "examples", "data", "ieee39.json"),dicttype=OrderedDict)
 
-json["gen"]["10"]["dynamic_model"]["controllers"]["TGOV1"]["parameters"]
-json["gen"]["10"]["dynamic_model"]["parameters"]
+function dict_to_df(dict; cols...)
+    df = DataFrame(; cols...)
+    for (k, v) in dict
+        push!(df, v; cols=:union)
+    end
+    df
+end
+bus_df = sort!(dict_to_df(json["bus"]; index=Int[], name=String[], bus_type=Int[], base_kv=Float64[], vm=Float64[], va=Float64[]), :index)
+gen_df = sort!(dict_to_df(json["gen"]; index=Int[], gen_bus=Int[], pg=Float64[], qg=Float64[], vg=Float64[], mbase=Float64[]), :index)
+load_df = sort!(dict_to_df(json["load"]; index=Int[], load_bus=Int[], pd=Float64[], qd=Float64[], status=Int[]), :index)
+branch_df = sort!(dict_to_df(json["branch"]; index=Int[], f_bus=Int[], t_bus=Int[], br_r=Float64[], br_x=Float64[], tap=Float64[], shift=Float64[], br_status=Int[], transformer=Int[], g_fr=Float64[], b_fr=Float64[], g_to=Float64[], b_to=Float64[]), :index)
+
+machine_df = let
+    machine_df = DataFrame()
+    for (i, gendat) in enumerate(values(json["gen"]))
+        p = gendat["dynamic_model"]["parameters"]
+        p = OrderedDict(p)
+        p["bus"] =  gendat["gen_bus"]
+        push!(machine_df, p; cols=:union)
+    end
+    sort!(machine_df, "bus")
+end
+
+# set the correct powerflow models
+leftjoin!(bus_df, select(load_df, :load_bus, :pd, :qd); on=:index=>:load_bus)
+leftjoin!(bus_df, select(gen_df, :gen_bus, :pg, :qg, :vg); on=:index=>:gen_bus)
+bus_df.ptotal = replace(bus_df.pg, missing=>0.0) - replace(bus_df.pd, missing=>0.0)
+bus_df.qtotal = replace(bus_df.qg, missing=>0.0) - replace(bus_df.qd, missing=>0.0)
+
+branches = let
+    branches = []
+    for (i, bdict) in enumerate(values(json["branch"]))
+        println("Branch $i: $(bdict["f_bus"]) -> $(bdict["t_bus"])")
+        # bdict = collect(values(json["branch"]))[1]
+
+        @assert bdict["br_status"] == 1
+        @assert bdict["shift"] == 0.0
+        @named pibranch = PiLine(;
+            R=bdict["br_r"], X=bdict["br_x"],
+            B_src = bdict["b_fr"], B_dst = bdict["b_to"],
+            G_src = bdict["g_fr"], G_dst = bdict["g_to"],
+            r_dst = bdict["tap"]
+        )
+        line = Line(MTKLine(pibranch); src=bdict["f_bus"], dst=bdict["t_bus"])
+        push!(branches, line)
+    end
+    branches
+end;
 
 busses = let
     busses = []
@@ -118,7 +166,9 @@ busses = let
         println("$(length(load_keys)) loads")
         name = Symbol(replace(busdata["name"], " "=>""))
 
-        if isempty(gen_keys) && isempty(load_keys)
+        if i==31
+            bus = Bus(MTKBus(Library.UrUiConstraint(;name=:uconstraint)); vidx=i, name)
+        elseif isempty(gen_keys) && isempty(load_keys)
             # empty bus
             bus = Bus(MTKBus(); vidx=i, name)
         elseif isempty(gen_keys) && length(load_keys) == 1
@@ -145,45 +195,6 @@ busses = let
     busses
 end;
 
-branches = let
-    branches = []
-    for (i, bdict) in enumerate(values(json["branch"]))
-        println("Branch $i: $(bdict["f_bus"]) -> $(bdict["t_bus"])")
-        # bdict = collect(values(json["branch"]))[1]
-
-        @assert bdict["br_status"] == 1
-        @assert bdict["shift"] == 0.0
-        @named pibranch = PiLine(;
-            R=bdict["br_r"], X=bdict["br_x"],
-            B_src = bdict["b_fr"], B_dst = bdict["b_to"],
-            G_src = bdict["g_fr"], G_dst = bdict["g_to"],
-            r_dst = bdict["tap"]
-        )
-        line = Line(MTKLine(pibranch); src=bdict["f_bus"], dst=bdict["t_bus"])
-        push!(branches, line)
-    end
-    branches
-end;
-
-
-function dict_to_df(dict; cols...)
-    df = DataFrame(; cols...)
-    for (k, v) in dict
-        push!(df, v; cols=:union)
-    end
-    df
-end
-bus_df = sort!(dict_to_df(json["bus"]; index=Int[], name=String[], bus_type=Int[], base_kv=Float64[], vm=Float64[], va=Float64[]), :index)
-gen_df = sort!(dict_to_df(json["gen"]; index=Int[], gen_bus=Int[], pg=Float64[], qg=Float64[], vg=Float64[], mbase=Float64[]), :index)
-load_df = sort!(dict_to_df(json["load"]; index=Int[], load_bus=Int[], pd=Float64[], qd=Float64[], status=Int[]), :index)
-branch_df = sort!(dict_to_df(json["branch"]; index=Int[], f_bus=Int[], t_bus=Int[], br_r=Float64[], br_x=Float64[], tap=Float64[], shift=Float64[], br_status=Int[], transformer=Int[], g_fr=Float64[], b_fr=Float64[], g_to=Float64[], b_to=Float64[]), :index)
-
-# set the correct powerflow models
-leftjoin!(bus_df, select(load_df, :load_bus, :pd, :qd); on=:index=>:load_bus)
-leftjoin!(bus_df, select(gen_df, :gen_bus, :pg, :qg, :vg); on=:index=>:gen_bus)
-bus_df.ptotal = replace(bus_df.pg, missing=>0.0) - replace(bus_df.pd, missing=>0.0)
-bus_df.qtotal = replace(bus_df.qg, missing=>0.0) - replace(bus_df.qd, missing=>0.0)
-
 nw = Network(copy.(busses), copy.(branches))
 for row in eachrow(bus_df)
     busm = nw.im.vertexm[row.index]
@@ -197,9 +208,125 @@ for row in eachrow(bus_df)
         error()
     end
 end
-solve_powerflow!(nw)
-initialize!(nw)
+OpPoDyn.solve_powerflow!(nw)
+OpPoDyn.initialize!(nw)
 
+function reinitialize!(cf)
+    while get_initial_state(cf, :machine_avr_gov₊machine₊vf) < 0
+        println("Try reinit...")
+        for sym in cf.sym
+            set_guess!(cf, sym, randn())
+        end
+        try
+            initialize_component!(cf; verbose=false)
+        catch e
+        end
+    end
+end
+for i in 30:39
+    println(i)
+    i==31 && continue
+    reinitialize!(nw.im.vertexm[i])
+end
+
+####
+#### solve dyn system
+####
 s0 = NWState(nw)
-prob = ODEProblem(nw, uflat(s0), (0,100), pflat(s0))
-sol = solve(prob, Rodas5P())
+s0.p.v[3, :load₊Pset] = -3.221
+# s0.p.e[1, :pibranch₊active] = 0
+# s0.v[34, :machine_avr_gov₊machine₊δ] -= 0.0001
+
+prob = ODEProblem(nw, uflat(s0), (0,20), pflat(s0))
+sol = solve(prob, Rodas5P());
+length(sol.t)
+
+let
+    fig = Figure()
+    ax = Axis(fig[1, 1])
+    lines!(ax, sol, idxs=vidxs(sol, :, :busbar₊u_arg))
+    ax = Axis(fig[1, 2])
+    lines!(ax, sol, idxs=vidxs(sol, :, :busbar₊u_mag))
+    # axislegend(ax; position=:lb)
+    fig
+end
+
+let
+    fig, ax, p = lines(sol, idxs=vidxs(sol, :, r"machine₊vf$"))
+    # axislegend(ax; position=:lb)
+    fig
+end
+fig, ax, p = lines(sol, idxs=vidxs(sol, :, r"load₊P$"))
+fig, ax, p = lines(sol, idxs=vidxs(sol, :, :busbar₊u_mag))
+# fig, ax, p = lines(sol, idxs=vidxs(sol, :, :busbar₊u_arg))
+
+fig, ax, p = lines(sol, idxs=vidxs(sol, 30, r"δ$"))
+
+lines!(sol, idxs=vidxs(sol, 30, r"busbar₊u_arg"))
+fig
+
+lines(sol, idxs=vidxs(sol, 3, :busbar₊P))
+lines(sol, idxs=vidxs(sol, 3, :busbar₊u_mag))
+
+
+####
+#### check for anomalies
+####
+for (i, bus) in enumerate(nw.im.vertexm)
+    :machine_avr_gov₊machine₊δ ∈ bus.sym || continue
+    δ = get_initial_state(bus, :machine_avr_gov₊machine₊δ) |> normalize_angle
+    u_arg = get_initial_state(bus, :busbar₊u_arg) |> normalize_angle
+    # println("Bus $i: u_arg = $u_arg, δ = $δ, diff = $(normalize_angle(u_arg - δ))" )
+    println(i, " ", get_initial_state(bus, :machine_avr_gov₊machine₊vf))
+    # println(i, " ", get_initial_state(bus, :machine_avr_gov₊machine₊Q))
+end
+dump_state(nw.im.vertexm[30])
+dump_state(nw.im.vertexm[32])
+gen_df
+
+cf = nw.im.vertexm[34]
+cf
+cf32a = copy(cf)
+
+dump_state(cf32a)
+dump_state(cf32b)
+
+cf30a.sym .=> default_or_init_state(cf30a) - default_or_init_state(cf30b)
+
+
+normalize_angle(get_initial_state(cf, :machine_avr_gov₊machine₊δ))
+normalize_angle(get_initial_state(cf32b, :machine_avr_gov₊machine₊δ))
+
+let
+    δs = Float64[]
+    v_ds = Float64[]
+    v_qs = Float64[]
+    for i in 1:2
+        for sym in cf.sym
+            set_guess!(cf, sym, rand())
+        end
+        initialize_component!(cf; verbose=false)
+        if init_residual(cf) > 1e-8
+            @warn "Encountered high residual"
+        end
+        # @show init_residual(cf)
+        push!(δs, get_initial_state(cf, :machine_avr_gov₊machine₊δ))
+        push!(v_ds, get_initial_state(cf, :machine_avr_gov₊machine₊E′_d))
+        push!(v_qs, get_initial_state(cf, :machine_avr_gov₊machine₊E′_q))
+    end
+
+    fig = Figure(); ax = Axis(fig[1, 1])
+    perm = sortperm(δs)
+    ax.aspect = DataAspect()
+    xlims!(-1.1,1.1)
+    ylims!(-1.1,1.1)
+    lines!(ax, [(0,0), (get_initial_state(cf, :busbar₊u_r), get_initial_state(cf, :busbar₊u_i))])
+    scatter!(ax, cos.(δs[perm]), sin.(δs[perm]))
+    scatter!(ax, v_ds[perm], v_qs[perm])
+    fig
+    nothing
+    cf
+end
+
+
+# WHY IS IT EVER SO SLIGHTLY UNSTABLE?!?!
