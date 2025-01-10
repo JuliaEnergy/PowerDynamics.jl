@@ -99,20 +99,22 @@ end
     end
     @variables begin
         ref_sig(t), [description="Internal reference signal"]
-        xg1(t), [guess=0]
+        xg1(t), [guess=1]
         xg1_sat(t)
         xg2(t), [guess=0]
+        Δω(t), [description="Speed deviation"]
     end
     begin
         _ω_ref = ω_ref_input ? ω_ref.u : ω_ref
         _p_ref = p_ref_input ? p_ref.u : p_ref
     end
     @equations begin
-        ref_sig ~ 1/R*(_p_ref  - (ω_meas.u - _ω_ref))
+        Δω ~ ω_meas.u - _ω_ref
+        ref_sig ~ 1/R*(_p_ref  - Δω)
         T1 * Dt(xg1) ~ (ref_sig - xg1)
         xg1_sat ~ _clamp(xg1, V_min, V_max)
         T3 * Dt(xg2) ~ xg1_sat*(1-T2/T3) - xg2
         # TODO: check units, might need multiplication by omega ref to get from p to tau
-        τ_m.u ~ xg2 + T2/T3*xg1_sat - DT*(ω_meas.u - _ω_ref)
+        τ_m.u ~ xg2 + T2/T3*xg1_sat - DT*Δω
     end
 end

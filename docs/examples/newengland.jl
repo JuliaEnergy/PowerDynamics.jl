@@ -8,6 +8,7 @@ using OrderedCollections
 using DataFrames
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
+using DiffEqCallbacks
 
 function load_model(dict)
     @assert dict["dynamic_model"]["model_type"] == "ZIPLoad"
@@ -70,29 +71,29 @@ function gen_model(dict)
         append!(controleqs, [connect(avr.vf, machine.vf_in)])
     end
 
-    # if haskey(controllers, "TGOV1")
-    #     govp = controllers["TGOV1"]["parameters"]
-    #     @named gov = TGOV1(;
-    #         # p_ref = govp["P_set"],
-    #         V_min = govp["Vmin"],
-    #         V_max = govp["Vmax"],
-    #         R = govp["Rd"],
-    #         T1 = govp["T1"],
-    #         T2 = govp["T2"],
-    #         T3 = govp["T3"],
-    #         DT = 0,
-    #     )
-    #     append!(controleqs, [connect(gov.τ_m, machine.τ_m_in), connect(machine.ωout, gov.ω_meas)])
-    # else
-    #     @assert isempty(controllers)
-    #     @named gov = GovFixed()
-    #     append!(controleqs, [connect(gov.τ_m, machine.τ_m_in)])
-    # end
+    if haskey(controllers, "TGOV1")
+        govp = controllers["TGOV1"]["parameters"]
+        @named gov = TGOV1(;
+            # p_ref = govp["P_set"],
+            V_min = govp["Vmin"],
+            V_max = govp["Vmax"],
+            R = govp["Rd"],
+            T1 = govp["T1"],
+            T2 = govp["T2"],
+            T3 = govp["T3"],
+            DT = 0,
+        )
+        append!(controleqs, [connect(gov.τ_m, machine.τ_m_in), connect(machine.ωout, gov.ω_meas)])
+    else
+        @assert isempty(controllers)
+        @named gov = GovFixed()
+        append!(controleqs, [connect(gov.τ_m, machine.τ_m_in)])
+    end
 
     # @named avr = AVRFixed()
     # append!(controleqs, [connect(avr.vf, machine.vf_in)])
-    @named gov = GovFixed()
-    append!(controleqs, [connect(gov.τ_m, machine.τ_m_in)])
+    # @named gov = GovFixed()
+    # append!(controleqs, [connect(gov.τ_m, machine.τ_m_in)])
 
     CompositeInjector(
         [machine, avr, gov],
@@ -151,7 +152,10 @@ branches = let
     branches
 end;
 
-busses = let
+# sort!(gen_df, :gen_bus)
+
+@time busses = let
+    slacks = [34, 35, 37, 38]
     busses = []
     for i in 1:39
         busdata = json["bus"][string(i)]
@@ -166,7 +170,7 @@ busses = let
         println("$(length(load_keys)) loads")
         name = Symbol(replace(busdata["name"], " "=>""))
 
-        if i==31
+        if i ∈ slacks
             bus = Bus(MTKBus(Library.UrUiConstraint(;name=:uconstraint)); vidx=i, name)
         elseif isempty(gen_keys) && isempty(load_keys)
             # empty bus
@@ -212,7 +216,7 @@ OpPoDyn.solve_powerflow!(nw)
 OpPoDyn.initialize!(nw)
 
 function reinitialize!(cf)
-    while get_initial_state(cf, :machine_avr_gov₊machine₊vf) < 0
+    while OpPoDyn.get_initial_state(cf, :machine_avr_gov₊machine₊vf) < 0
         println("Try reinit...")
         for sym in cf.sym
             set_guess!(cf, sym, randn())
@@ -224,22 +228,58 @@ function reinitialize!(cf)
     end
 end
 for i in 30:39
-    println(i)
-    i==31 && continue
+    :machine_avr_gov₊machine₊vf ∈ obssym(nw.im.vertexm[i]) || continue
+    println("Check reinitialization of $i")
     reinitialize!(nw.im.vertexm[i])
 end
 
 ####
 #### solve dyn system
 ####
-s0 = NWState(nw)
-s0.p.v[3, :load₊Pset] = -3.221
-# s0.p.e[1, :pibranch₊active] = 0
-# s0.v[34, :machine_avr_gov₊machine₊δ] -= 0.0001
+function affect(integrator)
+    println("Change something at $(integrator.t)")
+    s = NWState(integrator) # get indexable parameter object
+    s.p.v[3, :load₊Pset] = -3.5
+    # s.p.e[1, :pibranch₊active] = 0
+    # s.v[30, :machine_avr_gov₊machine₊δ] += 0.01
+    auto_dt_reset!(integrator); save_parameters!(integrator)
+end
+cb = PresetTimeCallback(0.1, affect)
 
-prob = ODEProblem(nw, uflat(s0), (0,20), pflat(s0))
+s0 = NWState(nw)
+# s0.p.v[30, :machine_avr_gov₊machine₊D] .= 1
+# s0.p.v[32:39, :machine_avr_gov₊machine₊D] .= 1
+prob = ODEProblem(nw, uflat(s0), (0,50), pflat(s0); callback=cb)
 sol = solve(prob, Rodas5P());
 length(sol.t)
+
+let
+    i = 30
+    fig = Figure(size=(1000,800))
+    ax = Axis(fig[1, 1])
+    lines!(ax, sol, idxs=vidxs(sol, i, :busbar₊u_arg); color=Cycled(1), label="u_arg")
+    axislegend(ax; position=:lb)
+    ax = Axis(fig[2,1])
+    lines!(ax, sol, idxs=vidxs(sol, i, r"δ$"); color=Cycled(1), label="δ")
+    axislegend(ax; position=:lb)
+    ax = Axis(fig[3, 1])
+    lines!(ax, sol, idxs=vidxs(sol, i, r"ω$"); color=Cycled(1), label="ω")
+    axislegend(ax; position=:lb)
+    ax = Axis(fig[4, 1])
+    lines!(ax, sol, idxs=vidxs(sol, i, r"τ_m$"); color=Cycled(1), label="τ_m")
+    lines!(ax, sol, idxs=vidxs(sol, i, r"τ_e$"); color=Cycled(2), label="τ_e")
+    axislegend(ax; position=:rb)
+    ax = Axis(fig[5, 1])
+    lines!(ax, sol, idxs=vidxs(sol, i, r"machine₊vf$"); color=Cycled(1), label="vf")
+    axislegend(ax; position=:rb)
+    ax = Axis(fig[6,1])
+    lines!(ax, sol, idxs=vidxs(sol, i, r"machine₊v_mag$"); color=Cycled(1), label="v_mag")
+    axislegend(ax; position=:rb)
+    ax = Axis(fig[7, 1])
+    lines!(ax, sol, idxs=vidxs(sol, i, r"busbar₊P$"); color=Cycled(2), label="Bus P")
+    axislegend(ax; position=:rb)
+    fig
+end
 
 let
     fig = Figure()
@@ -250,6 +290,7 @@ let
     # axislegend(ax; position=:lb)
     fig
 end
+
 
 let
     fig, ax, p = lines(sol, idxs=vidxs(sol, :, r"machine₊vf$"))

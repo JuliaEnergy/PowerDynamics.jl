@@ -65,11 +65,11 @@ end
         elseif ceiling_function == :quadratic
             vfceil ~ quadratic_ceiling(abs(vf.u), E1, E2, Se1, Se2)
         end
-        Dt(vf.u) ~ -(vf.u  * (Ke+vfceil) - vr1)/Te
-        Dt(vr1) ~ (Ka*(_vref - vm - vr2 - Kf/Tf*vf.u) - vr1)/Ta
-        Dt(vr2) ~ -(Kf/Tf*vf.u + vr2)/Tf
+        Ta*Dt(vr1) ~ Ka*(_vref - vm - vr2 - Kf/Tf*vf.u) - vr1
+        Tf*Dt(vr2) ~ -(Kf/Tf*vf.u + vr2)
+        Te*Dt(vf.u) ~ -(vf.u  * (Ke+vfceil) - vr1)
         if tmeas_lag
-            Dt(vm) ~ (vh.u - vm)/Tr
+            Tr * Dt(vm) ~ vh.u - vm
         else
             vm ~ vh.u
         end
@@ -94,8 +94,8 @@ end
 
 
 function quadratic_ceiling(x, E1, E2, Se1, Se2)
-    sq = sqrt((E1 * Se1) / (E2 * Se2))
+    sq = sqrt(Se1/Se2)
     Asq = (E1 - E2 * sq) / (1 - sq)
-    Bsq = (E2 * Se2) / ((E2 - Asq)^2)
+    Bsq = Se2 /(E2 - Asq)^2
     ifelse(x > Asq, Bsq * (x - Asq)^2, 0.0)
 end

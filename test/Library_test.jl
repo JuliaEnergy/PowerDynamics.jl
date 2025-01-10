@@ -397,3 +397,23 @@ end
     toi = bus_on_slack(bus; tmax=600, toilength=10_000)
     isinteractive() && plottoi(toi)
 end
+
+@testset "AVR model" begin
+    E1 = 3.5461
+    E2 = 4.7281
+    Se1 = 0.08
+    Se2 = 0.26
+    se_quad = x -> Library.quadratic_ceiling(x, E1, E2, Se1, Se2)
+    Ae, Be = Library.solve_ceilf(E1=>Se1, E2=>Se2)
+    se_exp  = x -> Ae* exp(Be*x)
+
+    let fig = Figure()
+        ax = Axis(fig[1,1])
+        xs = range(0, 6; length=100)
+        lines!(ax, xs, se_quad.(xs); label="quad")
+        lines!(ax, xs, se_exp.(xs); label="exp")
+        axislegend(ax)
+        scatter!(ax, [(E1, Se1), (E2, Se2)])
+        fig
+    end
+end
