@@ -155,7 +155,9 @@ end;
 # sort!(gen_df, :gen_bus)
 
 @time busses = let
-    slacks = [34, 35, 37, 38]
+    # slacks = [34, 35, 37, 38]
+    slacks = []
+    # slacks = collect(31:39)
     busses = []
     for i in 1:39
         busdata = json["bus"][string(i)]
@@ -239,9 +241,9 @@ end
 function affect(integrator)
     println("Change something at $(integrator.t)")
     s = NWState(integrator) # get indexable parameter object
-    s.p.v[3, :load₊Pset] = -3.5
+    # s.p.v[3, :load₊Pset] = 1000
     # s.p.e[1, :pibranch₊active] = 0
-    # s.v[30, :machine_avr_gov₊machine₊δ] += 0.01
+    # s.v[30, :machine_avr_gov₊machine₊δ] += 0.001
     auto_dt_reset!(integrator); save_parameters!(integrator)
 end
 cb = PresetTimeCallback(0.1, affect)
@@ -249,12 +251,11 @@ cb = PresetTimeCallback(0.1, affect)
 s0 = NWState(nw)
 # s0.p.v[30, :machine_avr_gov₊machine₊D] .= 1
 # s0.p.v[32:39, :machine_avr_gov₊machine₊D] .= 1
-prob = ODEProblem(nw, uflat(s0), (0,50), pflat(s0); callback=cb)
+prob = ODEProblem(nw, uflat(s0), (0,100), pflat(s0); callback=cb, dtmax=1e-1)
 sol = solve(prob, Rodas5P());
-length(sol.t)
 
 let
-    i = 30
+    i = 33
     fig = Figure(size=(1000,800))
     ax = Axis(fig[1, 1])
     lines!(ax, sol, idxs=vidxs(sol, i, :busbar₊u_arg); color=Cycled(1), label="u_arg")
@@ -270,7 +271,8 @@ let
     lines!(ax, sol, idxs=vidxs(sol, i, r"τ_e$"); color=Cycled(2), label="τ_e")
     axislegend(ax; position=:rb)
     ax = Axis(fig[5, 1])
-    lines!(ax, sol, idxs=vidxs(sol, i, r"machine₊vf$"); color=Cycled(1), label="vf")
+    # lines!(ax, sol, idxs=vidxs(sol, i, r"machine₊vf$"); color=Cycled(1), label="vf")
+    lines!(ax, sol, idxs=vidxs(sol, i, r"avr₊vr$"); color=Cycled(1), label="vr")
     axislegend(ax; position=:rb)
     ax = Axis(fig[6,1])
     lines!(ax, sol, idxs=vidxs(sol, i, r"machine₊v_mag$"); color=Cycled(1), label="v_mag")

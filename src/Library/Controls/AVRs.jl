@@ -54,25 +54,35 @@ end
         _vref = vref_input ? vref.u : vref
     end
     @variables begin
-        vr1(t), [guess=1,description="intenral amplifier state TODO: implement AVR limiter"]
-        vr2(t), [guess=0,description="internal feedback state"]
+        vr(t), [guess=0, description="regulator voltage"]
         vm(t), [guess=1, description="terminal voltage measurement (lagged)"]
         vfceil(t), [description="ceiled field voltage"]
+        amp_in(t), [description="amplifier input"]
+        v_fb(t), [guess=0, description="feedback voltage"]
     end
     @equations begin
+        # implementation after block diagram in milano
         if ceiling_function == :exponential
             vfceil ~ Ae * exp(Be * abs(vf.u))
         elseif ceiling_function == :quadratic
             vfceil ~ quadratic_ceiling(abs(vf.u), E1, E2, Se1, Se2)
         end
-        Ta*Dt(vr1) ~ Ka*(_vref - vm - vr2 - Kf/Tf*vf.u) - vr1
-        Tf*Dt(vr2) ~ -(Kf/Tf*vf.u + vr2)
-        Te*Dt(vf.u) ~ -(vf.u  * (Ke+vfceil) - vr1)
         if tmeas_lag
             Tr * Dt(vm) ~ vh.u - vm
         else
             vm ~ vh.u
         end
+
+        Tf*Dt(v_fb) ~ Kf*Dt(vf.u) - v_fb
+        amp_in ~ Ka*(_vref - vm - v_fb)
+
+        Ta*Dt(vr) ~ ifelse(
+            ((vr > vr_max) & (amp_in > vr)) | ((vr < vr_min) & (amp_in < vr)),
+            0,
+            amp_in - vr)
+        # Ta*Dt(vr) ~ amp_in - vr
+
+        Te*Dt(vf.u) ~ vr - vfceil - Ke*vf.u
     end
 end
 

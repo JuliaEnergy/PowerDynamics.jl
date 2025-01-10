@@ -100,7 +100,7 @@ end
     @variables begin
         ref_sig(t), [description="Internal reference signal"]
         xg1(t), [guess=1]
-        xg1_sat(t)
+        # xg1_sat(t)
         xg2(t), [guess=0]
         Δω(t), [description="Speed deviation"]
     end
@@ -109,12 +109,19 @@ end
         _p_ref = p_ref_input ? p_ref.u : p_ref
     end
     @equations begin
+        # implementation after blockdiagram
+        # https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20TGOV1%20and%20TGOV1D.htm
+        # and milano
+
         Δω ~ ω_meas.u - _ω_ref
         ref_sig ~ 1/R*(_p_ref  - Δω)
-        T1 * Dt(xg1) ~ (ref_sig - xg1)
-        xg1_sat ~ _clamp(xg1, V_min, V_max)
-        T3 * Dt(xg2) ~ xg1_sat*(1-T2/T3) - xg2
-        # TODO: check units, might need multiplication by omega ref to get from p to tau
-        τ_m.u ~ xg2 + T2/T3*xg1_sat - DT*Δω
+
+        T1 * Dt(xg1) ~ ifelse(
+            ((xg1 > V_max) & (ref_sig > xg1)) | ((xg1 < V_min) & (ref_sig < xg1)),
+            0,
+            ref_sig - xg1)
+
+        T3 * Dt(xg2) ~ xg1 + T2*Dt(xg1) - xg2
+        τ_m.u ~ xg2  - DT*Δω
     end
 end
