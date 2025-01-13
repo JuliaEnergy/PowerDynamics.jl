@@ -113,7 +113,10 @@ end
         # https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20TGOV1%20and%20TGOV1D.htm
         # and milano
 
-        Δω ~ ω_meas.u - _ω_ref
+        # TODO: GOV: Δω absolute or relative?
+        # Δω ~ ω_meas.u - _ω_ref
+        Δω ~ ω_meas.u / _ω_ref - 1
+
         ref_sig ~ 1/R*(_p_ref  - Δω)
 
         T1 * Dt(xg1) ~ ifelse(
@@ -122,6 +125,8 @@ end
             ref_sig - xg1)
 
         T3 * Dt(xg2) ~ xg1 + T2*Dt(xg1) - xg2
-        τ_m.u ~ xg2  - DT*Δω
+
+        # TODO: GOV: output power or torque?
+        τ_m.u*ω_meas.u ~ xg2  - DT*Δω
     end
 end

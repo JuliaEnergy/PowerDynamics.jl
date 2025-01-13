@@ -77,11 +77,10 @@
         γ_d2 = (X′_d-X″_d)/(X′_d-X_ls)^2 # ~ (1 - γ_d1)/(X′_d - X_ls)
         γ_q2 = (X′_q-X″_q)/(X′_q-X_ls)^2 # ~ (1 - γ_q1)/(X′_q - X_ls)
         # This transformation seems identical to Milano and PSD models
-        T_to_loc(α)  = [sin(α) -cos(α);  cos(α) sin(α)]
-        T_to_glob(α) = [sin(α)  cos(α); -cos(α) sin(α)]
-        # does not work, looks even strange. Steady satet is no steady state
-        # T_to_loc(α)  = [ cos(α) sin(α); sin(α) -cos(α)];
-        # T_to_glob(α) = [ cos(α) sin(α); sin(α) -cos(α)];
+        T_to_loc(α)  = [ sin(α) -cos(α);
+                         cos(α)  sin(α)]
+        T_to_glob(α) = [ sin(α)  cos(α);
+                        -cos(α)  sin(α)]
     end
     @equations begin
         # Park's transformations
@@ -106,7 +105,7 @@
         V_q ~ -R_s*I_q + ω * ψ_d
 
         T′_d0 * Dt(E′_q) ~ -E′_q - (X_d - X′_d)*(I_d - γ_d2*ψ″_d - (1-γ_d1)*I_d + γ_d2*E′_q) + vf
-        T′_q0 * Dt(E′_d) ~ -E′_d - (X_q - X′_q)*(I_q - γ_q2*ψ″_q - (1-γ_q1)*I_q - γ_q2*E′_d)
+        T′_q0 * Dt(E′_d) ~ -E′_d + (X_q - X′_q)*(I_q - γ_q2*ψ″_q - (1-γ_q1)*I_q - γ_q2*E′_d)
         T″_d0 * Dt(ψ″_d) ~ -ψ″_d + E′_q - (X′_d - X_ls)*I_d
         T″_q0 * Dt(ψ″_q) ~ -ψ″_q - E′_d - (X′_q - X_ls)*I_q
 

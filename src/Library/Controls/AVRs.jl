@@ -104,8 +104,12 @@ end
 
 
 function quadratic_ceiling(x, E1, E2, Se1, Se2)
-    sq = sqrt(Se1/Se2)
+    # sq = sqrt(Se1/Se2)
+    # Asq = (E1 - E2 * sq) / (1 - sq)
+    # Bsq = Se2 /(E2 - Asq)^2
+    # XXX:  wrong to match results from RMSpowersims
+    sq = sqrt((E1 * Se1) / (E2 * Se2))
     Asq = (E1 - E2 * sq) / (1 - sq)
-    Bsq = Se2 /(E2 - Asq)^2
+    Bsq = (E2 * Se2) / ((E2 - Asq)^2)
     ifelse(x > Asq, Bsq * (x - Asq)^2, 0.0)
 end

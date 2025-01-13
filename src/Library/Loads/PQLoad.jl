@@ -86,7 +86,7 @@ end
     @parameters begin
         Pset, [description="Active Power at operation point [pu]"]
         Qset, [description="Reactive Power at operation point [pu]"]
-        Vset, [description="Voltage at operation point [pu]"]
+        Vset, [guess=1,description="Voltage at operation point [pu]"]
         KpZ, [description="Active power constant impedance fraction"]
         KqZ, [description="Reactive power constant impedance fraction"]
         KpI, [description="Active power constant current fraction"]
