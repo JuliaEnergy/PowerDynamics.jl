@@ -9,6 +9,7 @@ using DataFrames
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 using DiffEqCallbacks
+using CSV
 
 function load_model(dict)
     @assert dict["dynamic_model"]["model_type"] == "ZIPLoad"
@@ -19,12 +20,12 @@ function load_model(dict)
     # Library.PQFiltLoad(; Pset=-dict["pd"], Qset=-dict["qd"], τ=0.1, name=:load)
 end
 
-function gen_model(dict)
+function gen_model(dict; S_b, V_b, ω_b)
     @assert dict["dynamic_model"]["model_type"] == "SixthOrderModel"
     controllers = dict["dynamic_model"]["controllers"]
 
     p = dict["dynamic_model"]["parameters"]
-    @named machine = SauerPaiMachine(
+    @named machine = SauerPaiMachine(;
         R_s = p["Rs"],
         X_d = p["Xd"],
         X_q = p["Xq"],
@@ -38,16 +39,14 @@ function gen_model(dict)
         T′_q0 = p["Tq_d"],
         T″_q0 = p["Tq_dd"],
         H = p["H"],
-        S_b = 100,
+        S_b,
         Sn = dict["mbase"],
-        V_b = dict["vbase"],
-        ω_b = p["ωs"],
+        V_b,
+        ω_b,
     )
     controleqs = Equation[]
-
     if haskey(controllers, "IEEET1")
         avrp = controllers["IEEET1"]["parameters"]
-        # Ae, Be = Library.solve_ceilf(avrp["E1"]=>avrp["Se1"], avrp["E2"]=>avrp["Se2"]; u0=[1.0, 1.0])
         @named avr = AVRTypeI(
             ceiling_function=:quadratic,
             Ka = avrp["Ka"],
@@ -169,8 +168,14 @@ end;
         end
         printstyled("Bus $(lpad(i,2)):  "; bold=true)
         print("$(length(gen_keys)) generators\t")
+
+
         println("$(length(load_keys)) loads")
         name = Symbol(replace(busdata["name"], " "=>""))
+
+        S_b = json["baseMVA"]
+        ω_b = json["dynamic_model_parameters"]["f_nom"]*2π
+        V_b = busdata["base_kv"]
 
         if i ∈ slacks
             bus = Bus(MTKBus(Library.UrUiConstraint(;name=:uconstraint)); vidx=i, name)
@@ -181,15 +186,15 @@ end;
             # load bus
             load = load_model(json["load"][only(load_keys)])
             bus = Bus(MTKBus(load); vidx=i, name)
-            set_default!(bus, :load₊Vset, busdata["vm"])
+            # set_default!(bus, :load₊Vset, busdata["vm"])
         elseif length(gen_keys) == 1 && isempty(load_keys)
             # pure generator
-            gen = gen_model(json["gen"][only(gen_keys)])
+            gen = gen_model(json["gen"][only(gen_keys)]; S_b, ω_b, V_b)
             bus = Bus(MTKBus(gen); vidx=i, name)
         elseif length(gen_keys) == 1 && length(load_keys) == 1
             # generator and load
             load = load_model(json["load"][only(load_keys)])
-            gen = gen_model(json["gen"][only(gen_keys)])
+            gen = gen_model(json["gen"][only(gen_keys)]; S_b, ω_b, V_b)
             bus = Bus(MTKBus(gen, load); vidx=i, name)
             set_default!(bus, :load₊Vset, busdata["vm"])
         else
@@ -205,7 +210,7 @@ nw = Network(copy.(busses), copy.(branches))
 for row in eachrow(bus_df)
     busm = nw.im.vertexm[row.index]
     if row.bus_type == 1
-        # set_metadata!(busm, :pfmodel, pfPQ(P=row.ptotal, Q=row.qtotal))
+        set_metadata!(busm, :pfmodel, pfPQ(P=row.ptotal, Q=row.qtotal))
     elseif row.bus_type == 2
         set_metadata!(busm, :pfmodel, pfPV(P=row.ptotal, V=row.vg))
     elseif row.bus_type == 3
@@ -216,6 +221,24 @@ for row in eachrow(bus_df)
 end
 OpPoDyn.solve_powerflow!(nw)
 OpPoDyn.initialize!(nw)
+
+
+let
+    df = OpPoDyn.show_powerflow(nw)
+    V = Float64[]
+    θ = Float64[]
+    for i in 1:39
+        _V, _θ = load_data(i)[1,[:V,:θ]]
+        push!(V, _V)
+        push!(θ, rad2deg(_θ))
+    end
+    df = DataFrame(N=1:39, V_nd=df."vm [pu]", V=V, θ_nd=df."varg [deg]", θ=θ)
+    df.ΔV = df.V - df.V_nd
+    df.Δθ = df.θ - df.θ_nd
+    df
+end
+
+break
 
 function reinitialize!(cf)
     while OpPoDyn.get_initial_state(cf, :machine_avr_gov₊machine₊vf) < 0
@@ -241,18 +264,44 @@ end
 function affect(integrator)
     println("Change something at $(integrator.t)")
     s = NWState(integrator) # get indexable parameter object
+    s.p.v[26, :load₊Pset] *= 1.2
     # s.p.v[3, :load₊Pset] = 1000
     # s.p.e[1, :pibranch₊active] = 0
     # s.v[30, :machine_avr_gov₊machine₊δ] += 0.001
     auto_dt_reset!(integrator); save_parameters!(integrator)
 end
-cb = PresetTimeCallback(0.1, affect)
-
+cb = PresetTimeCallback(1, affect)
 s0 = NWState(nw)
-# s0.p.v[30, :machine_avr_gov₊machine₊D] .= 1
-# s0.p.v[32:39, :machine_avr_gov₊machine₊D] .= 1
-prob = ODEProblem(nw, uflat(s0), (0,100), pflat(s0); callback=cb, dtmax=1e-1)
+prob = ODEProblem(nw, uflat(s0), (0,15), pflat(s0); callback=cb)
 sol = solve(prob, Rodas5P());
+
+function load_data(i)
+    CSV.read(joinpath(pkgdir(OpPoDyn), "docs", "examples", "data", "rmspowersims", "bus$i.csv"), DataFrame)
+end
+function load_ts(i, sym)
+    df = load_data(i)
+    collect(zip(df.t, getproperty(df, sym)))
+end
+
+function plot_gen_states(title, rmssym, ndsym)
+    fig = Figure(size=(1000,800))
+    row = 1
+    col = 1
+    for row in 1:3, col in 1:3
+        i = 30 + 3*(row-1) + col
+        ax = Axis(fig[row, col], title=title*" at bus $i")
+        try lines!(ax, load_ts(i, rmssym)); catch; end
+        try lines!(ax, sol; idxs=VIndex(i, ndsym), color=Cycled(2)); catch; end
+    end
+    fig
+end
+
+plot_gen_states("Voltage magnitude", :V, :busbar₊u_mag)
+plot_gen_states("Machine frequency", :ω, :machine_avr_gov₊machine₊ω)
+plot_gen_states("Machine angle", :δ, :machine_avr_gov₊machine₊δ)
+plot_gen_states("Gov power", :Tm, :machine_avr_gov₊machine₊τ_m)
+plot_gen_states("Excitation voltage", :Efd, :machine_avr_gov₊machine₊vf)
+
 
 let
     i = 33
@@ -282,94 +331,3 @@ let
     axislegend(ax; position=:rb)
     fig
 end
-
-let
-    fig = Figure()
-    ax = Axis(fig[1, 1])
-    lines!(ax, sol, idxs=vidxs(sol, :, :busbar₊u_arg))
-    ax = Axis(fig[1, 2])
-    lines!(ax, sol, idxs=vidxs(sol, :, :busbar₊u_mag))
-    # axislegend(ax; position=:lb)
-    fig
-end
-
-
-let
-    fig, ax, p = lines(sol, idxs=vidxs(sol, :, r"machine₊vf$"))
-    # axislegend(ax; position=:lb)
-    fig
-end
-fig, ax, p = lines(sol, idxs=vidxs(sol, :, r"load₊P$"))
-fig, ax, p = lines(sol, idxs=vidxs(sol, :, :busbar₊u_mag))
-# fig, ax, p = lines(sol, idxs=vidxs(sol, :, :busbar₊u_arg))
-
-fig, ax, p = lines(sol, idxs=vidxs(sol, 30, r"δ$"))
-
-lines!(sol, idxs=vidxs(sol, 30, r"busbar₊u_arg"))
-fig
-
-lines(sol, idxs=vidxs(sol, 3, :busbar₊P))
-lines(sol, idxs=vidxs(sol, 3, :busbar₊u_mag))
-
-
-####
-#### check for anomalies
-####
-for (i, bus) in enumerate(nw.im.vertexm)
-    :machine_avr_gov₊machine₊δ ∈ bus.sym || continue
-    δ = get_initial_state(bus, :machine_avr_gov₊machine₊δ) |> normalize_angle
-    u_arg = get_initial_state(bus, :busbar₊u_arg) |> normalize_angle
-    # println("Bus $i: u_arg = $u_arg, δ = $δ, diff = $(normalize_angle(u_arg - δ))" )
-    println(i, " ", get_initial_state(bus, :machine_avr_gov₊machine₊vf))
-    # println(i, " ", get_initial_state(bus, :machine_avr_gov₊machine₊Q))
-end
-dump_state(nw.im.vertexm[30])
-dump_state(nw.im.vertexm[32])
-gen_df
-
-cf = nw.im.vertexm[34]
-cf
-cf32a = copy(cf)
-
-dump_state(cf32a)
-dump_state(cf32b)
-
-cf30a.sym .=> default_or_init_state(cf30a) - default_or_init_state(cf30b)
-
-
-normalize_angle(get_initial_state(cf, :machine_avr_gov₊machine₊δ))
-normalize_angle(get_initial_state(cf32b, :machine_avr_gov₊machine₊δ))
-
-let
-    δs = Float64[]
-    v_ds = Float64[]
-    v_qs = Float64[]
-    for i in 1:2
-        for sym in cf.sym
-            set_guess!(cf, sym, rand())
-        end
-        initialize_component!(cf; verbose=false)
-        if init_residual(cf) > 1e-8
-            @warn "Encountered high residual"
-        end
-        # @show init_residual(cf)
-        push!(δs, get_initial_state(cf, :machine_avr_gov₊machine₊δ))
-        push!(v_ds, get_initial_state(cf, :machine_avr_gov₊machine₊E′_d))
-        push!(v_qs, get_initial_state(cf, :machine_avr_gov₊machine₊E′_q))
-    end
-
-    fig = Figure(); ax = Axis(fig[1, 1])
-    perm = sortperm(δs)
-    ax.aspect = DataAspect()
-    xlims!(-1.1,1.1)
-    ylims!(-1.1,1.1)
-    lines!(ax, [(0,0), (get_initial_state(cf, :busbar₊u_r), get_initial_state(cf, :busbar₊u_i))])
-    scatter!(ax, cos.(δs[perm]), sin.(δs[perm]))
-    scatter!(ax, v_ds[perm], v_qs[perm])
-    fig
-    nothing
-    cf
-end
-
-
-# WHY IS IT EVER SO SLIGHTLY UNSTABLE?!?!
