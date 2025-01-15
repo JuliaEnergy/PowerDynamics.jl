@@ -6,8 +6,8 @@
         B_src, [description="Susceptance of src shunt (base unclear?)"]
         G_dst, [description="Conductance of dst shunt (base unclear?)"]
         B_dst, [description="Susceptance of dst shunt (base unclear?)"]
-        r_src=1, [description="Src end transformation ratio"]
-        r_dst=1, [description="Src end transformation ratio"]
+        r_src=1, [description="src end transformation ratio"]
+        r_dst=1, [description="dst end transformation ratio"]
         active=1, [description="Line active or at fault"]
     end
     @components begin
@@ -25,8 +25,8 @@
         i₁ = Ysrc * V₁
         i₂ = Ydst * V₂
         iₘ = 1/Z * (V₁ - V₂)
-        isrc = -iₘ - i₁
-        idst =  iₘ - i₂
+        isrc = (-iₘ - i₁)*r_src
+        idst = ( iₘ - i₂)*r_dst
     end
     @equations begin
         src.i_r ~ active * simplify(real(isrc))
