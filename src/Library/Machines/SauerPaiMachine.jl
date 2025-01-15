@@ -42,10 +42,10 @@
         Vn=V_b, [description="Machine voltage rating in kV"]
         # input/parameter switches
         if !vf_input
-            vf_set, [guess=1, description="field voltage"]
+            vf_set, [guess=1, bounds=(0,Inf), description="field voltage"]
         end
         if !τ_m_input
-            τ_m_set, [guess=1, description="mechanical torque"]
+            τ_m_set, [guess=1, bounds=(0,Inf), description="mechanical torque"]
         end
     end
     @variables begin
@@ -61,15 +61,15 @@
         E′_q(t), [guess=0, description="transient voltage behind transient reactance in q-axis"]
         δ(t), [guess=0, description="rotor angle"]
         ω(t), [guess=1, description="rotor speed"]
-        τ_e(t), [description="electrical torque"]
+        τ_e(t), [bounds=(0,Inf) ,description="electrical torque"]
         # observables
         v_mag(t), [description="terminal voltage [machine pu]"]
         v_arg(t), [description="Generator terminal angle"]
         P(t), [description="active power [machine pu]"]
         Q(t), [description="reactive power [machine pu]"]
         # inputs/parameters
-        vf(t), [description="field voltage"]
-        τ_m(t), [description="mechanical torque"]
+        vf(t), [bounds=(0,Inf), description="field voltage"]
+        τ_m(t), [bounds=(0,Inf), description="mechanical torque"]
     end
     begin
         γ_d1 = (X″_d - X_ls)/(X′_d - X_ls)
