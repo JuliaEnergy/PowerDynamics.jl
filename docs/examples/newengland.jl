@@ -10,14 +10,21 @@ using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 using DiffEqCallbacks
 using CSV
+using LinearAlgebra
+
+function load_data(i)
+    CSV.read(joinpath(pkgdir(OpPoDyn), "docs", "examples", "data", "rmspowersims", "bus$i.csv"), DataFrame)
+end
+function load_ts(i, sym; f=x->x)
+    df = load_data(i)
+    collect(zip(df.t, f.(getproperty(df, sym))))
+end
 
 function load_model(dict)
     @assert dict["dynamic_model"]["model_type"] == "ZIPLoad"
     p = dict["dynamic_model"]["parameters"]
     ZIPLoad(; KpZ=p["Kpz"],KpI=p["Kpi"], KqZ=p["Kqz"], KqI=p["Kqi"],
             Pset=-dict["pd"], Qset=-dict["qd"], name=:load)
-    # PQLoad(; Pset=-dict["pd"], Qset=-dict["qd"], name=:load)
-    # Library.PQFiltLoad(; Pset=-dict["pd"], Qset=-dict["qd"], τ=0.1, name=:load)
 end
 
 function gen_model(dict; S_b, V_b, ω_b)
@@ -89,14 +96,10 @@ function gen_model(dict; S_b, V_b, ω_b)
         append!(controleqs, [connect(gov.τ_m, machine.τ_m_in)])
     end
 
-    # @named avr = AVRFixed()
-    # append!(controleqs, [connect(avr.vf, machine.vf_in)])
-    # @named gov = GovFixed()
-    # append!(controleqs, [connect(gov.τ_m, machine.τ_m_in)])
-
     CompositeInjector(
         [machine, avr, gov],
         controleqs,
+        name=:ctrld_gen
     )
 end
 
@@ -135,7 +138,20 @@ branches = let
     branches = []
     for (i, bdict) in enumerate(values(json["branch"]))
         println("Branch $i: $(bdict["f_bus"]) -> $(bdict["t_bus"])")
-        # bdict = collect(values(json["branch"]))[1]
+
+        tapkw = if bdict["transformer"] == true
+            src_kv = bus_df[bdict["f_bus"], :base_kv]
+            dst_kv = bus_df[bdict["t_bus"], :base_kv]
+            if src_kv > dst_kv
+                (; r_src = 1/bdict["tap"])
+            elseif src_kv < dst_kv
+                # TODO: looks like the tap is allways at src bus no matter where the high voltage side is
+                (; r_src = 1/bdict["tap"])
+                # (; r_dst = 1/bdict["tap"])
+            end
+        else
+            (;)
+        end
 
         @assert bdict["br_status"] == 1
         @assert bdict["shift"] == 0.0
@@ -143,20 +159,16 @@ branches = let
             R=bdict["br_r"], X=bdict["br_x"],
             B_src = bdict["b_fr"], B_dst = bdict["b_to"],
             G_src = bdict["g_fr"], G_dst = bdict["g_to"],
-            r_dst = bdict["tap"]
+            tapkw...
         )
         line = Line(MTKLine(pibranch); src=bdict["f_bus"], dst=bdict["t_bus"])
         push!(branches, line)
+
     end
     branches
 end;
 
-# sort!(gen_df, :gen_bus)
-
 @time busses = let
-    # slacks = [34, 35, 37, 38]
-    slacks = []
-    # slacks = collect(31:39)
     busses = []
     for i in 1:39
         busdata = json["bus"][string(i)]
@@ -177,16 +189,13 @@ end;
         ω_b = json["dynamic_model_parameters"]["f_nom"]*2π
         V_b = busdata["base_kv"]
 
-        if i ∈ slacks
-            bus = Bus(MTKBus(Library.UrUiConstraint(;name=:uconstraint)); vidx=i, name)
-        elseif isempty(gen_keys) && isempty(load_keys)
+        if isempty(gen_keys) && isempty(load_keys)
             # empty bus
             bus = Bus(MTKBus(); vidx=i, name)
         elseif isempty(gen_keys) && length(load_keys) == 1
             # load bus
             load = load_model(json["load"][only(load_keys)])
             bus = Bus(MTKBus(load); vidx=i, name)
-            # set_default!(bus, :load₊Vset, busdata["vm"])
         elseif length(gen_keys) == 1 && isempty(load_keys)
             # pure generator
             gen = gen_model(json["gen"][only(gen_keys)]; S_b, ω_b, V_b)
@@ -196,11 +205,9 @@ end;
             load = load_model(json["load"][only(load_keys)])
             gen = gen_model(json["gen"][only(gen_keys)]; S_b, ω_b, V_b)
             bus = Bus(MTKBus(gen, load); vidx=i, name)
-            set_default!(bus, :load₊Vset, busdata["vm"])
         else
             error()
         end
-        set_voltage!(bus; mag=busdata["vm"], arg=busdata["va"])
         push!(busses, bus)
     end
     busses
@@ -220,9 +227,8 @@ for row in eachrow(bus_df)
     end
 end
 OpPoDyn.solve_powerflow!(nw)
-OpPoDyn.initialize!(nw)
 
-
+# compare powerflow
 let
     df = OpPoDyn.show_powerflow(nw)
     V = Float64[]
@@ -238,25 +244,10 @@ let
     df
 end
 
-break
-
-function reinitialize!(cf)
-    while OpPoDyn.get_initial_state(cf, :machine_avr_gov₊machine₊vf) < 0
-        println("Try reinit...")
-        for sym in cf.sym
-            set_guess!(cf, sym, randn())
-        end
-        try
-            initialize_component!(cf; verbose=false)
-        catch e
-        end
-    end
-end
-for i in 30:39
-    :machine_avr_gov₊machine₊vf ∈ obssym(nw.im.vertexm[i]) || continue
-    println("Check reinitialization of $i")
-    reinitialize!(nw.im.vertexm[i])
-end
+# Buses 31 and 39 have a load attached, we need to manualy initialize the Vset for those
+set_default!(nw.im.vertexm[31], :load₊Vset, norm(get_initial_state.(Ref(nw.im.vertexm[31]), [:busbar₊u_r,:busbar₊u_i])))
+set_default!(nw.im.vertexm[39], :load₊Vset, norm(get_initial_state.(Ref(nw.im.vertexm[39]), [:busbar₊u_r,:busbar₊u_i])))
+OpPoDyn.initialize!(nw)
 
 ####
 #### solve dyn system
@@ -264,25 +255,27 @@ end
 function affect(integrator)
     println("Change something at $(integrator.t)")
     s = NWState(integrator) # get indexable parameter object
-    s.p.v[26, :load₊Pset] *= 1.2
+    s.p.v[16, :load₊Pset] *= 1.2
     # s.p.v[3, :load₊Pset] = 1000
     # s.p.e[1, :pibranch₊active] = 0
-    # s.v[30, :machine_avr_gov₊machine₊δ] += 0.001
+    # s.v[30, :ctrld_gen₊machine₊δ] += 0.001
     auto_dt_reset!(integrator); save_parameters!(integrator)
 end
 cb = PresetTimeCallback(1, affect)
 s0 = NWState(nw)
-prob = ODEProblem(nw, uflat(s0), (0,15), pflat(s0); callback=cb)
+prob = ODEProblem(nw, copy(uflat(s0)), (0,15), copy(pflat(s0)); callback=cb)
 sol = solve(prob, Rodas5P());
 
-function load_data(i)
-    CSV.read(joinpath(pkgdir(OpPoDyn), "docs", "examples", "data", "rmspowersims", "bus$i.csv"), DataFrame)
-end
-function load_ts(i, sym)
-    df = load_data(i)
-    collect(zip(df.t, getproperty(df, sym)))
+# plot of fault
+let
+    fig = Figure()
+    ax = Axis(fig[1,1])
+    lines!(ax, load_ts(16, :Pd;f=x->-x))
+    lines!(ax, sol, idxs=vidxs(sol, 16, :busbar₊P), color=Cycled(2))
+    fig
 end
 
+# plot of generator states
 function plot_gen_states(title, rmssym, ndsym)
     fig = Figure(size=(1000,800))
     row = 1
@@ -295,39 +288,10 @@ function plot_gen_states(title, rmssym, ndsym)
     end
     fig
 end
-
 plot_gen_states("Voltage magnitude", :V, :busbar₊u_mag)
-plot_gen_states("Machine frequency", :ω, :machine_avr_gov₊machine₊ω)
-plot_gen_states("Machine angle", :δ, :machine_avr_gov₊machine₊δ)
-plot_gen_states("Gov power", :Tm, :machine_avr_gov₊machine₊τ_m)
-plot_gen_states("Excitation voltage", :Efd, :machine_avr_gov₊machine₊vf)
-
-
-let
-    i = 33
-    fig = Figure(size=(1000,800))
-    ax = Axis(fig[1, 1])
-    lines!(ax, sol, idxs=vidxs(sol, i, :busbar₊u_arg); color=Cycled(1), label="u_arg")
-    axislegend(ax; position=:lb)
-    ax = Axis(fig[2,1])
-    lines!(ax, sol, idxs=vidxs(sol, i, r"δ$"); color=Cycled(1), label="δ")
-    axislegend(ax; position=:lb)
-    ax = Axis(fig[3, 1])
-    lines!(ax, sol, idxs=vidxs(sol, i, r"ω$"); color=Cycled(1), label="ω")
-    axislegend(ax; position=:lb)
-    ax = Axis(fig[4, 1])
-    lines!(ax, sol, idxs=vidxs(sol, i, r"τ_m$"); color=Cycled(1), label="τ_m")
-    lines!(ax, sol, idxs=vidxs(sol, i, r"τ_e$"); color=Cycled(2), label="τ_e")
-    axislegend(ax; position=:rb)
-    ax = Axis(fig[5, 1])
-    # lines!(ax, sol, idxs=vidxs(sol, i, r"machine₊vf$"); color=Cycled(1), label="vf")
-    lines!(ax, sol, idxs=vidxs(sol, i, r"avr₊vr$"); color=Cycled(1), label="vr")
-    axislegend(ax; position=:rb)
-    ax = Axis(fig[6,1])
-    lines!(ax, sol, idxs=vidxs(sol, i, r"machine₊v_mag$"); color=Cycled(1), label="v_mag")
-    axislegend(ax; position=:rb)
-    ax = Axis(fig[7, 1])
-    lines!(ax, sol, idxs=vidxs(sol, i, r"busbar₊P$"); color=Cycled(2), label="Bus P")
-    axislegend(ax; position=:rb)
-    fig
-end
+plot_gen_states("Machine frequency", :ω, :ctrld_gen₊machine₊ω)
+plot_gen_states("Machine angle", :δ, :ctrld_gen₊machine₊δ)
+plot_gen_states("Gov power", :Tm, :ctrld_gen₊machine₊τ_m)
+plot_gen_states("Excitation voltage", :Efd, :ctrld_gen₊machine₊vf)
+plot_gen_states("Regulator voltage (limited)", :Vr, :ctrld_gen₊avr₊vr)
+plot_gen_states("Gov valve (limited)", :Pv, :ctrld_gen₊gov₊xg1)
