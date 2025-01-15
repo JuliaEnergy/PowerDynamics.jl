@@ -54,6 +54,8 @@ end
         _vref = vref_input ? vref.u : vref
     end
     @variables begin
+        # we add an explicit state for vfout to set bounds
+        vfout(t), [guess=1, bounds=(0,Inf), description="field voltage output"]
         vr(t), [guess=0, description="regulator voltage"]
         vm(t), [guess=1, description="terminal voltage measurement (lagged)"]
         vfceil(t), [description="ceiled field voltage"]
@@ -63,9 +65,9 @@ end
     @equations begin
         # implementation after block diagram in milano
         if ceiling_function == :exponential
-            vfceil ~ Ae * exp(Be * abs(vf.u))
+            vfceil ~ Ae * exp(Be * abs(vfout))
         elseif ceiling_function == :quadratic
-            vfceil ~ quadratic_ceiling(abs(vf.u), E1, E2, Se1, Se2)
+            vfceil ~ quadratic_ceiling(abs(vfout), E1, E2, Se1, Se2)
         end
         if tmeas_lag
             Tr * Dt(vm) ~ vh.u - vm
@@ -73,16 +75,18 @@ end
             vm ~ vh.u
         end
 
-        Tf*Dt(v_fb) ~ Kf*Dt(vf.u) - v_fb
+        Tf*Dt(v_fb) ~ Kf*Dt(vfout) - v_fb
         amp_in ~ Ka*(_vref - vm - v_fb)
 
         Ta*Dt(vr) ~ ifelse(
             ((vr > vr_max) & (amp_in > vr)) | ((vr < vr_min) & (amp_in < vr)),
             0,
             amp_in - vr)
-        # Ta*Dt(vr) ~ amp_in - vr
 
-        Te*Dt(vf.u) ~ vr - vfceil - Ke*vf.u
+        Te*Dt(vfout) ~ vr - vfceil - Ke*vf.u
+
+        # output
+        vf.u ~ vfout
     end
 end
 
@@ -107,9 +111,11 @@ function quadratic_ceiling(x, E1, E2, Se1, Se2)
     # sq = sqrt(Se1/Se2)
     # Asq = (E1 - E2 * sq) / (1 - sq)
     # Bsq = Se2 /(E2 - Asq)^2
-    # XXX:  wrong to match results from RMSpowersims
+
+    # XXX:  wrong to match results from RMSpowersims?
     sq = sqrt((E1 * Se1) / (E2 * Se2))
     Asq = (E1 - E2 * sq) / (1 - sq)
     Bsq = (E2 * Se2) / ((E2 - Asq)^2)
+
     ifelse(x > Asq, Bsq * (x - Asq)^2, 0.0)
 end
