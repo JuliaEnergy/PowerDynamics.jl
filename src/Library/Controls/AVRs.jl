@@ -35,16 +35,13 @@ end
         end
         vr_min, [description="minimum regulator voltage"]
         vr_max, [description="maximum regulator voltage"]
+        E1, [description="1st ceiling voltage"]
+        E2, [description="2nd ceiling voltage"]
+        Se1, [description="1st ceiling saturation"]
+        Se2, [description="2nd ceiling saturation"]
         if ceiling_function == :exponential
-            Ae, [description="1st ceiling coeff"]
-            Be, [description="2st ceiling coeff"]
-        elseif ceiling_function == :quadratic
-            E1, [description="1st ceiling voltage"]
-            E2, [description="2nd ceiling voltage"]
-            Se1, [description="1st ceiling saturation"]
-            Se2, [description="2nd ceiling saturation"]
-        else
-            error("Unknown ceiling function, musst be :exponential or :quadratic!")
+            Ae=_solve_Ae(E1=>Se1, E2=>Se2), [description="1st ceiling coeff"]
+            Be=_solve_Be(E1=>Se1, E2=>Se2), [description="1st ceiling coeff"]
         end
         if !vref_input
             vref, [guess=1, description="Terminal voltag reference [Machine PU]"]
@@ -52,6 +49,9 @@ end
     end
     begin
         _vref = vref_input ? vref.u : vref
+        if ceiling_function ∉ (:exponential, :quadratic)
+            error("Unknown ceiling function: $ceiling_function")
+        end
     end
     @variables begin
         # we add an explicit state for vfout to set bounds
@@ -99,12 +99,14 @@ function solve_ceilf(pair1, pair2; u0=[0.01, 1])
         du[2] = S2 - A*exp(B*v2)
     end
     prob = NonlinearProblem(f, u0, p)
-    sol = solve(prob)
+    sol = solve(prob; verbose=false)
     if !SciMLBase.successful_retcode(sol.retcode)
         error("Did not finde solution for Ae and Be: retcode $(sol.retcode)")
     end
     (; Ae=sol[1], Be=sol[2])
 end
+_solve_Ae(pair1, pair2) = solve_ceilf(pair1, pair2)[1]
+_solve_Be(pair1, pair2) = solve_ceilf(pair1, pair2)[2]
 
 
 function quadratic_ceiling(x, E1, E2, Se1, Se2)
@@ -112,7 +114,7 @@ function quadratic_ceiling(x, E1, E2, Se1, Se2)
     # Asq = (E1 - E2 * sq) / (1 - sq)
     # Bsq = Se2 /(E2 - Asq)^2
 
-    # XXX:  wrong to match results from RMSpowersims?
+    # below is the definition from RMSPowerSims
     sq = sqrt((E1 * Se1) / (E2 * Se2))
     Asq = (E1 - E2 * sq) / (1 - sq)
     Bsq = (E2 * Se2) / ((E2 - Asq)^2)
