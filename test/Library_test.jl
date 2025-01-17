@@ -40,13 +40,16 @@ end
     p1 = get_default.(Ref(line1), psym(line1))
     p2 = get_default.(Ref(line2), psym(line2))
 
-    du1 = zeros(4)
-    du2 = zeros(4)
+    out_src_1 = zeros(2)
+    out_dst_1 = zeros(2)
+    out_src_2 = zeros(2)
+    out_dst_2 = zeros(2)
     usrc = rand(2)
     udst = rand(2)
-    line1.f(du1, usrc, udst, p1, NaN)
-    line2.f(du2, usrc, udst, p2, NaN)
-    @test du1 ≈ du2
+    line1.g(out_src_1, out_dst_1, usrc, udst, p1, NaN)
+    line2.g(out_src_2, out_dst_2, usrc, udst, p2, NaN)
+    @test out_src_1 ≈ out_src_2
+    @test out_dst_1 ≈ out_dst_2
 end
 
 @testset "Swing bus" begin
@@ -99,7 +102,7 @@ end
     end
     @named genbus = GenBus()
     # genbus = pin_parameters(genbus)
-    genf = Bus(genbus; verbose=false);
+    genf = Bus(genbus; verbose=false)
 
     @named slack = SlackDifferential(u_init_r=0.90081)
     slackf = Bus(slack)
@@ -238,7 +241,7 @@ end
         end
     end
     @named mtkbus = GenBus()
-    bus = Bus(mtkbus);
+    bus = Bus(mtkbus)
 
     set_voltage!(bus; mag=1.017, arg=0.0295)
     set_current!(bus; P=0.716, Q=0.3025)
@@ -300,7 +303,7 @@ end
     end
     @named mtkbus = GenBus()
 
-    bus = Bus(mtkbus);
+    bus = Bus(mtkbus)
     set_voltage!(bus; mag=1.017, arg=0.0295)
     set_current!(bus; P=0.716, Q=0.3025)
     initialize_component!(bus)

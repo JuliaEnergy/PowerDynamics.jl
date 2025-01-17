@@ -104,7 +104,7 @@ nothing #hide
 #=
 After this, we can build the NetworkDynamic components using the `Bus`-constructor.
 
-The `Bus` constructor is essentially a thin wrapper around the `ODEVertex` constructor which,
+The `Bus` constructor is essentially a thin wrapper around the `VertexModel` constructor which,
 per default, adds some metadata. For example the `vidx` property which later on allows for
 "graph free" network dynamics instantiation.
 =#
@@ -128,7 +128,7 @@ transformer values are 1.0. Apparently, the transforming action has been absorbe
 into the line parameters according to the base voltage on both ends.
 
 For the lines we again make use of the `src` and `dst` metadata of the
-`StaticEdge` objects for automatic graph construction.
+`EdgeModel` objects for automatic graph construction.
 =#
 function piline(; R, X, B)
     @named pibranch = PiLine(;R, X, B_src=B/2, B_dst=B/2, G_src=0, G_dst=0)

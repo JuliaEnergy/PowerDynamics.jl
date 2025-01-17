@@ -33,8 +33,8 @@ bus = pinparameters(bus, ModelingToolkit.defaults(bus))
 io = (ModelingToolkit.unbound_inputs(bus), [])
 simp = structural_simplify(bus, io)[1]
 
-vert = ODEVertex(bus, [bus.busbar.i_r, bus.busbar.i_i], [bus.busbar.u_r, bus.busbar.u_i])
-vert = ODEVertex(bus, [:busbar₊i_r, :busbar₊i_i], [:busbar₊u_r, :busbar₊u_i])
+vert = VertexModel(bus, [bus.busbar.i_r, bus.busbar.i_i], [bus.busbar.u_r, bus.busbar.u_i])
+vert = VertexModel(bus, [:busbar₊i_r, :busbar₊i_i], [:busbar₊u_r, :busbar₊u_i])
 
 using OpPoDyn.Library
 
@@ -60,7 +60,7 @@ structural_simplify(simp)
 
 full_equations(simp)
 
-ODEVertex(bus, )
+VertexModel(bus, )
 
 
 # line model

@@ -10,7 +10,7 @@ function Bus(sys::ODESystem; verbose=false, vidx=nothing, pf=nothing, name=getna
         throw(ArgumentError(msg))
     end
     io = _busio(sys, :busbar)
-    vertexf = ODEVertex(sys, io.in, io.out; verbose, name)
+    vertexf = VertexModel(sys, io.in, io.out; verbose, name)
     if !isnothing(vidx)
         set_graphelement!(vertexf, vidx)
     end
@@ -50,7 +50,7 @@ function Line(sys::ODESystem; verbose=false, src=nothing, dst=nothing, name=getn
         throw(ArgumentError(msg))
     end
     io = _lineio(sys, :src, :dst)
-    edgef = StaticEdge(sys, io.srcin, io.dstin, io.out, Fiducial(); verbose, name)
+    edgef = EdgeModel(sys, io.srcin, io.dstin, io.srcout, io.dstout; verbose, name)
     if !isnothing(src) && !isnothing(dst)
         set_graphelement!(edgef, (;src, dst))
     end
@@ -68,8 +68,8 @@ function _lineio(sys::ODESystem, src, dst)
              getproperty(sys, src; namespace=false).u_i],
      dstin=[getproperty(sys, dst; namespace=false).u_r,
             getproperty(sys, dst; namespace=false).u_i],
-     out=[getproperty(sys, dst; namespace=false).i_r,
-          getproperty(sys, dst; namespace=false).i_i,
-          getproperty(sys, src; namespace=false).i_r,
-          getproperty(sys, src; namespace=false).i_i])
+     srcout=[getproperty(sys, src; namespace=false).i_r,
+             getproperty(sys, src; namespace=false).i_i],
+     dstout=[getproperty(sys, dst; namespace=false).i_r,
+             getproperty(sys, dst; namespace=false).i_i,])
 end
