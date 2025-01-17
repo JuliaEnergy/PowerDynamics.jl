@@ -60,8 +60,8 @@
         S_b, [description="System power basis in MVA"]
         V_b, [description="System voltage basis in kV"]
         ω_b, [description="System base frequency in rad/s"] #(106)
-        Sn=S_b, [description="Machine power rating in MVA"]
-        Vn=V_b, [description="Machine voltage rating in kV"]
+        Sn, [description="Machine power rating in MVA"]
+        Vn, [description="Machine voltage rating in kV"]
         cosn, [description="rated power factor - ??"] #oder ist das Variable?
         n_ref=1, [description="nominal speed (1 p.u.) of the machine or the speed of the local reference machine"]
         dkd, [description="Damping torque coefficient"]
@@ -74,10 +74,10 @@
         dpu=0, [description="dpu * n is turbine shaft friction torque in p.u.;"]
         # input/parameter switches
         if !vf_input
-            vf_set, [guess=1, description="field voltage"]
+            vf_set, [guess=1, bounds=(0,Inf), description="field voltage"]
         end
         if !τ_m_input
-            τ_m_set, [guess=1, description="mechanical torque"]
+            τ_m_set, [guess=1, bounds=(0,Inf), description="mechanical torque"]
         end
     end
     @variables begin
@@ -119,16 +119,17 @@
         n(t), [guess=1, description="rotor speed"] 
     end
     begin
-        T_park(α) = [sin(α) cos(α); -cos(α) sin(α)] #α and q-axis aligned, Inverse ist -α einsetzen und Matrix *(-1)
-        #T_park(α) = [cos(α) sin(α); -sin(α) cos(α)] #α and d-axis aligned, Inverse ist -α einsetzen
+        T_to_loc(α)  = [ sin(α) -cos(α);
+                         cos(α)  sin(α)]
+        T_to_glob(α) = [ sin(α)  cos(α);
+                        -cos(α)  sin(α)]
     end
     @equations begin
         # Park's transformations
-        [terminal.u_r, terminal.u_i] .~ T_park(δ)*[V_d, V_q] * V_b/Vn
-        # [terminal.i_r, terminal.i_i] .~ T_park(δ)*[I_d, I_q] * Ibase(S_b, V_b)/Ibase(Sn, Vn)
-        # [V_d, V_q] .~ T_park(-δ)*[terminal.u_r, terminal.u_i] * Vn/V_b
-        [I_d, I_q] .~ T_park(-δ)*[terminal.i_r, terminal.i_i] * Ibase(Sn, Vn)/Ibase(S_b, V_b)
-        
+        [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q] * Vn/V_b
+        [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i] * Ibase(S_b, V_b)/Ibase(Sn, Vn)
+
+
         #stator flux equations (55), (60) ((59) wird indirekt über ks und Definitionen von ψ_1d abgedeckt?, (56) und (57) sind nur andere Darstellungsform)
         ψ_d ~ -(X_ls + X_ad) * I_d + X_ad * I_fd + X_ad * I_1d
         ψ_q ~ -(X_ls + X_aq) * I_q + X_aq * I_2q + X_aq * I_1q
