@@ -52,6 +52,7 @@ end
     end
 end
 
+# FIXME: handle Q_Set = 0 and Q_set != 0 in the same model?
 @mtkmodel ConstantYLoad begin
     @components begin
         terminal = Terminal()
@@ -66,7 +67,8 @@ end
         Q(t), [description="Reactive Power [pu]"]
     end
     begin
-        S = Pset + im*Qset
+        # S = Pset + im*Qset
+        S = Pset
         Y = conj(S)/Vset^2
         iload = Y * (terminal.u_r + im*terminal.u_i)
     end
@@ -78,7 +80,6 @@ end
         P ~ terminal.u_r*terminal.i_r + terminal.u_i*terminal.i_i
         Q ~ terminal.u_i*terminal.i_r - terminal.u_r*terminal.i_i
     end
-
 end
 
 # TODO: S_b for loads?
