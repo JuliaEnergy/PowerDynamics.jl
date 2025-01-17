@@ -11,7 +11,11 @@ using OrdinaryDiffEqNonlinearSolve
 using DiffEqCallbacks
 using CSV
 using LinearAlgebra
+using Test
 
+json = JSON.parsefile(joinpath(pkgdir(OpPoDyn), "docs", "examples", "data", "ieee39.json"),dicttype=OrderedDict)
+
+# define functions to load the "reference" timeseries from csv files
 function load_data(i)
     CSV.read(joinpath(pkgdir(OpPoDyn), "docs", "examples", "data", "rmspowersims", "bus$i.csv"), DataFrame)
 end
@@ -20,150 +24,107 @@ function load_ts(i, sym; f=x->x)
     collect(zip(df.t, f.(getproperty(df, sym))))
 end
 
-function load_model(dict)
-    @assert dict["dynamic_model"]["model_type"] == "ZIPLoad"
-    p = dict["dynamic_model"]["parameters"]
-    ZIPLoad(; KpZ=p["Kpz"],KpI=p["Kpi"], KqZ=p["Kqz"], KqI=p["Kqi"],
-            Pset=-dict["pd"], Qset=-dict["qd"], name=:load)
-end
-
-function gen_model(dict; S_b, V_b, ω_b)
-    @assert dict["dynamic_model"]["model_type"] == "SixthOrderModel"
-    controllers = dict["dynamic_model"]["controllers"]
-
-    p = dict["dynamic_model"]["parameters"]
-    @named machine = SauerPaiMachine(;
-        R_s = p["Rs"],
-        X_d = p["Xd"],
-        X_q = p["Xq"],
-        X′_d = p["Xd_d"],
-        X′_q = p["Xq_d"],
-        X″_d = p["Xd_dd"],
-        X″_q = p["Xq_dd"],
-        X_ls = p["Xl"],
-        T′_d0 = p["Td_d"],
-        T″_d0 = p["Td_dd"],
-        T′_q0 = p["Tq_d"],
-        T″_q0 = p["Tq_dd"],
-        H = p["H"],
-        S_b,
-        Sn = dict["mbase"],
-        V_b,
-        ω_b,
-    )
-    controleqs = Equation[]
-    if haskey(controllers, "IEEET1")
-        avrp = controllers["IEEET1"]["parameters"]
-        @named avr = AVRTypeI(
-            ceiling_function=:quadratic,
-            Ka = avrp["Ka"],
-            Ke = avrp["Ke"],
-            Kf = avrp["Kf"],
-            Ta = avrp["Ta"],
-            Tf = avrp["Tf"],
-            Te = avrp["Te"],
-            Tr = avrp["Tr"],
-            vr_min = avrp["Vrmin"],
-            vr_max = avrp["Vrmax"],
-            E1 = avrp["E1"],
-            Se1 = avrp["Se1"],
-            E2 = avrp["E2"],
-            Se2 = avrp["Se2"],
-        )
-        append!(controleqs, [connect(machine.v_mag_out, avr.vh), connect(avr.vf, machine.vf_in)])
-    else
-        @assert isempty(controllers)
-        @named avr = AVRFixed()
-        append!(controleqs, [connect(avr.vf, machine.vf_in)])
-    end
-
-    if haskey(controllers, "TGOV1")
-        govp = controllers["TGOV1"]["parameters"]
-        @named gov = TGOV1(;
-            # p_ref = govp["P_set"],
-            V_min = govp["Vmin"],
-            V_max = govp["Vmax"],
-            R = govp["Rd"],
-            T1 = govp["T1"],
-            T2 = govp["T2"],
-            T3 = govp["T3"],
-            DT = 0,
-        )
-        append!(controleqs, [connect(gov.τ_m, machine.τ_m_in), connect(machine.ωout, gov.ω_meas)])
-    else
-        @assert isempty(controllers)
-        @named gov = GovFixed()
-        append!(controleqs, [connect(gov.τ_m, machine.τ_m_in)])
-    end
-
-    CompositeInjector(
-        [machine, avr, gov],
-        controleqs,
-        name=:ctrld_gen
-    )
-end
-
-json = JSON.parsefile(joinpath(pkgdir(OpPoDyn), "docs", "examples", "data", "ieee39.json"),dicttype=OrderedDict)
-
+# helperfunciton to transform json dicts into dataframes
 function dict_to_df(dict; cols...)
     df = DataFrame(; cols...)
     for (k, v) in dict
-        push!(df, v; cols=:union)
+        push!(df, v; cols=:subset)
     end
     df
 end
-bus_df = sort!(dict_to_df(json["bus"]; index=Int[], name=String[], bus_type=Int[], base_kv=Float64[], vm=Float64[], va=Float64[]), :index)
-gen_df = sort!(dict_to_df(json["gen"]; index=Int[], gen_bus=Int[], pg=Float64[], qg=Float64[], vg=Float64[], mbase=Float64[]), :index)
-load_df = sort!(dict_to_df(json["load"]; index=Int[], load_bus=Int[], pd=Float64[], qd=Float64[], status=Int[]), :index)
+
+# define the main branch dataframe
 branch_df = sort!(dict_to_df(json["branch"]; index=Int[], f_bus=Int[], t_bus=Int[], br_r=Float64[], br_x=Float64[], tap=Float64[], shift=Float64[], br_status=Int[], transformer=Int[], g_fr=Float64[], b_fr=Float64[], g_to=Float64[], b_to=Float64[]), :index)
 
-machine_df = let
-    machine_df = DataFrame()
+# define commbinde bus dataframe which contains all the dynamical parameters
+bus_df = let
+    bus_df = sort!(dict_to_df(json["bus"]; index=Int[], bus_type=Int[], base_kv=Float64[], vm=Float64[], va=Float64[]), :index)
+
+    # add loads data to bus_df
+    _load_df = dict_to_df(json["load"]; load_bus=Int[], pd=Float64[], qd=Float64[])
+    leftjoin!(bus_df, select(_load_df, :load_bus, :pd, :qd); on=:index=>:load_bus)
+
+    # add gen data to bus_Df
+    _gen_df = dict_to_df(json["gen"]; gen_bus=Int[], pg=Float64[], qg=Float64[], vg=Float64[], mbase=Float64[], vbase=Float64[])
+    leftjoin!(bus_df, select(_gen_df, :gen_bus, :pg, :qg, :vg, :vbase, :mbase); on=:index=>:gen_bus)
+
+    # add dynamic load data
+    _dynload_df = DataFrame(;)
+    for (i, loaddat) in enumerate(values(json["load"]))
+        local p = loaddat["dynamic_model"]["parameters"]
+        p = OrderedDict(p)
+        p["bus"] =  loaddat["load_bus"]
+        push!(_dynload_df, p; cols=:union)
+    end
+    leftjoin!(bus_df, _dynload_df, on=:index=>:bus)
+
+    _machine_df = DataFrame(;)
+    _avr_df = DataFrame(;)
+    _gov_df = DataFrame(;)
     for (i, gendat) in enumerate(values(json["gen"]))
-        p = gendat["dynamic_model"]["parameters"]
+        # machine parameters
+        local p = gendat["dynamic_model"]["parameters"]
         p = OrderedDict(p)
         p["bus"] =  gendat["gen_bus"]
-        push!(machine_df, p; cols=:union)
+        delete!(p, "index") # remove index key to avoid conflict on leftjoin
+        push!(_machine_df, p; cols=:union)
+
+        # avr parameters
+        if haskey(gendat["dynamic_model"]["controllers"], "IEEET1")
+            p = gendat["dynamic_model"]["controllers"]["IEEET1"]["parameters"]
+            p["bus"] =  gendat["gen_bus"]
+            push!(_avr_df, p; cols=:union)
+        end
+        # gov parameeters
+        if haskey(gendat["dynamic_model"]["controllers"], "TGOV1")
+            p = gendat["dynamic_model"]["controllers"]["TGOV1"]["parameters"]
+            p["bus"] =  gendat["gen_bus"]
+            push!(_gov_df, p; cols=:union)
+        end
     end
-    sort!(machine_df, "bus")
+
+    leftjoin!(bus_df, _machine_df; on=:index=>:bus)
+    leftjoin!(bus_df, _avr_df; on=:index=>:bus)
+    leftjoin!(bus_df, _gov_df; on=:index=>:bus)
+    bus_df
 end
 
-# set the correct powerflow models
-leftjoin!(bus_df, select(load_df, :load_bus, :pd, :qd); on=:index=>:load_bus)
-leftjoin!(bus_df, select(gen_df, :gen_bus, :pg, :qg, :vg); on=:index=>:gen_bus)
-bus_df.ptotal = replace(bus_df.pg, missing=>0.0) - replace(bus_df.pd, missing=>0.0)
-bus_df.qtotal = replace(bus_df.qg, missing=>0.0) - replace(bus_df.qd, missing=>0.0)
+# TODO: check vref/pset after init
+_missing_to_zero(x) = ismissing(x) ? 0.0 : x
+ptotal(i) = _missing_to_zero(bus_df[i, :pg]) - _missing_to_zero(bus_df[i, :pd])
+qtotal(i) = _missing_to_zero(bus_df[i, :qg]) - _missing_to_zero(bus_df[i, :qd])
+has_load(i) = !ismissing(bus_df[i, :pd])
+has_gen(i) = !ismissing(bus_df[i, :pg])
+has_avr(i) = !ismissing(bus_df[i, :Vref])
+has_gov(i) = !ismissing(bus_df[i, :P_set])
 
-branches = let
+@time branches = let
     branches = []
-    for (i, bdict) in enumerate(values(json["branch"]))
-        println("Branch $i: $(bdict["f_bus"]) -> $(bdict["t_bus"])")
+    for p in eachrow(branch_df)
+        println("Branch: $(p.f_bus) -> $(p.t_bus)")
 
-        tapkw = if bdict["transformer"] == true
-            src_kv = bus_df[bdict["f_bus"], :base_kv]
-            dst_kv = bus_df[bdict["t_bus"], :base_kv]
-            if src_kv > dst_kv
-                (; r_src = 1/bdict["tap"])
-            elseif src_kv < dst_kv
-                # TODO: looks like the tap is allways at src bus no matter where the high voltage side is
-                (; r_src = 1/bdict["tap"])
-                # (; r_dst = 1/bdict["tap"])
-            end
+        tapkw = if p.transformer == true
+            src_kv = bus_df[p.f_bus, :base_kv]
+            dst_kv = bus_df[p.t_bus, :base_kv]
+            # TODO: looks like the tap is allways at src bus no matter where the high voltage side is
+            (; r_src = 1/p.tap)
+            # if src_kv > dst_kv
+            #     (; r_src = 1/p.tap)
+            # elseif src_kv < dst_kv
+            #     (; r_dst = 1/p.tap)
+            # end
         else
             (;)
         end
 
-        @assert bdict["br_status"] == 1
-        @assert bdict["shift"] == 0.0
         @named pibranch = PiLine(;
-            R=bdict["br_r"], X=bdict["br_x"],
-            B_src = bdict["b_fr"], B_dst = bdict["b_to"],
-            G_src = bdict["g_fr"], G_dst = bdict["g_to"],
+            R=p.br_r, X=p.br_x,
+            B_src = p.b_fr, B_dst = p.b_to,
+            G_src = p.g_fr, G_dst = p.g_to,
             tapkw...
         )
-        line = Line(MTKLine(pibranch); src=bdict["f_bus"], dst=bdict["t_bus"])
+        line = Line(MTKLine(pibranch); src=p.f_bus, dst=p.t_bus)
         push!(branches, line)
-
     end
     branches
 end;
@@ -171,83 +132,111 @@ end;
 @time busses = let
     busses = []
     for i in 1:39
-        busdata = json["bus"][string(i)]
-        gen_keys = findall(json["gen"]) do gendat
-            gendat["gen_bus"] == i
+        print("Bus $i:")
+
+        local p = bus_df[i, :]
+        components = [] # vector to collect dynamical components
+
+        if has_load(i)
+            @named load = ZIPLoad(;
+                KpZ=p.Kpz,KpI=p.Kpi, KqZ=p.Kqz, KqI=p.Kqi,
+                Pset=-p.pd, Qset=-p.qd
+            )
+            push!(components, load)
+            print(" Load")
         end
-        load_keys = findall(json["load"]) do gendat
-            gendat["load_bus"] == i
+
+        if has_gen(i)
+            print(" Machine")
+            controleqs = Equation[] # equations connecting avr and gov to machine
+            @named machine = SauerPaiMachine(;
+                R_s = p.Rs, X_ls = p.Xl,
+                X_d = p.Xd, X_q = p.Xq,
+                X′_d = p.Xd_d, X′_q = p.Xq_d,
+                X″_d = p.Xd_dd, X″_q = p.Xq_dd,
+                T′_d0 = p.Td_d, T′_q0 = p.Tq_d,
+                T″_d0 = p.Td_dd, T″_q0 = p.Tq_dd,
+                H = p.H,
+                S_b = json["baseMVA"], Sn = p.mbase,
+                V_b = p.base_kv, Vn = p.vbase,
+                ω_b = json["dynamic_model_parameters"]["f_nom"]*2π,
+            )
+
+            # add dynamic or fixed avr
+            if has_avr(i)
+                print(" AVR")
+                @named avr = AVRTypeI(
+                    ceiling_function=:quadratic,
+                    # vref = p.Vref # let this free for initialization
+                    Ka = p.Ka, Ke = p.Ke, Kf = p.Kf,
+                    Ta = p.Ta, Tf = p.Tf, Te = p.Te, Tr = p.Tr,
+                    vr_min = p.Vrmin, vr_max = p.Vrmax,
+                    E1 = p.E1, Se1 = p.Se1, E2 = p.E2, Se2 = p.Se2,
+                )
+                append!(controleqs, [connect(machine.v_mag_out, avr.vh), connect(avr.vf, machine.vf_in)])
+            else
+                @named avr = AVRFixed()
+                append!(controleqs, [connect(avr.vf, machine.vf_in)])
+            end
+
+            # add dynamic or fixed gove
+            if has_gov(i)
+                print(" Gov")
+                @named gov = TGOV1(;
+                    # p_ref = p.P_set, # let this free for initialization
+                    V_min = p.Vmin, V_max = p.Vmax, DT = 0,
+                    R = p.Rd, T1 = p.T1, T2 = p.T2, T3 = p.T3,
+                )
+                append!(controleqs, [connect(gov.τ_m, machine.τ_m_in), connect(machine.ωout, gov.ω_meas)])
+            else
+                @named gov = GovFixed()
+                append!(controleqs, [connect(gov.τ_m, machine.τ_m_in)])
+            end
+
+            comp = CompositeInjector(
+                [machine, avr, gov],
+                controleqs,
+                name=:ctrld_gen
+            )
+            push!(components, comp)
         end
-        printstyled("Bus $(lpad(i,2)):  "; bold=true)
-        print("$(length(gen_keys)) generators\t")
 
-
-        println("$(length(load_keys)) loads")
-        name = Symbol(replace(busdata["name"], " "=>""))
-
-        S_b = json["baseMVA"]
-        ω_b = json["dynamic_model_parameters"]["f_nom"]*2π
-        V_b = busdata["base_kv"]
-
-        if isempty(gen_keys) && isempty(load_keys)
-            # empty bus
-            bus = Bus(MTKBus(); vidx=i, name)
-        elseif isempty(gen_keys) && length(load_keys) == 1
-            # load bus
-            load = load_model(json["load"][only(load_keys)])
-            bus = Bus(MTKBus(load); vidx=i, name)
-        elseif length(gen_keys) == 1 && isempty(load_keys)
-            # pure generator
-            gen = gen_model(json["gen"][only(gen_keys)]; S_b, ω_b, V_b)
-            bus = Bus(MTKBus(gen); vidx=i, name)
-        elseif length(gen_keys) == 1 && length(load_keys) == 1
-            # generator and load
-            load = load_model(json["load"][only(load_keys)])
-            gen = gen_model(json["gen"][only(gen_keys)]; S_b, ω_b, V_b)
-            bus = Bus(MTKBus(gen, load); vidx=i, name)
-        else
-            error()
+        # we also add the powerflow model based on the bus_type
+        pfmodel = if p.bus_type == 1
+            # PQ bus with S = S_gen - S_demand
+            pfPQ(P=ptotal(i), Q=qtotal(i))
+        elseif p.bus_type == 2
+            # PV bus with P = P_gen - P_demand and V from (static) generator reference
+            pfPV(P=ptotal(i), V=p.vg)
+        elseif p.bus_type == 3
+            # Slack bus with voltage from generator reference andangle 0
+            pfSlack(;V=p.vg, δ=0)
         end
+
+        bus = Bus(MTKBus(components...); vidx=i, pf=pfmodel, name=Symbol("bus$i"))
         push!(busses, bus)
+        println()
     end
     busses
 end;
 
 nw = Network(copy.(busses), copy.(branches))
-for row in eachrow(bus_df)
-    busm = nw.im.vertexm[row.index]
-    if row.bus_type == 1
-        set_metadata!(busm, :pfmodel, pfPQ(P=row.ptotal, Q=row.qtotal))
-    elseif row.bus_type == 2
-        set_metadata!(busm, :pfmodel, pfPV(P=row.ptotal, V=row.vg))
-    elseif row.bus_type == 3
-        set_metadata!(busm, :pfmodel, pfSlack(;V=row.vm, δ=row.va))
-    else
-        error()
-    end
-end
 OpPoDyn.solve_powerflow!(nw)
-
-# compare powerflow
-let
-    df = OpPoDyn.show_powerflow(nw)
-    V = Float64[]
-    θ = Float64[]
-    for i in 1:39
-        _V, _θ = load_data(i)[1,[:V,:θ]]
-        push!(V, _V)
-        push!(θ, rad2deg(_θ))
-    end
-    df = DataFrame(N=1:39, V_nd=df."vm [pu]", V=V, θ_nd=df."varg [deg]", θ=θ)
-    df.ΔV = df.V - df.V_nd
-    df.Δθ = df.θ - df.θ_nd
-    df
-end
 
 # Buses 31 and 39 have a load attached, we need to manualy initialize the Vset for those
 set_default!(nw.im.vertexm[31], :load₊Vset, norm(get_initial_state.(Ref(nw.im.vertexm[31]), [:busbar₊u_r,:busbar₊u_i])))
 set_default!(nw.im.vertexm[39], :load₊Vset, norm(get_initial_state.(Ref(nw.im.vertexm[39]), [:busbar₊u_r,:busbar₊u_i])))
 OpPoDyn.initialize!(nw)
+
+@testset "Test initialization" begin
+    # test powerflow results agains reference
+    df = OpPoDyn.show_powerflow(nw)
+    @test df."vm [pu]" ≈ bus_df.vm
+    @test df."varg [deg]" ≈ rad2deg.(bus_df.va)
+    # test initialized controller references Vref and P_set against reference
+    @test bus_df[30:38, :Vref] ≈ get_initial_state.(nw.im.vertexm[30:38], :ctrld_gen₊avr₊vref)
+    @test bus_df[30:38, :P_set] ≈ get_initial_state.(nw.im.vertexm[30:38], :ctrld_gen₊gov₊p_ref)
+end
 
 ####
 #### solve dyn system
@@ -256,20 +245,18 @@ function affect(integrator)
     println("Change something at $(integrator.t)")
     s = NWState(integrator) # get indexable parameter object
     s.p.v[16, :load₊Pset] *= 1.2
-    # s.p.v[3, :load₊Pset] = 1000
-    # s.p.e[1, :pibranch₊active] = 0
-    # s.v[30, :ctrld_gen₊machine₊δ] += 0.001
     auto_dt_reset!(integrator); save_parameters!(integrator)
 end
 cb = PresetTimeCallback(1, affect)
 s0 = NWState(nw)
 prob = ODEProblem(nw, copy(uflat(s0)), (0,15), copy(pflat(s0)); callback=cb)
 sol = solve(prob, Rodas5P());
+break
 
-# plot of fault
+# plot he desired
 let
     fig = Figure()
-    ax = Axis(fig[1,1])
+    ax = Axis(fig[1,1]; title="Power demand at bus 16", xlabel="Time [s]", ylabel="P [pu]")
     lines!(ax, load_ts(16, :Pd;f=x->-x))
     lines!(ax, sol, idxs=vidxs(sol, 16, :busbar₊P), color=Cycled(2))
     fig
@@ -278,20 +265,20 @@ end
 # plot of generator states
 function plot_gen_states(title, rmssym, ndsym)
     fig = Figure(size=(1000,800))
-    row = 1
-    col = 1
+    row = 1; col = 1
     for row in 1:3, col in 1:3
         i = 30 + 3*(row-1) + col
         ax = Axis(fig[row, col], title=title*" at bus $i")
         try lines!(ax, load_ts(i, rmssym)); catch; end
-        try lines!(ax, sol; idxs=VIndex(i, ndsym), color=Cycled(2)); catch; end
+        idxs = ndsym isa Symbol ? VIndex(i, ndsym) : ndsym(i)
+        try lines!(ax, sol; idxs, color=Cycled(2)); catch; end
     end
     fig
 end
 plot_gen_states("Voltage magnitude", :V, :busbar₊u_mag)
 plot_gen_states("Machine frequency", :ω, :ctrld_gen₊machine₊ω)
-plot_gen_states("Machine angle", :δ, :ctrld_gen₊machine₊δ)
-plot_gen_states("Gov power", :Tm, :ctrld_gen₊machine₊τ_m)
-plot_gen_states("Excitation voltage", :Efd, :ctrld_gen₊machine₊vf)
+plot_gen_states("Machine angle", :δ, i->@obsex(VIndex(i, :ctrld_gen₊machine₊δ)-VIndex(39, :ctrld_gen₊machine₊δ)+load_data(39).δ[1]))
+plot_gen_states("Mechanical Torque", :Tm, :ctrld_gen₊machine₊τ_m)
+plot_gen_states("Excitation voltage (contains ceiling)", :Efd, :ctrld_gen₊machine₊vf)
 plot_gen_states("Regulator voltage (limited)", :Vr, :ctrld_gen₊avr₊vr)
 plot_gen_states("Gov valve (limited)", :Pv, :ctrld_gen₊gov₊xg1)
