@@ -9,11 +9,25 @@ using DiffEqCallbacks
 using CairoMakie
 using CSV
 using DataFrames
+using LinearAlgebra
+
+# load reference data
+gen_dat, line_dat, load_dat = let
+    file = joinpath(pkgdir(OpPoDyn),"2bustest","Data_all_PF_basecase.csv")
+    headers = split(readline(file), ';')
+    gen_cols = findall(c -> c ∈ ("Alle Berechnungsarten", "gen1"), headers)
+    line_cols = findall(c -> c ∈ ("Alle Berechnungsarten", "L1-2"), headers)
+    load_cols = findall(c -> c ∈ ("Alle Berechnungsarten", "load1"), headers)
+
+    all_data = CSV.read(file, DataFrame; delim=';', decimal=',', header=2)
+    all_data[:, gen_cols], all_data[:, line_cols], all_data[:, load_cols]
+end;
 
 @mtkmodel LoadBus begin
     @components begin
         busbar = BusBar()
         load = ConstantYLoad(Pset, Qset, Vset=nothing)
+        # load = ConstantYLoad(Pset, Vset=nothing)
     end
     @equations begin
         connect(load.terminal, busbar.terminal)
@@ -24,8 +38,10 @@ end
     @components begin
         machine = Library.StandardModel_pf_testneu(;
             S_b,
+            Sn,
             V_b,
-            ω_b=2π*60,
+            Vn,
+            ω_b,
             vf_input=false,
             τ_m_input=false,
             R_s,
@@ -47,9 +63,9 @@ end
             k_1d, 
             k_1q, 
             k_2q,
-            X_fd,
-            X_1d,
-            X_2q,
+            # X_fd,
+            # X_1d,
+            # X_2q,
             R_fd, 
             R_1d, 
             R_1q, 
@@ -75,7 +91,7 @@ end
 end
 
 #calculate parameters externally
-function create_standardgenerator(; ω_b, H, S_b, V_b, D, R_s, X_rld, X_rlq, X_d, X_q, X′_d, X′_q=0.0001, X″_d, X″_q, X_ls, T′_d0, T″_d0, T′_q0=0.0001, T″_q0, cosn, dkd, dpe, salientpole=1, pt, dpu=0, addmt=0, xmdm=0)
+function secondary_from_primary(; ω_b, X_rld, X_rlq, X_d, X_q, X′_d, X′_q, X″_d, X″_q, X_ls, T′_d0, T″_d0, T′_q0, T″_q0, salientpole, kwargs...)
     #conversion of time constants (not exact conversion) (45)
     T″_d = T″_d0 * X″_d/X′_d 
     T″_q = T″_q0 * X″_q/(X′_q * (1-salientpole) + salientpole * X_q)
@@ -124,6 +140,7 @@ function create_standardgenerator(; ω_b, H, S_b, V_b, D, R_s, X_rld, X_rlq, X_d
     #(63)-(65)
     k_fd = (X_ad * X_1d) / ((X_ad + X_rld) * (X_1d + X_fd) + X_fd * X_1d)
     k_1d = (X_ad * X_fd) / ((X_ad + X_rld) * (X_1d + X_fd) + X_fd * X_1d)
+    # XXX: X″_d wird hier definiert aber schon oben benutzt?
     X″_d = X_ad + X_ls - (k_1d + k_fd) * X_ad #??
     k_1qs = X_aq / (X_aq + X_rlq + X_1q) #salient pole
         #k_2qs = 0 #salient pole
@@ -133,6 +150,7 @@ function create_standardgenerator(; ω_b, H, S_b, V_b, D, R_s, X_rld, X_rlq, X_d
     X″_qr = X_aq + X_ls - (k_2qr + k_1qr) * X_aq #round rotor
     k_1q = salientpole * k_1qs + (1-salientpole) * k_1qr
     k_2q = (1-salientpole) * k_2qr
+    # XXX: X″_q wird hier definiert aber schon oben benutzt?
     X″_q = salientpole * X″_qs + (1-salientpole)* X″_qr
 
     #(69), (71)
@@ -142,29 +160,68 @@ function create_standardgenerator(; ω_b, H, S_b, V_b, D, R_s, X_rld, X_rlq, X_d
     X_1d_loop = X_ad + X_rld + X_1d
     X_1q_loop = X_aq + X_rlq + X_1q 
     X_2q_loop = X_aq + X_rlq + X_2q
-    return ω_b, X_rld, X_rlq, X″_d, X″_q, X_ls, X_ad, X_aq, X_det_d, X_det_q, X_fd_loop, X_1d_loop, X_1q_loop, X_2q_loop, k_fd, k_1d, k_1q, k_2q, X_1q, R_1q, X_2q, R_2q, X_fd, R_1d, R_fd, X_1d, R_s, H, S_b, V_b, D, cosn, dkd, dpe, salientpole, pt, dpu, addmt, xmdm, X′_d, X′_q, X_d, X_q
+    return (;X″_d, X″_q, X_ad, X_aq, X_det_d, X_det_q, X_fd_loop, X_1d_loop, X_1q_loop, X_2q_loop, k_fd, k_1d, k_1q, k_2q, X_1q, R_1q, X_2q,
+            R_2q, X_fd, R_1d, R_fd, X_1d)
 end 
 
 # generate all MTK bus models
 #aus PF Implementierung
-(ω_b, X_rld, X_rlq, X″_d, X″_q, X_ls, X_ad, X_aq, X_det_d, X_det_q, X_fd_loop, X_1d_loop, X_1q_loop, X_2q_loop, k_fd, k_1d, k_1q, k_2q, X_1q, R_1q, X_2q, R_2q, X_fd, R_1d, R_fd, X_1d, R_s, H, S_b, V_b, D, cosn, dkd, dpe, salientpole, pt, dpu, addmt, xmdm, X′_d, X′_q, X_d, X_q) = 
-    create_standardgenerator(; ω_b=2π*60, H=9.551516, S_b=247.5, V_b=16.5, D=0, R_s=0, X_rld=0, X_rlq=0, X_d=0.36135, X_q=0.2398275, X′_d=0.15048, X′_q=0.0001, X″_d=0.1, X″_q=0.1, X_ls=0.08316, T′_d0=8.96, T″_d0=0.075, T′_q0=0.0001, T″_q0=0.15, cosn=1, dkd=0, dpe=0, salientpole=1, pt=0.2895, dpu=0, addmt=0, xmdm=0)
-variable_names = [:X_ad, :X_aq, :X_ls, :R_s, :X_rld, :X_rlq, :X″_d, :X″_q, :X′_d, :X′_q, :X_d, :X_q, :X_fd, :X_1d, :X_1q, :X_2q, :R_fd, :R_1d, :R_1q, :R_2q, :X_det_d, :X_det_q, :X_fd_loop, :X_1d_loop, :X_1q_loop, :X_2q_loop, :k_fd, :k_1d, :k_1q, :k_2q]
-values = [X_ad, X_aq, X_ls, R_s, X_rld, X_rlq, X″_d, X″_q, X′_d, X′_q, X_d, X_q, X_fd, X_1d, X_1q, X_2q, R_fd, R_1d, R_1q, R_2q, X_det_d, X_det_q, X_fd_loop, X_1d_loop, X_1q_loop, X_2q_loop, k_fd, k_1d, k_1q, k_2q]
-df = DataFrame(Variable=variable_names, Value=values)
-formatted_df = DataFrame(
-    Variable=df.Variable, 
-    Value=map(x -> replace(string(round(x, digits=8)), "." => ","), df.Value)
+primary_parameters = (;
+    S_b=1e8,
+    Sn=247.5e8, # FIXME: whyyy?
+    V_b=16.5,
+    Vn=16.5,
+    ω_b=2π*60,
+    H=9.551516,
+    D=0,
+    R_s=0,
+    X_rld=0,
+    X_rlq=0,
+    X_d=0.36135,
+    X_q=0.2398275,
+    X′_d=0.15048,
+    X′_q=0.0001,
+    X″_d=0.1,
+    X″_q=0.1,
+    X_ls=0.08316,
+    T′_d0=8.96,
+    T″_d0=0.075,
+    T′_q0=0.0001,
+    T″_q0=0.15,
+    cosn=1,
+    dkd=0,
+    dpe=0,
+    salientpole=1,
+    pt=0.2895,
+    dpu=0,
+    addmt=0,
+    xmdm=0,
 )
-transposed_df = permutedims(formatted_df)
-CSV.write(joinpath("2bustest", "gen1_parameter_oppodyn_2bus_basecase.csv"), transposed_df; delim=';')
+secondary_parameters = secondary_from_primary(; primary_parameters...)
 
-@named mtkbus1 = StandardBus(; machine__S_b=S_b, machine__V_b=V_b, machine__H=H, machine__D=D, machine__R_s=R_s, machine__X_rld=X_rld, machine__X_rlq=X_rlq, machine__X″_d=X″_d, machine__X″_q=X″_q, machine__X_ls=X_ls, machine__X_ad=X_ad, machine__X_aq=X_aq, machine__X_1d=X_1d, machine__X_1q=X_1q, machine__X_2q=X_2q, machine__X_fd=X_fd, machine__X_det_d=X_det_d, machine__X_det_q=X_det_q, machine__X_fd_loop=X_fd_loop, machine__X_1d_loop=X_1d_loop, machine__X_1q_loop=X_1q_loop, machine__X_2q_loop=X_2q_loop, machine__k_fd=k_fd, machine__k_1d=k_1d, machine__k_1q=k_1q, machine__k_2q=k_2q, machine__R_fd=R_fd, machine__R_1d=R_1d, machine__R_1q=R_1q, machine__R_2q=R_2q, machine__cosn=cosn, machine__dkd=dkd, machine__dpe=dpe, machine__salientpole=salientpole, machine__pt=pt, machine__dpu=dpu, machine__addmt=addmt, machine__xmdm=xmdm)
-@named mtkbus2 = LoadBus(;load__Pset=-0.5, load__Qset=0)
+@warn "Symbols $(keys(primary_parameters) ∩ keys(secondary_parameters)) are overwrittenby secondary parameters, but didn't really change..."
+#primary_parameters.X″_d - secondary_parameters.X″_d
+#primary_parameters.X″_q - secondary_parameters.X″_q
 
-# generate the dynamic component functions
-@named bus1 = Bus(mtkbus1; vidx=1, pf=pfSlack(V=1.0)) 
-@named bus2 = Bus(mtkbus2; vidx=2,  pf=pfPQ(P=-0.5, Q=0))
+allp = Dict(pairs(primary_parameters)..., pairs(secondary_parameters)...)
+# get rid of parametes which are not needed
+for p in [:X_d, :X′_q, :T′_d0, :T′_q0, :X′_d, :T″_q0, :T″_d0, :X_q, :X_fd, :X_1d, :X_2q]
+    delete!(allp, p)
+end
+renamedp = Dict(map(s->Symbol("machine__", s), collect(keys(allp))) .=> Base.values(allp))
+
+
+# (ω_b, X_rld, X_rlq, X″_d, X″_q, X_ls, X_ad, X_aq, X_det_d, X_det_q, X_fd_loop, X_1d_loop, X_1q_loop, X_2q_loop, k_fd, k_1d, k_1q, k_2q, X_1q, R_1q, X_2q, R_2q, X_fd, R_1d, R_fd, X_1d, R_s, H, S_b, V_b, D, cosn, dkd, dpe, salientpole, pt, dpu, addmt, xmdm, X′_d, X′_q, X_d, X_q) =
+#     create_standardgenerator(; ω_b=2π*60, H=9.551516, S_b=247.5, V_b=16.5, D=0, R_s=0, X_rld=0, X_rlq=0, X_d=0.36135, X_q=0.2398275, X′_d=0.15048, X′_q=0.0001, X″_d=0.1, X″_q=0.1, X_ls=0.08316, T′_d0=8.96, T″_d0=0.075, T′_q0=0.0001, T″_q0=0.15, cosn=1, dkd=0, dpe=0, salientpole=1, pt=0.2895, dpu=0, addmt=0, xmdm=0)
+# variable_names = [:X_ad, :X_aq, :X_ls, :R_s, :X_rld, :X_rlq, :X″_d, :X″_q, :X′_d, :X′_q, :X_d, :X_q, :X_fd, :X_1d, :X_1q, :X_2q, :R_fd, :R_1d, :R_1q, :R_2q, :X_det_d, :X_det_q, :X_fd_loop, :X_1d_loop, :X_1q_loop, :X_2q_loop, :k_fd, :k_1d, :k_1q, :k_2q]
+# # values = [X_ad, X_aq, X_ls, R_s, X_rld, X_rlq, X″_d, X″_q, X′_d, X′_q, X_d, X_q, X_fd, X_1d, X_1q, X_2q, R_fd, R_1d, R_1q, R_2q, X_det_d, X_det_q, X_fd_loop, X_1d_loop, X_1q_loop, X_2q_loop, k_fd, k_1d, k_1q, k_2q]
+# df = DataFrame(Variable=variable_names, Value=values)
+# formatted_df = DataFrame(
+#     Variable=df.Variable,
+#     Value=map(x -> replace(string(round(x, digits=8)), "." => ","), df.Value)
+# )
+# transposed_df = permutedims(formatted_df)
+# # CSV.write(joinpath("2bustest", "gen1_parameter_oppodyn_2bus_basecase.csv"), transposed_df; delim=';')
 
 # Branches
 function piline(; R, X, B)
@@ -172,28 +229,20 @@ function piline(; R, X, B)
     MTKLine(pibranch)
 end
 
-function piline_shortcircuit(; R, X, B, pos, G_fault=0, B_fault=0)
-    @named pibranch = PiLine_fault(;R, X, B_src=B/2, B_dst=B/2, G_src=0, G_dst=0, G_fault, B_fault, pos)
-    MTKLine(pibranch)
-end
+# define line based on reference data...
+Z_from_csv = line_dat[1, "Impedanz, mag in p.u."]*exp(im*deg2rad(line_dat[1, "Impedanz, phi in deg"]))
+@named l12 = Line(piline(; R=real(Z_from_csv), X=imag(Z_from_csv), B=0), src=1, dst=2)
 
-function transformer(; R, X)
-    @named transformer = PiLine(;R, X, B_src=0, B_dst=0, G_src=0, G_dst=0)
-    MTKLine(transformer)
-end
+@named mtkbus1 = StandardBus(; renamedp...)
+@named mtkbus2 = LoadBus(;load__Pset=-0.5, load__Qset=0)
+
+# generate the dynamic component functions
+@named bus1 = Bus(mtkbus1; vidx=1, pf=pfSlack(V=1.0))
+@named bus2 = Bus(mtkbus2; vidx=2, pf=pfPQ(P=-0.5, Q=0))
 
 S_b = 100000000 #100MVA -> Woher? Ist das überhaupt korrekt? (in 9-Bus-System wird es so gemacht, aber warum?)
 V_b = 230000 #230kV
 ω_b = 60*2*π
-line_length = 1
-R_l_perkm = 5.29
-X_l_perkm = 44.965
-B_l_perkm = 332.7 * 10^(-6)#ω_b * 0.0095491* 10^(-6) #ω*C
-R_pu = (R_l_perkm * line_length) * S_b/V_b^2
-X_pu = (X_l_perkm * line_length) * S_b/V_b^2
-B_pu = (B_l_perkm * line_length) * V_b^2/S_b
-@named l12 = Line(piline(; R=R_pu, X=X_pu, B=B_pu), src=1, dst=2)
-
 
 # build network
 vertexfs = [bus1, bus2];
@@ -204,48 +253,79 @@ nw = Network(vertexfs, edgefs)
 OpPoDyn.solve_powerflow!(nw)
 OpPoDyn.initialize!(nw)
 
-# get state for actual calculation
-u0 = NWState(nw)
+####
+#### funktionierende states
+####
+udq_pf = [gen_dat[1, "Spannung, d-Achse in p.u."],  gen_dat[1, "Spannung, q-Achse in p.u."]]
+udq = get_initial_state(bus1, [:machine₊V_d,:machine₊V_q])
+# WORKS
 
-# create faults
-affect1! = (integrator) -> begin
-    if integrator.t == 0.0
-        @info "Short circuit on line 57 at t = $(integrator.t)"
-        p = NWParameter(integrator)
-        p.e[6, :pibranch₊shortcircuit] = 1
-    else
-        error("Should not be reached.")
-    end
+ψdq_pf = [gen_dat[1, "Ständerfluss, d-Achse"], gen_dat[1, "Ständerfluss, q-Achse in p.u."]]
+ψdq = get_initial_state(bus1, [:machine₊ψ_d,:machine₊ψ_q])
+# works!
+
+V″dq_pf = [gen_dat[1, "Subtransiente Spannung, d-Achse in p.u."], gen_dat[1, "Subtransiente Spannung, q-Achse in p.u."]]
+V″dq = get_initial_state(bus1, [:machine₊V″_d,:machine₊V″_q])
+# close!
+
+ψ″dq_pf = [gen_dat[1, "Subtransienter Fluss, d-Achse in p.u."], gen_dat[1, "Subtransienter Fluss, q-Achse in p.u."]]
+ψ″dq = get_initial_state(bus1, [:machine₊ψ″_d,:machine₊ψ″_q])
+# close!
+
+# mechanische leistung
+Pm_pf = gen_dat[1, "Turbinenleistung in p.u."]
+Pm = get_initial_state(bus1, :machine₊τ_m)/get_initial_state(bus1, :machine₊n)
+
+# mechanical torque
+τ_m_pf = gen_dat[1, "Mechanisches Moment in p.u."]
+τ_m = get_initial_state(bus1, :machine₊τ_m)
+
+# electrical torque
+τ_e_pf = gen_dat[1, "Elektrisches Moment in p.u."]
+τ_e = get_initial_state(bus1, :machine₊τ_e)
+
+# flux through excitation
+ψ_fd_pf = gen_dat[1, "Fluss in Erregerwicklung in p.u."]
+ψ_fd = get_initial_state(bus1, :machine₊ψ_fd)
+
+# excitation current
+I_fd_pf = gen_dat[1, "Strom in Erregerwicklung in p.u."]
+I_fd = get_initial_state(bus1, :machine₊I_fd)
+
+# damper currents
+Idamp_pf = [gen_dat[1,"Strom in 1d-Dämpferwicklung in p.u."], gen_dat[1,"Strom in 1q-Dämpferwicklung in p.u."], gen_dat[1,"Strom in 2q-Dämpferwicklung in p.u."]]
+Idamp = get_initial_state(bus1, [:machine₊I_1d,:machine₊I_1q,:machine₊I_2q])
+
+# damper flux
+ψdamp_pf = [gen_dat[1,"Fluss in 1d-Dämpferwicklung in p.u."], gen_dat[1,"Fluss in 1q-Dämpferwicklung in p.u."], gen_dat[1,"Fluss in 2q-Dämpferwicklung in p.u."]]
+ψdamp = get_initial_state(bus1, [:machine₊ψ_1d,:machine₊ψ_1q,:machine₊ψ_2q])
+
+
+####
+#### problematische states
+####
+idq_pf = [gen_dat[1, "Ständerstrom, d-Achse in p.u."], gen_dat[1, "Ständerstrom, q-Achse in p.u."]]
+idq = get_initial_state(bus1, [:machine₊I_d,:machine₊I_q])
+# something wird with - on one component
+
+# erregerspannung
+vf_pf = gen_dat[1, "Erregerspannung in p.u."]
+vf = get_initial_state(bus1, :machine₊vf)
+# FIXME: something wrong
+
+# parameter
+gen_dat[1, "Reaktanz der Erregerwicklung in p.u."]
+get_initial_state(bus1, :machine₊X_fd)
+# FIXME: X_fd tauch nicht  mehr auf?
+
+gen_dat[1, "Widerstand der Erregerwicklung in p.u."]
+get_initial_state(bus1, :machine₊R_fd)
+# FIXME: X_fd tauch nicht  mehr auf?
+
+
+# dump all initial conditions
+for n in names(gen_dat)
+    contains(n, "rre") || continue
+    print(n, " = ")
+    println(gen_dat[1, n])
 end
-cb_shortcircuit = PresetTimeCallback([0.0], affect1!) 
-
-affect2! = (integrator) -> begin
-    if integrator.t == 0.05
-        @info "Deactivate line 57 at t = $(integrator.t)"
-        p = NWParameter(integrator)
-        p.e[6, :pibranch₊active] = 0
-    else
-        error("Should not be reached.")
-    end
-end
-cb_deactivate = PresetTimeCallback([0.05], affect2!)
-
-cb_set = CallbackSet() #CallbackSet(cb_shortcircuit, cb_deactivate)
-prob = ODEProblem(nw, uflat(u0), (0,1), copy(pflat(u0)) ; callback=cb_set)
-sol = solve(prob, Rodas5P());
-nothing
-
-break # stop execution of script here
-
-
-
-ts=0
-n=1
-variable_names = [:machine₊τ_m, :machine₊τ_e, :machine₊I_d, :machine₊I_q, :machine₊I_fd, :machine₊I_1d, :machine₊I_1q, :machine₊I_2q, :machine₊ψ_d, :machine₊ψ_q, :machine₊ψ″_d, :machine₊ψ″_q, :machine₊ψ_fd, :machine₊ψ_1d, :machine₊ψ_1q, :machine₊ψ_2q, :machine₊V_d, :machine₊V_q, :machine₊V″_d, :machine₊V″_q, :machine₊vf]
-values = [sol(ts, idxs=VIndex(n, :machine₊τ_m)), sol(ts, idxs=VIndex(n, :machine₊τ_e)), sol(ts, idxs=VIndex(n, :machine₊I_d)), sol(ts, idxs=VIndex(n, :machine₊I_q)), sol(ts, idxs=VIndex(n, :machine₊I_fd)), sol(ts, idxs=VIndex(n, :machine₊I_1d)), sol(ts, idxs=VIndex(n, :machine₊I_1q)), sol(ts, idxs=VIndex(n, :machine₊I_2q)), sol(ts, idxs=VIndex(n, :machine₊ψ_d)), sol(ts, idxs=VIndex(n, :machine₊ψ_q)), sol(ts, idxs=VIndex(n, :machine₊ψ″_d)), sol(ts, idxs=VIndex(n, :machine₊ψ″_q)), sol(ts, idxs=VIndex(n, :machine₊ψ_fd)), sol(ts, idxs=VIndex(n, :machine₊ψ_1d)), sol(ts, idxs=VIndex(n, :machine₊ψ_1q)), sol(ts, idxs=VIndex(n, :machine₊ψ_2q)), sol(ts, idxs=VIndex(n, :machine₊V_d)), sol(ts, idxs=VIndex(n, :machine₊V_q)), sol(ts, idxs=VIndex(n, :machine₊V″_d)), sol(ts, idxs=VIndex(n, :machine₊V″_q)), sol(ts, idxs=VIndex(n, :machine₊vf)) ]
-df = DataFrame(Variable=variable_names, Value=values)
-formatted_df = DataFrame(
-    Variable=df.Variable,
-    Value=map(x -> replace(string(round(x, digits=8)), "." => ","), df.Value))
-transposed_df = permutedims(formatted_df)
-CSV.write(joinpath("2bustest", "gen1_variableresults_oppodyn_2bus_basecase.csv"), transposed_df; delim=";")
