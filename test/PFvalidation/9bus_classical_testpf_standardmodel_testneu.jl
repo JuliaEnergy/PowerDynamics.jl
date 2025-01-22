@@ -44,10 +44,10 @@ end
 @mtkmodel StandardBus begin
     @components begin
         machine = Library.StandardModel_pf_testneu(;
-            S_b=100,
-            V_b=18,
-            Vn,
-            Sn,
+            S_b,
+            V_b,
+            Sn=S_b,
+            Vn=V_b,
             ω_b=2π*60,
             vf_input=false,
             τ_m_input=false,
@@ -93,7 +93,7 @@ end
 end
 
 #calculate parameters externally
-function create_standardgenerator(; ω_b, H, Sn, Vn, D, R_s, X_rld, X_rlq, X_d, X_q, X′_d, X′_q=0.0001, X″_d, X″_q, X_ls, T′_d0, T″_d0, T′_q0=0.0001, T″_q0, cosn, dkd, dpe, salientpole=1, pt, dpu=0, addmt=0, xmdm=0)
+function create_standardgenerator(; ω_b, H, S_b, V_b, D, R_s, X_rld, X_rlq, X_d, X_q, X′_d, X′_q=0.0001, X″_d, X″_q, X_ls, T′_d0, T″_d0, T′_q0=0.0001, T″_q0, cosn, dkd, dpe, salientpole=1, pt, dpu=0, addmt=0, xmdm=0)
     #conversion of time constants (not exact conversion) (45)
     T″_d = T″_d0 * X″_d/X′_d
     T″_q = T″_q0 * X″_q/(X′_q * (1-salientpole) + salientpole * X_q)
@@ -160,21 +160,21 @@ function create_standardgenerator(; ω_b, H, Sn, Vn, D, R_s, X_rld, X_rlq, X_d, 
     X_1d_loop = X_ad + X_rld + X_1d
     X_1q_loop = X_aq + X_rlq + X_1q
     X_2q_loop = X_aq + X_rlq + X_2q
-    return ω_b, X_rld, X_rlq, X″_d, X″_q, X_ls, X_ad, X_aq, X_det_d, X_det_q, X_fd_loop, X_1d_loop, X_1q_loop, X_2q_loop, k_fd, k_1d, k_1q, k_2q, X_1q, R_1q, X_2q, R_2q, X_fd, R_1d, R_fd, X_1d, R_s, H, Sn, Vn, D, cosn, dkd, dpe, salientpole, pt, dpu, addmt, xmdm
+    return ω_b, X_rld, X_rlq, X″_d, X″_q, X_ls, X_ad, X_aq, X_det_d, X_det_q, X_fd_loop, X_1d_loop, X_1q_loop, X_2q_loop, k_fd, k_1d, k_1q, k_2q, X_1q, R_1q, X_2q, R_2q, X_fd, R_1d, R_fd, X_1d, R_s, H, S_b, V_b, D, cosn, dkd, dpe, salientpole, pt, dpu, addmt, xmdm
 end
 
 # generate all MTK bus models
-(ω_b, X_rld, X_rlq, X″_d, X″_q, X_ls, X_ad, X_aq, X_det_d, X_det_q, X_fd_loop, X_1d_loop, X_1q_loop, X_2q_loop, k_fd, k_1d, k_1q, k_2q, X_1q, R_1q, X_2q, R_2q, X_fd, R_1d, R_fd, X_1d, R_s, H, Sn, Vn, D, cosn, dkd, dpe, salientpole, pt, dpu, addmt, xmdm) =
-    create_standardgenerator(; ω_b=2π*60, H=23.64, Sn=247.5, Vn=16.5, D=0, R_s=0, X_rld=0, X_rlq=0, X_d=0.36135, X_q=0.2398275, X′_d=0.15048, X′_q=0.0001, X″_d=0.1, X″_q=0.1, X_ls=0.08316, T′_d0=8.96, T″_d0=0.075, T′_q0=0.0001, T″_q0=0.15, cosn=1, dkd=0, dpe=0, salientpole=1, pt=0.2895, dpu=0, addmt=0, xmdm=0)
-@named mtkbus1 = StandardBus(; machine__Sn=Sn, machine__Vn=Vn, machine__H=H, machine__D=D, machine__R_s=R_s, machine__X_rld=X_rld, machine__X_rlq=X_rlq, machine__X″_d=X″_d, machine__X″_q=X″_q, machine__X_ls=X_ls, machine__X_ad=X_ad, machine__X_aq=X_aq, machine__X_1q=X_1q, machine__X_det_d=X_det_d, machine__X_det_q=X_det_q, machine__X_fd_loop=X_fd_loop, machine__X_1d_loop=X_1d_loop, machine__X_1q_loop=X_1q_loop, machine__X_2q_loop=X_2q_loop, machine__k_fd=k_fd, machine__k_1d=k_1d, machine__k_1q=k_1q, machine__k_2q=k_2q, machine__R_fd=R_fd, machine__R_1d=R_1d, machine__R_1q=R_1q, machine__R_2q=R_2q, machine__cosn=cosn, machine__dkd=dkd, machine__dpe=dpe, machine__salientpole=salientpole, machine__pt=pt, machine__dpu=dpu, machine__addmt=addmt, machine__xmdm=xmdm)
+(ω_b, X_rld, X_rlq, X″_d, X″_q, X_ls, X_ad, X_aq, X_det_d, X_det_q, X_fd_loop, X_1d_loop, X_1q_loop, X_2q_loop, k_fd, k_1d, k_1q, k_2q, X_1q, R_1q, X_2q, R_2q, X_fd, R_1d, R_fd, X_1d, R_s, H, S_b, V_b, D, cosn, dkd, dpe, salientpole, pt, dpu, addmt, xmdm) =
+    create_standardgenerator(; ω_b=2π*60, H=23.64, S_b=247.5, V_b=16.5, D=0, R_s=0, X_rld=0, X_rlq=0, X_d=0.36135, X_q=0.2398275, X′_d=0.15048, X′_q=0.0001, X″_d=0.1, X″_q=0.1, X_ls=0.08316, T′_d0=8.96, T″_d0=0.075, T′_q0=0.0001, T″_q0=0.15, cosn=1, dkd=0, dpe=0, salientpole=1, pt=0.2895, dpu=0, addmt=0, xmdm=0)
+@named mtkbus1 = StandardBus(; machine__S_b=S_b, machine__V_b=V_b, machine__H=H, machine__D=D, machine__R_s=R_s, machine__X_rld=X_rld, machine__X_rlq=X_rlq, machine__X″_d=X″_d, machine__X″_q=X″_q, machine__X_ls=X_ls, machine__X_ad=X_ad, machine__X_aq=X_aq, machine__X_1q=X_1q, machine__X_det_d=X_det_d, machine__X_det_q=X_det_q, machine__X_fd_loop=X_fd_loop, machine__X_1d_loop=X_1d_loop, machine__X_1q_loop=X_1q_loop, machine__X_2q_loop=X_2q_loop, machine__k_fd=k_fd, machine__k_1d=k_1d, machine__k_1q=k_1q, machine__k_2q=k_2q, machine__R_fd=R_fd, machine__R_1d=R_1d, machine__R_1q=R_1q, machine__R_2q=R_2q, machine__cosn=cosn, machine__dkd=dkd, machine__dpe=dpe, machine__salientpole=salientpole, machine__pt=pt, machine__dpu=dpu, machine__addmt=addmt, machine__xmdm=xmdm)
 
-(ω_b, X_rld, X_rlq, X″_d, X″_q, X_ls, X_ad, X_aq, X_det_d, X_det_q, X_fd_loop, X_1d_loop, X_1q_loop, X_2q_loop, k_fd, k_1d, k_1q, k_2q, X_1q, R_1q, X_2q, R_2q, X_fd, R_1d, R_fd, X_1d, R_s, H, Sn, Vn, D, cosn, dkd, dpe, salientpole, pt, dpu, addmt, xmdm) =
-    create_standardgenerator(; ω_b=2π*60, H=6.40, Sn=192, Vn=18, D=0, R_s=0.005, X_rld=0, X_rlq=0, X_d=1.719936, X_q=1.65984, X′_d=0.230016, X′_q=0.378048, X″_d=0.2, X″_q=0.2, X_ls=0.100032, T′_d0=6, T″_d0=0.0575, T′_q0=0.535, T″_q0=0.0945, cosn=0.85, dkd=0, dpe=0, salientpole=0, pt=1.003, dpu=0, addmt=0, xmdm=0)
-@named mtkbus2 = StandardBus(; machine__Sn=Sn, machine__Vn=Vn, machine__H=H, machine__D=D, machine__R_s=R_s, machine__X_rld=X_rld, machine__X_rlq=X_rlq, machine__X″_d=X″_d, machine__X″_q=X″_q, machine__X_ls=X_ls, machine__X_ad=X_ad, machine__X_aq=X_aq, machine__X_1q=X_1q, machine__X_det_d=X_det_d, machine__X_det_q=X_det_q, machine__X_fd_loop=X_fd_loop, machine__X_1d_loop=X_1d_loop, machine__X_1q_loop=X_1q_loop, machine__X_2q_loop=X_2q_loop, machine__k_fd=k_fd, machine__k_1d=k_1d, machine__k_1q=k_1q, machine__k_2q=k_2q, machine__R_fd=R_fd, machine__R_1d=R_1d, machine__R_1q=R_1q, machine__R_2q=R_2q, machine__cosn=cosn, machine__dkd=dkd, machine__dpe=dpe, machine__salientpole=salientpole, machine__pt=pt, machine__dpu=dpu, machine__addmt=addmt, machine__xmdm=xmdm)
+(ω_b, X_rld, X_rlq, X″_d, X″_q, X_ls, X_ad, X_aq, X_det_d, X_det_q, X_fd_loop, X_1d_loop, X_1q_loop, X_2q_loop, k_fd, k_1d, k_1q, k_2q, X_1q, R_1q, X_2q, R_2q, X_fd, R_1d, R_fd, X_1d, R_s, H, S_b, V_b, D, cosn, dkd, dpe, salientpole, pt, dpu, addmt, xmdm) =
+    create_standardgenerator(; ω_b=2π*60, H=6.40, S_b=192, V_b=18, D=0, R_s=0.005, X_rld=0, X_rlq=0, X_d=1.719936, X_q=1.65984, X′_d=0.230016, X′_q=0.378048, X″_d=0.2, X″_q=0.2, X_ls=0.100032, T′_d0=6, T″_d0=0.0575, T′_q0=0.535, T″_q0=0.0945, cosn=0.85, dkd=0, dpe=0, salientpole=0, pt=1.003, dpu=0, addmt=0, xmdm=0)
+@named mtkbus2 = StandardBus(; machine__S_b=S_b, machine__V_b=V_b, machine__H=H, machine__D=D, machine__R_s=R_s, machine__X_rld=X_rld, machine__X_rlq=X_rlq, machine__X″_d=X″_d, machine__X″_q=X″_q, machine__X_ls=X_ls, machine__X_ad=X_ad, machine__X_aq=X_aq, machine__X_1q=X_1q, machine__X_det_d=X_det_d, machine__X_det_q=X_det_q, machine__X_fd_loop=X_fd_loop, machine__X_1d_loop=X_1d_loop, machine__X_1q_loop=X_1q_loop, machine__X_2q_loop=X_2q_loop, machine__k_fd=k_fd, machine__k_1d=k_1d, machine__k_1q=k_1q, machine__k_2q=k_2q, machine__R_fd=R_fd, machine__R_1d=R_1d, machine__R_1q=R_1q, machine__R_2q=R_2q, machine__cosn=cosn, machine__dkd=dkd, machine__dpe=dpe, machine__salientpole=salientpole, machine__pt=pt, machine__dpu=dpu, machine__addmt=addmt, machine__xmdm=xmdm)
 
-(ω_b, X_rld, X_rlq, X″_d, X″_q, X_ls, X_ad, X_aq, X_det_d, X_det_q, X_fd_loop, X_1d_loop, X_1q_loop, X_2q_loop, k_fd, k_1d, k_1q, k_2q, X_1q, R_1q, X_2q, R_2q, X_fd, R_1d, R_fd, X_1d, R_s, H, Sn, Vn, D, cosn, dkd, dpe, salientpole, pt, dpu, addmt, xmdm) =
-    create_standardgenerator(; ω_b=2π*60, H=3.01, Sn=128, Vn=13.8, D=0, R_s=0.0001, X_rld=0, X_rlq=0, X_d=1.68, X_q=1.609984, X′_d=0.232064, X′_q=0.32, X″_d=0.2, X″_q=0.2, X_ls=0.094976, T′_d0=5.89, T″_d0=0.0575, T′_q0=0.6, T″_q0=0.08, cosn=0.85, dkd=0, dpe=0, salientpole=0, pt=0.7813, dpu=0, addmt=0, xmdm=0)
-@named mtkbus3 = StandardBus(; machine__Sn=Sn, machine__Vn=Vn, machine__H=H, machine__D=D, machine__R_s=R_s, machine__X_rld=X_rld, machine__X_rlq=X_rlq, machine__X″_d=X″_d, machine__X″_q=X″_q, machine__X_ls=X_ls, machine__X_ad=X_ad, machine__X_aq=X_aq, machine__X_1q=X_1q, machine__X_det_d=X_det_d, machine__X_det_q=X_det_q, machine__X_fd_loop=X_fd_loop, machine__X_1d_loop=X_1d_loop, machine__X_1q_loop=X_1q_loop, machine__X_2q_loop=X_2q_loop, machine__k_fd=k_fd, machine__k_1d=k_1d, machine__k_1q=k_1q, machine__k_2q=k_2q, machine__R_fd=R_fd, machine__R_1d=R_1d, machine__R_1q=R_1q, machine__R_2q=R_2q, machine__cosn=cosn, machine__dkd=dkd, machine__dpe=dpe, machine__salientpole=salientpole, machine__pt=pt, machine__dpu=dpu, machine__addmt=addmt, machine__xmdm=xmdm)
+(ω_b, X_rld, X_rlq, X″_d, X″_q, X_ls, X_ad, X_aq, X_det_d, X_det_q, X_fd_loop, X_1d_loop, X_1q_loop, X_2q_loop, k_fd, k_1d, k_1q, k_2q, X_1q, R_1q, X_2q, R_2q, X_fd, R_1d, R_fd, X_1d, R_s, H, S_b, V_b, D, cosn, dkd, dpe, salientpole, pt, dpu, addmt, xmdm) =
+    create_standardgenerator(; ω_b=2π*60, H=3.01, S_b=128, V_b=13.8, D=0, R_s=0.0001, X_rld=0, X_rlq=0, X_d=1.68, X_q=1.609984, X′_d=0.232064, X′_q=0.32, X″_d=0.2, X″_q=0.2, X_ls=0.094976, T′_d0=5.89, T″_d0=0.0575, T′_q0=0.6, T″_q0=0.08, cosn=0.85, dkd=0, dpe=0, salientpole=0, pt=0.7813, dpu=0, addmt=0, xmdm=0)
+@named mtkbus3 = StandardBus(; machine__S_b=S_b, machine__V_b=V_b, machine__H=H, machine__D=D, machine__R_s=R_s, machine__X_rld=X_rld, machine__X_rlq=X_rlq, machine__X″_d=X″_d, machine__X″_q=X″_q, machine__X_ls=X_ls, machine__X_ad=X_ad, machine__X_aq=X_aq, machine__X_1q=X_1q, machine__X_det_d=X_det_d, machine__X_det_q=X_det_q, machine__X_fd_loop=X_fd_loop, machine__X_1d_loop=X_1d_loop, machine__X_1q_loop=X_1q_loop, machine__X_2q_loop=X_2q_loop, machine__k_fd=k_fd, machine__k_1d=k_1d, machine__k_1q=k_1q, machine__k_2q=k_2q, machine__R_fd=R_fd, machine__R_1d=R_1d, machine__R_1q=R_1q, machine__R_2q=R_2q, machine__cosn=cosn, machine__dkd=dkd, machine__dpe=dpe, machine__salientpole=salientpole, machine__pt=pt, machine__dpu=dpu, machine__addmt=addmt, machine__xmdm=xmdm)
 #@named mtkbus1 = ClassicBus(; machine__H=23.64, machine__X′_d=0.0608)
 #@named mtkbus2 = ClassicBus(; machine__H= 6.40, machine__X′_d=0.1198)
 #@named mtkbus3 = ClassicBus(; machine__H= 3.01, machine__X′_d=0.1813)
