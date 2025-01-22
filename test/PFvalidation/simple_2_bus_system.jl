@@ -12,15 +12,16 @@ using DataFrames
 using LinearAlgebra
 
 # load reference data
-gen_dat, line_dat, load_dat = let
-    file = joinpath(pkgdir(OpPoDyn),"2bustest","Data_all_PF_basecase.csv")
+gen_dat, linea_dat, lineb_dat, load_dat = let
+    file = joinpath(pkgdir(OpPoDyn),"2bustest","Data_all_PF_shortcircuit.csv")
     headers = split(readline(file), ';')
     gen_cols = findall(c -> c ∈ ("Alle Berechnungsarten", "gen1"), headers)
-    line_cols = findall(c -> c ∈ ("Alle Berechnungsarten", "L1-2"), headers)
+    linea_cols = findall(c -> c ∈ ("Alle Berechnungsarten", "L1-2a"), headers)
+    lineb_cols = findall(c -> c ∈ ("Alle Berechnungsarten", "L1-2b"), headers)
     load_cols = findall(c -> c ∈ ("Alle Berechnungsarten", "load1"), headers)
 
     all_data = CSV.read(file, DataFrame; delim=';', decimal=',', header=2)
-    all_data[:, gen_cols], all_data[:, line_cols], all_data[:, load_cols]
+    all_data[:, gen_cols], all_data[:, linea_cols], all_data[:, lineb_cols], all_data[:, load_cols]
 end;
 
 @mtkmodel LoadBus begin
@@ -45,31 +46,31 @@ end
             vf_input=false,
             τ_m_input=false,
             R_s,
-            X_rld, 
-            X_rlq, 
-            X″_d, 
-            X″_q, 
-            X_ls, 
+            X_rld,
+            X_rlq,
+            X″_d,
+            X″_q,
+            X_ls,
             X_ad,
-            X_aq, 
+            X_aq,
             X_1q,
-            X_det_d, 
-            X_det_q, 
-            X_fd_loop, 
-            X_1d_loop, 
-            X_1q_loop, 
-            X_2q_loop, 
-            k_fd, 
-            k_1d, 
-            k_1q, 
+            X_det_d,
+            X_det_q,
+            X_fd_loop,
+            X_1d_loop,
+            X_1q_loop,
+            X_2q_loop,
+            k_fd,
+            k_1d,
+            k_1q,
             k_2q,
             # X_fd,
             # X_1d,
             # X_2q,
-            R_fd, 
-            R_1d, 
-            R_1q, 
-            R_2q, 
+            R_fd,
+            R_1d,
+            R_1q,
+            R_2q,
             H,
             D,
             dpe,
@@ -93,7 +94,7 @@ end
 #calculate parameters externally
 function secondary_from_primary(; ω_b, X_rld, X_rlq, X_d, X_q, X′_d, X′_q, X″_d, X″_q, X_ls, T′_d0, T″_d0, T′_q0, T″_q0, salientpole, kwargs...)
     #conversion of time constants (not exact conversion) (45)
-    T″_d = T″_d0 * X″_d/X′_d 
+    T″_d = T″_d0 * X″_d/X′_d
     T″_q = T″_q0 * X″_q/(X′_q * (1-salientpole) + salientpole * X_q)
     T′_d = T′_d0 * X′_d/X_d
     T′_q = T′_q0 * X′_q/X_q
@@ -126,16 +127,16 @@ function secondary_from_primary(; ω_b, X_rld, X_rlq, X_d, X_q, X′_d, X′_q, 
     d = X_6 * T″_q * T′_q / (X_6 - X_5)
     T_σ2q = -c/2 + sqrt(c^2/4 - d)
     T_σ1q = -c/2 - sqrt(c^2/4 - d)
-    X_2qr = (T_σ2q - T_σ1q) / ((T_3 - T_4)/(X_4 - X_5) + T_σ1q / X_6) #round-rotor 
-    X_1qr = (T_σ1q - T_σ2q) / ((T_3 - T_4)/(X_4 - X_5) + T_σ2q / X_6) #round-rotor 
-    R_2qr = X_2qr / (ω_b * T_σ2q) #round-rotor 
-    R_1qr = X_1qr / (ω_b * T_σ1q) #round-rotor 
+    X_2qr = (T_σ2q - T_σ1q) / ((T_3 - T_4)/(X_4 - X_5) + T_σ1q / X_6) #round-rotor
+    X_1qr = (T_σ1q - T_σ2q) / ((T_3 - T_4)/(X_4 - X_5) + T_σ2q / X_6) #round-rotor
+    R_2qr = X_2qr / (ω_b * T_σ2q) #round-rotor
+    R_1qr = X_1qr / (ω_b * T_σ1q) #round-rotor
     X_1qs = (X_q - X_ls) * (X″_q - X_ls) / (X_q - X″_q) #salient pole
     R_1qs = X″_q / X_q * (X_q - X_ls + X_1qs) / (ω_b * T″_q) #salient pole
     X_1q = salientpole * X_1qs + (1-salientpole) * X_1qr
     R_1q = salientpole * R_1qs + (1-salientpole) * R_1qr
-    X_2q = (1-salientpole) * X_2qr 
-    R_2q = (1-salientpole) * R_2qr 
+    X_2q = (1-salientpole) * X_2qr
+    R_2q = (1-salientpole) * R_2qr
 
     #(63)-(65)
     k_fd = (X_ad * X_1d) / ((X_ad + X_rld) * (X_1d + X_fd) + X_fd * X_1d)
@@ -154,21 +155,21 @@ function secondary_from_primary(; ω_b, X_rld, X_rlq, X_d, X_q, X′_d, X′_q, 
     X″_q = salientpole * X″_qs + (1-salientpole)* X″_qr
 
     #(69), (71)
-    X_det_d = (X_ad + X_rld) * (X_1d + X_fd) + X_fd * X_1d 
+    X_det_d = (X_ad + X_rld) * (X_1d + X_fd) + X_fd * X_1d
     X_det_q = (X_aq + X_rlq) * (X_2q + X_1q) + X_2q * X_1q
     X_fd_loop = X_ad + X_rld + X_fd
     X_1d_loop = X_ad + X_rld + X_1d
-    X_1q_loop = X_aq + X_rlq + X_1q 
+    X_1q_loop = X_aq + X_rlq + X_1q
     X_2q_loop = X_aq + X_rlq + X_2q
     return (;X″_d, X″_q, X_ad, X_aq, X_det_d, X_det_q, X_fd_loop, X_1d_loop, X_1q_loop, X_2q_loop, k_fd, k_1d, k_1q, k_2q, X_1q, R_1q, X_2q,
             R_2q, X_fd, R_1d, R_fd, X_1d)
-end 
+end
 
 # generate all MTK bus models
 #aus PF Implementierung
 primary_parameters = (;
-    S_b=1e8,
-    Sn=247.5e8, # FIXME: whyyy?
+    S_b=100e6,
+    Sn=247.5e6,
     V_b=16.5,
     Vn=16.5,
     ω_b=2π*60,
@@ -224,29 +225,34 @@ renamedp = Dict(map(s->Symbol("machine__", s), collect(keys(allp))) .=> Base.val
 # # CSV.write(joinpath("2bustest", "gen1_parameter_oppodyn_2bus_basecase.csv"), transposed_df; delim=';')
 
 # Branches
-function piline(; R, X, B)
-    @named pibranch = PiLine(;R, X, B_src=B/2, B_dst=B/2, G_src=0, G_dst=0)
-    MTKLine(pibranch)
+
+function piline_parallel(; Ra, Xa, Ba, posa, Ga_fault=0, Ba_fault=0, Rb, Xb, Bb)
+    @named pibranch1 = PiLine_fault(;R=Ra, X=Xa, B_src=Ba/2, B_dst=Ba/2, G_src=0, G_dst=0, G_fault=Ga_fault, B_fault=Ba_fault, pos=posa)#, faultimp)
+    @named pibranch2 = PiLine(; R=Rb, X=Xb, B_src=Bb/2, B_dst=Bb/2, G_src=0, G_dst=0)
+    MTKLine(pibranch1, pibranch2)
 end
 
 # define line based on reference data...
-Z_from_csv = line_dat[1, "Impedanz, mag in p.u."]*exp(im*deg2rad(line_dat[1, "Impedanz, phi in deg"]))
-@named l12 = Line(piline(; R=real(Z_from_csv), X=imag(Z_from_csv), B=0), src=1, dst=2)
+Za_from_csv = linea_dat[1, "Impedanz (bus1), mag in p.u."]*exp(im*deg2rad(linea_dat[1, "Impedanz (bus1), phi in deg"])) + linea_dat[1, "Impedanz (bus2), mag in p.u."]*exp(im*deg2rad(linea_dat[1, "Impedanz (bus2), phi in deg"]))
+#@named l12a = Line(piline_shortcircuit(; R=real(Za_from_csv), X=imag(Za_from_csv), B=0, pos=0.5), src=1, dst=2)
+Zb_from_csv = lineb_dat[1, "Impedanz, mag in p.u."]*exp(im*deg2rad(lineb_dat[1, "Impedanz, phi in deg"]))
+#@named l12b = Line(piline(; R=real(Zb_from_csv), X=imag(Zb_from_csv), B=0), src=1, dst=2) #in umgekehrter Reihenfolge von src und dst bekomme ich Fehler
+@named l12 = Line(piline_parallel(; Ra=real(Za_from_csv), Xa=imag(Za_from_csv), Ba=0, posa=0.5, Ga_fault=0, Ba_fault=0, Rb=real(Zb_from_csv), Xb=imag(Zb_from_csv), Bb=0), src=1, dst=2)
 
 @named mtkbus1 = StandardBus(; renamedp...)
 @named mtkbus2 = LoadBus(;load__Pset=-0.5, load__Qset=0)
 
 # generate the dynamic component functions
 @named bus1 = Bus(mtkbus1; vidx=1, pf=pfSlack(V=1.0))
-@named bus2 = Bus(mtkbus2; vidx=2, pf=pfPQ(P=-0.5, Q=0))
+@named bus2 = Bus(mtkbus2; vidx=2, pf=pfPQ(P=-0.5, Q=0)) #50 MW wenn 100 MVA Basis ist
 
-S_b = 100000000 #100MVA -> Woher? Ist das überhaupt korrekt? (in 9-Bus-System wird es so gemacht, aber warum?)
-V_b = 230000 #230kV
-ω_b = 60*2*π
+#S_b = 100000000 #100MVA -> Woher? Ist das überhaupt korrekt? (in 9-Bus-System wird es so gemacht, aber warum?)
+#V_b = 230000 #230kV
+#ω_b = 60*2*π
 
 # build network
 vertexfs = [bus1, bus2];
-edgefs = [l12];
+edgefs = [l12]
 nw = Network(vertexfs, edgefs)
 
 # solve powerflow and initialize
@@ -329,3 +335,38 @@ for n in names(gen_dat)
     print(n, " = ")
     println(gen_dat[1, n])
 end
+
+
+
+
+
+u0 = NWState(nw)
+
+affect1! = (integrator) -> begin
+    if integrator.t == 10
+        @info "Short circuit on line 1-2a at t = $(integrator.t)"
+        p = NWParameter(integrator)
+        p.e[6, :pibranch₊shortcircuit] = 1
+    else
+        error("Should not be reached.")
+    end
+end
+cb_shortcircuit = PresetTimeCallback([10], affect1!)
+
+affect2! = (integrator) -> begin
+    if integrator.t == 12.5
+        @info "Deactivate line 1-2a at t = $(integrator.t)"
+        p = NWParameter(integrator)
+        p.e[6, :pibranch₊active] = 0
+    else
+        error("Should not be reached.")
+    end
+end
+cb_deactivate = PresetTimeCallback([12.5], affect2!)
+
+cb_set = CallbackSet(cb_shortcircuit, cb_deactivate)
+prob = ODEProblem(nw, uflat(u0), (0,100), copy(pflat(u0)) ; callback=cb_set)
+sol = solve(prob, Rodas5P());
+nothing
+
+break
