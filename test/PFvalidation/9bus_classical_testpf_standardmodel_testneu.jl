@@ -366,6 +366,7 @@ affect1! = (integrator) -> begin
         error("Should not be reached.")
     end
 end
+cb_shortcircuit = PresetTimeCallback([0.0], affect1!)
 cb_shortcircuit = PresetTimeCallback([1.0], affect1!)
 
 affect2! = (integrator) -> begin
