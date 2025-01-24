@@ -11,9 +11,9 @@ using CSV
 using DataFrames
 using LinearAlgebra
 
-# load reference data
+# load reference data Data_all_PF_shortcircuit
 gen_dat, linea_dat, lineb_dat, load_dat = let
-    file = joinpath(pkgdir(OpPoDyn),"2bustest","Data_all_PF_shortcircuit.csv")
+    file = joinpath(pkgdir(OpPoDyn),"2bustest","Data_all_PF_basecase_new.csv")
     headers = split(readline(file), ';')
     gen_cols = findall(c -> c ∈ ("Alle Berechnungsarten", "gen1"), headers)
     linea_cols = findall(c -> c ∈ ("Alle Berechnungsarten", "L1-2a"), headers)
@@ -166,7 +166,7 @@ function secondary_from_primary(; ω_b, X_rld, X_rlq, X_d, X_q, X′_d, X′_q, 
 end
 
 # generate all MTK bus models
-#aus PF Implementierung
+#aus PF Implementierung -> S_b, Sn in MVA, V_b, Vn in kV
 primary_parameters = (;
     S_b=100e6,
     Sn=247.5e6,
@@ -240,15 +240,11 @@ Zb_from_csv = lineb_dat[1, "Impedanz, mag in p.u."]*exp(im*deg2rad(lineb_dat[1, 
 @named l12 = Line(piline_parallel(; Ra=real(Za_from_csv), Xa=imag(Za_from_csv), Ba=0, posa=0.5, Ga_fault=0, Ba_fault=0, Rb=real(Zb_from_csv), Xb=imag(Zb_from_csv), Bb=0), src=1, dst=2)
 
 @named mtkbus1 = StandardBus(; renamedp...)
-@named mtkbus2 = LoadBus(;load__Pset=-0.5, load__Qset=0)
+@named mtkbus2 = LoadBus(;load__Pset=-0.5, load__Qset=0) #50MW bezogen auf 100MVA
 
 # generate the dynamic component functions
 @named bus1 = Bus(mtkbus1; vidx=1, pf=pfSlack(V=1.0))
-@named bus2 = Bus(mtkbus2; vidx=2, pf=pfPQ(P=-0.5, Q=0)) #50 MW wenn 100 MVA Basis ist
-
-#S_b = 100000000 #100MVA -> Woher? Ist das überhaupt korrekt? (in 9-Bus-System wird es so gemacht, aber warum?)
-#V_b = 230000 #230kV
-#ω_b = 60*2*π
+@named bus2 = Bus(mtkbus2; vidx=2, pf=pfPQ(P=-0.5, Q=0))
 
 # build network
 vertexfs = [bus1, bus2];
@@ -337,16 +333,13 @@ for n in names(gen_dat)
 end
 
 
-
-
-
 u0 = NWState(nw)
 
 affect1! = (integrator) -> begin
     if integrator.t == 10
         @info "Short circuit on line 1-2a at t = $(integrator.t)"
         p = NWParameter(integrator)
-        p.e[6, :pibranch₊shortcircuit] = 1
+        p.e[1, :pibranch1₊shortcircuit] = 1
     else
         error("Should not be reached.")
     end
@@ -357,16 +350,58 @@ affect2! = (integrator) -> begin
     if integrator.t == 12.5
         @info "Deactivate line 1-2a at t = $(integrator.t)"
         p = NWParameter(integrator)
-        p.e[6, :pibranch₊active] = 0
+        p.e[1, :pibranch1₊active] = 0
     else
         error("Should not be reached.")
     end
 end
 cb_deactivate = PresetTimeCallback([12.5], affect2!)
 
-cb_set = CallbackSet(cb_shortcircuit, cb_deactivate)
+cb_set = CallbackSet()#cb_shortcircuit, cb_deactivate)
 prob = ODEProblem(nw, uflat(u0), (0,100), copy(pflat(u0)) ; callback=cb_set)
 sol = solve(prob, Rodas5P());
 nothing
 
 break
+
+freq = @obsex (VIndex(1,:machine₊n) * 60)  #@obsex (VIndex(1,:machine₊n) *VIndex(1,:machine₊H) + VIndex(2,:machine₊n)*VIndex(2,:machine₊H)) / (VIndex(1,:machine₊H) + VIndex(2,:machine₊H))
+plot(sol, idxs=freq; label="OpPoDyn")
+
+ref = CSV.read("2bustest/frequency_PF_basecasenew.csv", DataFrame; header=2, decimal=',') #shortcircuit
+fig = Figure();
+ax = Axis(fig[1, 1]; title="Frequency")
+ts = range(sol.t[begin],sol.t[end],length=1000)
+f_oppodyn = sol(ts; idxs=VIndex(1, :machine₊n)).*60
+lines!(ax, ts, f_oppodyn.u; label="OpPoDyn")
+lines!(ax, ref."Zeitpunkt in s", ref."Elektrische Frequenz in Hz", color=Cycled(1), linestyle=:dash, label="Power Factory")
+axislegend(ax; position=:rb)
+fig
+
+
+#### Voltage Magnitude
+ref = CSV.read("2bustest/voltage_PF_basecasenew.csv", DataFrame; header=2, decimal=',') #shortcircuit
+fig = Figure();
+ax = Axis(fig[1, 1]; title="Bus voltage magnitude")
+ts = range(sol.t[begin],sol.t[end],length=1000)
+umag1 = sqrt.(sol(ts; idxs=VIndex(1, :busbar₊u_r)).^2 + sol(ts; idxs=VIndex(1, :busbar₊u_i)).^2)
+umag2 = sqrt.(sol(ts; idxs=VIndex(2, :busbar₊u_r)).^2 + sol(ts; idxs=VIndex(2, :busbar₊u_i)).^2)
+lines!(ax, ts, umag1.u; label="Bus1")
+lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u.", color=Cycled(1), linestyle=:dash, label="Bus 1 ref")
+lines!(ax, ts, umag2.u; label="Bus2")
+lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u._1", color=Cycled(2), linestyle=:dash, label="Bus 2 ref")
+axislegend(ax; position=:rb)
+fig
+
+#### Voltage angle
+ref = CSV.read("2bustest/voltage_PF_basecasenew.csv", DataFrame; header=2, decimal=',') #shortcircuit
+fig = Figure();
+ax = Axis(fig[1, 1]; title="Bus voltage angle")
+ts = range(sol.t[begin],sol.t[end],length=1000)
+uang1 = rad2deg.(atan.(sol(ts; idxs=VIndex(1, :busbar₊u_i)), sol(ts; idxs=VIndex(1, :busbar₊u_r))))
+uang2 = rad2deg.(atan.(sol(ts; idxs=VIndex(2, :busbar₊u_i)), sol(ts; idxs=VIndex(2, :busbar₊u_r))))
+lines!(ax, ts, uang1.u; label="Bus1")
+lines!(ax, ref."Zeitpunkt in s", ref."U, Winkel in deg", color=Cycled(1), linestyle=:dash, label="Bus 1 ref")
+lines!(ax, ts, uang2.u; label="Bus2")
+lines!(ax, ref."Zeitpunkt in s", ref."U, Winkel in deg_1", color=Cycled(2), linestyle=:dash, label="Bus 2 ref")
+axislegend(ax; position=:rb)
+fig
