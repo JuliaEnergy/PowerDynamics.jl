@@ -371,7 +371,7 @@ ref = CSV.read("2bustest/frequency_PF_basecasenew.csv", DataFrame; header=2, dec
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Frequency")
 ts = range(sol.t[begin],sol.t[end],length=1000)
-f_oppodyn = sol(ts; idxs=VIndex(1, :machine₊n)).*60
+f_oppodyn = round.(sol(ts; idxs=VIndex(1, :machine₊n)).*60, digits=8)
 lines!(ax, ts, f_oppodyn.u; label="OpPoDyn")
 lines!(ax, ref."Zeitpunkt in s", ref."Elektrische Frequenz in Hz", color=Cycled(1), linestyle=:dash, label="Power Factory")
 axislegend(ax; position=:rb)
