@@ -67,8 +67,8 @@ end
         Q(t), [description="Reactive Power [pu]"]
     end
     begin
-        # S = Pset + im*Qset
-        S = Pset
+        S = Pset + im*Qset #TODO: currently not working with Q=0
+        #S = Pset
         Y = conj(S)/Vset^2
         iload = Y * (terminal.u_r + im*terminal.u_i)
     end
