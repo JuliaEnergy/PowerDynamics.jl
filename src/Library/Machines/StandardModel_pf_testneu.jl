@@ -113,10 +113,10 @@
         vf(t), [description="field voltage"]
         τ_m(t), [description="mechanical torque"]
         τ_e(t), [description="electrical torque"]
-        τ_dkd(t), [description="electrical torque"] 
-        τ_dpe(t), [description="damping torque based on power"] 
-        τ_ag(t), [description="acceleration time constant in s"] 
-        n(t), [guess=1, description="rotor speed"] 
+        τ_dkd(t), [description="electrical torque"]
+        τ_dpe(t), [description="damping torque based on power"]
+        τ_ag(t), [description="acceleration time constant in s"]
+        n(t), [guess=1, description="rotor speed"]
     end
     begin
         T_to_loc(α)  = [ sin(α) -cos(α);
@@ -144,19 +144,19 @@
         V_q ~ V″_q - R_s * I_q - n * X″_d * I_d
         V″_d ~ - n * ψ″_q
         V″_q ~ n * ψ″_d
-        
+
         #electrical torque (66)
         τ_e * cosn ~ I_q * ψ_d - I_d * ψ_q #cosn?
 
         #mechanical equation motor (103), (104), (105)
         τ_dkd ~ dkd * (n - n_ref)
         τ_dpe ~ dpe/n * (n - n_ref)
-        τ_ag ~ 2 * H * 100 / (S_b * cosn)   #τ_ag und H werden dann hier auf Pgn bezogen - ist das richtig??     
+        τ_ag ~ 2 * H * 100 / (S_b * cosn)   #τ_ag und H werden dann hier auf Pgn bezogen - ist das richtig??
         Dt(n) ~ (τ_m - τ_e - τ_dkd - τ_dpe) / τ_ag #(100), (101) wird gar nicht gebraucht (t_base?)
-        
+
         #Dt(ϕ) ~ ω_b * (n - ω_b/(2*π)) #(115) wenn δ = ϕ -> stimmt nicht. ϕ ist rotor Position im Vergleich zur Referenz-Spannung des Netzes. Ich brauche aber firel, also Winkel zwischen Refernzmaschine d-Achse und Generator d-Achse
         #δ ~ ϕ + π/2 #- phiu #phiu is the voltage angle of the machine terminal m:phiu (scheint 0 zu sein #(112), passt das mit den Achsen überhaupt?; δ hier in rad; fipol ist von Generator terminal zu q-Achse, δ in Milano zur d-Achse, und da sind d- und q-Achse auch vertauscht
-        Dt(δ) ~ ω_b * (n - 1) 
+        Dt(δ) ~ ω_b * (n - 1)
 
         #rotor flux linkage (58), überflüssig
         #ψ_fd ~ -X_ad * I_d + (X_ad + X_rld + X_fd) * I_fd + (X_ad + X_rld) * I_1d
@@ -166,18 +166,18 @@
 
         #rotor voltage & current equations (67) + (68), und (70)
         I_fd ~ k_fd * I_d + (X_1d_loop * ψ_fd - (X_ad + X_rld) * ψ_1d) / X_det_d #X_rl = X_rld ?? -> in Doku nur X_rl
-        I_1d ~ k_1d * I_d + (X_fd_loop * ψ_1d - (X_ad + X_rld) * ψ_fd) / X_det_d 
+        I_1d ~ k_1d * I_d + (X_fd_loop * ψ_1d - (X_ad + X_rld) * ψ_fd) / X_det_d
         I_1q ~ k_1q * I_q + ((X_2q_loop * ψ_1q - (X_aq + X_rlq) * ψ_2q) / X_det_q) * (1-salientpole) + salientpole * ψ_1q/X_1q #k_1q * I_q + ψ_1q/X_1q für salient pole; k_1q * I_q + (X_2q_loop * ψ_1q - (X_aq + X_rlq) * ψ_2q) / X_det_q round rotor
         I_2q ~ (k_2q * I_q + (X_1q_loop * ψ_2q - (X_aq + X_rlq) * ψ_1q) / X_det_q) * (1-salientpole) #0 für salient pole; k_2q * I_q + (X_1q_loop * ψ_2q - (X_aq + X_rlq) * ψ_1q) / X_det_q  round rotor
 
-        R_fd * I_fd + 1/ω_b * Dt(ψ_fd) ~ vf 
+        R_fd * I_fd + 1/ω_b * Dt(ψ_fd) ~ vf
         R_1d * I_1d + 1/ω_b * Dt(ψ_1d) ~ 0
         R_1q * I_1q + 1/ω_b * Dt(ψ_1q) ~ 0
         R_2q * I_2q + 1/ω_b * Dt(ψ_2q) ~ 0
 
         # inputs
         vf ~ vf_input ? vf_in.u : vf_set
-        τ_m ~ τ_m_input ? τ_m_in.u : τ_m_set 
+        τ_m ~ τ_m_input ? τ_m_in.u : τ_m_set
         #Alternativ: (102)
         #τ_m ~ pt/n - xmdm - dpu * n + addmt #xmdm Torque input signal; addmt additional torque parameter; dpu * n turbine shaft friction torque
 
