@@ -451,6 +451,70 @@ xlims!(ax, 9, 12.9)
 #ylims!(ax, 0, 1.1)
 fig
 
+#### id and iq generator
+ref = CSV.read("2bustest/Data_all_PF_shortcircuit_withQ.csv", DataFrame; header=2, decimal=',')
+fig = Figure();
+ax = Axis(fig[1, 1]; title="stator current")
+ts = range(sol.t[begin],sol.t[end],length=1000)
+id = sol(ts; idxs=VIndex(1, :machine₊I_d))
+iq = sol(ts; idxs=VIndex(1, :machine₊I_q))
+lines!(ax, ts, id.u; label="i_d")
+lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="i_d ref")
+lines!(ax, ts, iq.u; label="i_q")
+lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="i_q ref")
+axislegend(ax; position=:rb)
+xlims!(ax, 9.9, 12.9)
+ylims!(ax, 59.9, 60.3)
+fig
+
+#### id and iq generator
+ref = CSV.read("2bustest/Data_all_PF_shortcircuit_withQ.csv", DataFrame; header=2, decimal=',')
+fig = Figure();
+ax = Axis(fig[1, 1]; title="stator current")
+ts = range(sol.t[begin],sol.t[end],length=1000)
+id = sol(ts; idxs=VIndex(1, :machine₊I_d))
+iq = sol(ts; idxs=VIndex(1, :machine₊I_q))
+lines!(ax, ts, id.u; label="i_d")
+lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="i_d ref")
+lines!(ax, ts, iq.u; label="i_q")
+lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="i_q ref")
+axislegend(ax; position=:rt)
+xlims!(ax, 9.9, 12.9)
+ylims!(ax, -0.5, 10)
+fig
+
+#### ud and uq generator
+ref = CSV.read("2bustest/Data_all_PF_shortcircuit_withQ.csv", DataFrame; header=2, decimal=',')
+fig = Figure();
+ax = Axis(fig[1, 1]; title="voltage at generator")
+ts = range(sol.t[begin],sol.t[end],length=1000)
+vd = sol(ts; idxs=VIndex(1, :machine₊V_d))
+vq = sol(ts; idxs=VIndex(1, :machine₊V_q))
+lines!(ax, ts, vd.u; label="u_d")
+lines!(ax, ref."Zeitpunkt in s", ref."Spannung, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="u_d ref")
+lines!(ax, ts, vq.u; label="u_q")
+lines!(ax, ref."Zeitpunkt in s", ref."Spannung, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="u_q ref")
+axislegend(ax; position=:rt)
+xlims!(ax, 9.9, 12.9)
+ylims!(ax, 0, 1.1)
+fig
+
+#### generator torque
+ref = CSV.read("2bustest/Data_all_PF_shortcircuit_withQ.csv", DataFrame; header=2, decimal=',')
+fig = Figure();
+ax = Axis(fig[1, 1]; title="torque")
+ts = range(sol.t[begin],sol.t[end],length=1000)
+τ_m = sol(ts; idxs=VIndex(1, :machine₊τ_m))
+τ_e = sol(ts; idxs=VIndex(1, :machine₊τ_e))
+lines!(ax, ts, τ_m.u; label="τ_m")
+lines!(ax, ref."Zeitpunkt in s", ref."Mechanisches Moment in p.u.", color=Cycled(1), linestyle=:dash, label="τ_m ref")
+lines!(ax, ts, τ_e.u; label="τ_e")
+lines!(ax, ref."Zeitpunkt in s", ref."Elektrisches Moment in p.u.", color=Cycled(2), linestyle=:dash, label="τ_e ref")
+axislegend(ax; position=:lb)
+xlims!(ax, 9, 12.9)
+#ylims!(ax, 0, 1.1)
+fig
+
 
 #### Voltage Magnitude
 ref = CSV.read("2bustest/voltage_PF_shortcircuit_withQ.csv", DataFrame; header=2, decimal=',')
