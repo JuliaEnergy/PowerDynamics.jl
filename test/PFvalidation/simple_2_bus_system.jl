@@ -193,7 +193,7 @@ primary_parameters = (;
     dkd=0,
     dpe=0,
     salientpole=1,
-    pt=0.2895,
+    pt=0.20307028,
     dpu=0,
     addmt=0,
     xmdm=0,
@@ -318,11 +318,11 @@ vf = get_initial_state(bus1, :machine₊vf)
 # parameter
 gen_dat[1, "Reaktanz der Erregerwicklung in p.u."]
 get_initial_state(bus1, :machine₊X_fd)
-# FIXME: X_fd tauch nicht  mehr auf?
+# FIXME: X_fd tauch nicht  mehr auf
 
 gen_dat[1, "Widerstand der Erregerwicklung in p.u."]
 get_initial_state(bus1, :machine₊R_fd)
-# FIXME: R_fd tauch nicht  mehr auf?
+# correct
 
 
 # dump all initial conditions
@@ -359,7 +359,7 @@ affect2! = (integrator) -> begin
 end
 cb_deactivate = PresetTimeCallback([12.5], affect2!)
 
-cb_set = CallbackSet()#cb_shortcircuit, cb_deactivate)
+cb_set = CallbackSet(cb_shortcircuit, cb_deactivate)
 prob = ODEProblem(nw, uflat(u0), (0,10.5), copy(pflat(u0)) ; callback=cb_set)
 sol = solve(prob, Rodas5P());
 nothing
@@ -369,7 +369,7 @@ break
 freq = @obsex (VIndex(1,:machine₊n) * 60)  #@obsex (VIndex(1,:machine₊n) *VIndex(1,:machine₊H) + VIndex(2,:machine₊n)*VIndex(2,:machine₊H)) / (VIndex(1,:machine₊H) + VIndex(2,:machine₊H))
 plot(sol, idxs=freq; label="OpPoDyn")
 
-ref = CSV.read("2bustest/frequency_PF_basecase_withQ.csv", DataFrame; header=2, decimal=',')
+ref = CSV.read("2bustest/frequency_PF_shortcircuit_withQ.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Frequency")
 ts = range(sol.t[begin],sol.t[end],length=1000)
@@ -378,12 +378,12 @@ f_oppodyn = round.(sol(ts; idxs=VIndex(1, :machine₊n)).*60, digits=8)
 lines!(ax, ts, f_oppodyn.u; label="OpPoDyn")
 lines!(ax, ref."Zeitpunkt in s", ref."Elektrische Frequenz in Hz", color=Cycled(1), linestyle=:dash, label="Power Factory")
 axislegend(ax; position=:rb)
-xlims!(ax, 9.9, 10.1)
+xlims!(ax, 9.9, 10.5)
 ylims!(ax, 59.9, 60.1)
 fig
 
 #### id and iq generator
-ref = CSV.read("2bustest/Data_all_PF_basecase_withQ.csv", DataFrame; header=2, decimal=',')
+ref = CSV.read("2bustest/Data_all_PF_shortcircuit_withQ.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="stator current")
 ts = range(sol.t[begin],sol.t[end],length=1000)
@@ -394,12 +394,12 @@ lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, d-Achse in p.u.", color=Cyc
 lines!(ax, ts, iq.u; label="i_q")
 lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="i_q ref")
 axislegend(ax; position=:lt)
-#xlims!(ax, 9.9, 10.1)
-#ylims!(ax, 0, 4)
+xlims!(ax, 9.9, 10.5)
+ylims!(ax, 0, 4)
 fig
 
 #### ud and uq generator
-ref = CSV.read("2bustest/Data_all_PF_basecase_withQ.csv", DataFrame; header=2, decimal=',')
+ref = CSV.read("2bustest/Data_all_PF_shortcircuit_withQ.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="voltage at generator")
 ts = range(sol.t[begin],sol.t[end],length=1000)
@@ -410,12 +410,29 @@ lines!(ax, ref."Zeitpunkt in s", ref."Spannung, d-Achse in p.u.", color=Cycled(1
 lines!(ax, ts, vq.u; label="u_q")
 lines!(ax, ref."Zeitpunkt in s", ref."Spannung, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="u_q ref")
 axislegend(ax; position=:rt)
-#xlims!(ax, 9.9, 10.1)
+xlims!(ax, 9.9, 10.1)
+ylims!(ax, 0, 1.1)
+fig
+
+#### generator torque
+ref = CSV.read("2bustest/Data_all_PF_shortcircuit_withQ.csv", DataFrame; header=2, decimal=',')
+fig = Figure();
+ax = Axis(fig[1, 1]; title="torque")
+ts = range(sol.t[begin],sol.t[end],length=1000)
+τ_m = sol(ts; idxs=VIndex(1, :machine₊τ_m))
+τ_e = sol(ts; idxs=VIndex(1, :machine₊τ_e))
+lines!(ax, ts, τ_m.u; label="τ_m")
+lines!(ax, ref."Zeitpunkt in s", ref."Mechanisches Moment in p.u.", color=Cycled(1), linestyle=:dash, label="τ_m ref")
+#lines!(ax, ts, τ_e.u; label="τ_e")
+#lines!(ax, ref."Zeitpunkt in s", ref."Elektrisches Moment in p.u.", color=Cycled(2), linestyle=:dash, label="τ_e ref")
+axislegend(ax; position=:lb)
+xlims!(ax, 0, 12.5)
 #ylims!(ax, 0, 1.1)
 fig
 
+
 #### Voltage Magnitude
-ref = CSV.read("2bustest/voltage_PF_basecase_withQ.csv", DataFrame; header=2, decimal=',')
+ref = CSV.read("2bustest/voltage_PF_shortcircuit_withQ.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Bus voltage magnitude")
 ts = range(sol.t[begin],sol.t[end],length=1000)
@@ -429,7 +446,7 @@ axislegend(ax; position=:rb)
 fig
 
 #### Voltage angle
-ref = CSV.read("2bustest/voltage_PF_basecase_withQ.csv", DataFrame; header=2, decimal=',')
+ref = CSV.read("2bustest/voltage_PF_shortcircuit_withQ.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Bus voltage angle")
 ts = range(sol.t[begin],sol.t[end],length=1000)
