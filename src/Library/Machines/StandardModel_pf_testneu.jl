@@ -130,7 +130,7 @@
         [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i] * Ibase(S_b, V_b)/Ibase(Sn, Vn)
 
 
-        #stator flux equations (55), (60) ((59) wird indirekt über ks und Definitionen von ψ_1d abgedeckt?, (56) und (57) sind nur andere Darstellungsform)
+        #stator flux equations (55), (60) und (59), ((56) und (57) sind nur andere Darstellungsform für (55))
         ψ_d ~ -(X_ls + X_ad) * I_d + X_ad * I_fd + X_ad * I_1d
         ψ_q ~ -(X_ls + X_aq) * I_q + X_aq * I_2q + X_aq * I_1q
         ψ_d ~ -X″_d * I_d + ψ″_d
@@ -140,8 +140,8 @@
 
 
         #stator voltage equations (72) und (73) (RMS Modell, anstatt (61) und (62) bzw (54))
-        V_d ~ V″_d - R_s * I_d + n * X″_q * I_q
-        V_q ~ V″_q - R_s * I_q - n * X″_d * I_d
+        V_d ~ V″_d - R_s * I_d + X″_q * I_q# n * X″_q * I_q #effect of speed variation partly neglected -> n set to initial speed in this equation, here 1
+        V_q ~ V″_q - R_s * I_q - X″_d * I_d#n * X″_d * I_d #TODO: verallgemeinern mit effect of speed varaiation considered/partly neglected/neglected
         V″_d ~ - n * ψ″_q
         V″_q ~ n * ψ″_d
 
@@ -158,7 +158,7 @@
         #δ ~ ϕ + π/2 #- phiu #phiu is the voltage angle of the machine terminal m:phiu (scheint 0 zu sein #(112), passt das mit den Achsen überhaupt?; δ hier in rad; fipol ist von Generator terminal zu q-Achse, δ in Milano zur d-Achse, und da sind d- und q-Achse auch vertauscht
         Dt(δ) ~ ω_b * (n - 1)
 
-        #rotor flux linkage (58), überflüssig
+        #rotor flux linkage (58), mit den Gleichungn stimmt basecase schon nicht
         #ψ_fd ~ -X_ad * I_d + (X_ad + X_rld + X_fd) * I_fd + (X_ad + X_rld) * I_1d
         #ψ_1d ~ -X_ad * I_d + (X_ad + X_rld) * I_fd + (X_ad + X_rld + X_1d) * I_1d
         #ψ_1q ~ -X_aq * I_q + (X_aq + X_rlq) * I_2q + (X_aq + X_rlq + X_1q) * I_1q
@@ -177,9 +177,9 @@
 
         # inputs
         vf ~ vf_input ? vf_in.u : vf_set
-        τ_m ~ τ_m_input ? τ_m_in.u : τ_m_set
+        #τ_m ~ τ_m_input ? τ_m_in.u : τ_m_set
         #Alternativ: (102)
-        #τ_m ~ pt/n - xmdm - dpu * n + addmt #xmdm Torque input signal; addmt additional torque parameter; dpu * n turbine shaft friction torque
+        τ_m ~ pt/n - xmdm - dpu * n + addmt #xmdm Torque input signal; addmt additional torque parameter; dpu * n turbine shaft friction torque
 
         # observables
         v_mag ~ sqrt(V_d^2 + V_q^2)
