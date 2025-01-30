@@ -390,7 +390,7 @@ break
 freq = @obsex (VIndex(1,:machine₊n) * 60)  #@obsex (VIndex(1,:machine₊n) *VIndex(1,:machine₊H) + VIndex(2,:machine₊n)*VIndex(2,:machine₊H)) / (VIndex(1,:machine₊H) + VIndex(2,:machine₊H))
 plot(sol, idxs=freq; label="OpPoDyn")
 
-ref = CSV.read("2bustest/frequency_PF_basecase_withQ.csv", DataFrame; header=2, decimal=',')
+ref = CSV.read("2bustest/frequency_PF_shortcircuit_withQ.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Frequency")
 ts = range(sol.t[begin],sol.t[end],length=1000)
@@ -517,7 +517,7 @@ fig
 
 
 #### Voltage Magnitude
-ref = CSV.read("2bustest/voltage_PF_basecase_withQ.csv", DataFrame; header=2, decimal=',')
+ref = CSV.read("2bustest/voltage_PF_shortcircuit_withQ.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Bus voltage magnitude")
 ts = range(sol.t[begin],sol.t[end],length=1000)
@@ -532,7 +532,7 @@ xlims!(ax, 9, 15)
 fig
 
 #### Voltage angle
-ref = CSV.read("2bustest/voltage_PF_basecase_withQ.csv", DataFrame; header=2, decimal=',')
+ref = CSV.read("2bustest/voltage_PF_shortcircuit_withQ.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Bus voltage angle")
 ts = range(sol.t[begin],sol.t[end],length=1000)
