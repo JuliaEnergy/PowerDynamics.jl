@@ -360,7 +360,7 @@ end
 cb_deactivate = PresetTimeCallback([12.5], affect2!)
 
 cb_set = CallbackSet(cb_shortcircuit, cb_deactivate)
-prob = ODEProblem(nw, uflat(u0), (0,10.5), copy(pflat(u0)) ; callback=cb_set)
+prob = ODEProblem(nw, uflat(u0), (0,12.9), copy(pflat(u0)) ; callback=cb_set)
 sol = solve(prob, Rodas5P());
 nothing
 
@@ -378,8 +378,8 @@ f_oppodyn = round.(sol(ts; idxs=VIndex(1, :machine₊n)).*60, digits=8)
 lines!(ax, ts, f_oppodyn.u; label="OpPoDyn")
 lines!(ax, ref."Zeitpunkt in s", ref."Elektrische Frequenz in Hz", color=Cycled(1), linestyle=:dash, label="Power Factory")
 axislegend(ax; position=:rb)
-xlims!(ax, 9.9, 10.5)
-ylims!(ax, 59.9, 60.1)
+xlims!(ax, 9.9, 12.9)
+ylims!(ax, 59.9, 60.3)
 fig
 
 #### id and iq generator
@@ -393,8 +393,8 @@ lines!(ax, ts, id.u; label="i_d")
 lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="i_d ref")
 lines!(ax, ts, iq.u; label="i_q")
 lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="i_q ref")
-axislegend(ax; position=:lt)
-xlims!(ax, 9.9, 10.5)
+axislegend(ax; position=:rt)
+xlims!(ax, 9.9, 12.9)
 ylims!(ax, 0, 4)
 fig
 
@@ -410,7 +410,7 @@ lines!(ax, ref."Zeitpunkt in s", ref."Spannung, d-Achse in p.u.", color=Cycled(1
 lines!(ax, ts, vq.u; label="u_q")
 lines!(ax, ref."Zeitpunkt in s", ref."Spannung, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="u_q ref")
 axislegend(ax; position=:rt)
-xlims!(ax, 9.9, 10.1)
+xlims!(ax, 9.9, 12.9)
 ylims!(ax, 0, 1.1)
 fig
 
@@ -426,7 +426,7 @@ lines!(ax, ref."Zeitpunkt in s", ref."Mechanisches Moment in p.u.", color=Cycled
 #lines!(ax, ts, τ_e.u; label="τ_e")
 #lines!(ax, ref."Zeitpunkt in s", ref."Elektrisches Moment in p.u.", color=Cycled(2), linestyle=:dash, label="τ_e ref")
 axislegend(ax; position=:lb)
-xlims!(ax, 0, 12.5)
+xlims!(ax, 9, 12.9)
 #ylims!(ax, 0, 1.1)
 fig
 
@@ -442,7 +442,8 @@ lines!(ax, ts, umag1.u; label="Bus1")
 lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u.", color=Cycled(1), linestyle=:dash, label="Bus 1 ref")
 lines!(ax, ts, umag2.u; label="Bus2")
 lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u._1", color=Cycled(2), linestyle=:dash, label="Bus 2 ref")
-axislegend(ax; position=:rb)
+axislegend(ax; position=:rt)
+xlims!(ax, 9, 12.9)
 fig
 
 #### Voltage angle
@@ -456,5 +457,6 @@ lines!(ax, ts, uang1.u; label="Bus1")
 lines!(ax, ref."Zeitpunkt in s", ref."U, Winkel in deg", color=Cycled(1), linestyle=:dash, label="Bus 1 ref")
 lines!(ax, ts, uang2.u; label="Bus2")
 lines!(ax, ref."Zeitpunkt in s", ref."U, Winkel in deg_1", color=Cycled(2), linestyle=:dash, label="Bus 2 ref")
-axislegend(ax; position=:rb)
+axislegend(ax; position=:lt)
+xlims!(ax, 9, 12.9)
 fig
