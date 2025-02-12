@@ -341,6 +341,7 @@ affect1! = (integrator) -> begin
         p = NWParameter(integrator)
         p.e[1, :pibranch1₊shortcircuit] = 1
         auto_dt_reset!(integrator)
+        save_parameters!(integrator)
     else
         error("Should not be reached.")
     end
@@ -353,6 +354,7 @@ affect2! = (integrator) -> begin
         p = NWParameter(integrator)
         p.e[1, :pibranch1₊active] = 0
         auto_dt_reset!(integrator)
+        save_parameters!(integrator)
     else
         error("Should not be reached.")
     end
@@ -423,8 +425,8 @@ ts = range(sol.t[begin],sol.t[end],length=1000)
 τ_e = sol(ts; idxs=VIndex(1, :machine₊τ_e))
 lines!(ax, ts, τ_m.u; label="τ_m")
 lines!(ax, ref."Zeitpunkt in s", ref."Mechanisches Moment in p.u.", color=Cycled(1), linestyle=:dash, label="τ_m ref")
-#lines!(ax, ts, τ_e.u; label="τ_e")
-#lines!(ax, ref."Zeitpunkt in s", ref."Elektrisches Moment in p.u.", color=Cycled(2), linestyle=:dash, label="τ_e ref")
+lines!(ax, ts, τ_e.u; label="τ_e")
+lines!(ax, ref."Zeitpunkt in s", ref."Elektrisches Moment in p.u.", color=Cycled(2), linestyle=:dash, label="τ_e ref")
 axislegend(ax; position=:lb)
 xlims!(ax, 9, 12.9)
 #ylims!(ax, 0, 1.1)
@@ -458,5 +460,5 @@ lines!(ax, ref."Zeitpunkt in s", ref."U, Winkel in deg", color=Cycled(1), linest
 lines!(ax, ts, uang2.u; label="Bus2")
 lines!(ax, ref."Zeitpunkt in s", ref."U, Winkel in deg_1", color=Cycled(2), linestyle=:dash, label="Bus 2 ref")
 axislegend(ax; position=:lt)
-xlims!(ax, 9, 12.9)
+xlims!(ax, 0, 12.9)
 fig

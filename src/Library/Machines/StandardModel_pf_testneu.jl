@@ -131,12 +131,12 @@
 
 
         #stator flux equations (55), (60) und (59), ((56) und (57) sind nur andere Darstellungsform für (55))
-        ψ_d ~ -(X_ls + X_ad) * I_d + X_ad * I_fd + X_ad * I_1d
+        ψ_d ~ -(X_ls + X_ad) * I_d + X_ad * I_fd + X_ad * I_1d #(55)
         ψ_q ~ -(X_ls + X_aq) * I_q + X_aq * I_2q + X_aq * I_1q
-        ψ_d ~ -X″_d * I_d + ψ″_d
+        ψ_d ~ -X″_d * I_d + ψ″_d #(60)
         ψ_q ~ -X″_q * I_q + ψ″_q
-        #ψ″_d ~ k_fd * ψ_fd + k_1d * ψ_1d #(59)
-        #ψ″_q ~ k_1q * ψ_1q + k_2q * ψ_2q
+        #ψ″_d ~ k_fd * ψ_fd + k_1d * ψ_1d #(59) mit (60) zusammen: Startwert u_d ist falsch, Rest genauso falsch wie vorher
+        #ψ″_q ~ k_1q * ψ_1q + k_2q * ψ_2q #(59) mit (55) zusammen: Startwert u_d ist falsch, aber erster Überschwinger bei τ_e ist besser, aber Wert für Voltage Angle läuft schon vor dem Fehler weg
 
 
         #stator voltage equations (72) und (73) (RMS Modell, anstatt (61) und (62) bzw (54))
@@ -151,7 +151,7 @@
         #mechanical equation motor (103), (104), (105)
         τ_dkd ~ dkd * (n - n_ref)
         τ_dpe ~ dpe/n * (n - n_ref)
-        τ_ag ~ 2 * H 
+        τ_ag ~ 2 * H
         Dt(n) ~ (τ_m - τ_e - τ_dkd - τ_dpe) / τ_ag #(100), (101) wird gar nicht gebraucht (t_base?)
 
         #Dt(ϕ) ~ ω_b * (n - ω_b/(2*π)) #(115) wenn δ = ϕ -> stimmt nicht. ϕ ist rotor Position im Vergleich zur Referenz-Spannung des Netzes. Ich brauche aber firel, also Winkel zwischen Refernzmaschine d-Achse und Generator d-Achse
