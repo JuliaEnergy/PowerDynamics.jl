@@ -27,6 +27,7 @@ include("network_components.jl")
 using DataFrames: DataFrame
 using OrderedCollections: OrderedDict
 export pfSlack, pfPV, pfPQ
+export solve_powerflow!, initialize!
 include("powerflow.jl")
 
 end
