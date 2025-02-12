@@ -1,6 +1,7 @@
 using OpPoDyn
 using OpPoDyn.Library
 using ModelingToolkit
+using ModelingToolkit: t_nounits as t, D_nounits as Dt
 using ModelingToolkit: get_name
 
 @testset "test @attach_metadata!" begin

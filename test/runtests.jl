@@ -4,7 +4,6 @@ using Aqua
 using ExplicitImports
 using NetworkDynamics
 using ModelingToolkit
-using ModelingToolkit: t_nounits as t, D_nounits as Dt
 using ModelingToolkitStandardLibrary
 using ModelingToolkitStandardLibrary.Blocks
 using Makie
