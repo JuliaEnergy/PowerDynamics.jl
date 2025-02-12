@@ -203,7 +203,7 @@ deactivate_line = ComponentAffect([], [:pibranch₊active]) do u, p, ctx
 end
 cb = PresetTimeComponentCallback([1.0], deactivate_line)
 set_callback!(l46, cb)
-noting # hide
+nothing # hide
 
 #=
 ## Build Network

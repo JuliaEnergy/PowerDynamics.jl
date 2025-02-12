@@ -1,6 +1,11 @@
 using OpPoDyn
 using Documenter
 using Literate
+using DocumenterInterLinks
+
+links = InterLinks(
+    "NetworkDynamics" => "https://juliadynamics.github.io/NetworkDynamics.jl/stable/",
+)
 
 DocMeta.setdocmeta!(OpPoDyn, :DocTestSetup, :(using OpPoDyn); recursive=true)
 
@@ -22,6 +27,7 @@ makedocs(;
     sitename="OpPoDyn.jl",
     linkcheck=true,
     pagesonly=true,
+    plugins=[links],
     format=Documenter.HTML(;
         canonical="https://juliaenergy.github.io/OpPoDyn.jl",
         edit_link="main",
