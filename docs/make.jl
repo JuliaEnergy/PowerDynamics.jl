@@ -41,12 +41,6 @@ kwargs = (;
     ],
     warnonly=[:missing_docs],
 )
-
-deploydocs(;
-    repo="github.com/JuliaEnergy/OpPoDyn.jl",
-    devbranch="main",
-    push_preview=true,
-)
 kwargs_warnonly = (; kwargs..., warnonly=true)
 
 if haskey(ENV,"GITHUB_ACTIONS")
@@ -61,7 +55,7 @@ if haskey(ENV,"GITHUB_ACTIONS")
         makedocs(; kwargs_warnonly...)
     end
 
-    deploydocs(; repo="github.com/JuliaDynamics/NetworkDynamics.jl.git",
+    deploydocs(; repo="github.com/JuliaEnergy/OpPoDyn.jl",
             devbranch="main", push_preview=true)
 
     success || throw(thrown_ex)
