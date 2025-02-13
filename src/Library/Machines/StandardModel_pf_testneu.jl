@@ -117,7 +117,6 @@
         τ_dpe(t), [description="damping torque based on power"]
         τ_ag(t), [description="acceleration time constant in s"]
         n(t), [guess=1, description="rotor speed"]
-        #pt(t), [guess=1, description="Turbine Power input signal in p.u."]
     end
     begin
         T_to_loc(α)  = [ sin(α) -cos(α);
