@@ -135,8 +135,8 @@
         ψ_q ~ -(X_ls + X_aq) * I_q + X_aq * I_2q + X_aq * I_1q
         ψ_d ~ -X″_d * I_d + ψ″_d #(60)
         ψ_q ~ -X″_q * I_q + ψ″_q
-        #ψ″_d ~ k_fd * ψ_fd + k_1d * ψ_1d #(59) mit (60) zusammen: Startwert u_d ist falsch, Rest genauso falsch wie vorher
-        #ψ″_q ~ k_1q * ψ_1q + k_2q * ψ_2q #(59) mit (55) zusammen: Startwert u_d ist falsch, aber erster Überschwinger bei τ_e ist besser, aber Wert für Voltage Angle läuft schon vor dem Fehler weg
+        #ψ″_d ~ k_fd * ψ_fd + k_1d * ψ_1d #(59), austauschbar mit (55) oder (60)
+        #ψ″_q ~ k_1q * ψ_1q + k_2q * ψ_2q
 
 
         #stator voltage equations (72) und (73) (RMS Modell, anstatt (61) und (62) bzw (54))
@@ -158,7 +158,7 @@
         #δ ~ ϕ + π/2 #- phiu #phiu is the voltage angle of the machine terminal m:phiu (scheint 0 zu sein #(112), passt das mit den Achsen überhaupt?; δ hier in rad; fipol ist von Generator terminal zu q-Achse, δ in Milano zur d-Achse, und da sind d- und q-Achse auch vertauscht
         Dt(δ) ~ ω_b * (n - 1)
 
-        #rotor flux linkage (58), mit den Gleichungn stimmt basecase schon nicht
+        #rotor flux linkage (58), mit den Gleichungn stimmt Dynamik im 2 Bus Fall nicht ganz
         #ψ_fd ~ -X_ad * I_d + (X_ad + X_rld + X_fd) * I_fd + (X_ad + X_rld) * I_1d
         #ψ_1d ~ -X_ad * I_d + (X_ad + X_rld) * I_fd + (X_ad + X_rld + X_1d) * I_1d
         #ψ_1q ~ -X_aq * I_q + (X_aq + X_rlq) * I_2q + (X_aq + X_rlq + X_1q) * I_1q
