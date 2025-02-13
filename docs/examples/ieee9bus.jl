@@ -158,7 +158,6 @@ Finally, we can build the network by providing the vertices and edges.
 vertexfs = [bus1, bus2, bus3, bus4, bus5, bus6, bus7, bus8, bus9];
 edgefs = [l45, l46, l57, l69, l78, l89, t14, t27, t39];
 nw = Network(vertexfs, edgefs)
-break
 
 #=
 ## Powerflow
@@ -187,7 +186,7 @@ Concretly, here were solving for the following things:
 - unknown internal machine and controller states as well as the free govenor and
   avr references (parameters) of the generator busses.
 =#
-initialize!(nw)
+OpPoDyn.initialize!(nw)
 nothing #hide
 
 #=
