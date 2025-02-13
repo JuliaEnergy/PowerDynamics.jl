@@ -70,7 +70,7 @@
         salientpole=1, [description="salient pole or round-rotor machine"]
         xmdm=0, [description="Torque Input input signal in p.u."]
         addmt=0, [description="Additional Torque parameter in p.u."]
-        pt, [description="Turbine Power input signal in p.u."]
+        pt, [guess=1, bounds=(0,Inf), description="Turbine Power input signal in p.u."]
         dpu=0, [description="dpu * n is turbine shaft friction torque in p.u.;"]
         # input/parameter switches
         if !vf_input
@@ -117,6 +117,7 @@
         τ_dpe(t), [description="damping torque based on power"]
         τ_ag(t), [description="acceleration time constant in s"]
         n(t), [guess=1, description="rotor speed"]
+        #pt(t), [guess=1, description="Turbine Power input signal in p.u."]
     end
     begin
         T_to_loc(α)  = [ sin(α) -cos(α);
