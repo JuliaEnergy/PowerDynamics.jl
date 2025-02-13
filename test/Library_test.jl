@@ -407,13 +407,15 @@ end
     Ae, Be = Library.solve_ceilf(E1=>Se1, E2=>Se2)
     se_exp  = x -> Ae* exp(Be*x)
 
-    let fig = Figure()
-        ax = Axis(fig[1,1])
-        xs = range(0, 6; length=100)
-        lines!(ax, xs, se_quad.(xs); label="quad")
-        lines!(ax, xs, se_exp.(xs); label="exp")
-        axislegend(ax)
-        scatter!(ax, [(E1, Se1), (E2, Se2)])
-        fig
+    if isinteractive()
+        let fig = Figure()
+            ax = Axis(fig[1,1])
+            xs = range(0, 6; length=100)
+            lines!(ax, xs, se_quad.(xs); label="quad")
+            lines!(ax, xs, se_exp.(xs); label="exp")
+            axislegend(ax)
+            scatter!(ax, [(E1, Se1), (E2, Se2)])
+            fig
+        end
     end
 end

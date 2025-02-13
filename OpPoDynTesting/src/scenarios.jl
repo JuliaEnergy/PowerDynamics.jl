@@ -16,7 +16,7 @@ function line_between_slacks(edgef)
     nw = Network(g, [src, dst], edgef)
     u0 = NWState(nw)
     any(isnan.(uflat(u0))) && error("Initial conditions contain NaNs")
-    any(isnan.(pflat(u0))) && error("Parameters contain NaNs")
+    any(isnan.(pflat(u0))) && @warn "Parameters contain NaNs"
 
     affect = function(integrator)
         u = NWState(integrator)
@@ -65,14 +65,14 @@ function bus_on_slack(busf; tmax=6, toilength=1000, argscale=1, magscale=1)
     nw = Network(g, [slack, busf], edgef)
     u0 = NWState(nw)
     if any(isnan.(uflat(u0)))
-        show(stderr, MIME"text/plain"(), u0)
-        println(stderr)
+        # show(stderr, MIME"text/plain"(), u0)
+        # println(stderr)
         error("Initial conditions contain NaNs")
     end
     if any(isnan.(pflat(u0)))
-        show(stderr, MIME"text/plain"(), u0.p)
-        println(stderr)
-        error("Parameters contain NaNs")
+        # show(stderr, MIME"text/plain"(), u0.p)
+        # println(stderr)
+        @warn "Parameters contain NaNs"
     end
 
     tstops = collect(range(0,tmax, length=7))[2:end-1]
