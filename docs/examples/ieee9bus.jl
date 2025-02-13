@@ -178,7 +178,7 @@ The power flow solution provided all the "interface states" (i.e. voltages and c
 With that information, we can initialize the free states and parameters of the dynamic models,
 such that the dynamic steady state matches the static power flow solution.
 
-When calling [`initialize!`](@ref),  `OpPoDyn.jl` will loop through all the dynamic models
+When calling `initialize!`,  `OpPoDyn.jl` will loop through all the dynamic models
 in the system, automaticially creating and solving a nonlinear initialization problem for each of them.
 
 Concretly, here were solving for the following things:
