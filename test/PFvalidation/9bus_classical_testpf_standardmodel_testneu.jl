@@ -363,7 +363,7 @@ end
 cb_deactivate = PresetTimeCallback([1.05], affect2!)
 
 cb_set = CallbackSet(CallbackSet(cb_shortcircuit, cb_deactivate))
-prob = ODEProblem(nw, uflat(u0), (0,2), copy(pflat(u0)) ; callback=cb_set)
+prob = ODEProblem(nw, uflat(u0), (0,5), copy(pflat(u0)) ; callback=cb_set)
 sol = solve(prob, Rodas5P());
 nothing
 
@@ -396,7 +396,7 @@ lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u._1", color=Cycled(1), li
 lines!(ax, ts, umag7.u; label="Bus7")
 lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u.", color=Cycled(2), linestyle=:dash, label="Bus 7 ref")
 axislegend(ax; position=:rb)
-xlims!(ax, 0.9, 2)
+xlims!(ax, 0.9, 5)
 fig
 
 
@@ -436,10 +436,10 @@ fig
 #### id and iq generator
 ref = CSV.read("gen2_data.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
-ax = Axis(fig[1, 1]; title="stator current gen 1")
+ax = Axis(fig[1, 1]; title="stator current gen 2")
 ts = range(sol.t[begin],sol.t[end],length=1000)
-id = sol(ts; idxs=VIndex(1, :machine₊I_d))
-iq = sol(ts; idxs=VIndex(1, :machine₊I_q))
+id = sol(ts; idxs=VIndex(2, :machine₊I_d))
+iq = sol(ts; idxs=VIndex(2, :machine₊I_q))
 lines!(ax, ts, id.u; label="i_d")
 lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="i_d ref")
 lines!(ax, ts, iq.u; label="i_q")
@@ -451,10 +451,42 @@ fig
 #### ud and uq generator
 ref = CSV.read("gen2_data.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
-ax = Axis(fig[1, 1]; title="voltage at generator 1")
+ax = Axis(fig[1, 1]; title="voltage at generator 2")
 ts = range(sol.t[begin],sol.t[end],length=1000)
-vd = sol(ts; idxs=VIndex(1, :machine₊V_d))
-vq = sol(ts; idxs=VIndex(1, :machine₊V_q))
+vd = sol(ts; idxs=VIndex(2, :machine₊V_d))
+vq = sol(ts; idxs=VIndex(2, :machine₊V_q))
+lines!(ax, ts, vd.u; label="u_d")
+lines!(ax, ref."Zeitpunkt in s", ref."Spannung, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="u_d ref")
+lines!(ax, ts, vq.u; label="u_q")
+lines!(ax, ref."Zeitpunkt in s", ref."Spannung, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="u_q ref")
+axislegend(ax; position=:rt)
+xlims!(ax, 0, 2)
+fig
+
+
+# Bus 3
+#### id and iq generator
+ref = CSV.read("gen3_data.csv", DataFrame; header=2, decimal=',')
+fig = Figure();
+ax = Axis(fig[1, 1]; title="stator current gen 3")
+ts = range(sol.t[begin],sol.t[end],length=1000)
+id = sol(ts; idxs=VIndex(3, :machine₊I_d))
+iq = sol(ts; idxs=VIndex(3, :machine₊I_q))
+lines!(ax, ts, id.u; label="i_d")
+lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="i_d ref")
+lines!(ax, ts, iq.u; label="i_q")
+lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="i_q ref")
+axislegend(ax; position=:rt)
+xlims!(ax, 0, 2)
+fig
+
+#### ud and uq generator
+ref = CSV.read("gen3_data.csv", DataFrame; header=2, decimal=',')
+fig = Figure();
+ax = Axis(fig[1, 1]; title="voltage at generator 3")
+ts = range(sol.t[begin],sol.t[end],length=1000)
+vd = sol(ts; idxs=VIndex(3, :machine₊V_d))
+vq = sol(ts; idxs=VIndex(3, :machine₊V_q))
 lines!(ax, ts, vd.u; label="u_d")
 lines!(ax, ref."Zeitpunkt in s", ref."Spannung, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="u_d ref")
 lines!(ax, ts, vq.u; label="u_q")
