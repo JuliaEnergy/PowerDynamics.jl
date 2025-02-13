@@ -1,6 +1,11 @@
 using OpPoDyn
 using Documenter
 using Literate
+using DocumenterInterLinks
+
+links = InterLinks(
+    "NetworkDynamics" => "https://juliadynamics.github.io/NetworkDynamics.jl/stable/",
+)
 
 DocMeta.setdocmeta!(OpPoDyn, :DocTestSetup, :(using OpPoDyn); recursive=true)
 
@@ -16,12 +21,13 @@ for example in filter(contains(r".jl$"), readdir(example_dir, join=true))
 end
 
 
-makedocs(;
+kwargs = (;
     modules=[OpPoDyn],
     authors="Hans Würfel <git@wuerfel.io> and contributors",
     sitename="OpPoDyn.jl",
     linkcheck=true,
     pagesonly=true,
+    plugins=[links],
     format=Documenter.HTML(;
         canonical="https://juliaenergy.github.io/OpPoDyn.jl",
         edit_link="main",
@@ -33,11 +39,26 @@ makedocs(;
         "Examples" => [
             "generated/ieee9bus.md",]
     ],
-    warnonly=[:cross_references, :missing_docs, :docs_block],
+    warnonly=[:missing_docs],
 )
+kwargs_warnonly = (; kwargs..., warnonly=true)
 
-deploydocs(;
-    repo="github.com/JuliaEnergy/OpPoDyn.jl",
-    devbranch="main",
-    push_preview=true,
-)
+if haskey(ENV,"GITHUB_ACTIONS")
+    success = true
+    thrown_ex = nothing
+    try
+        makedocs(; kwargs...)
+    catch e
+        @info "Strict doc build failed, try again with warnonly=true"
+        global success = false
+        global thrown_ex = e
+        makedocs(; kwargs_warnonly...)
+    end
+
+    deploydocs(; repo="github.com/JuliaEnergy/OpPoDyn.jl",
+            devbranch="main", push_preview=true)
+
+    success || throw(thrown_ex)
+else # local build
+    makedocs(; kwargs_warnonly...)
+end

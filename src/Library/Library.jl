@@ -19,8 +19,8 @@ export Terminal
 @connector Terminal begin
     u_r(t), [description="d-voltage"]
     u_i(t), [description="q-voltage"]
-    i_r(t), [description="d-current", connect=Flow]
-    i_i(t), [description="q-current", connect=Flow]
+    i_r(t), [guess=0, description="d-current", connect=Flow]
+    i_i(t), [guess=0, description="q-current", connect=Flow]
 end
 
 @mtkmodel SystemBase begin
@@ -47,7 +47,7 @@ Ibase(S, V) = S/V
 Zbase(S, V) = V^2/S
 Ybase(S, V) = S/V^2
 
-export BusBar, MTKBus, SlackAlgebraic, SlackDifferential
+export BusBar, MTKBus, SlackAlgebraic, SlackDifferential, CompositeInjector
 include("Bus.jl")
 
 export LineEnd, MTKLine
@@ -83,16 +83,16 @@ include("Machines/ClassicalMachine_powerfactory.jl")
 ####
 #### Control Models
 ####
-export AVRTypeI
+export AVRFixed, AVRTypeI
 include("Controls/AVRs.jl")
 
-export TurbineGovTypeI, TGOV1
+export GovFixed, TurbineGovTypeI, TGOV1
 include("Controls/Govs.jl")
 
 ####
 #### Load Models
 ####
-export PQLoad, VoltageDependentLoad, ConstantYLoad
+export PQLoad, VoltageDependentLoad, ConstantYLoad, ZIPLoad
 include("Loads/PQLoad.jl")
 
 ####

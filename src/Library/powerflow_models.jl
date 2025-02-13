@@ -12,6 +12,20 @@
     end
 end
 
+@mtkmodel UrUiConstraint begin
+    @components begin
+        terminal = Terminal()
+    end
+    @parameters begin
+        u_r, [guess=1, description="Real part of fixed terminal voltage"]
+        u_i, [guess=0, description="Imaginary part of fixed terminal voltage"]
+    end
+    @equations begin
+        terminal.u_r ~ u_r
+        terminal.u_i ~ u_i
+    end
+end
+
 @mtkmodel PVConstraint begin
     @components begin
         terminal = Terminal()

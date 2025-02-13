@@ -15,16 +15,6 @@ using OrdinaryDiffEqNonlinearSolve
 using CairoMakie
 
 #=
-The AVRTypeI model contains a ceiling function which needs to parameters.
-Often, the parameters are not given explicitly but istead their are two
-datapoints provided. This is the case in the RTDS data, thus we need to solve
-the nonlinear system to find parameters `Ae` and `Be`.
-Turns out, `Ae` and `Be` are quite common default values.
-=#
-Ae, Be = Library.solve_ceilf(3.3 => 0.6602, 4.5 => 4.2662)
-
-#=
-
 ## Generator Busses
 
 The 3 generator buses are modeld using a SauerPai 6th order machine model with
@@ -44,8 +34,12 @@ The field voltage is provided by an `AVRTypeI`, the torque is provide by a `TGOV
             T″_q0=0.01,
             X_d, X′_d, X″_d, X_q, X′_q, X″_q, X_ls, T′_d0, T′_q0, H # free per machine parameter
         )
-        avr = AVRTypeI(vr_min=-5, vr_max=5, Ka=20, Ta=0.2, Kf=0.063,
-            Tf=0.35, Ke=1, Te=0.314, Ae, Be, tmeas_lag=false)
+        avr = AVRTypeI(vr_min=-5, vr_max=5,
+            Ka=20, Ta=0.2,
+            Kf=0.063, Tf=0.35,
+            Ke=1, Te=0.314,
+            E1=3.3, Se1=0.6602, E2=4.5, Se2=4.2662,
+            tmeas_lag=false)
         gov = TGOV1(R=0.05, T1=0.05, T2=2.1, T3=7.0, DT=0, V_max=5, V_min=-5)
         busbar = BusBar()
     end
@@ -63,12 +57,14 @@ nothing # hide
 #=
 ## Load Busses
 
-The loard buses are modeled as static PQ loads. This means they allways draw exactly `Pset` and `Qset`.
+The dynamic loads are modeld as static Y-loads. Those have 3 parameters: `Pset`, `Qset` and `Vset`.
+The `Vset` parameter is left free for now. Later on it is automaticially determined to match the
+behavior of the static power flow load model.
 =#
 @mtkmodel LoadBus begin
     @components begin
         busbar = BusBar()
-        load = PQLoad(Pset, Qset)
+        load = ConstantYLoad(Pset, Qset)
     end
     @equations begin
         connect(load.terminal, busbar.terminal)
@@ -102,20 +98,24 @@ We instantiate all models as modeling toolkit models.
 nothing #hide
 
 #=
-After this, we can build the NetworkDynamic components using the `Bus`-constructor.
+After this, we can build the `NetworkDynamics` components using the `Bus`-constructor.
 
 The `Bus` constructor is essentially a thin wrapper around the `VertexModel` constructor which,
 per default, adds some metadata. For example the `vidx` property which later on allows for
 "graph free" network dynamics instantiation.
+
+We use the `pf` keyword to specify the models which should be used in the powerflow calculation.
+Here, generator 1 is modeld as a slack bus while the other two generators are modeled as a PV bus.
+The loads are modeled as PQ buses.
 =#
-@named bus1 = Bus(mtkbus1; vidx=1)
-@named bus2 = Bus(mtkbus2; vidx=2)
-@named bus3 = Bus(mtkbus3; vidx=3)
+@named bus1 = Bus(mtkbus1; vidx=1, pf=pfSlack(V=1.04))
+@named bus2 = Bus(mtkbus2; vidx=2, pf=pfPV(V=1.025, P=1.63))
+@named bus3 = Bus(mtkbus3; vidx=3, pf=pfPV(V=1.025, P=0.85))
 @named bus4 = Bus(mtkbus4; vidx=4)
-@named bus5 = Bus(mtkbus5; vidx=5)
-@named bus6 = Bus(mtkbus6; vidx=6)
+@named bus5 = Bus(mtkbus5; vidx=5, pf=pfPQ(P=-1.25, Q=-0.5))
+@named bus6 = Bus(mtkbus6; vidx=6, pf=pfPQ(P=-0.9, Q=-0.3))
 @named bus7 = Bus(mtkbus7; vidx=7)
-@named bus8 = Bus(mtkbus8; vidx=8)
+@named bus8 = Bus(mtkbus8; vidx=8, pf=pfPQ(P=-1.0, Q=-0.35))
 @named bus9 = Bus(mtkbus9; vidx=9)
 nothing #hide
 
@@ -151,47 +151,6 @@ end
 nothing #hide
 
 #=
-## Initialization
-
-To initialize the system, we first set the "default" values for the bus voltages
-according to the provide power flow solution from the document.
-=#
-set_voltage!(bus1; mag=1.040, arg=deg2rad( 0.0))
-set_voltage!(bus2; mag=1.025, arg=deg2rad( 9.3))
-set_voltage!(bus3; mag=1.025, arg=deg2rad( 4.7))
-set_voltage!(bus4; mag=1.026, arg=deg2rad(-2.2))
-set_voltage!(bus5; mag=0.996, arg=deg2rad(-4.0))
-set_voltage!(bus6; mag=1.013, arg=deg2rad(-3.7))
-set_voltage!(bus7; mag=1.026, arg=deg2rad( 3.7))
-set_voltage!(bus8; mag=1.016, arg=deg2rad( 0.7))
-set_voltage!(bus9; mag=1.032, arg=deg2rad( 2.0))
-nothing #hide
-
-#=
-The generator buses have lots of internal states and parameters which need to be
-initialized.
-To do so, we need to set the current in addition to the voltage on those buses.
-The current can be set by provide `P` and `Q` instead, which will read out the voltages
-and define the current accordingly.
-=#
-set_current!(bus1; P=0.716, Q= 0.270)
-set_current!(bus2; P=1.630, Q= 0.067)
-set_current!(bus3; P=0.850, Q=-0.109)
-nothing #hide
-
-#=
-To initialize the internal states, we just need to call `initialize_component!`, which will
-create a nonlinear initialization problem automaticially, which solves for "free" states and parameters.
-
-Concretely, here we're solving for all internal machien states and the reference
-values for voltage and power of the AVR and govenor models.
-=#
-initialize_component!(bus1)
-initialize_component!(bus2)
-initialize_component!(bus3)
-nothing #hide
-
-#=
 ## Build Network
 
 Finally, we can build the network by providing the vertices and edges.
@@ -199,16 +158,66 @@ Finally, we can build the network by providing the vertices and edges.
 vertexfs = [bus1, bus2, bus3, bus4, bus5, bus6, bus7, bus8, bus9];
 edgefs = [l45, l46, l57, l69, l78, l89, t14, t27, t39];
 nw = Network(vertexfs, edgefs)
+
+#=
+## Powerflow
+
+To initialize the system, we first solve the static powerflow problem.
+Internally, `OpPoDyn.jl` builds an equivalent network but replaces each dynamic model
+with the given static power flow model.
+The static powerflow problem is solved, after which the power flow solution (bus voltages
+and currents) are stored as `default` values in the vertex models.
+=#
+solve_powerflow!(nw)
+nothing #hide
+
+#=
+## Component initialization
+
+The power flow solution provided all the "interface states" (i.e. voltages and currents).
+With that information, we can initialize the free states and parameters of the dynamic models,
+such that the dynamic steady state matches the static power flow solution.
+
+When calling `initialize!`,  `OpPoDyn.jl` will loop through all the dynamic models
+in the system, automaticially creating and solving a nonlinear initialization problem for each of them.
+
+Concretly, here were solving for the following things:
+- unknown `Vset` for load busses,
+- unknown internal machine and controller states as well as the free govenor and
+  avr references (parameters) of the generator busses.
+=#
+OpPoDyn.initialize!(nw)
+nothing #hide
+
+#=
+## Disturbance
+
+To see some dynamics, we need to introduce some disturbance.
+For that we use a [`PresetTimeComponentCallback`](@extref NetworkDynamics.PresetTimeComponentCallback)
+to deactivate a line at a certain time.
+=#
+deactivate_line = ComponentAffect([], [:pibranch₊active]) do u, p, ctx
+    @info "Deactivate line $(ctx.src)=>$(ctx.dst) at t=$(ctx.t)"
+    p[:pibranch₊active] = 0
+end
+cb = PresetTimeComponentCallback([1.0], deactivate_line)
+set_callback!(l46, cb)
+nothing # hide
+
+#=
+## Build Network
+
+Finally, we can build the network by providing the vertices and edges.
+=#
 u0 = NWState(nw)
-prob = ODEProblem(nw, uflat(u0), (0,100), pflat(u0))
+prob = ODEProblem(nw, uflat(u0), (0,15), pflat(u0); callback=get_callbacks(nw))
 sol = solve(prob, Rodas5P())
 nothing
-
 
 #=
 ## Plotting the Solution
 =#
-fig = Figure(size=(1000,2000));
+fig = Figure(size=(600,800));
 ax = Axis(fig[1, 1]; title="Active power")
 for i in [1,2,3,5,6,8]
     lines!(ax, sol; idxs=VIndex(i,:busbar₊P), label="Bus $i", color=Cycled(i))
@@ -219,12 +228,7 @@ for i in 1:9
     lines!(ax, sol; idxs=VIndex(i,:busbar₊u_mag), label="Bus $i", color=Cycled(i))
 end
 axislegend(ax)
-ax = Axis(fig[3, 1]; title="Voltag angel")
-for i in 1:9
-    lines!(ax, sol; idxs=VIndex(i,:busbar₊u_arg), label="Bus $i", color=Cycled(i))
-end
-axislegend(ax)
-ax = Axis(fig[4, 1]; title="Frequency")
+ax = Axis(fig[3, 1]; title="Frequency")
 for i in 1:3
     lines!(ax, sol; idxs=VIndex(i,:machine₊ω), label="Bus $i", color=Cycled(i))
 end

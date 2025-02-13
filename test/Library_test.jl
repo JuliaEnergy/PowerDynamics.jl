@@ -329,6 +329,42 @@ end
     isinteractive() && plottoi(toi)
 end
 
+@testset "test zip load" begin
+    # constant power
+    @named load = ZIPLoad(Pset=-1, Qset=-1, Vset=1,
+                          KpZ=0, KpI=0, KpC=1,
+                          KqZ=0, KqI=0, KqC=1)
+    bus = Bus(MTKBus(load))
+    toi = bus_on_slack(bus)
+    isinteractive() && plottoi(toi)
+
+    # constant current
+    @named load = ZIPLoad(Pset=-1, Qset=-1, Vset=1,
+                          KpZ=0, KpI=1, KpC=0,
+                          KqZ=0, KqI=1, KqC=0)
+    bus = Bus(MTKBus(load))
+    toi = bus_on_slack(bus)
+    toi["current"] = OrderedDict(
+        "current magnitude at bus" => VIndex(2,:busbar₊i_mag),
+        "real current" => VIndex(2,:load₊terminal₊i_r),
+        "imaginary current" => VIndex(2,:load₊terminal₊i_i),
+    )
+    isinteractive() && plottoi(toi)
+
+    # constant Z
+    @named load = ZIPLoad(Pset=-1, Qset=-1, Vset=1,
+                          KpZ=1, KpI=0, KpC=0,
+                          KqZ=1, KqI=0, KqC=0)
+    bus = Bus(MTKBus(load))
+    toi = bus_on_slack(bus)
+    toi["current"] = OrderedDict(
+        "current magnitude at bus" => VIndex(2,:busbar₊i_mag),
+        "real current" => VIndex(2,:load₊terminal₊i_r),
+        "imaginary current" => VIndex(2,:load₊terminal₊i_i),
+    )
+    isinteractive() && plottoi(toi) # neither i nor p is constant
+end
+
 @testset "Classical machine" begin
     @mtkmodel GenBus begin
         @components begin
@@ -360,4 +396,26 @@ end
 
     toi = bus_on_slack(bus; tmax=600, toilength=10_000)
     isinteractive() && plottoi(toi)
+end
+
+@testset "AVR model" begin
+    E1 = 3.5461
+    E2 = 4.7281
+    Se1 = 0.08
+    Se2 = 0.26
+    se_quad = x -> Library.quadratic_ceiling(x, E1, E2, Se1, Se2)
+    Ae, Be = Library.solve_ceilf(E1=>Se1, E2=>Se2)
+    se_exp  = x -> Ae* exp(Be*x)
+
+    if isinteractive()
+        let fig = Figure()
+            ax = Axis(fig[1,1])
+            xs = range(0, 6; length=100)
+            lines!(ax, xs, se_quad.(xs); label="quad")
+            lines!(ax, xs, se_exp.(xs); label="exp")
+            axislegend(ax)
+            scatter!(ax, [(E1, Se1), (E2, Se2)])
+            fig
+        end
+    end
 end

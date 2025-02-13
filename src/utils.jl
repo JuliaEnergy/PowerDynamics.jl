@@ -87,6 +87,8 @@ function set_voltage!(cf::VertexModel, c::Complex)
     c
 end
 
+get_voltage(cf::VertexModel) = get_default(cf, :busbar₊u_r) + im * get_default(cf, :busbar₊u_i)
+
 function set_current!(cf::VertexModel; P, Q)
     @assert has_default(cf, :busbar₊u_r) && has_default(cf, :busbar₊u_i)
     u = get_default(cf, :busbar₊u_r) + im * get_default(cf, :busbar₊u_i)
@@ -99,6 +101,9 @@ function set_current!(cf::VertexModel, c::Complex)
     set_default!(cf, :busbar₊i_i, imag(c))
     c
 end
+
+get_current(cf::VertexModel) = -1 * (get_default(cf, :busbar₊i_r) + im * get_default(cf, :busbar₊i_i))
+get_power(cf::VertexModel) = get_voltage(cf) * conj(get_current(cf))
 
 """
     small_signal_stability_analysis(h::ODEFunction, eq_point, p = nothing)
@@ -158,4 +163,9 @@ function separate_differential_constraint_eqs(M, p=nothing)
     d_idx = findall(diag(M) .== 1)
 
     return c_idx, d_idx
+end
+
+function normalize_angle(θ)
+    θ = mod2pi(θ)
+    θ >= π ? θ - 2π : θ
 end
