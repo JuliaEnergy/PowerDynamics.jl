@@ -80,7 +80,6 @@ end
             dkd,
             cosn,
             salientpole,
-            pt,
             dpu,
             addmt,
             xmdm
@@ -235,7 +234,10 @@ edgefs = [l45, l46, l69, l78, l89, t14, t27, t39, l57];
 nw = Network(vertexfs, edgefs)
 
 # solve powerflow and initialize
-OpPoDyn.solve_powerflow!(nw) #hier: ┌ Warning: Potential Rank Deficient Matrix Detected. Attempting to solve using Pivoted QR Factorization. └ @ NonlinearSolve C:\Users\smmywael\.julia\packages\NonlinearSolve\sETeN\src\internal\linear_solve.jl:162
+OpPoDyn.solve_powerflow!(nw)
+#initialize_component!(bus1)
+#dump_initial_state(bus1)
+#break #hier: ┌ Warning: Potential Rank Deficient Matrix Detected. Attempting to solve using Pivoted QR Factorization. └ @ NonlinearSolve C:\Users\smmywael\.julia\packages\NonlinearSolve\sETeN\src\internal\linear_solve.jl:162
 OpPoDyn.initialize!(nw)
 
 # get state for actual calculation
