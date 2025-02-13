@@ -246,7 +246,6 @@ for p in [:X_d, :X′_q, :T′_d0, :T′_q0, :X′_d, :T″_q0, :T″_d0, :X_q, 
 end
 renamedp_gen2 = Dict(map(s->Symbol("machine__", s), collect(keys(allp_gen2))) .=> Base.values(allp_gen2))
 
-
 primary_parameters_gen3 = (;
     S_b=100e6,
     Sn=128e6,
@@ -278,16 +277,12 @@ primary_parameters_gen3 = (;
     xmdm=0,
 )
 secondary_parameters_gen3 = secondary_from_primary(; primary_parameters_gen3...)
-
 allp_gen3 = Dict(pairs(primary_parameters_gen3)..., pairs(secondary_parameters_gen3)...)
 # get rid of parametes which are not needed
 for p in [:X_d, :X′_q, :T′_d0, :T′_q0, :X′_d, :T″_q0, :T″_d0, :X_q, :X_fd, :X_1d, :X_2q]
     delete!(allp_gen3, p)
 end
 renamedp_gen3 = Dict(map(s->Symbol("machine__", s), collect(keys(allp_gen3))) .=> Base.values(allp_gen3))
-
-
-
 
 
 @named mtkbus1 = StandardBus(; renamedp_gen1...)
@@ -396,7 +391,21 @@ lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u._1", color=Cycled(1), li
 lines!(ax, ts, umag7.u; label="Bus7")
 lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u.", color=Cycled(2), linestyle=:dash, label="Bus 7 ref")
 axislegend(ax; position=:rb)
-xlims!(ax, 0.9, 5)
+xlims!(ax, 0.9, 3)
+fig
+
+#frequency at gen 1
+ref = CSV.read("frequency_bus1.csv", DataFrame; header=2, decimal=',')
+fig = Figure();
+ax = Axis(fig[1, 1]; title="Frequency")
+ts = range(sol.t[begin],sol.t[end],length=1000)
+f_oppodyn = round.(sol(ts; idxs=VIndex(1, :machine₊n)).*60, digits=8)
+#lines!(ax, sol;idxs=@obsex (VIndex(1,:machine₊n) * 60), label="OpPoDyn")
+lines!(ax, ts, f_oppodyn.u; label="OpPoDyn")
+lines!(ax, ref."Zeitpunkt in s", ref."Elektrische Frequenz in Hz", color=Cycled(1), linestyle=:dash, label="Power Factory")
+axislegend(ax; position=:rb)
+xlims!(ax, 0.9, 3)
+ylims!(ax, 59.9, 63)
 fig
 
 
