@@ -416,7 +416,7 @@ lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u._1", color=Cycled(1), li
 lines!(ax, ts, umag7.u; label="Bus7")
 lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u.", color=Cycled(2), linestyle=:dash, label="Bus 7 ref")
 axislegend(ax; position=:rb)
-xlims!(ax, 0.9, 3)
+xlims!(ax, 0.9, 5)
 fig
 
 #frequency at gen 1
