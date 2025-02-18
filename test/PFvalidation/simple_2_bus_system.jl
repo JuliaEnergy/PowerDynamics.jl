@@ -235,7 +235,25 @@ Za_from_csv = 100*linea_dat[1, "Impedanz (bus1), mag in p.u."]*exp(im*deg2rad(li
 #@named l12a = Line(piline_shortcircuit(; R=real(Za_from_csv), X=imag(Za_from_csv), B=0, pos=0.5), src=1, dst=2)
 Zb_from_csv = 100*lineb_dat[1, "Impedanz, mag in p.u."]*exp(im*deg2rad(lineb_dat[1, "Impedanz, phi in deg"])) #TODO factor 100??
 #@named l12b = Line(piline(; R=real(Zb_from_csv), X=imag(Zb_from_csv), B=0), src=1, dst=2) #in umgekehrter Reihenfolge von src und dst bekomme ich Fehler
-@named l12 = Line(piline_parallel(; Ra=real(Za_from_csv), Xa=imag(Za_from_csv), Ba=0, posa=0.5, Ga_fault=0, Ba_fault=0, Rb=real(Zb_from_csv), Xb=imag(Zb_from_csv), Bb=0), src=1, dst=2)
+#@named l12 = Line(piline_parallel(; Ra=real(Za_from_csv), Xa=imag(Za_from_csv), Ba=0, posa=0.5, Ga_fault=0, Ba_fault=0, Rb=real(Zb_from_csv), Xb=imag(Zb_from_csv), Bb=0), src=1, dst=2)
+
+# Berechnung mit PF Daten
+S_b = 100000000 #100MVA -> Woher? Ist das überhaupt korrekt? (in 9-Bus-System wird es so gemacht, aber warum?)
+V_b = 16500 #Busspannung #230000 #230kV
+ω_b = 60*2*π
+line_length = 0.01
+R_l_perkm = 5.29
+X_l_perkm = 44.965
+B_l_perkm = 332.7 * 10^(-6)#ω_b * 0.0095491* 10^(-6) #ω*C
+Ra_pu = (R_l_perkm * line_length) * S_b/V_b^2
+Xa_pu = (X_l_perkm * line_length) * S_b/V_b^2
+Ba_pu = (B_l_perkm * line_length) * V_b^2/S_b
+Rb_pu = (R_l_perkm * line_length) * S_b/V_b^2
+Xb_pu = (X_l_perkm * line_length) * S_b/V_b^2
+Bb_pu = (B_l_perkm * line_length) * V_b^2/S_b
+#@named l12a = Line(piline(; R=R_pu, X=X_pu, B=B_pu), src=1, dst=2)
+@named l12 = Line(piline_parallel(; Ra=Ra_pu, Xa=Xa_pu, Ba=Ba_pu, posa=0.5, Ga_fault=0, Ba_fault=0, Rb=Rb_pu, Xb=Xb_pu, Bb=Bb_pu), src=1, dst=2)
+
 
 @named mtkbus1 = StandardBus(; renamedp...)
 @named mtkbus2 = LoadBus(;load__Pset=-0.5, load__Qset=-0.1) #50MW bzw 10MVar bezogen auf 100MVA
@@ -251,6 +269,9 @@ nw = Network(vertexfs, edgefs)
 
 # solve powerflow and initialize
 OpPoDyn.solve_powerflow!(nw)
+#break
+#initialize_component!(bus1)
+#dump_initial_state(bus1)
 OpPoDyn.initialize!(nw)
 
 ####
@@ -360,7 +381,7 @@ end
 cb_deactivate = PresetTimeCallback([12.5], affect2!)
 
 cb_set = CallbackSet(cb_shortcircuit, cb_deactivate)
-prob = ODEProblem(nw, uflat(u0), (0,12.9), copy(pflat(u0)) ; callback=cb_set)
+prob = ODEProblem(nw, uflat(u0), (0,20), copy(pflat(u0)) ; callback=cb_set)
 sol = solve(prob, Rodas5P());
 nothing
 
@@ -395,7 +416,7 @@ lines!(ax, ts, iq.u; label="i_q")
 lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="i_q ref")
 axislegend(ax; position=:rt)
 xlims!(ax, 9.9, 12.9)
-ylims!(ax, 0, 4)
+ylims!(ax, -0.5, 10)
 fig
 
 #### ud and uq generator
@@ -443,7 +464,7 @@ lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u.", color=Cycled(1), line
 lines!(ax, ts, umag2.u; label="Bus2")
 lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u._1", color=Cycled(2), linestyle=:dash, label="Bus 2 ref")
 axislegend(ax; position=:rt)
-xlims!(ax, 9, 12.9)
+xlims!(ax, 9, 15)
 fig
 
 #### Voltage angle

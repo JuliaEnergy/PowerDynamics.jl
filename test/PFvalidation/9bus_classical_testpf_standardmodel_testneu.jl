@@ -306,7 +306,7 @@ renamedp_gen3 = Dict(map(s->Symbol("machine__", s), collect(keys(allp_gen3))) .=
 @named bus7 = Bus(mtkbus7; vidx=7)
 @named bus8 = Bus(mtkbus8; vidx=8, pf=pfPQ(P=-1.0, Q=-0.35))
 @named bus9 = Bus(mtkbus9; vidx=9)
-@named l45 = Line(piline(; R=0.0100, X=0.0850, B=0.1760), src=4, dst=5)
+#@named l45 = Line(piline(; R=0.0100, X=0.0850, B=0.1760), src=4, dst=5)
 @named l46 = Line(piline(; R=0.0170, X=0.0920, B=0.1580), src=4, dst=6)
 @named l69 = Line(piline(; R=0.0390, X=0.1700, B=0.3580), src=6, dst=9)
 @named l78 = Line(piline(; R=0.0085, X=0.0720, B=0.1490), src=7, dst=8)
@@ -315,6 +315,29 @@ renamedp_gen3 = Dict(map(s->Symbol("machine__", s), collect(keys(allp_gen3))) .=
 @named t27 = Line(transformer(; R=0, X=0.0625), src=2, dst=7)
 @named t39 = Line(transformer(; R=0, X=0.0586), src=3, dst=9)
 @named l57 = Line(piline_shortcircuit(; R=0.0320, X=0.1610, B=0.3060, pos=0.99), src=5, dst=7) #S_b = 100 MVA, U_b = 230 kV; 2 Ω also G_fault=0.003781
+
+#test implementation for line and transformer with PowerFactory Data
+S_b = 100000000 #100MVA -> Woher? Ist das überhaupt korrekt? (in 9-Bus-System wird es so gemacht, aber warum?)
+V_b = 230000 #Busspannung #230000 #230kV
+ω_b = 60*2*π
+line_length = 1
+R_l_perkm = 5.29
+X_l_perkm = 44.965
+B_l_perkm = 332.7 * 10^(-6)#ω_b * 0.0095491* 10^(-6) #ω*C
+R_pu = (R_l_perkm * line_length) * S_b/V_b^2
+X_pu = (X_l_perkm * line_length) * S_b/V_b^2
+B_pu = (B_l_perkm * line_length) * V_b^2/S_b
+@named l45 = Line(piline(; R=R_pu, X=X_pu, B=B_pu), src=4, dst=5)
+
+S_b = 100000000 #100MVA -> Bezugsscheinleistung
+S_n = 200000000 #200MVA -> Bemessungsleistung
+#V_OS = 230000
+#V_US = 180000
+X_pu_PF = 0.1250
+R_pu_PF = 0
+X_pu_baseS = X_pu_PF * S_b/S_n
+R_pu_baseS = R_pu_PF * S_b/S_n
+@named t27 = Line(transformer(; R=R_pu_baseS, X=X_pu_baseS), src=2, dst=7)
 
 # build network
 vertexfs = [bus1, bus2, bus3, bus4, bus5, bus6, bus7, bus8, bus9];
@@ -391,13 +414,13 @@ lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u._1", color=Cycled(1), li
 lines!(ax, ts, umag7.u; label="Bus7")
 lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u.", color=Cycled(2), linestyle=:dash, label="Bus 7 ref")
 axislegend(ax; position=:rb)
-xlims!(ax, 0.9, 3)
+xlims!(ax, 0.9, 5)
 fig
 
 #frequency at gen 1
 ref = CSV.read("frequency_bus1.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
-ax = Axis(fig[1, 1]; title="Frequency")
+ax = Axis(fig[1, 1]; title="Frequency at bus 1")
 ts = range(sol.t[begin],sol.t[end],length=1000)
 f_oppodyn = round.(sol(ts; idxs=VIndex(1, :machine₊n)).*60, digits=8)
 #lines!(ax, sol;idxs=@obsex (VIndex(1,:machine₊n) * 60), label="OpPoDyn")
