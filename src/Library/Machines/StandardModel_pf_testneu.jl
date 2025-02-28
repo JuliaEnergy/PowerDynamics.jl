@@ -96,7 +96,6 @@
         E′_q(t), [guess=1, description="transient voltage behind transient reactance in q-axis"]
         δ(t), [guess=0, description="rotor angle"]
         ϕ(t), [guess=0, description="angle between d-axis and reference voltage of network"]
-        ϕ(t), [guess=0, description="angle between d-axis and reference voltage of network"]
         ω(t), [guess=1, description="rotor speed"]
         ψ_fd(t), [guess=1, description=" flux linkage"]
         ψ_1d(t), [guess=1, description=" flux linkage"]
@@ -155,7 +154,7 @@
         #mechanical equation motor (103), (104), (105)
         τ_dkd ~ dkd * (n - n_ref)
         τ_dpe ~ dpe/n * (n - n_ref)
-        τ_ag ~ 2 * H * 100 / (S_b * cosn)   #τ_ag und H werden dann hier auf Pgn bezogen - ist das richtig??
+        #τ_ag ~ 2 * H * 100 / (S_b * cosn)   #τ_ag und H werden dann hier auf Pgn bezogen - ist das richtig??
         τ_ag ~ 2 * H
         Dt(n) ~ (τ_m - τ_e - τ_dkd - τ_dpe) / τ_ag #(100), (101) wird gar nicht gebraucht (t_base?)
 
@@ -182,7 +181,7 @@
 
         # inputs
         vf ~ vf_input ? vf_in.u : vf_set
-        τ_m ~ τ_m_input ? τ_m_in.u : τ_m_set
+        #τ_m ~ τ_m_input ? τ_m_in.u : τ_m_set
         #τ_m ~ τ_m_input ? τ_m_in.u : τ_m_set
         #Alternativ: (102)
         τ_m ~ pt/n - xmdm - dpu * n + addmt #xmdm Torque input signal; addmt additional torque parameter; dpu * n turbine shaft friction torque

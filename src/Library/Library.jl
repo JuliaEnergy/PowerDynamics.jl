@@ -92,7 +92,7 @@ include("Machines/StandardModel_pf_testneu.jl")
 ####
 #### Control Models
 ####
-export AVRFixed, AVRTypeI
+export AVRFixed, AVRTypeI, AVRTypeIS
 include("Controls/AVRs.jl")
 
 export GovFixed, TurbineGovTypeI, TGOV1

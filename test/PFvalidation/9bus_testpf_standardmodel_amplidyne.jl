@@ -244,7 +244,7 @@ allp_gen2 = Dict(pairs(primary_parameters_gen2)..., pairs(secondary_parameters_g
 for p in [:X_d, :X′_q, :T′_d0, :T′_q0, :X′_d, :T″_q0, :T″_d0, :X_q, :X_fd, :X_1d, :X_2q]
     delete!(allp_gen2, p)
 end
-renamedp_gen2 = Dict(map(s->Symbol("machine__", s), collect(keys(allp_gen2))) .=> Base.values(allp_gen2))
+#renamedp_gen2 = Dict(map(s->Symbol("machine__", s), collect(keys(allp_gen2))) .=> Base.values(allp_gen2))
 
 primary_parameters_gen3 = (;
     S_b=100e6,
@@ -286,7 +286,7 @@ renamedp_gen3 = Dict(map(s->Symbol("machine__", s), collect(keys(allp_gen3))) .=
 
 
 @named mtkbus1 = StandardBus(; renamedp_gen1...)
-@named mtkbus2 = StandardBus(; renamedp_gen2...)
+#@named mtkbus2 = StandardBus(; renamedp_gen2...)
 @named mtkbus3 = StandardBus(; renamedp_gen3...)
 @named mtkbus4 = MTKBus()
 @named mtkbus5 = LoadBus(;load__Pset=-1.25, load__Qset=-0.5)
@@ -295,10 +295,30 @@ renamedp_gen3 = Dict(map(s->Symbol("machine__", s), collect(keys(allp_gen3))) .=
 @named mtkbus8 = LoadBus(;load__Pset=-1.0, load__Qset=-0.35)
 @named mtkbus9 = MTKBus()
 
+components = [] # vector to collect dynamical components
+controleqs = Equation[] # equations connecting avr and gov to machine
+@named machine = Library.StandardModel_pf_testneu(; allp_gen2...)
+@named avr = AVRTypeIS(
+            # vref = p.Vref # let this free for initialization
+            Ka = 25, Ke = -0.044, Kf = 0.0805,
+            Ta = 0.2, Tf = 0.35, Te = 0.5, Tr = 0.06,
+            vr_min = -1, vr_max = 1,
+            A=0.0016, B=1.465,
+        )
+append!(controleqs, [connect(machine.v_mag_out, avr.vh), connect(avr.vf, machine.vf_in)])
+comp = CompositeInjector(
+        [machine, avr],
+        controleqs,
+        name=:ctrld_gen
+    )
+push!(components, comp)
+
+@named bus2 = Bus(MTKBus(components...); vidx=2, pf=pfPV(V=1.025, P=1.63))
+
 
 # generate the dynamic component functions
 @named bus1 = Bus(mtkbus1; vidx=1, pf=pfSlack(V=1.04))
-@named bus2 = Bus(mtkbus2; vidx=2, pf=pfPV(V=1.025, P=1.63))
+#@named bus2 = Bus(mtkbus2; vidx=2, pf=pfPV(V=1.025, P=1.63))
 @named bus3 = Bus(mtkbus3; vidx=3, pf=pfPV(V=1.025, P=0.85))
 @named bus4 = Bus(mtkbus4; vidx=4)
 @named bus5 = Bus(mtkbus5; vidx=5, pf=pfPQ(P=-1.25, Q=-0.5))
@@ -356,7 +376,7 @@ u0 = NWState(nw)
 
 # create faults
 affect1! = (integrator) -> begin
-    if integrator.t == 1.0
+    if integrator.t == 1
         @info "Short circuit on line 57 at t = $(integrator.t)"
         p = NWParameter(integrator)
         p.e[6, :pibranch₊shortcircuit] = 1
@@ -372,7 +392,7 @@ affect2! = (integrator) -> begin
     if integrator.t == 1.05
         @info "Deactivate line 57 at t = $(integrator.t)"
         p = NWParameter(integrator)
-        p.e[6, :pibranch₊active] = 0
+        p.e[6, :pibranch₊active] = 1.05
         auto_dt_reset!(integrator)
         save_parameters!(integrator)
     else
@@ -388,23 +408,10 @@ nothing
 
 break # stop execution of script here
 
-#### Machine Angle
-ref = CSV.read("RotorAngle_standardModelPF_shortcircuit.csv", DataFrame; header=2, decimal=',')
-fig = Figure();
-ax = Axis(fig[1, 1]; title="Läuferwinkel (Power Factory Standard Model)")
-ts = range(sol.t[begin],sol.t[end],length=1000)
-δ2 = sol(ts, idxs=VIndex(2, :machine₊δ)).u - sol(ts, idxs=VIndex(1, :machine₊δ)).u
-δ3 = sol(ts, idxs=VIndex(3, :machine₊δ)).u - sol(ts, idxs=VIndex(1, :machine₊δ)).u
-lines!(ax, ts, rad2deg.(δ2); label="Bus 2")
-lines!(ax, ref."Zeitpunkt in s", ref."firel in deg", color=Cycled(1), linestyle=:dash, label="Bus 2 ref")
-lines!(ax, ts, rad2deg.(δ3); label="Bus 3")
-lines!(ax, ref."Zeitpunkt in s", ref."firel in deg_1", color=Cycled(2), linestyle=:dash, label="Bus 3 ref")
-axislegend(ax; position=:lt)
-fig
 
 
 #### Voltage Magnitude
-ref = CSV.read("Bus5-7_standardModelPF_shortcircuit.csv", DataFrame; header=2, decimal=',')
+ref = CSV.read("Bus5-7_standardModelPF_avrAmplidyne.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Bus voltage magnitude (Power Factory Standard Model)")
 ts = range(sol.t[begin],sol.t[end],length=1000)
@@ -415,154 +422,39 @@ lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u._1", color=Cycled(1), li
 lines!(ax, ts, umag7.u; label="Bus7")
 lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u.", color=Cycled(2), linestyle=:dash, label="Bus 7 ref")
 axislegend(ax; position=:rb)
-xlims!(ax, 0.9, 5)
+xlims!(ax, 0, 5)
 fig
 
-#frequency at gen 1
-ref = CSV.read("frequency_bus1.csv", DataFrame; header=2, decimal=',')
-fig = Figure();
-ax = Axis(fig[1, 1]; title="Frequency")
-ts = range(sol.t[begin],sol.t[end],length=1000)
-f_oppodyn = round.(sol(ts; idxs=VIndex(1, :machine₊n)).*60, digits=8)
-#lines!(ax, sol;idxs=@obsex (VIndex(1,:machine₊n) * 60), label="OpPoDyn")
-lines!(ax, ts, f_oppodyn.u; label="OpPoDyn")
-lines!(ax, ref."Zeitpunkt in s", ref."Elektrische Frequenz in Hz", color=Cycled(1), linestyle=:dash, label="Power Factory")
-axislegend(ax; position=:rb)
-xlims!(ax, 0.9, 3)
-ylims!(ax, 59.9, 63)
-fig
-
-#frequency at gen 1
-ref = CSV.read("frequency_bus1.csv", DataFrame; header=2, decimal=',')
-fig = Figure();
-ax = Axis(fig[1, 1]; title="Frequency at bus 1")
-ts = range(sol.t[begin],sol.t[end],length=1000)
-f_oppodyn = round.(sol(ts; idxs=VIndex(1, :machine₊n)).*60, digits=8)
-#lines!(ax, sol;idxs=@obsex (VIndex(1,:machine₊n) * 60), label="OpPoDyn")
-lines!(ax, ts, f_oppodyn.u; label="OpPoDyn")
-lines!(ax, ref."Zeitpunkt in s", ref."Elektrische Frequenz in Hz", color=Cycled(1), linestyle=:dash, label="Power Factory")
-axislegend(ax; position=:rb)
-xlims!(ax, 0.9, 3)
-ylims!(ax, 59.9, 63)
-fig
-
-
-# Bus 1
-#### id and iq generator
-ref = CSV.read("gen1_data.csv", DataFrame; header=2, decimal=',')
-fig = Figure();
-ax = Axis(fig[1, 1]; title="stator current gen 1")
-ts = range(sol.t[begin],sol.t[end],length=1000)
-id = sol(ts; idxs=VIndex(1, :machine₊I_d))
-iq = sol(ts; idxs=VIndex(1, :machine₊I_q))
-lines!(ax, ts, id.u; label="i_d")
-lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="i_d ref")
-lines!(ax, ts, iq.u; label="i_q")
-lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="i_q ref")
-axislegend(ax; position=:rt)
-xlims!(ax, 0, 2)
-fig
-
-#### ud and uq generator
-ref = CSV.read("gen1_data.csv", DataFrame; header=2, decimal=',')
-fig = Figure();
-ax = Axis(fig[1, 1]; title="voltage at generator 1")
-ts = range(sol.t[begin],sol.t[end],length=1000)
-vd = sol(ts; idxs=VIndex(1, :machine₊V_d))
-vq = sol(ts; idxs=VIndex(1, :machine₊V_q))
-lines!(ax, ts, vd.u; label="u_d")
-lines!(ax, ref."Zeitpunkt in s", ref."Spannung, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="u_d ref")
-lines!(ax, ts, vq.u; label="u_q")
-lines!(ax, ref."Zeitpunkt in s", ref."Spannung, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="u_q ref")
-axislegend(ax; position=:rt)
-xlims!(ax, 0, 2)
-fig
 
 
 # Bus 2
 #### id and iq generator
-ref = CSV.read("gen2_data.csv", DataFrame; header=2, decimal=',')
+ref = CSV.read("gen2_data_avrAmplidyne.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="stator current gen 2")
 ts = range(sol.t[begin],sol.t[end],length=1000)
-id = sol(ts; idxs=VIndex(2, :machine₊I_d))
-iq = sol(ts; idxs=VIndex(2, :machine₊I_q))
+id = sol(ts; idxs=VIndex(2, :ctrld_gen₊machine₊I_d))
+iq = sol(ts; idxs=VIndex(2, :ctrld_gen₊machine₊I_q))
 lines!(ax, ts, id.u; label="i_d")
 lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="i_d ref")
 lines!(ax, ts, iq.u; label="i_q")
 lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="i_q ref")
 axislegend(ax; position=:rt)
-xlims!(ax, 0, 2)
+xlims!(ax, 0.9, 2)
 fig
 
 #### ud and uq generator
-ref = CSV.read("gen2_data.csv", DataFrame; header=2, decimal=',')
+ref = CSV.read("gen2_data_avrAmplidyne.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="voltage at generator 2")
 ts = range(sol.t[begin],sol.t[end],length=1000)
-vd = sol(ts; idxs=VIndex(2, :machine₊V_d))
-vq = sol(ts; idxs=VIndex(2, :machine₊V_q))
+vd = sol(ts; idxs=VIndex(2, :ctrld_gen₊machine₊V_d))
+vq = sol(ts; idxs=VIndex(2, :ctrld_gen₊machine₊V_q))
 lines!(ax, ts, vd.u; label="u_d")
 lines!(ax, ref."Zeitpunkt in s", ref."Spannung, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="u_d ref")
 lines!(ax, ts, vq.u; label="u_q")
 lines!(ax, ref."Zeitpunkt in s", ref."Spannung, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="u_q ref")
 axislegend(ax; position=:rt)
-xlims!(ax, 0, 2)
+xlims!(ax, 0.9, 2)
 fig
 
-
-# Bus 3
-#### id and iq generator
-ref = CSV.read("gen3_data.csv", DataFrame; header=2, decimal=',')
-fig = Figure();
-ax = Axis(fig[1, 1]; title="stator current gen 3")
-ts = range(sol.t[begin],sol.t[end],length=1000)
-id = sol(ts; idxs=VIndex(3, :machine₊I_d))
-iq = sol(ts; idxs=VIndex(3, :machine₊I_q))
-lines!(ax, ts, id.u; label="i_d")
-lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="i_d ref")
-lines!(ax, ts, iq.u; label="i_q")
-lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="i_q ref")
-axislegend(ax; position=:rt)
-xlims!(ax, 0, 2)
-fig
-
-#### ud and uq generator
-ref = CSV.read("gen3_data.csv", DataFrame; header=2, decimal=',')
-fig = Figure();
-ax = Axis(fig[1, 1]; title="voltage at generator 3")
-ts = range(sol.t[begin],sol.t[end],length=1000)
-vd = sol(ts; idxs=VIndex(3, :machine₊V_d))
-vq = sol(ts; idxs=VIndex(3, :machine₊V_q))
-lines!(ax, ts, vd.u; label="u_d")
-lines!(ax, ref."Zeitpunkt in s", ref."Spannung, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="u_d ref")
-lines!(ax, ts, vq.u; label="u_q")
-lines!(ax, ref."Zeitpunkt in s", ref."Spannung, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="u_q ref")
-axislegend(ax; position=:rt)
-xlims!(ax, 0, 2)
-fig
-#=
-# Plotting the Solution
-fig = Figure(size=(1000,2000));
-ax = Axis(fig[1, 1]; title="Active power")
-for i in [1,2,3,5,6,8]
-    lines!(ax, sol; idxs=VIndex(i,:busbar₊P), label="Bus $i", color=Cycled(i))
-end
-axislegend(ax)
-ax = Axis(fig[2, 1]; title="Voltage magnitude")
-for i in 1:9
-    lines!(ax, sol; idxs=VIndex(i,:busbar₊u_mag), label="Bus $i", color=Cycled(i))
-end
-axislegend(ax)
-ax = Axis(fig[3, 1]; title="Voltag angel")
-for i in 1:9
-    lines!(ax, sol; idxs=VIndex(i,:busbar₊u_arg), label="Bus $i", color=Cycled(i))
-end
-axislegend(ax)
-ax = Axis(fig[4, 1]; title="Frequency")
-for i in 1:3
-    lines!(ax, sol; idxs=VIndex(i,:machine₊ω), label="Bus $i", color=Cycled(i))
-end
-axislegend(ax)
-fig
-=#
