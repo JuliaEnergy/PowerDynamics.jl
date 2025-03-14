@@ -2,6 +2,7 @@ using OpPoDyn
 using OpPoDyn.Library
 using ModelingToolkit
 using NetworkDynamics
+using NetworkDynamicsInspector
 using Graphs
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
@@ -392,7 +393,7 @@ affect2! = (integrator) -> begin
     if integrator.t == 1.05
         @info "Deactivate line 57 at t = $(integrator.t)"
         p = NWParameter(integrator)
-        p.e[6, :pibranch₊active] = 1.05
+        p.e[6, :pibranch₊active] = 0
         auto_dt_reset!(integrator)
         save_parameters!(integrator)
     else
@@ -403,26 +404,26 @@ cb_deactivate = PresetTimeCallback([1.05], affect2!)
 
 cb_set = CallbackSet(cb_shortcircuit, cb_deactivate)
 prob = ODEProblem(nw, uflat(u0), (0,5), copy(pflat(u0)) ; callback=cb_set)
-sol = solve(prob, Rodas5P());
+sol = solve(prob, Rodas5P(), dtmax=0.001);
 nothing
 
 break # stop execution of script here
 
-
+inspect(sol)
 
 #### Voltage Magnitude
 ref = CSV.read("Bus5-7_standardModelPF_avrAmplidyne.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Bus voltage magnitude (Power Factory Standard Model)")
-ts = range(sol.t[begin],sol.t[end],length=1000)
+ts = range(sol.t[begin],sol.t[end],length=10000)
 umag5 = sqrt.(sol(ts; idxs=VIndex(5, :busbar₊u_r)).^2 + sol(ts; idxs=VIndex(5, :busbar₊u_i)).^2)
 umag7 = sqrt.(sol(ts; idxs=VIndex(7, :busbar₊u_r)).^2 + sol(ts; idxs=VIndex(7, :busbar₊u_i)).^2)
 lines!(ax, ts, umag5.u; label="Bus5")
 lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u._1", color=Cycled(1), linestyle=:dash, label="Bus 5 ref")
 lines!(ax, ts, umag7.u; label="Bus7")
 lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u.", color=Cycled(2), linestyle=:dash, label="Bus 7 ref")
-axislegend(ax; position=:rb)
-xlims!(ax, 0, 5)
+axislegend(ax; position=:rt)
+xlims!(ax, 0.99, 1.1)
 fig
 
 
@@ -432,7 +433,7 @@ fig
 ref = CSV.read("gen2_data_avrAmplidyne.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="stator current gen 2")
-ts = range(sol.t[begin],sol.t[end],length=1000)
+ts = range(sol.t[begin],sol.t[end],length=10000)
 id = sol(ts; idxs=VIndex(2, :ctrld_gen₊machine₊I_d))
 iq = sol(ts; idxs=VIndex(2, :ctrld_gen₊machine₊I_q))
 lines!(ax, ts, id.u; label="i_d")
@@ -458,3 +459,39 @@ axislegend(ax; position=:rt)
 xlims!(ax, 0.9, 2)
 fig
 
+#vr in OpPoDyn
+fig = Figure();
+ax = Axis(fig[1, 1]; title="vr")
+ts = range(sol.t[begin],sol.t[end],length=10000)
+vr = sol(ts; idxs=VIndex(2, :ctrld_gen₊avr₊vr))
+vfout = sol(ts; idxs=VIndex(2, :ctrld_gen₊avr₊vfout))
+lines!(ax, ts, vr.u; label="vr")
+#lines!(ax, ts, vfout.u; label="vfout")
+axislegend(ax; position=:rt)
+xlims!(ax, 0.9, 2)
+fig
+
+#vh.u -> Input schon falsch im Vergleich zu PF!
+ref = CSV.read("Gen2_standardModelPF_avrdata.csv", DataFrame; header=2, decimal=',', delim=';')
+fig = Figure();
+ax = Axis(fig[1, 1]; title="vh.u")
+ts = range(sol.t[begin],sol.t[end],length=10000)
+vh = sol(ts; idxs=VIndex(2, :ctrld_gen₊machine₊v_mag))
+lines!(ax, ts, vh.u; label="vh.u in OpPoDyn")
+lines!(ax, ref."Zeitpunkt in s", ref."u", color=Cycled(1), linestyle=:dash, label="u in PowerFactory")
+axislegend(ax; position=:rt)
+xlims!(ax, 0.9, 2)
+fig
+
+#vref -> Unterschied von 0,0016 -> eher weniger entscheidend
+ref = CSV.read("Gen2_standardModelPF_avrdata.csv", DataFrame; header=2, decimal=',', delim=';')
+ref.summe = ref."upss" .+ ref."voel" .+ ref."vuel" .+ ref."avrref"
+fig = Figure();
+ax = Axis(fig[1, 1]; title="v_ref")
+ts = range(sol.t[begin],sol.t[end],length=10000)
+vref = sol(ts; idxs=VIndex(2, :ctrld_gen₊avr₊vref)) ##möglich, da eig _vref, aber vref_input=false
+lines!(ax, ts, vref.u; label="v_ref in OpPoDyn")
+lines!(ax, ref."Zeitpunkt in s", ref.summe, color=Cycled(1), linestyle=:dash, label="v_ref aus PowerFactory")
+axislegend(ax; position=:rt)
+xlims!(ax, 0, 5)
+fig

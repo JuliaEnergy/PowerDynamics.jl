@@ -26,7 +26,7 @@ OpPoDyn = {path = ".."}
 DiffEqCallbacks = "3.9.1, 4"
 Graphs = "1.11.2"
 JLD2 = "0.5.2"
-Makie = "0.21.9"
+Makie = "0.22"
 ModelingToolkit = "9.39.0"
 NetworkDynamics = "0.9"
 OpPoDyn = "0.1.0"

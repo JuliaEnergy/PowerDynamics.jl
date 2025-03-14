@@ -65,7 +65,7 @@ end
     @equations begin
         # implementation after block diagram in milano
         if ceiling_function == :exponential
-            vfceil ~ Ae * exp(Be * abs(vfout))
+            vfceil ~ vfout * Ae * exp(Be * abs(vfout))
         elseif ceiling_function == :quadratic
             vfceil ~ quadratic_ceiling(abs(vfout), E1, E2, Se1, Se2)
         end
@@ -83,7 +83,7 @@ end
             0,
             amp_in - vr)
 
-        Te*Dt(vfout) ~ vr - vfceil - Ke*vf.u
+        Te*Dt(vfout) ~ vr - vfceil - Ke*vfout
 
         # output
         vf.u ~ vfout

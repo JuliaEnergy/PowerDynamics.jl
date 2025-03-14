@@ -510,6 +510,17 @@ axislegend(ax; position=:rt)
 xlims!(ax, 0, 2)
 fig
 
+#### Spannungsausgang Bus 2 Generator
+ref = CSV.read("Gen2_standardModelPF_ohneAVR_mitsystemSpannung.csv", DataFrame; header=2, decimal=',')
+fig = Figure();
+ax = Axis(fig[1, 1]; title="Betrag Ausgangsspannung")
+ts = range(sol.t[begin],sol.t[end],length=10000)
+vh = sol(ts; idxs=VIndex(2, :machine₊v_mag))
+lines!(ax, ts, vh.u; label="OpPoDyn")
+lines!(ax, ref."Zeitpunkt in s", ref."Mitsystem-Spannung, Betrag in p.u.", color=Cycled(1), linestyle=:dash, label="Betrag Gen 2/Bus Mitsystemspannung PF")
+axislegend(ax; position=:rt)
+xlims!(ax, 0.9, 3)
+fig
 
 # Bus 3
 #### id and iq generator
