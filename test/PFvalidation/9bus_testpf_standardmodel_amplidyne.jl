@@ -404,7 +404,7 @@ cb_deactivate = PresetTimeCallback([1.05], affect2!)
 
 cb_set = CallbackSet(cb_shortcircuit, cb_deactivate)
 prob = ODEProblem(nw, uflat(u0), (0,5), copy(pflat(u0)) ; callback=cb_set)
-sol = solve(prob, Rodas5P(), dtmax=0.001);
+sol = solve(prob, Rodas5P(), dtmax=0.0001);
 nothing
 
 break # stop execution of script here
@@ -422,8 +422,8 @@ lines!(ax, ts, umag5.u; label="Bus5")
 lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u._1", color=Cycled(1), linestyle=:dash, label="Bus 5 ref")
 lines!(ax, ts, umag7.u; label="Bus7")
 lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u.", color=Cycled(2), linestyle=:dash, label="Bus 7 ref")
-axislegend(ax; position=:rt)
-xlims!(ax, 0.99, 1.1)
+axislegend(ax; position=:rb)
+xlims!(ax, 0, 5)
 fig
 
 
@@ -460,18 +460,20 @@ xlims!(ax, 0.9, 2)
 fig
 
 #vr in OpPoDyn
+ref = CSV.read("Gen2_standardModelPF_avrdata.csv", DataFrame; header=2, decimal=',', delim=';')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="vr")
 ts = range(sol.t[begin],sol.t[end],length=10000)
 vr = sol(ts; idxs=VIndex(2, :ctrld_gen₊avr₊vr))
 vfout = sol(ts; idxs=VIndex(2, :ctrld_gen₊avr₊vfout))
 lines!(ax, ts, vr.u; label="vr")
+lines!(ax, ref."Zeitpunkt in s", ref."o1", color=Cycled(1), linestyle=:dash, label="vr in PowerFactory")
 #lines!(ax, ts, vfout.u; label="vfout")
-axislegend(ax; position=:rt)
-xlims!(ax, 0.9, 2)
+axislegend(ax; position=:rb)
+xlims!(ax, 0.9, 5)
 fig
 
-#vh.u -> Input schon falsch im Vergleich zu PF!
+#vh.u
 ref = CSV.read("Gen2_standardModelPF_avrdata.csv", DataFrame; header=2, decimal=',', delim=';')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="vh.u")
@@ -479,11 +481,11 @@ ts = range(sol.t[begin],sol.t[end],length=10000)
 vh = sol(ts; idxs=VIndex(2, :ctrld_gen₊machine₊v_mag))
 lines!(ax, ts, vh.u; label="vh.u in OpPoDyn")
 lines!(ax, ref."Zeitpunkt in s", ref."u", color=Cycled(1), linestyle=:dash, label="u in PowerFactory")
-axislegend(ax; position=:rt)
-xlims!(ax, 0.9, 2)
+axislegend(ax; position=:rb)
+xlims!(ax, 0.9, 5)
 fig
 
-#vref -> Unterschied von 0,0016 -> eher weniger entscheidend
+#vref passt
 ref = CSV.read("Gen2_standardModelPF_avrdata.csv", DataFrame; header=2, decimal=',', delim=';')
 ref.summe = ref."upss" .+ ref."voel" .+ ref."vuel" .+ ref."avrref"
 fig = Figure();
@@ -494,4 +496,16 @@ lines!(ax, ts, vref.u; label="v_ref in OpPoDyn")
 lines!(ax, ref."Zeitpunkt in s", ref.summe, color=Cycled(1), linestyle=:dash, label="v_ref aus PowerFactory")
 axislegend(ax; position=:rt)
 xlims!(ax, 0, 5)
+fig
+
+#output
+ref = CSV.read("Gen2_standardModelPF_avrdata.csv", DataFrame; header=2, decimal=',', delim=';')
+fig = Figure();
+ax = Axis(fig[1, 1]; title="vfout")
+ts = range(sol.t[begin],sol.t[end],length=10000)
+vfout = sol(ts; idxs=VIndex(2, :ctrld_gen₊avr₊vfout))
+lines!(ax, ts, vfout.u; label="vfout")
+lines!(ax, ref."Zeitpunkt in s", ref."uerrs", color=Cycled(1), linestyle=:dash, label="vfout in PowerFactory")
+axislegend(ax; position=:rt)
+xlims!(ax, 0.9, 5)
 fig

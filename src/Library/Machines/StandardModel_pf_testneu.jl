@@ -174,14 +174,13 @@
         I_1q ~ k_1q * I_q + ((X_2q_loop * ψ_1q - (X_aq + X_rlq) * ψ_2q) / X_det_q) * (1-salientpole) + salientpole * ψ_1q/X_1q #k_1q * I_q + ψ_1q/X_1q für salient pole; k_1q * I_q + (X_2q_loop * ψ_1q - (X_aq + X_rlq) * ψ_2q) / X_det_q round rotor
         I_2q ~ (k_2q * I_q + (X_1q_loop * ψ_2q - (X_aq + X_rlq) * ψ_1q) / X_det_q) * (1-salientpole) #0 für salient pole; k_2q * I_q + (X_1q_loop * ψ_2q - (X_aq + X_rlq) * ψ_1q) / X_det_q  round rotor
 
-        R_fd * I_fd + 1/ω_b * Dt(ψ_fd) ~ vf
+        R_fd * I_fd + 1/ω_b * Dt(ψ_fd) ~ R_fd/X_ad * vf
         R_1d * I_1d + 1/ω_b * Dt(ψ_1d) ~ 0
         R_1q * I_1q + 1/ω_b * Dt(ψ_1q) ~ 0
         R_2q * I_2q + 1/ω_b * Dt(ψ_2q) ~ 0
 
         # inputs
         vf ~ vf_input ? vf_in.u : vf_set
-        #τ_m ~ τ_m_input ? τ_m_in.u : τ_m_set
         #τ_m ~ τ_m_input ? τ_m_in.u : τ_m_set
         #Alternativ: (102)
         τ_m ~ pt/n - xmdm - dpu * n + addmt #xmdm Torque input signal; addmt additional torque parameter; dpu * n turbine shaft friction torque
