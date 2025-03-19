@@ -509,3 +509,30 @@ lines!(ax, ref."Zeitpunkt in s", ref."uerrs", color=Cycled(1), linestyle=:dash, 
 axislegend(ax; position=:rt)
 xlims!(ax, 0.9, 5)
 fig
+
+#v_fb
+ref = CSV.read("Gen2_standardModelPF_avrdata.csv", DataFrame; header=2, decimal=',', delim=';')
+fig = Figure();
+ax = Axis(fig[1, 1]; title="v_fb")
+ts = range(sol.t[begin],sol.t[end],length=10000)
+vfout = sol(ts; idxs=VIndex(2, :ctrld_gen₊avr₊v_fb))
+lines!(ax, ts, vfout.u; label="v_fb")
+lines!(ax, ref."Zeitpunkt in s", ref."vf", color=Cycled(1), linestyle=:dash, label="vf in PowerFactory")
+axislegend(ax; position=:rt)
+xlims!(ax, 0.9, 5)
+fig
+
+function states_deviation(i, rmssym, ndsym)
+    ref = CSV.read("Gen2_standardModelPF_avrdata.csv", DataFrame; header=2, decimal=',', delim=';')
+    ref_t = ref[!, "Zeitpunkt in s"]  # Zeitwerte aus CSV
+    ref_v = ref[!, rmssym] # Referenzwerte aus CSV
+    sim_v = sol(ref_t, idxs=VIndex(i, ndsym)).u  # Simulation an den gleichen Zeitpunkten auswerten
+    sum((sim_v - ref_v).^2) / length(ref_v)  # Mittelwert des quadratischen Fehlers
+end
+
+@testset "generator state deviation" begin
+    @test states_deviation(2, :vf, :ctrld_gen₊avr₊v_fb) < 1e-5
+    @test states_deviation(2, :o1, :ctrld_gen₊avr₊vr) < 1e-5
+    @test states_deviation(2, :uerrs, :ctrld_gen₊avr₊vfout) < 1e-5
+    @test states_deviation(2, :u, :ctrld_gen₊machine₊v_mag) < 1e-5
+end
