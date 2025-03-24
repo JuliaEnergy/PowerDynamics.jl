@@ -160,6 +160,7 @@ end
         # we add an explicit state for vfout to set bounds
         vfout(t), [guess=1, bounds=(0,Inf), description="field voltage output"]
         vr(t), [guess=0, description="regulator voltage"]
+        vr1(t), [guess=0, description="regulator voltage before Limiter"]
         vm(t), [guess=1, description="terminal voltage measurement (lagged)"]
         vfceil(t), [description="ceiled field voltage"]
         amp_in(t), [description="amplifier input"]
@@ -175,12 +176,14 @@ end
         end
 
         Tf*Dt(v_fb) ~ Kf*Dt(vfout) - v_fb
-        amp_in ~ Ka*(_vref - vm - v_fb)
+        #amp_in ~ Ka*(_vref - vm - v_fb)
 
-        Ta*Dt(vr) ~ ifelse(
-            ((vr > vr_max) & (amp_in > vr)) | ((vr < vr_min) & (amp_in < vr)),
-            0,
-            amp_in - vr)
+        #Ta*Dt(vr) ~ ifelse(
+           # ((vr > vr_max) & (amp_in > vr)) | ((vr < vr_min) & (amp_in < vr)),
+           # 0,
+            #amp_in - vr)
+        Ta*Dt(vr1) ~ Ka*(_vref - vm - v_fb) - vr1
+        vr ~ max(vr_min, min(vr_max, vr1))
 
         Te*Dt(vfout) ~ vr - vfceil - Ke*vf.u
 

@@ -403,7 +403,7 @@ end
 cb_deactivate = PresetTimeCallback([1.05], affect2!)
 
 cb_set = CallbackSet(cb_shortcircuit, cb_deactivate)
-prob = ODEProblem(nw, uflat(u0), (0,5), copy(pflat(u0)) ; callback=cb_set)
+prob = ODEProblem(nw, uflat(u0), (0,50), copy(pflat(u0)) ; callback=cb_set)
 sol = solve(prob, Rodas5P(), dtmax=0.0001);
 nothing
 
@@ -441,7 +441,7 @@ lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, d-Achse in p.u.", color=Cyc
 lines!(ax, ts, iq.u; label="i_q")
 lines!(ax, ref."Zeitpunkt in s", ref."Ständerstrom, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="i_q ref")
 axislegend(ax; position=:rt)
-xlims!(ax, 0.9, 2)
+xlims!(ax, 0.9, 10)
 fig
 
 #### ud and uq generator
@@ -455,8 +455,8 @@ lines!(ax, ts, vd.u; label="u_d")
 lines!(ax, ref."Zeitpunkt in s", ref."Spannung, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="u_d ref")
 lines!(ax, ts, vq.u; label="u_q")
 lines!(ax, ref."Zeitpunkt in s", ref."Spannung, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="u_q ref")
-axislegend(ax; position=:rt)
-xlims!(ax, 0.9, 2)
+axislegend(ax; position=:rb)
+xlims!(ax, 0.9, 10)
 fig
 
 #vr in OpPoDyn
@@ -507,7 +507,7 @@ vfout = sol(ts; idxs=VIndex(2, :ctrld_gen₊avr₊vfout))
 lines!(ax, ts, vfout.u; label="vfout")
 lines!(ax, ref."Zeitpunkt in s", ref."uerrs", color=Cycled(1), linestyle=:dash, label="vfout in PowerFactory")
 axislegend(ax; position=:rt)
-xlims!(ax, 0.9, 5)
+xlims!(ax, 0.9, 10)
 fig
 
 #v_fb
