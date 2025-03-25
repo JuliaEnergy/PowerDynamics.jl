@@ -72,13 +72,17 @@
         addmt=0, [description="Additional Torque parameter in p.u."]
         pt, [guess=1, bounds=(0,Inf), description="Turbine Power input signal in p.u."]
         dpu=0, [description="dpu * n is turbine shaft friction torque in p.u.;"]
+        speedvar=0, [description="speed variations considered in stator voltage equations"]
+        speedvar_part=1, [description="speed variations partly neglected in stator voltage equations"]
         # input/parameter switches
         if !vf_input
             vf_set, [guess=1, bounds=(0,Inf), description="field voltage"]
         end
         if !τ_m_input
             τ_m_set, [guess=1, bounds=(0,Inf), description="mechanical torque"]
-
+        end
+        if speedvar==1
+            speedvar_part=0
         end
     end
     @variables begin
@@ -143,10 +147,10 @@
 
 
         #stator voltage equations (72) und (73) (RMS Modell, anstatt (61) und (62) bzw (54))
-        V_d ~ V″_d - R_s * I_d + X″_q * I_q# n * X″_q * I_q #effect of speed variation partly neglected -> n set to initial speed in this equation, here 1
-        V_q ~ V″_q - R_s * I_q - X″_d * I_d#n * X″_d * I_d #TODO: verallgemeinern mit effect of speed varaiation considered/partly neglected/neglected
-        V″_d ~ - n * ψ″_q
-        V″_q ~ n * ψ″_d
+        V_d ~ V″_d - R_s * I_d + X″_q * I_q * ((1-speedvar) + n * speedvar) #effect of speed variation partly neglected -> n set to initial speed in this equation, here 1
+        V_q ~ V″_q - R_s * I_q - X″_d * I_d * ((1-speedvar) + n * speedvar) #TODO: verallgemeinern mit effect of speed varaiation considered/partly neglected/neglected
+        V″_d ~ - ψ″_q * (n* (speedvar_part + speedvar) + (1-(speedvar + speedvar_part)))
+        V″_q ~  ψ″_d * (n*(speedvar_part + speedvar) + (1-(speedvar_part + speedvar)))
 
         #electrical torque (66)
         τ_e * cosn ~ I_q * ψ_d - I_d * ψ_q #cosn?
