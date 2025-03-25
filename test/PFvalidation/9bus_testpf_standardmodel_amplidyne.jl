@@ -299,11 +299,11 @@ renamedp_gen3 = Dict(map(s->Symbol("machine__", s), collect(keys(allp_gen3))) .=
 components = [] # vector to collect dynamical components
 controleqs = Equation[] # equations connecting avr and gov to machine
 @named machine = Library.StandardModel_pf_testneu(; allp_gen2...)
-@named avr = AVRTypeIS(
+@named avr = AVRTypeI(
             # vref = p.Vref # let this free for initialization
             Ka = 25, Ke = -0.044, Kf = 0.0805,
             Ta = 0.2, Tf = 0.35, Te = 0.5, Tr = 0.06,
-            vr_min = -1, vr_max = 1,
+            vr_min = -1, vr_max = 1, anti_windup = false,
             A=0.0016, B=1.465,
         )
 append!(controleqs, [connect(machine.v_mag_out, avr.vh), connect(avr.vf, machine.vf_in)])

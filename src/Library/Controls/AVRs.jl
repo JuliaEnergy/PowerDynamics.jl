@@ -14,6 +14,7 @@ end
     @structural_parameters begin
        vref_input=false
        tmeas_lag=true
+       anti_windup = true
        ceiling_function=:exponential
     end
     @components begin
@@ -40,8 +41,8 @@ end
         Se1, [description="1st ceiling saturation"]
         Se2, [description="2nd ceiling saturation"]
         if ceiling_function == :exponential
-            Ae=_solve_Ae(E1=>Se1, E2=>Se2), [description="1st ceiling coeff"]
-            Be=_solve_Be(E1=>Se1, E2=>Se2), [description="1st ceiling coeff"]
+            A=_solve_Ae(E1=>Se1, E2=>Se2), [description="1st ceiling coeff"]
+            B=_solve_Be(E1=>Se1, E2=>Se2), [description="1st ceiling coeff"]
         end
         if !vref_input
             vref, [guess=1, description="Terminal voltag reference [Machine PU]"]
@@ -60,12 +61,13 @@ end
         vm(t), [guess=1, description="terminal voltage measurement (lagged)"]
         vfceil(t), [description="ceiled field voltage"]
         amp_in(t), [description="amplifier input"]
+        vr1(t), [guess=0, description="regulator voltage before Limiter"]
         v_fb(t), [guess=0, description="feedback voltage"]
     end
     @equations begin
         # implementation after block diagram in milano
         if ceiling_function == :exponential
-            vfceil ~ vfout * Ae * exp(Be * abs(vfout))
+            vfceil ~ vfout * A * exp(B * abs(vfout))
         elseif ceiling_function == :quadratic
             vfceil ~ quadratic_ceiling(abs(vfout), E1, E2, Se1, Se2)
         end
@@ -76,12 +78,17 @@ end
         end
 
         Tf*Dt(v_fb) ~ Kf*Dt(vfout) - v_fb
-        amp_in ~ Ka*(_vref - vm - v_fb)
 
-        Ta*Dt(vr) ~ ifelse(
-            ((vr > vr_max) & (amp_in > vr)) | ((vr < vr_min) & (amp_in < vr)),
-            0,
-            amp_in - vr)
+        if anti_windup
+            amp_in ~ Ka*(_vref - vm - v_fb)
+            Ta*Dt(vr) ~ ifelse(
+                ((vr > vr_max) & (amp_in > vr)) | ((vr < vr_min) & (amp_in < vr)),
+                0,
+                amp_in - vr)
+        else
+            Ta*Dt(vr1) ~ Ka*(_vref - vm - v_fb) - vr1
+            vr ~ max(vr_min, min(vr_max, vr1))
+        end
 
         Te*Dt(vfout) ~ vr - vfceil - Ke*vfout
 
@@ -122,7 +129,7 @@ function quadratic_ceiling(x, E1, E2, Se1, Se2)
     ifelse(x > Asq, Bsq * (x - Asq)^2, 0.0)
 end
 
-
+#=
 @mtkmodel AVRTypeIS begin
     @structural_parameters begin
        vref_input=false
@@ -191,3 +198,4 @@ end
         vf.u ~ vfout
     end
 end
+=#
