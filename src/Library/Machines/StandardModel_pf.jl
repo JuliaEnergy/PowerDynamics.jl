@@ -1,4 +1,4 @@
-@mtkmodel StandardModel_pf_testneu begin
+@mtkmodel StandardModel_pf begin
     @structural_parameters begin
         vf_input = true
         τ_m_input = true
@@ -23,40 +23,18 @@
         R_s, [description="stator resistance"]
         X_rld, [description="coupling reactance between field and damper winding"]
         X_rlq, [description="coupling reactance between q-axis damper windings"]
-        #X_d, [description="d-axis synchronous reactance"]
-        #X_q, [description="q-axis synchronous reactance"]
-        #X′_d, [description="d-axis transient reactance"]
-        #X′_q=0.0001, [description="q-axis transient reactance, not needed for salient pole machine"]
+        X_d, [description="d-axis synchronous reactance"]
+        X_q, [description="q-axis synchronous reactance"]
+        X′_d, [description="d-axis transient reactance"]
+        X′_q=0.0001, [description="q-axis transient reactance, not needed for salient pole machine"]
         X″_d, [description="d-axis subtransient reactance"]
         X″_q, [description="q-axis subtransient reactance"]
         X_ls, [description="stator leakage reactance"]
-        #T′_d0, [description="d-axis transient time constant"]
-        #T″_d0, [description="d-axis subtransient time constant"]
-        #T′_q0=0, [description="q-axis transient time constant, not needed for salient pole machine"]
-        #T″_q0, [description="q-axis subtransient time constant"]
-        X_ad, [description="Mutual (magnetising) reactance, d-axis"]
-        X_aq, [description="Mutual (magnetising) reactance, q-axis"]
-        X_1q, [description="Hilfsvariable"]
-        X_det_d, [description="Hilfsvariable"]
-        X_det_q, [description="Hilfsvariable"]
-        X_fd_loop, [description="Hilfsvariable"]
-        X_1d_loop, [description="Hilfsvariable"]
-        X_1q_loop, [description="Hilfsvariable"]
-        X_2q_loop, [description="Hilfsvariable"]
-        k_fd, [description="Hilfsvariable"]
-        k_1d, [description="Hilfsvariable"]
-        k_1q, [description="Hilfsvariable"]
-        k_2q, [description="Hilfsvariable"]
-        #X_fd, [description="Reactance of excitation (field) winding (d-axis)"]
-        #X_1d, [description="Reactance of 1d-damper winding (d-axis)"]
-        #X_1q, [description="Reactance of 1q-damper winding (q-axis)"]
-        #X_2q, [description="Reactance of 2q-damper winding (q-axis)"]
-        R_fd, [description="Resistance of excitation winding (d-axis)"]
-        R_1d, [description="Resistance of 1d-damper winding (d-axis)"]
-        R_1q, [description="Resistance of 1q-damper winding (q-axis)"]
-        R_2q, [description="Resistance of 2q-damper winding (q-axis)"]
+        T′_d0, [description="d-axis transient time constant"]
+        T″_d0, [description="d-axis subtransient time constant"]
+        T′_q0=0, [description="q-axis transient time constant, not needed for salient pole machine"]
+        T″_q0, [description="q-axis subtransient time constant"]
         H, [description="inertia constant"]
-        # System and machine base
         S_b, [description="System power basis in MVA"]
         V_b, [description="System voltage basis in kV"]
         ω_b, [description="System base frequency in rad/s"] #(106)
@@ -74,6 +52,83 @@
         dpu=0, [description="dpu * n is turbine shaft friction torque in p.u.;"]
         speedvar=0, [description="speed variations considered in stator voltage equations"]
         speedvar_part=1, [description="speed variations partly neglected in stator voltage equations"]
+        #secondary parameters
+        #X_ad, [description="Mutual (magnetising) reactance, d-axis"]
+        #X_aq, [description="Mutual (magnetising) reactance, q-axis"]
+        #X_1q, [description="Hilfsvariable"]
+        #X_det_d, [description="Hilfsvariable"]
+        #X_det_q, [description="Hilfsvariable"]
+        #X_fd_loop, [description="Hilfsvariable"]
+        #X_1d_loop, [description="Hilfsvariable"]
+        #X_1q_loop, [description="Hilfsvariable"]
+        #X_2q_loop, [description="Hilfsvariable"]
+        #k_fd, [description="Hilfsvariable"]
+        #k_1d, [description="Hilfsvariable"]
+        #k_1q, [description="Hilfsvariable"]
+        #k_2q, [description="Hilfsvariable"]
+        #X_fd, [description="Reactance of excitation (field) winding (d-axis)"]
+        #X_1d, [description="Reactance of 1d-damper winding (d-axis)"]
+        #X_1q, [description="Reactance of 1q-damper winding (q-axis)"]
+        #X_2q, [description="Reactance of 2q-damper winding (q-axis)"]
+        #R_fd, [description="Resistance of excitation winding (d-axis)"]
+        #R_1d, [description="Resistance of 1d-damper winding (d-axis)"]
+        #R_1q, [description="Resistance of 1q-damper winding (q-axis)"]
+        #R_2q, [description="Resistance of 2q-damper winding (q-axis)"]
+        T″_d = T″_d0 * X″_d/X′_d
+        T″_q = T″_q0 * X″_q/(X′_q * (1-salientpole) + salientpole * X_q)
+        T′_d = T′_d0 * X′_d/X_d
+        T′_q = T′_q0 * X′_q/X_q
+        X_ad = X_d - X_ls
+        X_aq = X_q - X_ls
+        X_1 = X_d - X_ls + X_rld
+        X_2 = X_1 - (X_d - X_ls)^2 / X_d
+        X_3 = (X_2 - X_1 * X″_d/X_d) / (1 - X″_d/X_d)
+        T_1 = X_d / X′_d * T′_d + (1 - X_d/X′_d + X_d/X″_d) * T″_d
+        T_2 = T″_d + T′_d
+        a = (X_2 * T_1 - X_1 * T_2) / (X_1 - X_2)
+        b = X_3 * T″_d * T′_d / (X_3 - X_2)
+        T_σfd = -a/2 + sqrt(a^2/4 - b)
+        T_σ1d = -a/2 - sqrt(a^2/4 - b)
+        X_fd = (T_σfd - T_σ1d) / ((T_1 - T_2)/(X_1 - X_2) + T_σ1d / X_3)
+        X_1d = (T_σ1d - T_σfd) / ((T_1 - T_2)/(X_1 - X_2) + T_σfd / X_3)
+        R_fd = X_fd / (ω_b * T_σfd)
+        R_1d = X_1d / (ω_b * T_σ1d)
+        X_4 = X_q - X_ls + X_rlq
+        X_5 = X_4 - (X_q - X_ls)^2 / X_q
+        X_6 = (X_5 - X_4 * X″_q/X_q) / (1 - X″_q/X_q)
+        T_3 = X_q / X′_q * T′_q + (1 - X_q/X′_q + X_q/X″_q) * T″_q
+        T_4 = T″_q + T′_q
+        c = (X_5 * T_3 - X_4 * T_4) / (X_4 - X_5)
+        d = X_6 * T″_q * T′_q / (X_6 - X_5)
+        T_σ2q = -c/2 + sqrt(c^2/4 - d)
+        T_σ1q = -c/2 - sqrt(c^2/4 - d)
+        X_2qr = (T_σ2q - T_σ1q) / ((T_3 - T_4)/(X_4 - X_5) + T_σ1q / X_6) #round-rotor
+        X_1qr = (T_σ1q - T_σ2q) / ((T_3 - T_4)/(X_4 - X_5) + T_σ2q / X_6) #round-rotor
+        R_2qr = X_2qr / (ω_b * T_σ2q) #round-rotor
+        R_1qr = X_1qr / (ω_b * T_σ1q) #round-rotor
+        X_1qs = (X_q - X_ls) * (X″_q - X_ls) / (X_q - X″_q) #salient pole
+        R_1qs = X″_q / X_q * (X_q - X_ls + X_1qs) / (ω_b * T″_q) #salient pole
+        X_1q = salientpole * X_1qs + (1-salientpole) * X_1qr
+        R_1q = salientpole * R_1qs + (1-salientpole) * R_1qr
+        X_2q = (1-salientpole) * X_2qr
+        R_2q = (1-salientpole) * R_2qr
+        k_fd = (X_ad * X_1d) / ((X_ad + X_rld) * (X_1d + X_fd) + X_fd * X_1d)
+        k_1d = (X_ad * X_fd) / ((X_ad + X_rld) * (X_1d + X_fd) + X_fd * X_1d)
+        #X″_d = X_ad + X_ls - (k_1d + k_fd) * X_ad #doppelt
+        k_1qs = X_aq / (X_aq + X_rlq + X_1q) #salient pole
+        X″_qs = X_aq + X_ls - k_1qs * X_aq #salient pole
+        k_1qr = (X_aq * X_2q)/((X_aq + X_rlq) * (X_2q + X_1q) + X_2q * X_1q) #round rotor
+        k_2qr = (X_aq * X_1q)/((X_aq + X_rlq) * (X_2q + X_1q) + X_2q * X_1q) #round rotor
+        X″_qr = X_aq + X_ls - (k_2qr + k_1qr) * X_aq #round rotor
+        k_1q = salientpole * k_1qs + (1-salientpole) * k_1qr
+        k_2q = (1-salientpole) * k_2qr
+        #X″_q = salientpole * X″_qs + (1-salientpole)* X″_qr #doppelt
+        X_det_d = (X_ad + X_rld) * (X_1d + X_fd) + X_fd * X_1d
+        X_det_q = (X_aq + X_rlq) * (X_2q + X_1q) + X_2q * X_1q
+        X_fd_loop = X_ad + X_rld + X_fd
+        X_1d_loop = X_ad + X_rld + X_1d
+        X_1q_loop = X_aq + X_rlq + X_1q
+        X_2q_loop = X_aq + X_rlq + X_2q
         # input/parameter switches
         if !vf_input
             vf_set, [guess=1, bounds=(0,Inf), description="field voltage"]
