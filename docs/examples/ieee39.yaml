@@ -1,0 +1,400 @@
+title: ieee39 Bus System 
+version: "1.0"
+description: 4 Bus Powergrid Test Network
+
+# special words are "MODEL", "CONSTRUCTOR", "ARGS", "WRAPPER"
+Models:
+  KirchhoffBus:
+    CONSTRUCTOR: MTKBus
+
+  ZIPLoad:
+    CONSTRUCTOR: ZIPLoad
+    KpC: 0.0
+    KpI: 0.0
+    KqZ: 1.0
+    KqI: 0.0
+    KqC: 0.0
+    # Pset defined in bus
+    name: ZIPLoad
+
+  LoadBus:
+    CONSTRUCTOR: MTKBus
+    ARGS:
+      - Models.ZIPLoad
+      
+  ## define Powerflow models
+  PF_PQ:
+    CONSTRUCTOR: pfPQ 
+    
+  PF_PV:
+    CONSTRUCTOR: pfPV 
+    
+  PF_Slack:
+    CONSTRUCTOR: pfSlack 
+
+
+VertexModels:
+  1:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.KirchhoffBus
+    pf:
+      MODEL: Models.PF_PQ
+      P: 0.0
+      Q: 0.0
+      
+  2:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.KirchhoffBus
+    pf:
+      MODEL: Models.PF_PQ
+      P: 0.0
+      Q: 0.0
+      
+  3:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: LoadBus
+        ARGS[1].Pset: -3.22
+    pf:
+       MODEL: Models.PF_PQ
+       P: -3.22
+       Q: -0.024
+
+  4:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: LoadBus
+        ARGS[1].Pset: -5.0
+    pf:
+      MODEL: Models.PF_PQ
+      P: -5.0
+      Q: -1.84
+      
+  5:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.KirchhoffBus
+    pf:
+      MODEL: Models.PF_PQ
+      P: 0.0
+      Q: 0.0
+      
+  6:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.KirchhoffBus
+    pf:
+      MODEL: Models.PF_PQ
+      P: 0.0
+      Q: 0.0
+
+  7:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: LoadBus
+        ARGS[1].Pset: -2.338
+    pf:
+      MODEL: Models.PF_PQ
+      P: -2.338
+      Q: -0.84
+        
+  8:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: LoadBus
+        ARGS[1].Pset: -5.22
+    pf:
+      MODEL: Models.PF_PQ
+      P: -5.22
+      Q: -1.76
+      
+  9:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.KirchhoffBus
+    pf:
+      MODEL: Models.PF_PQ
+      P: 0.0
+      Q: 0.0
+      
+  10:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.KirchhoffBus
+    pf:
+      MODEL: Models.PF_PQ
+      P: 0.0
+      Q: 0.0
+      
+  11:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.KirchhoffBus
+    pf:
+      MODEL: Models.PF_PQ
+      P: 0.0
+      Q: 0.0
+        
+  12:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: LoadBus
+        ARGS[1].Pset: -0.075
+    pf:
+      MODEL: Models.PF_PQ
+      P: -0.075
+      Q: -0.88
+      
+  13:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.KirchhoffBus
+    pf:
+      MODEL: Models.PF_PQ
+      P: 0.0
+      Q: 0.0
+      
+  14:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.KirchhoffBus
+    pf:
+      MODEL: Models.PF_PQ
+      P: 0.0
+      Q: 0.0
+        
+  15:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: LoadBus
+        ARGS[1].Pset: -3.2
+    pf:
+      MODEL: Models.PF_PQ
+      P: -3.2
+      Q: -1.53
+        
+  16:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: LoadBus
+        ARGS[1].Pset: -3.29
+    pf:
+      MODEL: Models.PF_PQ
+      P: -3.29
+      Q: -0.323
+      
+  17:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.KirchhoffBus
+    pf:
+      MODEL: Models.PF_PQ
+      P: 0.0
+      Q: 0.0
+        
+  18:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: LoadBus
+        ARGS[1].Pset: -1.58
+    pf:
+      MODEL: Models.PF_PQ
+      P: -1.58
+      Q: -0.3
+      
+  19:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.KirchhoffBus
+    pf:
+      MODEL: Models.PF_PQ
+      P: 0.0
+      Q: 0.0
+        
+  20:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: LoadBus
+        ARGS[1].Pset: -6.28
+    pf:
+      MODEL: Models.PF_PQ
+      P: -6.28
+      Q: -1.03
+        
+  21:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: LoadBus
+        ARGS[1].Pset: -2.74
+    pf:
+      MODEL: Models.PF_PQ
+      P: -2.74
+      Q: -1.15
+      
+  22:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.KirchhoffBus
+    pf:
+      MODEL: Models.PF_PQ
+      P: 0.0
+      Q: 0.0
+        
+  23:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: LoadBus
+        ARGS[1].Pset: -2.475
+    pf:
+      MODEL: Models.PF_PQ
+      P: -2.475
+      Q: -0.846
+        
+  24:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: LoadBus
+        ARGS[1].Pset: -3.086
+    pf:
+      MODEL: Models.PF_PQ
+      P: -3.086
+      Q: 0.922
+        
+  25:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: LoadBus
+        ARGS[1].Pset: -2.24
+    pf:
+      MODEL: Models.PF_PQ
+      P: -2.24
+      Q: -0.472
+        
+  26:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: LoadBus
+        ARGS[1].Pset: -1.39
+    pf:
+      MODEL: Models.PF_PQ
+      P: -1.39
+      Q: -0.17
+        
+  27:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: LoadBus
+        ARGS[1].Pset: -2.81
+    pf:
+      MODEL: Models.PF_PQ
+      P: -2.81
+      Q: -0.755
+        
+  28:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: LoadBus
+        ARGS[1].Pset: -2.06
+    pf:
+      MODEL: Models.PF_PQ
+      P: -2.06
+      Q: -0.276
+        
+  29:
+    CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: LoadBus
+        ARGS[1].Pset: -2.835
+    pf:
+      MODEL: Models.PF_PQ
+      P: -2.835
+      Q: -0.269
+      
+  30:
+    CONSTRUCTOR: Bus
+    pf:
+      MODEL: Models.PF_PV
+      P: 2.5
+      V: 1.0475
+      
+  31:
+    CONSTRUCTOR: Bus
+    pf:
+      MODEL: Models.PF_Slack
+      δ: 0
+      V: 0.982
+      
+  32:
+    CONSTRUCTOR: Bus
+    pf:
+      MODEL: Models.PF_PV
+      P: 6.5
+      V: 0.9831
+      
+  33:
+    CONSTRUCTOR: Bus
+    pf:
+      MODEL: Models.PF_PV
+      P: 6.32
+      V: 0.9972
+      
+  34:
+    CONSTRUCTOR: Bus
+    pf:
+      MODEL: Models.PF_PV
+      P: 5.08
+      V: 1.0123
+      
+  35:
+    CONSTRUCTOR: Bus
+    pf:
+      MODEL: Models.PF_PV
+      P: 6.5
+      V: 1.0493
+      
+  36:
+    CONSTRUCTOR: Bus
+    pf:
+      MODEL: Models.PF_PV
+      P: 5.6
+      V: 1.0635
+      
+  37:
+    CONSTRUCTOR: Bus
+    pf:
+      MODEL: Models.PF_PV
+      P: 5.4
+      V: 1.0278
+      
+  38:
+    CONSTRUCTOR: Bus
+    pf:
+      MODEL: Models.PF_PV
+      P: 8.3
+      V: 1.0265
+      
+  39:
+    CONSTRUCTOR: Bus
+    pf:
+      MODEL: Models.PF_PV
+      P: -1.04
+      V: 1.03
+
+EdgeModels:
+  WRAPPER:
+    CONSTRUCTOR: EdgeModel
+    ARGS:
+      - MODEL
+      - [":srcθ"]
+      - [":dstθ"]
+      - [":P"]
+    annotation: :AntiSymmetric
+  "1=>2": Models.StaticPowerLineK05
+  "2=>3":
+    MODEL: Models.StaticPowerLine
+    K: 1.0
+  "3=>4":
+    MODEL: Models.StaticPowerLine
+    name: :line3
