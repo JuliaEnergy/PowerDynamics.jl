@@ -15,13 +15,54 @@ Models:
     KqI: 0.0
     KqC: 0.0
     # Pset defined in bus
-    name: ZIPLoad
+    name: :ZIPLoad
 
   LoadBus:
     CONSTRUCTOR: MTKBus
     ARGS:
       - Models.ZIPLoad
-      
+
+  ## Base Machine model
+  Machine:
+    CONSTRUCTOR: SauerPaiMachine
+
+  AVRTypeI:
+    CONSTRUCTOR: AVRTypeI
+
+  AVRFixed:
+    CONSTRUCTOR: AVRFixed
+
+  TGOV1:
+    CONSTRUCTOR: TGOV1
+
+  GovFixed:
+    CONSTRUCTOR: GOVFixed
+
+  ControlledGenerator:
+    CONSTRUCTOR: CompositeInjector
+    ARGS:
+      - Models.Machine
+      - Models.AVRTypeI
+      - Models.TGOV1
+    name: :ctrld_gen
+
+  ControlledGenBus:
+    CONSTRUCTOR: MTKBus
+    ARGS:
+      - Models.ControlledGenerator
+
+  LoadControlledGenBus:
+    CONSTRUCTOR: MTKBus
+    ARGS:
+      - Models.ZIPLoad
+      - Models.ControlledGenerator
+
+  LoadMachineBus:
+    CONSTRUCTOR: MTKBus
+    ARGS:
+      - Models.ZIPLoad
+      - Models.Machine
+
   ## define Powerflow models
   PF_PQ:
     CONSTRUCTOR: pfPQ 
@@ -33,7 +74,6 @@ Models:
     
   PF_Slack:
     CONSTRUCTOR: pfSlack 
-    δ: 0.0
 
 
 VertexModels:
@@ -279,71 +319,486 @@ VertexModels:
       P: -2.835
       Q: -0.269
       
-  30:
+  30: # Machine with AVR/Gov
     CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.ControlledGenerator
+    ctrld_gen₊avr₊E1: 3.546099
+    ctrld_gen₊avr₊E2: 4.728132
+    ctrld_gen₊avr₊Ka: 5.0
+    ctrld_gen₊avr₊Ke: -0.0485
+    ctrld_gen₊avr₊Kf: 0.04
+    ctrld_gen₊avr₊Se1: 0.08
+    ctrld_gen₊avr₊Se2: 0.26
+    ctrld_gen₊avr₊Ta: 0.06
+    ctrld_gen₊avr₊Te: 0.25
+    ctrld_gen₊avr₊Tf: 1.0
+    ctrld_gen₊avr₊Tr: 0.01
+    ctrld_gen₊avr₊vr_max: 1.0
+    ctrld_gen₊avr₊vr_min: -1.0
+    ctrld_gen₊gov₊DT: 0
+    ctrld_gen₊gov₊R: 0.05
+    ctrld_gen₊gov₊T1: 0.5
+    ctrld_gen₊gov₊T2: 2.1
+    ctrld_gen₊gov₊T3: 7.2
+    ctrld_gen₊gov₊V_max: 1.0
+    ctrld_gen₊gov₊V_min: 0.0
+    ctrld_gen₊gov₊ω_ref: 1
+    ctrld_gen₊machine₊D: 0
+    ctrld_gen₊machine₊H: 4.199999809265137
+    ctrld_gen₊machine₊R_s: 0.0
+    ctrld_gen₊machine₊S_b: 100
+    ctrld_gen₊machine₊Sn: 1000.0
+    ctrld_gen₊machine₊T′_d0: 10.199999809265137
+    ctrld_gen₊machine₊T′_q0: 2.0
+    ctrld_gen₊machine₊T″_d0: 0.05000000074505806
+    ctrld_gen₊machine₊T″_q0: 0.03500000014901161
+    ctrld_gen₊machine₊V_b: 16.5
+    ctrld_gen₊machine₊Vn: 16.5
+    ctrld_gen₊machine₊X_d: 1.0
+    ctrld_gen₊machine₊X_ls: 0.125
+    ctrld_gen₊machine₊X_q: 0.6899999976158142
+    ctrld_gen₊machine₊X′_d: 0.3100000023841858
+    ctrld_gen₊machine₊X′_q: 0.5
+    ctrld_gen₊machine₊X″_d: 0.25
+    ctrld_gen₊machine₊X″_q: 0.25
+    ctrld_gen₊machine₊ω_b: 376.99111843077515
     pf:
       MODEL: Models.PF_PV
       P: 2.5
       V: 1.0475
       
-  31:
+  31: # Load + Machine with AVR/GOV
     CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.LoadControlledGenBus
+    ctrld_gen₊avr₊E1: 3.036437
+    ctrld_gen₊avr₊E2: 4.048583
+    ctrld_gen₊avr₊Ka: 6.2
+    ctrld_gen₊avr₊Ke: -0.633
+    ctrld_gen₊avr₊Kf: 0.057
+    ctrld_gen₊avr₊Se1: 0.66
+    ctrld_gen₊avr₊Se2: 0.88
+    ctrld_gen₊avr₊Ta: 0.05
+    ctrld_gen₊avr₊Te: 0.405
+    ctrld_gen₊avr₊Tf: 0.5
+    ctrld_gen₊avr₊Tr: 0.01
+    ctrld_gen₊avr₊vr_max: 1.0
+    ctrld_gen₊avr₊vr_min: -1.0
+    ctrld_gen₊gov₊DT: 0
+    ctrld_gen₊gov₊R: 0.05
+    ctrld_gen₊gov₊T1: 0.5
+    ctrld_gen₊gov₊T2: 2.1
+    ctrld_gen₊gov₊T3: 7.2
+    ctrld_gen₊gov₊V_max: 1.0
+    ctrld_gen₊gov₊V_min: 0.0
+    ctrld_gen₊gov₊ω_ref: 1
+    ctrld_gen₊machine₊D: 0
+    ctrld_gen₊machine₊H: 4.328999996185303
+    ctrld_gen₊machine₊R_s: 0.0
+    ctrld_gen₊machine₊S_b: 100
+    ctrld_gen₊machine₊Sn: 700.0
+    ctrld_gen₊machine₊T′_d0: 6.559999942779541
+    ctrld_gen₊machine₊T′_q0: 1.5
+    ctrld_gen₊machine₊T″_d0: 0.05000000074505806
+    ctrld_gen₊machine₊T″_q0: 0.03500000014901161
+    ctrld_gen₊machine₊V_b: 16.5
+    ctrld_gen₊machine₊Vn: 16.5
+    ctrld_gen₊machine₊X_d: 2.065000057220459
+    ctrld_gen₊machine₊X_ls: 0.245
+    ctrld_gen₊machine₊X_q: 1.9739999771118164
+    ctrld_gen₊machine₊X′_d: 0.4878999888896942
+    ctrld_gen₊machine₊X′_q: 1.190000057220459
+    ctrld_gen₊machine₊X″_d: 0.3499999940395355
+    ctrld_gen₊machine₊X″_q: 0.3499999940395355
+    ctrld_gen₊machine₊ω_b: 376.99111843077515
+    load₊KpC: 0.0
+    load₊KpI: 0.0
+    load₊KpZ: 1.0
+    load₊KqC: 0.0
+    load₊KqI: 0.0
+    load₊KqZ: 1.0
+    load₊Pset: -0.09199999809265137
+    load₊Qset: -0.045999999046325686
     pf:
       MODEL: Models.PF_Slack
       δ: 0
       V: 0.982
       
-  32:
+  32:  # Machine with AVR/Gov
     CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.ControlledGenerator
+    ctrld_gen₊avr₊E1: 2.342286
+    ctrld_gen₊avr₊E2: 3.123048
+    ctrld_gen₊avr₊Ka: 5.0
+    ctrld_gen₊avr₊Ke: -0.0198
+    ctrld_gen₊avr₊Kf: 0.08
+    ctrld_gen₊avr₊Se1: 0.13
+    ctrld_gen₊avr₊Se2: 0.34
+    ctrld_gen₊avr₊Ta: 0.06
+    ctrld_gen₊avr₊Te: 0.5
+    ctrld_gen₊avr₊Tf: 1.0
+    ctrld_gen₊avr₊Tr: 0.01
+    ctrld_gen₊avr₊vr_max: 1.0
+    ctrld_gen₊avr₊vr_min: -1.0
+    ctrld_gen₊gov₊DT: 0
+    ctrld_gen₊gov₊R: 0.05
+    ctrld_gen₊gov₊T1: 0.5
+    ctrld_gen₊gov₊T2: 2.1
+    ctrld_gen₊gov₊T3: 7.2
+    ctrld_gen₊gov₊V_max: 1.0
+    ctrld_gen₊gov₊V_min: 0.0
+    ctrld_gen₊gov₊ω_ref: 1
+    ctrld_gen₊machine₊D: 0
+    ctrld_gen₊machine₊H: 4.474999904632568
+    ctrld_gen₊machine₊R_s: 0.0
+    ctrld_gen₊machine₊S_b: 100
+    ctrld_gen₊machine₊Sn: 800.0
+    ctrld_gen₊machine₊T′_d0: 5.699999809265137
+    ctrld_gen₊machine₊T′_q0: 1.5
+    ctrld_gen₊machine₊T″_d0: 0.05000000074505806
+    ctrld_gen₊machine₊T″_q0: 0.03500000014901161
+    ctrld_gen₊machine₊V_b: 16.5
+    ctrld_gen₊machine₊Vn: 16.5
+    ctrld_gen₊machine₊X_d: 1.996000051498413
+    ctrld_gen₊machine₊X_ls: 0.2432
+    ctrld_gen₊machine₊X_q: 1.8960000276565552
+    ctrld_gen₊machine₊X′_d: 0.42480000853538513
+    ctrld_gen₊machine₊X′_q: 0.7008000016212463
+    ctrld_gen₊machine₊X″_d: 0.36000001430511475
+    ctrld_gen₊machine₊X″_q: 0.36000001430511475
+    ctrld_gen₊machine₊ω_b: 376.99111843077515
     pf:
       MODEL: Models.PF_PV
       P: 6.5
       V: 0.9831
       
-  33:
+  33: # Machine with AVR/Gov
     CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.ControlledGenerator
+    ctrld_gen₊avr₊E1: 2.868069
+    ctrld_gen₊avr₊E2: 3.824092
+    ctrld_gen₊avr₊Ka: 5.0
+    ctrld_gen₊avr₊Ke: -0.0525
+    ctrld_gen₊avr₊Kf: 0.08
+    ctrld_gen₊avr₊Se1: 0.08
+    ctrld_gen₊avr₊Se2: 0.314
+    ctrld_gen₊avr₊Ta: 0.06
+    ctrld_gen₊avr₊Te: 0.5
+    ctrld_gen₊avr₊Tf: 1.0
+    ctrld_gen₊avr₊Tr: 0.01
+    ctrld_gen₊avr₊vr_max: 1.0
+    ctrld_gen₊avr₊vr_min: -1.0
+    ctrld_gen₊gov₊DT: 0
+    ctrld_gen₊gov₊R: 0.05
+    ctrld_gen₊gov₊T1: 0.5
+    ctrld_gen₊gov₊T2: 2.1
+    ctrld_gen₊gov₊T3: 7.2
+    ctrld_gen₊gov₊V_max: 1.0
+    ctrld_gen₊gov₊V_min: 0.0
+    ctrld_gen₊gov₊ω_ref: 1
+    ctrld_gen₊machine₊D: 0
+    ctrld_gen₊machine₊H: 3.5749998092651367
+    ctrld_gen₊machine₊R_s: 0.0
+    ctrld_gen₊machine₊S_b: 100
+    ctrld_gen₊machine₊Sn: 800.0
+    ctrld_gen₊machine₊T′_d0: 5.690000057220459
+    ctrld_gen₊machine₊T′_q0: 1.5
+    ctrld_gen₊machine₊T″_d0: 0.05000000074505806
+    ctrld_gen₊machine₊T″_q0: 0.03500000014901161
+    ctrld_gen₊machine₊V_b: 16.5
+    ctrld_gen₊machine₊Vn: 16.5
+    ctrld_gen₊machine₊X_d: 2.0959999561309814
+    ctrld_gen₊machine₊X_ls: 0.236
+    ctrld_gen₊machine₊X_q: 2.063999891281128
+    ctrld_gen₊machine₊X′_d: 0.34880000352859497
+    ctrld_gen₊machine₊X′_q: 1.3279999494552612
+    ctrld_gen₊machine₊X″_d: 0.2800000011920929
+    ctrld_gen₊machine₊X″_q: 0.2800000011920929
+    ctrld_gen₊machine₊ω_b: 376.99111843077515
     pf:
       MODEL: Models.PF_PV
       P: 6.32
       V: 0.9972
       
-  34:
+  34: # Machine with AVR/Gov
     CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.ControlledGenerator
+    ctrld_gen₊avr₊E1: 3.926702
+    ctrld_gen₊avr₊E2: 5.235602
+    ctrld_gen₊avr₊Ka: 40.0
+    ctrld_gen₊avr₊Ke: 1.0
+    ctrld_gen₊avr₊Kf: 0.03
+    ctrld_gen₊avr₊Se1: 0.07
+    ctrld_gen₊avr₊Se2: 0.91
+    ctrld_gen₊avr₊Ta: 0.02
+    ctrld_gen₊avr₊Te: 0.785
+    ctrld_gen₊avr₊Tf: 1.0
+    ctrld_gen₊avr₊Tr: 0.01
+    ctrld_gen₊avr₊vr_max: 10.0
+    ctrld_gen₊avr₊vr_min: -10.0
+    ctrld_gen₊gov₊DT: 0
+    ctrld_gen₊gov₊R: 0.05
+    ctrld_gen₊gov₊T1: 0.5
+    ctrld_gen₊gov₊T2: 2.1
+    ctrld_gen₊gov₊T3: 7.2
+    ctrld_gen₊gov₊V_max: 1.0
+    ctrld_gen₊gov₊V_min: 0.0
+    ctrld_gen₊gov₊ω_ref: 1
+    ctrld_gen₊machine₊D: 0
+    ctrld_gen₊machine₊H: 4.333000183105469
+    ctrld_gen₊machine₊R_s: 0.0
+    ctrld_gen₊machine₊S_b: 100
+    ctrld_gen₊machine₊Sn: 600.0
+    ctrld_gen₊machine₊T′_d0: 5.400000095367432
+    ctrld_gen₊machine₊T′_q0: 0.4399999976158142
+    ctrld_gen₊machine₊T″_d0: 0.05000000074505806
+    ctrld_gen₊machine₊T″_q0: 0.03500000014901161
+    ctrld_gen₊machine₊V_b: 16.5
+    ctrld_gen₊machine₊Vn: 16.5
+    ctrld_gen₊machine₊X_d: 2.009999990463257
+    ctrld_gen₊machine₊X_ls: 0.162
+    ctrld_gen₊machine₊X_q: 1.8600000143051147
+    ctrld_gen₊machine₊X′_d: 0.3959999978542328
+    ctrld_gen₊machine₊X′_q: 0.49799999594688416
+    ctrld_gen₊machine₊X″_d: 0.2669999897480011
+    ctrld_gen₊machine₊X″_q: 0.2669999897480011
+    ctrld_gen₊machine₊ω_b: 376.99111843077515
     pf:
       MODEL: Models.PF_PV
       P: 5.08
       V: 1.0123
       
-  35:
+  35: # Machine with AVR/Gov
     CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.ControlledGenerator
+    ctrld_gen₊avr₊E1: 3.586801
+    ctrld_gen₊avr₊E2: 4.782401
+    ctrld_gen₊avr₊Ka: 5.0
+    ctrld_gen₊avr₊Ke: -0.0419
+    ctrld_gen₊avr₊Kf: 0.0754
+    ctrld_gen₊avr₊Se1: 0.064
+    ctrld_gen₊avr₊Se2: 0.251
+    ctrld_gen₊avr₊Ta: 0.02
+    ctrld_gen₊avr₊Te: 0.471
+    ctrld_gen₊avr₊Tf: 1.246
+    ctrld_gen₊avr₊Tr: 0.01
+    ctrld_gen₊avr₊vr_max: 1.0
+    ctrld_gen₊avr₊vr_min: -1.0
+    ctrld_gen₊gov₊DT: 0
+    ctrld_gen₊gov₊R: 0.05
+    ctrld_gen₊gov₊T1: 0.5
+    ctrld_gen₊gov₊T2: 2.1
+    ctrld_gen₊gov₊T3: 7.2
+    ctrld_gen₊gov₊V_max: 1.0
+    ctrld_gen₊gov₊V_min: 0.0
+    ctrld_gen₊gov₊ω_ref: 1
+    ctrld_gen₊machine₊D: 0
+    ctrld_gen₊machine₊H: 4.349999904632568
+    ctrld_gen₊machine₊R_s: 0.0
+    ctrld_gen₊machine₊S_b: 100
+    ctrld_gen₊machine₊Sn: 800.0
+    ctrld_gen₊machine₊T′_d0: 7.300000190734863
+    ctrld_gen₊machine₊T′_q0: 0.4000000059604645
+    ctrld_gen₊machine₊T″_d0: 0.05000000074505806
+    ctrld_gen₊machine₊T″_q0: 0.03500000014901161
+    ctrld_gen₊machine₊V_b: 16.5
+    ctrld_gen₊machine₊Vn: 16.5
+    ctrld_gen₊machine₊X_d: 2.0320000648498535
+    ctrld_gen₊machine₊X_ls: 0.1792
+    ctrld_gen₊machine₊X_q: 1.9279999732971191
+    ctrld_gen₊machine₊X′_d: 0.4000000059604645
+    ctrld_gen₊machine₊X′_q: 0.651199996471405
+    ctrld_gen₊machine₊X″_d: 0.3199999928474426
+    ctrld_gen₊machine₊X″_q: 0.3199999928474426
+    ctrld_gen₊machine₊ω_b: 376.99111843077515
     pf:
       MODEL: Models.PF_PV
       P: 6.5
       V: 1.0493
       
-  36:
+  36: # Machine with AVR/Gov
     CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.ControlledGenerator
+    ctrld_gen₊avr₊E1: 2.801724
+    ctrld_gen₊avr₊E2: 3.735632
+    ctrld_gen₊avr₊Ka: 40.0
+    ctrld_gen₊avr₊Ke: 1.0
+    ctrld_gen₊avr₊Kf: 0.03
+    ctrld_gen₊avr₊Se1: 0.53
+    ctrld_gen₊avr₊Se2: 0.74
+    ctrld_gen₊avr₊Ta: 0.02
+    ctrld_gen₊avr₊Te: 0.73
+    ctrld_gen₊avr₊Tf: 1.0
+    ctrld_gen₊avr₊Tr: 0.01
+    ctrld_gen₊avr₊vr_max: 6.5
+    ctrld_gen₊avr₊vr_min: -6.5
+    ctrld_gen₊gov₊DT: 0
+    ctrld_gen₊gov₊R: 0.05
+    ctrld_gen₊gov₊T1: 0.5
+    ctrld_gen₊gov₊T2: 2.1
+    ctrld_gen₊gov₊T3: 7.2
+    ctrld_gen₊gov₊V_max: 1.0
+    ctrld_gen₊gov₊V_min: 0.0
+    ctrld_gen₊gov₊ω_ref: 1
+    ctrld_gen₊machine₊D: 0
+    ctrld_gen₊machine₊H: 3.7710001468658447
+    ctrld_gen₊machine₊R_s: 0.0
+    ctrld_gen₊machine₊S_b: 100
+    ctrld_gen₊machine₊Sn: 700.0
+    ctrld_gen₊machine₊T′_d0: 5.659999847412109
+    ctrld_gen₊machine₊T′_q0: 1.5
+    ctrld_gen₊machine₊T″_d0: 0.05000000074505806
+    ctrld_gen₊machine₊T″_q0: 0.03500000014901161
+    ctrld_gen₊machine₊V_b: 16.5
+    ctrld_gen₊machine₊Vn: 16.5
+    ctrld_gen₊machine₊X_d: 2.065000057220459
+    ctrld_gen₊machine₊X_ls: 0.2254
+    ctrld_gen₊machine₊X_q: 2.0439999103546143
+    ctrld_gen₊machine₊X′_d: 0.34299999475479126
+    ctrld_gen₊machine₊X′_q: 1.3020000457763672
+    ctrld_gen₊machine₊X″_d: 0.30799999833106995
+    ctrld_gen₊machine₊X″_q: 0.30799999833106995
+    ctrld_gen₊machine₊ω_b: 376.99111843077515
     pf:
       MODEL: Models.PF_PV
       P: 5.6
       V: 1.0635
       
-  37:
+  37: # Machine with AVR/Gov
     CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.ControlledGenerator
+    ctrld_gen₊avr₊E1: 3.191489
+    ctrld_gen₊avr₊E2: 4.255319
+    ctrld_gen₊avr₊Ka: 5.0
+    ctrld_gen₊avr₊Ke: -0.047
+    ctrld_gen₊avr₊Kf: 0.0854
+    ctrld_gen₊avr₊Se1: 0.072
+    ctrld_gen₊avr₊Se2: 0.282
+    ctrld_gen₊avr₊Ta: 0.02
+    ctrld_gen₊avr₊Te: 0.528
+    ctrld_gen₊avr₊Tf: 1.26
+    ctrld_gen₊avr₊Tr: 0.01
+    ctrld_gen₊avr₊vr_max: 1.0
+    ctrld_gen₊avr₊vr_min: -1.0
+    ctrld_gen₊gov₊DT: 0
+    ctrld_gen₊gov₊R: 0.05
+    ctrld_gen₊gov₊T1: 0.5
+    ctrld_gen₊gov₊T2: 2.1
+    ctrld_gen₊gov₊T3: 7.2
+    ctrld_gen₊gov₊V_max: 1.0
+    ctrld_gen₊gov₊V_min: 0.0
+    ctrld_gen₊gov₊ω_ref: 1
+    ctrld_gen₊machine₊D: 0
+    ctrld_gen₊machine₊H: 3.4710001945495605
+    ctrld_gen₊machine₊R_s: 0.0
+    ctrld_gen₊machine₊S_b: 100
+    ctrld_gen₊machine₊Sn: 700.0
+    ctrld_gen₊machine₊T′_d0: 6.699999809265137
+    ctrld_gen₊machine₊T′_q0: 0.4099999964237213
+    ctrld_gen₊machine₊T″_d0: 0.05000000074505806
+    ctrld_gen₊machine₊T″_q0: 0.03500000014901161
+    ctrld_gen₊machine₊V_b: 16.5
+    ctrld_gen₊machine₊Vn: 16.5
+    ctrld_gen₊machine₊X_d: 2.0299999713897705
+    ctrld_gen₊machine₊X_ls: 0.196
+    ctrld_gen₊machine₊X_q: 1.9600000381469727
+    ctrld_gen₊machine₊X′_d: 0.39899998903274536
+    ctrld_gen₊machine₊X′_q: 0.6377000212669373
+    ctrld_gen₊machine₊X″_d: 0.3149999976158142
+    ctrld_gen₊machine₊X″_q: 0.3149999976158142
+    ctrld_gen₊machine₊ω_b: 376.99111843077515
     pf:
       MODEL: Models.PF_PV
       P: 5.4
       V: 1.0278
       
-  38:
+  38: # Machine with AVR/Gov
     CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.ControlledGenerator
+    ctrld_gen₊avr₊E1: 4.256757
+    ctrld_gen₊avr₊E2: 5.675676
+    ctrld_gen₊avr₊Ka: 40.0
+    ctrld_gen₊avr₊Ke: 1.0
+    ctrld_gen₊avr₊Kf: 0.03
+    ctrld_gen₊avr₊Se1: 0.62
+    ctrld_gen₊avr₊Se2: 0.85
+    ctrld_gen₊avr₊Ta: 0.02
+    ctrld_gen₊avr₊Te: 1.4
+    ctrld_gen₊avr₊Tf: 1.0
+    ctrld_gen₊avr₊Tr: 0.01
+    ctrld_gen₊avr₊vr_max: 10.5
+    ctrld_gen₊avr₊vr_min: -10.5
+    ctrld_gen₊gov₊DT: 0
+    ctrld_gen₊gov₊R: 0.05
+    ctrld_gen₊gov₊T1: 0.5
+    ctrld_gen₊gov₊T2: 2.1
+    ctrld_gen₊gov₊T3: 7.2
+    ctrld_gen₊gov₊V_max: 1.0
+    ctrld_gen₊gov₊V_min: 0.0
+    ctrld_gen₊gov₊ω_ref: 1
+    ctrld_gen₊machine₊D: 0
+    ctrld_gen₊machine₊H: 3.450000047683716
+    ctrld_gen₊machine₊R_s: 0.0
+    ctrld_gen₊machine₊S_b: 100
+    ctrld_gen₊machine₊Sn: 1000.0
+    ctrld_gen₊machine₊T′_d0: 4.789999961853027
+    ctrld_gen₊machine₊T′_q0: 1.9600000381469727
+    ctrld_gen₊machine₊T″_d0: 0.05000000074505806
+    ctrld_gen₊machine₊T″_q0: 0.03500000014901161
+    ctrld_gen₊machine₊V_b: 16.5
+    ctrld_gen₊machine₊Vn: 16.5
+    ctrld_gen₊machine₊X_d: 2.1059999465942383
+    ctrld_gen₊machine₊X_ls: 0.298
+    ctrld_gen₊machine₊X_q: 2.049999952316284
+    ctrld_gen₊machine₊X′_d: 0.5699999928474426
+    ctrld_gen₊machine₊X′_q: 0.5870000123977661
+    ctrld_gen₊machine₊X″_d: 0.44999998807907104
+    ctrld_gen₊machine₊X″_q: 0.44999998807907104
+    ctrld_gen₊machine₊ω_b: 376.99111843077515
     pf:
       MODEL: Models.PF_PV
       P: 8.3
       V: 1.0265
       
-  39:
+  39: # Load + Machine w/o Control
     CONSTRUCTOR: Bus
+    ARGS:
+      - MODEL: Models.LoadMachineBus
+    machine₊D: 0
+    machine₊H: 5.0
+    machine₊R_s: 0.0
+    machine₊S_b: 100
+    machine₊Sn: 10000.0
+    machine₊T′_d0: 7.0
+    machine₊T′_q0: 0.699999988079071
+    machine₊T″_d0: 0.05000000074505806
+    machine₊T″_q0: 0.03500000014901161
+    machine₊V_b: 345.0
+    machine₊Vn: 345.0
+    machine₊X_d: 2.0
+    machine₊X_ls: 0.3
+    machine₊X_q: 1.899999976158142
+    machine₊X′_d: 0.6000000238418579
+    machine₊X′_q: 0.800000011920929
+    machine₊X″_d: 0.4000000059604645
+    machine₊X″_q: 0.4000000059604645
+    machine₊ω_b: 376.99111843077515
+    load₊KpC: 0.0
+    load₊KpI: 0.0
+    load₊KpZ: 1.0
+    load₊KqC: 0.0
+    load₊KqI: 0.0
+    load₊KqZ: 1.0
+    load₊Pset: -11.04
+    load₊Qset: -2.5
     pf:
       MODEL: Models.PF_PV
       P: -1.04
