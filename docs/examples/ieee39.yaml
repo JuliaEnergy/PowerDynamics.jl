@@ -25,12 +25,15 @@ Models:
   ## define Powerflow models
   PF_PQ:
     CONSTRUCTOR: pfPQ 
+    P: 0.0
+    Q: 0.0
     
   PF_PV:
     CONSTRUCTOR: pfPV 
     
   PF_Slack:
     CONSTRUCTOR: pfSlack 
+    δ: 0.0
 
 
 VertexModels:
@@ -38,19 +41,13 @@ VertexModels:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
-    pf:
-      MODEL: Models.PF_PQ
-      P: 0.0
-      Q: 0.0
+    pf: Models.PF_PQ
       
   2:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
-    pf:
-      MODEL: Models.PF_PQ
-      P: 0.0
-      Q: 0.0
+    pf: Models.PF_PQ
       
   3:
     CONSTRUCTOR: Bus
@@ -76,19 +73,13 @@ VertexModels:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
-    pf:
-      MODEL: Models.PF_PQ
-      P: 0.0
-      Q: 0.0
+    pf: Models.PF_PQ
       
   6:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
-    pf:
-      MODEL: Models.PF_PQ
-      P: 0.0
-      Q: 0.0
+    pf: Models.PF_PQ
 
   7:
     CONSTRUCTOR: Bus
@@ -114,28 +105,19 @@ VertexModels:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
-    pf:
-      MODEL: Models.PF_PQ
-      P: 0.0
-      Q: 0.0
+    pf: Models.PF_PQ
       
   10:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
-    pf:
-      MODEL: Models.PF_PQ
-      P: 0.0
-      Q: 0.0
+    pf: Models.PF_PQ
       
   11:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
-    pf:
-      MODEL: Models.PF_PQ
-      P: 0.0
-      Q: 0.0
+    pf: Models.PF_PQ
         
   12:
     CONSTRUCTOR: Bus
@@ -151,19 +133,13 @@ VertexModels:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
-    pf:
-      MODEL: Models.PF_PQ
-      P: 0.0
-      Q: 0.0
+    pf: Models.PF_PQ
       
   14:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
-    pf:
-      MODEL: Models.PF_PQ
-      P: 0.0
-      Q: 0.0
+    pf: Models.PF_PQ
         
   15:
     CONSTRUCTOR: Bus
@@ -189,10 +165,7 @@ VertexModels:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
-    pf:
-      MODEL: Models.PF_PQ
-      P: 0.0
-      Q: 0.0
+    pf: Models.PF_PQ
         
   18:
     CONSTRUCTOR: Bus
@@ -208,10 +181,7 @@ VertexModels:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
-    pf:
-      MODEL: Models.PF_PQ
-      P: 0.0
-      Q: 0.0
+    pf: Models.PF_PQ
         
   20:
     CONSTRUCTOR: Bus
@@ -237,10 +207,7 @@ VertexModels:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
-    pf:
-      MODEL: Models.PF_PQ
-      P: 0.0
-      Q: 0.0
+    pf: Models.PF_PQ
         
   23:
     CONSTRUCTOR: Bus
