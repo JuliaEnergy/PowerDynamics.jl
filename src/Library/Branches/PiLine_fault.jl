@@ -14,8 +14,8 @@
         B_fault=0, [description="Fault Reactance in pu (base unclear?)"]
         pos, [description="Fault Position (from src, percent of the line)"]
         active=1, [description="Line active or switched off"]
-        shortcircuit=0, [description="shortcircuit on line"] #false, [description="shortcircuit on line"]
-        #faultimp, [description="1 if fault impedance given, else 0"] #blöd, dass man dann auch extra angeben muss, dass keine Fehlerimpedanz da ist. Aber vertretbar. Wie kann man error ausgeben, wenn G_fault oder B_fault gegeben ist, aber faultimp=0 ist?
+        shortcircuit=0, [description="shortcircuit on line"]
+        #faultimp, [description="1 if fault impedance given, else 0"]
     end
     @components begin
         src = Terminal()
@@ -36,7 +36,7 @@
         i₂ = Ydst * V₂
         V_mnormal = V₁*(1-pos) + V₂*pos #(V₁*Z_b + V₂*Z_a)/(Z_a+Z_b)
         V_m = V_mnormal * (1-shortcircuit) + shortcircuit * (0+0*im) #ifelse(shortcircuit>0, 0.0, V_mnormal)
-        #V_m = (V₁*(1-pos) + V₂*pos)/(1 + Y_f * Z * pos * (1-pos)) * (shortcircuit * faultimp + (1 - shortcircuit)) #Problem: nicht das korrekte Ergebnis -> liegt das jetzt daran, dass keine Pi-Line verwendet wird? Jein, offenbar ändert das schon was, aber auch mit Pi Line ist es nicht richtig...
+        #V_m = (V₁*(1-pos) + V₂*pos)/(1 + Y_f * Z * pos * (1-pos)) * (shortcircuit * faultimp + (1 - shortcircuit)) 
         V_a = V₁ - V_m
         V_b = V_m - V₂
         i_m2 = V_b / Z_b

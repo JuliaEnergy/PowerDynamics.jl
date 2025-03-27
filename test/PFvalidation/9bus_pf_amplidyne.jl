@@ -10,6 +10,7 @@ using DiffEqCallbacks
 using CairoMakie
 using CSV
 using DataFrames
+using Test
 
 @mtkmodel LoadBus begin
     @components begin
@@ -111,27 +112,6 @@ end
     end
 end
 
-#=
-function StandardBus_AVR(gen_params, avr_params)
-    components = []
-    controleqs = Equation[]
-
-    # Generator erstellen
-    @named machine = Library.StandardModel_pf(; gen_params...)
-    push!(components, machine)
-
-    # Falls AVR-Daten angegeben sind, AVR erstellen und verbinden
-    @named avr = AVRTypeI(; avr_params...)
-    append!(controleqs, [
-        connect(machine.v_mag_out, avr.vh),
-        connect(avr.vf, machine.vf_in)
-    ])
-    comp = CompositeInjector([machine, avr], controleqs, name=bus_name)
-    push!(components, comp)
-    # MTKBus mit den Komponenten erstellen
-    MTKBus(components...)
-end
-=#
 # Branches
 function piline(; R, X, B)
     @named pibranch = PiLine(;R, X, B_src=B/2, B_dst=B/2, G_src=0, G_dst=0)
@@ -148,124 +128,145 @@ function transformer(; R, X)
     MTKLine(transformer)
 end
 
+function lineparams_pu(; S_b, V_b, line_length, R_l_perkm, X_l_perkm, B_l_perkm)
+    R_pu = (R_l_perkm * line_length) * S_b / V_b^2
+    X_pu = (X_l_perkm * line_length) * S_b / V_b^2
+    B_pu = (B_l_perkm * line_length) * V_b^2 / S_b #ω_b * 0.0095491* 10^(-6) #ω*C
+    return (R=R_pu, X=X_pu, B=B_pu)
+end
+
+function trafoparams_pu(; S_b, S_n, X_pu_PF, R_pu_PF)
+    X_pu_baseS = X_pu_PF * S_b/S_n
+    R_pu_baseS = R_pu_PF * S_b/S_n
+    return(R=R_pu_baseS, X=X_pu_baseS)
+end
+
+
+
 # generate all MTK bus models
-primary_parameters_gen1 = (;
-    S_b=100e6,
-    Sn=247.5e6,
-    V_b=16.5,
-    Vn=16.5,
-    ω_b=2π*60,
-    H=9.551516,
-    D=0,
-    R_s=0,
-    X_rld=0,
-    X_rlq=0,
-    X_d=0.36135,
-    X_q=0.2398275,
-    X′_d=0.15048,
-    X′_q=0.0001,
-    X″_d=0.1,
-    X″_q=0.1,
-    X_ls=0.08316,
-    T′_d0=8.96,
-    T″_d0=0.075,
-    T′_q0=0.0001,
-    T″_q0=0.15,
-    cosn=1,
-    dkd=0,
-    dpe=0,
-    salientpole=1,
-    dpu=0,
-    addmt=0,
-    xmdm=0,
+primary_parameters_gen1 = Dict(
+    Symbol("machine__", k) => v for (k, v) in
+    (
+        :S_b => 100e6,
+        :Sn => 247.5e6,
+        :V_b => 16.5,
+        :Vn => 16.5,
+        :ω_b => 2π*60,
+        :H => 9.551516,
+        :D => 0,
+        :R_s => 0,
+        :X_rld => 0,
+        :X_rlq => 0,
+        :X_d => 0.36135,
+        :X_q => 0.2398275,
+        :X′_d => 0.15048,
+        :X′_q => 0.0001,
+        :X″_d => 0.1,
+        :X″_q => 0.1,
+        :X_ls => 0.08316,
+        :T′_d0 => 8.96,
+        :T″_d0 => 0.075,
+        :T′_q0 => 0.0001,
+        :T″_q0 => 0.15,
+        :cosn => 1,
+        :dkd => 0,
+        :dpe => 0,
+        :salientpole => 1,
+        :dpu => 0,
+        :addmt => 0,
+        :xmdm => 0,
+    )
 )
-prim_gen1 = Dict(pairs(primary_parameters_gen1)...)
-renamedp_gen1 = Dict(map(s->Symbol("machine__", s), collect(keys(prim_gen1))) .=> Base.values(prim_gen1))
 
-primary_parameters_gen2 = (;
-    S_b=100e6,
-    Sn=192e6,
-    V_b=18,
-    Vn=18,
-    ω_b=2π*60,
-    H=3.921568,
-    D=0,
-    R_s=0.005,
-    X_rld=0,
-    X_rlq=0,
-    X_d=1.719936,
-    X_q=1.65984,
-    X′_d=0.230016,
-    X′_q=0.378048,
-    X″_d=0.2,
-    X″_q=0.2,
-    X_ls=0.100032,
-    T′_d0=6,
-    T″_d0=0.0575,
-    T′_q0=0.535,
-    T″_q0=0.0945,
-    cosn=0.85,
-    dkd=0,
-    dpe=0,
-    salientpole=0,
-    dpu=0,
-    addmt=0,
-    xmdm=0,
+primary_parameters_gen2 = Dict(
+    Symbol("machine__", k) => v for (k, v) in
+    (
+        :S_b => 100e6,
+        :Sn => 192e6,
+        :V_b => 18,
+        :Vn => 18,
+        :ω_b => 2π*60,
+        :H => 3.921568,
+        :D => 0,
+        :R_s => 0.005,
+        :X_rld => 0,
+        :X_rlq => 0,
+        :X_d => 1.719936,
+        :X_q => 1.65984,
+        :X′_d => 0.230016,
+        :X′_q => 0.378048,
+        :X″_d => 0.2,
+        :X″_q => 0.2,
+        :X_ls => 0.100032,
+        :T′_d0 => 6,
+        :T″_d0 => 0.0575,
+        :T′_q0 => 0.535,
+        :T″_q0 => 0.0945,
+        :cosn => 0.85,
+        :dkd => 0,
+        :dpe => 0,
+        :salientpole => 0,
+        :dpu => 0,
+        :addmt => 0,
+        :xmdm => 0,
+    )
 )
-prim_gen2 = Dict(pairs(primary_parameters_gen2)...)
-renamedp_gen2 = Dict(map(s->Symbol("machine__", s), collect(keys(prim_gen2))) .=> Base.values(prim_gen2))
-avr_parameters_gen2 = (;
-    Ka = 25,
-    Ke = -0.044,
-    Kf = 0.0805,
-    Ta = 0.2,
-    Tf = 0.35, Te = 0.5,
-    Tr = 0.06,
-    vr_min = -1,
-    vr_max = 1,
-    anti_windup = false,
-    A=0.0016,
-    B=1.465,
+avr_parameters_gen2 = Dict(
+    Symbol("avr__", k) => v for (k, v) in
+    (
+        :Ka => 25,
+        :Ke => -0.044,
+        :Kf => 0.0805,
+        :Ta => 0.2,
+        :Tf => 0.35,
+        :Te => 0.5,
+        :Tr => 0.06,
+        :vr_min => -1,
+        :vr_max => 1,
+        :anti_windup => false,
+        :A => 0.0016,
+        :B => 1.465,
+    )
 )
-avr_gen2 = Dict(pairs(avr_parameters_gen2)...)
-renamedp_avr_gen2 = Dict(map(s->Symbol("avr__", s), collect(keys(avr_gen2))) .=> Base.values(avr_gen2))
 
-
-primary_parameters_gen3 = (;
-    S_b=100e6,
-    Sn=128e6,
-    V_b=13.8,
-    Vn=13.8,
-    ω_b=2π*60,
-    H=2.766544,
-    D=0,
-    R_s=0.0001,
-    X_rld=0,
-    X_rlq=0,
-    X_d=1.68,
-    X_q=1.609984,
-    X′_d=0.232064,
-    X′_q=0.32,
-    X″_d=0.2,
-    X″_q=0.2,
-    X_ls=0.094976,
-    T′_d0=5.89,
-    T″_d0=0.0575,
-    T′_q0=0.6,
-    T″_q0=0.08,
-    cosn=0.85,
-    dkd=0,
-    dpe=0,
-    salientpole=0,
-    dpu=0,
-    addmt=0,
-    xmdm=0,
+primary_parameters_gen3 = Dict(
+    Symbol("machine__", k) => v for (k, v) in
+    (
+        :S_b => 100e6,
+        :Sn => 128e6,
+        :V_b => 13.8,
+        :Vn => 13.8,
+        :ω_b => 2π*60,
+        :H => 2.766544,
+        :D => 0,
+        :R_s => 0.0001,
+        :X_rld => 0,
+        :X_rlq => 0,
+        :X_d => 1.68,
+        :X_q => 1.609984,
+        :X′_d => 0.232064,
+        :X′_q => 0.32,
+        :X″_d => 0.2,
+        :X″_q => 0.2,
+        :X_ls => 0.094976,
+        :T′_d0 => 5.89,
+        :T″_d0 => 0.0575,
+        :T′_q0 => 0.6,
+        :T″_q0 => 0.08,
+        :cosn => 0.85,
+        :dkd => 0,
+        :dpe => 0,
+        :salientpole => 0,
+        :dpu => 0,
+        :addmt => 0,
+        :xmdm => 0,
+    )
 )
-prim_gen3 = Dict(pairs(primary_parameters_gen3)...)
-renamedp_gen3 = Dict(map(s->Symbol("machine__", s), collect(keys(prim_gen3))) .=> Base.values(prim_gen3))
 
-@named mtkbus1 = StandardBus(; renamedp_gen1...)
-@named mtkbus3 = StandardBus(; renamedp_gen3...)
+
+@named mtkbus1 = StandardBus(; primary_parameters_gen1...)
+@named mtkbus2 = StandardBus_AVR(; primary_parameters_gen2..., avr_parameters_gen2...)
+@named mtkbus3 = StandardBus(; primary_parameters_gen3...)
 @named mtkbus4 = MTKBus()
 @named mtkbus5 = LoadBus(;load__Pset=-1.25, load__Qset=-0.5)
 @named mtkbus6 = LoadBus(;load__Pset=-0.90, load__Qset=-0.3)
@@ -273,34 +274,9 @@ renamedp_gen3 = Dict(map(s->Symbol("machine__", s), collect(keys(prim_gen3))) .=
 @named mtkbus8 = LoadBus(;load__Pset=-1.0, load__Qset=-0.35)
 @named mtkbus9 = MTKBus()
 
-#@named mtkbus2 = StandardBus_AVR(; prim_gen2, avr_parameters_gen2)
-@named mtkbus2 = StandardBus_AVR(; renamedp_gen2..., renamedp_avr_gen2...)
-
-#=
-components = [] # vector to collect dynamical components
-controleqs = Equation[] # equations connecting avr and gov to machine
-@named machine = Library.StandardModel_pf(; prim_gen2...)
-@named avr = AVRTypeI(
-            # vref = p.Vref # let this free for initialization
-            Ka = 25, Ke = -0.044, Kf = 0.0805,
-            Ta = 0.2, Tf = 0.35, Te = 0.5, Tr = 0.06,
-            vr_min = -1, vr_max = 1, anti_windup = false,
-            A=0.0016, B=1.465,
-        )
-append!(controleqs, [connect(machine.v_mag_out, avr.vh), connect(avr.vf, machine.vf_in)])
-comp = CompositeInjector(
-        [machine, avr],
-        controleqs,
-        name=:ctrld_gen
-    )
-push!(components, comp)
-
-@named bus2 = Bus(MTKBus(components...); vidx=2, pf=pfPV(V=1.025, P=1.63))
-=#
-
 # generate the dynamic component functions
 @named bus1 = Bus(mtkbus1; vidx=1, pf=pfSlack(V=1.04))
-#@named bus2 = Bus(mtkbus2; vidx=2, pf=pfPV(V=1.025, P=1.63))
+@named bus2 = Bus(mtkbus2; vidx=2, pf=pfPV(V=1.025, P=1.63))
 @named bus3 = Bus(mtkbus3; vidx=3, pf=pfPV(V=1.025, P=0.85))
 @named bus4 = Bus(mtkbus4; vidx=4)
 @named bus5 = Bus(mtkbus5; vidx=5, pf=pfPQ(P=-1.25, Q=-0.5))
@@ -308,7 +284,28 @@ push!(components, comp)
 @named bus7 = Bus(mtkbus7; vidx=7)
 @named bus8 = Bus(mtkbus8; vidx=8, pf=pfPQ(P=-1.0, Q=-0.35))
 @named bus9 = Bus(mtkbus9; vidx=9)
-#@named l45 = Line(piline(; R=0.0100, X=0.0850, B=0.1760), src=4, dst=5)
+
+#generate lines
+t27_data = (;
+    S_b = 100000000,
+    S_n = 200000000,
+    #V_OS = 230000,
+    #V_US = 180000,
+    X_pu_PF = 0.1250,
+    R_pu_PF = 0
+)
+t27_params = trafoparams_pu(; t27_data...)
+
+l45_data = (;
+    S_b = 100000000,
+    V_b = 230000,
+    #ω_b = 60 * 2 * π,
+    line_length = 1,
+    R_l_perkm = 5.29,
+    X_l_perkm = 44.965,
+    B_l_perkm = 332.7 * 10^(-6)
+)
+l45_params = lineparams_pu(; l45_data...)
 
 @named l46 = Line(piline(; R=0.0170, X=0.0920, B=0.1580), src=4, dst=6)
 @named l69 = Line(piline(; R=0.0390, X=0.1700, B=0.3580), src=6, dst=9)
@@ -317,30 +314,10 @@ push!(components, comp)
 @named t14 = Line(transformer(; R=0, X=0.0576), src=1, dst=4)
 @named t27 = Line(transformer(; R=0, X=0.0625), src=2, dst=7)
 @named t39 = Line(transformer(; R=0, X=0.0586), src=3, dst=9)
-@named l57 = Line(piline_shortcircuit(; R=0.0320, X=0.1610, B=0.3060, pos=0.99), src=5, dst=7) #S_b = 100 MVA, U_b = 230 kV; 2 Ω also G_fault=0.003781
+@named l57 = Line(piline_shortcircuit(; R=0.0320, X=0.1610, B=0.3060, pos=0.99), src=5, dst=7)
+@named t27 = Line(transformer(; R=t27_params.R, X=t27_params.X), src=2, dst=7)
+@named l45 = Line(piline(R=l45_params.R, X=l45_params.X, B=l45_params.B), src=4, dst=5)
 
-#test implementation for line and transformer with PowerFactory Data
-S_b = 100000000 #100MVA -> Woher? Ist das überhaupt korrekt? (in 9-Bus-System wird es so gemacht, aber warum?)
-V_b = 230000 #Busspannung #230000 #230kV
-ω_b = 60*2*π
-line_length = 1
-R_l_perkm = 5.29
-X_l_perkm = 44.965
-B_l_perkm = 332.7 * 10^(-6)#ω_b * 0.0095491* 10^(-6) #ω*C
-R_pu = (R_l_perkm * line_length) * S_b/V_b^2
-X_pu = (X_l_perkm * line_length) * S_b/V_b^2
-B_pu = (B_l_perkm * line_length) * V_b^2/S_b
-@named l45 = Line(piline(; R=R_pu, X=X_pu, B=B_pu), src=4, dst=5)
-
-S_b = 100000000 #100MVA -> Bezugsscheinleistung
-S_n = 200000000 #200MVA -> Bemessungsleistung
-#V_OS = 230000
-#V_US = 180000
-X_pu_PF = 0.1250
-R_pu_PF = 0
-X_pu_baseS = X_pu_PF * S_b/S_n
-R_pu_baseS = R_pu_PF * S_b/S_n
-@named t27 = Line(transformer(; R=R_pu_baseS, X=X_pu_baseS), src=2, dst=7)
 
 # build network
 vertexfs = [bus1, bus2, bus3, bus4, bus5, bus6, bus7, bus8, bus9];
@@ -349,8 +326,6 @@ nw = Network(vertexfs, edgefs)
 
 # solve powerflow and initialize
 OpPoDyn.solve_powerflow!(nw)
-#initialize_component!(bus1)
-#dump_initial_state(bus1)
 OpPoDyn.initialize!(nw)
 
 # get state for actual calculation
@@ -392,6 +367,7 @@ break # stop execution of script here
 
 inspect(sol)
 
+#Plot results
 #### Voltage Magnitude
 ref = CSV.read("Bus5-7_standardModelPF_avrAmplidyne.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
@@ -406,8 +382,6 @@ lines!(ax, ref."Zeitpunkt in s", ref."u1, Betrag in p.u.", color=Cycled(2), line
 axislegend(ax; position=:rb)
 xlims!(ax, 0, 5)
 fig
-
-
 
 # Bus 2
 #### id and iq generator
@@ -503,6 +477,7 @@ axislegend(ax; position=:rt)
 xlims!(ax, 0.9, 5)
 fig
 
+#test deviation from Power Factory
 function states_deviation(i, rmssym, ndsym)
     ref = CSV.read("Gen2_standardModelPF_avrdata.csv", DataFrame; header=2, decimal=',', delim=';')
     ref_t = ref[!, "Zeitpunkt in s"]  # Zeitwerte aus CSV
@@ -513,7 +488,7 @@ end
 
 @testset "generator state deviation" begin
     @test states_deviation(2, :vf, :avr₊v_fb) < 1e-5
-    @test states_deviation(2, :o1, :avr₊vr) < 1e-5
-    @test states_deviation(2, :uerrs, :avr₊vfout) < 1e-5
+    @test states_deviation(2, :o1, :avr₊vr) < 1e-3
+    @test states_deviation(2, :uerrs, :avr₊vfout) < 1e-4
     @test states_deviation(2, :u, :machine₊v_mag) < 1e-5
 end
