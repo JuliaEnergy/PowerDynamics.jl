@@ -9,13 +9,14 @@ Models:
 
   ZIPLoad:
     CONSTRUCTOR: ZIPLoad
+    KpZ: 1.0
     KpC: 0.0
     KpI: 0.0
     KqZ: 1.0
     KqI: 0.0
     KqC: 0.0
     # Pset defined in bus
-    name: :ZIPLoad
+    name: :load
 
   LoadBus:
     CONSTRUCTOR: MTKBus
@@ -29,6 +30,7 @@ Models:
 
   AVRTypeI:
     CONSTRUCTOR: AVRTypeI
+    ceiling_function: :quadratic
     name: :avr
 
   TGOV1:
@@ -65,7 +67,7 @@ Models:
   ## line models
 
   PiBranch:
-    CONSTRUCTOR: PiLine
+    CONSTRUCTOR: PiLine_fault
     name: :pibranch
 
   PiLine:
@@ -104,6 +106,7 @@ VertexModels:
     ARGS:
       - MODEL: Models.LoadBus
         ARGS[1].Pset: -3.22
+        ARGS[1].Qset: -0.024
     pf:
        MODEL: Models.PF_PQ
        P: -3.22
@@ -114,6 +117,7 @@ VertexModels:
     ARGS:
       - MODEL: Models.LoadBus
         ARGS[1].Pset: -5.0
+        ARGS[1].Qset: -1.84
     pf:
       MODEL: Models.PF_PQ
       P: -5.0
@@ -136,6 +140,7 @@ VertexModels:
     ARGS:
       - MODEL: Models.LoadBus
         ARGS[1].Pset: -2.338
+        ARGS[1].Qset: -0.84
     pf:
       MODEL: Models.PF_PQ
       P: -2.338
@@ -146,6 +151,7 @@ VertexModels:
     ARGS:
       - MODEL: Models.LoadBus
         ARGS[1].Pset: -5.22
+        ARGS[1].Qset: -1.76
     pf:
       MODEL: Models.PF_PQ
       P: -5.22
@@ -174,6 +180,7 @@ VertexModels:
     ARGS:
       - MODEL: Models.LoadBus
         ARGS[1].Pset: -0.075
+        ARGS[1].Qset: -0.88
     pf:
       MODEL: Models.PF_PQ
       P: -0.075
@@ -196,6 +203,7 @@ VertexModels:
     ARGS:
       - MODEL: Models.LoadBus
         ARGS[1].Pset: -3.2
+        ARGS[1].Qset: -1.53
     pf:
       MODEL: Models.PF_PQ
       P: -3.2
@@ -206,6 +214,7 @@ VertexModels:
     ARGS:
       - MODEL: Models.LoadBus
         ARGS[1].Pset: -3.29
+        ARGS[1].Qset: -0.323
     pf:
       MODEL: Models.PF_PQ
       P: -3.29
@@ -222,6 +231,7 @@ VertexModels:
     ARGS:
       - MODEL: Models.LoadBus
         ARGS[1].Pset: -1.58
+        ARGS[1].Qset: -0.3
     pf:
       MODEL: Models.PF_PQ
       P: -1.58
@@ -238,6 +248,7 @@ VertexModels:
     ARGS:
       - MODEL: Models.LoadBus
         ARGS[1].Pset: -6.28
+        ARGS[1].Qset: -1.03
     pf:
       MODEL: Models.PF_PQ
       P: -6.28
@@ -248,6 +259,7 @@ VertexModels:
     ARGS:
       - MODEL: Models.LoadBus
         ARGS[1].Pset: -2.74
+        ARGS[1].Qset: -1.15
     pf:
       MODEL: Models.PF_PQ
       P: -2.74
@@ -264,6 +276,7 @@ VertexModels:
     ARGS:
       - MODEL: Models.LoadBus
         ARGS[1].Pset: -2.475
+        ARGS[1].Qset: -0.846
     pf:
       MODEL: Models.PF_PQ
       P: -2.475
@@ -274,6 +287,7 @@ VertexModels:
     ARGS:
       - MODEL: Models.LoadBus
         ARGS[1].Pset: -3.086
+        ARGS[1].Qset: 0.922
     pf:
       MODEL: Models.PF_PQ
       P: -3.086
@@ -284,6 +298,7 @@ VertexModels:
     ARGS:
       - MODEL: Models.LoadBus
         ARGS[1].Pset: -2.24
+        ARGS[1].Qset: -0.472
     pf:
       MODEL: Models.PF_PQ
       P: -2.24
@@ -294,6 +309,7 @@ VertexModels:
     ARGS:
       - MODEL: Models.LoadBus
         ARGS[1].Pset: -1.39
+        ARGS[1].Qset: -0.17
     pf:
       MODEL: Models.PF_PQ
       P: -1.39
@@ -304,6 +320,7 @@ VertexModels:
     ARGS:
       - MODEL: Models.LoadBus
         ARGS[1].Pset: -2.81
+        ARGS[1].Qset: -0.755
     pf:
       MODEL: Models.PF_PQ
       P: -2.81
@@ -314,6 +331,7 @@ VertexModels:
     ARGS:
       - MODEL: Models.LoadBus
         ARGS[1].Pset: -2.06
+        ARGS[1].Qset: -0.276
     pf:
       MODEL: Models.PF_PQ
       P: -2.06
@@ -324,6 +342,7 @@ VertexModels:
     ARGS:
       - MODEL: Models.LoadBus
         ARGS[1].Pset: -2.835
+        ARGS[1].Qset: -0.269
     pf:
       MODEL: Models.PF_PQ
       P: -2.835

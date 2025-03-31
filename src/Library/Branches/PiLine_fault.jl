@@ -12,7 +12,7 @@
         #X_fault=0, [description="Fault Reactance in pu (base unclear?)"]
         G_fault=0, [description="Fault Resistance in pu (base unclear?)"]
         B_fault=0, [description="Fault Reactance in pu (base unclear?)"]
-        pos, [description="Fault Position (from src, percent of the line)"]
+        pos=0.5, [description="Fault Position (from src, percent of the line)"]
         active=1, [description="Line active or switched off"]
         shortcircuit=0, [description="shortcircuit on line"] #false, [description="shortcircuit on line"]
         #faultimp, [description="1 if fault impedance given, else 0"] #blöd, dass man dann auch extra angeben muss, dass keine Fehlerimpedanz da ist. Aber vertretbar. Wie kann man error ausgeben, wenn G_fault oder B_fault gegeben ist, aber faultimp=0 ist?
