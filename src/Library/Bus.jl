@@ -133,3 +133,60 @@ function CompositeInjector(systems, eqs; name=Symbol(join(ModelingToolkit.getnam
     termeqs = [connect(sys.terminal, terminal) for sys in systems if iscomponentmodel(sys)]
     ODESystem(vcat(termeqs,eqs), iv; systems=vcat(terminal, systems), name)
 end
+
+function CompositeInjector(systems...; kwargs...)
+    systems = collect(systems) # tuple -> vector
+    with_terminal = filter(iscomponentmodel, systems)
+    without_terminal = filter(x->!iscomponentmodel(x), systems)
+
+    outputs = mapreduce(vcat, systems) do sys
+        subouts = filter(ModelingToolkit.get_systems(sys)) do subsys
+            contains(repr(ModelingToolkit.get_gui_metadata(subsys).type), "Blocks.RealOutput")
+        end
+        subout_names = getname.(subouts)
+        subouts_resolved = getproperty.(Ref(sys), subout_names)
+        subout_names .=> subouts_resolved
+    end
+    inputs = mapreduce(vcat, systems) do sys
+        subins = filter(ModelingToolkit.get_systems(sys)) do subsys
+            contains(repr(ModelingToolkit.get_gui_metadata(subsys).type), "Blocks.RealInput")
+        end
+        subin_names = getname.(subins)
+        subins_resolved = getproperty.(Ref(sys), subin_names)
+        subin_names .=> subins_resolved
+    end
+    out_dict = Dict(outputs...)
+    in_dict = Dict(inputs...)
+
+    # FIXME: hard coded for now
+    outnames = collect(keys(out_dict))
+    eqs = []
+    for (iname, isys) in in_dict
+        out = findmatch(iname, outnames)
+        push!(eqs, connect(out_dict[out], isys))
+    end
+    CompositeInjector(systems, eqs; kwargs...)
+end
+
+function findmatch(in_symbol, outs_symbol)
+    in = string(in_symbol)
+    outs = string.(outs_symbol)
+
+    # try with full name
+    idx = findall(isequal(in), outs)
+    if isempty(idx)
+        # try to strip comon pre and suffixes
+        inshort = replace(in, r"(_meas|meas|_in|in)$" => "")
+        outsshort = replace.(outs, r"(_meas|meas|_out|out)$" => "")
+
+        idx = findall(isequal(inshort), outsshort)
+    end
+
+    if isempty(idx)
+        error("Could not find a match for $in in $outs")
+    elseif length(idx) == 1
+        return outs_symbol[only(idx)]
+    else
+        error("Multiple matches found for $in in $outs")
+    end
+end

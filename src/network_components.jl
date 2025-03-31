@@ -1,7 +1,7 @@
 ####
 #### Network level Bus representation
 ####
-function Bus(sys::ODESystem; verbose=false, vidx=nothing, pf=nothing, name=getname(sys))
+function Bus(sys::ODESystem; verbose=false, vidx=nothing, pf=nothing, name=getname(sys), pairs...)
     if !isbusmodel(sys)
         msg = "The system must satisfy the bus model interface!"
         if iscomponentmodel(sys)
@@ -20,6 +20,9 @@ function Bus(sys::ODESystem; verbose=false, vidx=nothing, pf=nothing, name=getna
         else
             throw(ArgumentError("The provided pf model is invalid!"))
         end
+    end
+    for (v, d) in pairs
+        set_default!(vertexf, v, d)
     end
     vertexf
 end
@@ -41,7 +44,7 @@ end
 ####
 #### Network level Line representation
 ####
-function Line(sys::ODESystem; verbose=false, src=nothing, dst=nothing, name=getname(sys))
+function Line(sys::ODESystem; verbose=false, src=nothing, dst=nothing, name=getname(sys), pairs...)
     if !islinemodel(sys)
         msg = "The system must satisfy the ine model interface!"
         if isbranchmodel(sys)
@@ -53,6 +56,9 @@ function Line(sys::ODESystem; verbose=false, src=nothing, dst=nothing, name=getn
     edgef = EdgeModel(sys, io.srcin, io.dstin, io.srcout, io.dstout; verbose, name)
     if !isnothing(src) && !isnothing(dst)
         set_graphelement!(edgef, (;src, dst))
+    end
+    for (v, d) in pairs
+        set_default!(edgef, v, d)
     end
     edgef
 end
