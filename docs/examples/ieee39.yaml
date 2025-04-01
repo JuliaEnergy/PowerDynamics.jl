@@ -94,12 +94,14 @@ VertexModels:
     ARGS:
       - MODEL: Models.KirchhoffBus
     pf: Models.PF_PQ
+    name: :Bus_01
       
   2:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
     pf: Models.PF_PQ
+    name: :Bus_02
       
   3:
     CONSTRUCTOR: Bus
@@ -111,6 +113,7 @@ VertexModels:
        MODEL: Models.PF_PQ
        P: -3.22
        Q: -0.024
+    name: :Bus_03
 
   4:
     CONSTRUCTOR: Bus
@@ -122,18 +125,21 @@ VertexModels:
       MODEL: Models.PF_PQ
       P: -5.0
       Q: -1.84
+    name: :Bus_04
       
   5:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
     pf: Models.PF_PQ
+    name: :Bus_05
       
   6:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
     pf: Models.PF_PQ
+    name: :Bus_06
 
   7:
     CONSTRUCTOR: Bus
@@ -145,6 +151,7 @@ VertexModels:
       MODEL: Models.PF_PQ
       P: -2.338
       Q: -0.84
+    name: :Bus_07
         
   8:
     CONSTRUCTOR: Bus
@@ -156,24 +163,28 @@ VertexModels:
       MODEL: Models.PF_PQ
       P: -5.22
       Q: -1.76
+    name: :Bus_08
       
   9:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
     pf: Models.PF_PQ
+    name: :Bus_09
       
   10:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
     pf: Models.PF_PQ
+    name: :Bus_10
       
   11:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
     pf: Models.PF_PQ
+    name: :Bus_11
         
   12:
     CONSTRUCTOR: Bus
@@ -185,18 +196,21 @@ VertexModels:
       MODEL: Models.PF_PQ
       P: -0.075
       Q: -0.88
+    name: :Bus_12
       
   13:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
     pf: Models.PF_PQ
+    name: :Bus_13
       
   14:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
     pf: Models.PF_PQ
+    name: :Bus_14
         
   15:
     CONSTRUCTOR: Bus
@@ -208,6 +222,7 @@ VertexModels:
       MODEL: Models.PF_PQ
       P: -3.2
       Q: -1.53
+    name: :Bus_15
         
   16:
     CONSTRUCTOR: Bus
@@ -219,12 +234,14 @@ VertexModels:
       MODEL: Models.PF_PQ
       P: -3.29
       Q: -0.323
+    name: :Bus_16
       
   17:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
     pf: Models.PF_PQ
+    name: :Bus_17
         
   18:
     CONSTRUCTOR: Bus
@@ -236,12 +253,14 @@ VertexModels:
       MODEL: Models.PF_PQ
       P: -1.58
       Q: -0.3
+    name: :Bus_18
       
   19:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
     pf: Models.PF_PQ
+    name: :Bus_19
         
   20:
     CONSTRUCTOR: Bus
@@ -253,6 +272,7 @@ VertexModels:
       MODEL: Models.PF_PQ
       P: -6.28
       Q: -1.03
+    name: :Bus_20
         
   21:
     CONSTRUCTOR: Bus
@@ -264,12 +284,14 @@ VertexModels:
       MODEL: Models.PF_PQ
       P: -2.74
       Q: -1.15
+    name: :Bus_21
       
   22:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.KirchhoffBus
     pf: Models.PF_PQ
+    name: :Bus_22
         
   23:
     CONSTRUCTOR: Bus
@@ -281,6 +303,7 @@ VertexModels:
       MODEL: Models.PF_PQ
       P: -2.475
       Q: -0.846
+    name: :Bus_23
         
   24:
     CONSTRUCTOR: Bus
@@ -292,6 +315,7 @@ VertexModels:
       MODEL: Models.PF_PQ
       P: -3.086
       Q: 0.922
+    name: :Bus_24
         
   25:
     CONSTRUCTOR: Bus
@@ -303,6 +327,7 @@ VertexModels:
       MODEL: Models.PF_PQ
       P: -2.24
       Q: -0.472
+    name: :Bus_25
         
   26:
     CONSTRUCTOR: Bus
@@ -314,6 +339,7 @@ VertexModels:
       MODEL: Models.PF_PQ
       P: -1.39
       Q: -0.17
+    name: :Bus_26
         
   27:
     CONSTRUCTOR: Bus
@@ -325,6 +351,7 @@ VertexModels:
       MODEL: Models.PF_PQ
       P: -2.81
       Q: -0.755
+    name: :Bus_27
         
   28:
     CONSTRUCTOR: Bus
@@ -336,6 +363,7 @@ VertexModels:
       MODEL: Models.PF_PQ
       P: -2.06
       Q: -0.276
+    name: :Bus_28
         
   29:
     CONSTRUCTOR: Bus
@@ -347,11 +375,13 @@ VertexModels:
       MODEL: Models.PF_PQ
       P: -2.835
       Q: -0.269
+    name: :Bus_29
       
   30: # Machine with AVR/Gov
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.ControlledGenBus
+    name: :Bus_30
     ctrld_gen₊avr₊E1: 3.546099
     ctrld_gen₊avr₊E2: 4.728132
     ctrld_gen₊avr₊Ka: 5.0
@@ -401,6 +431,7 @@ VertexModels:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.LoadControlledGenBus
+    name: :Bus_31
     ctrld_gen₊avr₊E1: 3.036437
     ctrld_gen₊avr₊E2: 4.048583
     ctrld_gen₊avr₊Ka: 6.2
@@ -458,6 +489,7 @@ VertexModels:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.ControlledGenBus
+    name: :Bus_32
     ctrld_gen₊avr₊E1: 2.342286
     ctrld_gen₊avr₊E2: 3.123048
     ctrld_gen₊avr₊Ka: 5.0
@@ -507,6 +539,7 @@ VertexModels:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.ControlledGenBus
+    name: :Bus_33
     ctrld_gen₊avr₊E1: 2.868069
     ctrld_gen₊avr₊E2: 3.824092
     ctrld_gen₊avr₊Ka: 5.0
@@ -556,6 +589,7 @@ VertexModels:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.ControlledGenBus
+    name: :Bus_34
     ctrld_gen₊avr₊E1: 3.926702
     ctrld_gen₊avr₊E2: 5.235602
     ctrld_gen₊avr₊Ka: 40.0
@@ -605,6 +639,7 @@ VertexModels:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.ControlledGenBus
+    name: :Bus_35
     ctrld_gen₊avr₊E1: 3.586801
     ctrld_gen₊avr₊E2: 4.782401
     ctrld_gen₊avr₊Ka: 5.0
@@ -654,6 +689,7 @@ VertexModels:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.ControlledGenBus
+    name: :Bus_36
     ctrld_gen₊avr₊E1: 2.801724
     ctrld_gen₊avr₊E2: 3.735632
     ctrld_gen₊avr₊Ka: 40.0
@@ -703,6 +739,7 @@ VertexModels:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.ControlledGenBus
+    name: :Bus_37
     ctrld_gen₊avr₊E1: 3.191489
     ctrld_gen₊avr₊E2: 4.255319
     ctrld_gen₊avr₊Ka: 5.0
@@ -752,6 +789,7 @@ VertexModels:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.ControlledGenBus
+    name: :Bus_38
     ctrld_gen₊avr₊E1: 4.256757
     ctrld_gen₊avr₊E2: 5.675676
     ctrld_gen₊avr₊Ka: 40.0
@@ -801,6 +839,7 @@ VertexModels:
     CONSTRUCTOR: Bus
     ARGS:
       - MODEL: Models.LoadMachineBus
+    name: :Bus_39
     machine₊D: 0
     machine₊H: 5.0
     machine₊R_s: 0.0
@@ -847,12 +886,14 @@ EdgeModels:
     pibranch₊active: 1
     pibranch₊r_dst: 1
     pibranch₊r_src: 1
+    name: :Line_01_02
 
   1 => 39:
     CONSTRUCTOR: Line
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.37500083737865836
+    name: :Line_01_39
     pibranch₊B_src: 0.37500083737865836
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -867,6 +908,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.12859993746580536
+    name: :Line_02_03
     pibranch₊B_src: 0.12859993746580536
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -881,6 +923,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.07299967653043317
+    name: :Line_02_25
     pibranch₊B_src: 0.07299967653043317
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -895,6 +938,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.0
+    name: :Line_02_30
     pibranch₊B_src: 0.0
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -909,6 +953,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.11069922581586487
+    name: :Line_03_04
     pibranch₊B_src: 0.11069922581586487
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -923,6 +968,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.10689967736603885
+    name: :Line_03_18
     pibranch₊B_src: 0.10689967736603885
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -937,6 +983,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.06710000454913279
+    name: :Line_04_05
     pibranch₊B_src: 0.06710000454913279
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -951,6 +998,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.0690997502600336
+    name: :Line_04_14
     pibranch₊B_src: 0.0690997502600336
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -965,6 +1013,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.02170006756413536
+    name: :Line_05_06
     pibranch₊B_src: 0.02170006756413536
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -979,6 +1028,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.07380036891452198
+    name: :Line_05_08
     pibranch₊B_src: 0.07380036891452198
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -993,6 +1043,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.05650008418231701
+    name: :Line_06_07
     pibranch₊B_src: 0.05650008418231701
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1007,6 +1058,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.06945033397823791
+    name: :Line_06_11
     pibranch₊B_src: 0.06945033397823791
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1021,6 +1073,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.0
+    name: :Line_06_31
     pibranch₊B_src: 0.0
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1035,6 +1088,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.03900006961213349
+    name: :Line_07_08
     pibranch₊B_src: 0.03900006961213349
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1049,6 +1103,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.19020092997037732
+    name: :Line_08_09
     pibranch₊B_src: 0.19020092997037732
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1063,6 +1118,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.6000004503542706
+    name: :Line_09_39
     pibranch₊B_src: 0.6000004503542706
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1077,6 +1133,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.03645007677249099
+    name: :Line_10_11
     pibranch₊B_src: 0.03645007677249099
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1091,6 +1148,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.03645007677249099
+    name: :Line_10_13
     pibranch₊B_src: 0.03645007677249099
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1105,6 +1163,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.0
+    name: :Line_10_32
     pibranch₊B_src: 0.0
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1119,6 +1178,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.0
+    name: :Line_12_11
     pibranch₊B_src: 0.0
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1133,6 +1193,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.0
+    name: :Line_12_13
     pibranch₊B_src: 0.0
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1147,6 +1208,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.08615023233953206
+    name: :Line_13_14
     pibranch₊B_src: 0.08615023233953206
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1161,6 +1223,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.18299926773667938
+    name: :Line_14_15
     pibranch₊B_src: 0.18299926773667938
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1175,6 +1238,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.08550016573713853
+    name: :Line_15_16
     pibranch₊B_src: 0.08550016573713853
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1189,6 +1253,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.06710031027017067
+    name: :Line_16_17
     pibranch₊B_src: 0.06710031027017067
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1203,6 +1268,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.1519991827766055
+    name: :Line_16_19
     pibranch₊B_src: 0.1519991827766055
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1217,6 +1283,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.1274000549668954
+    name: :Line_16_21
     pibranch₊B_src: 0.1274000549668954
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1231,6 +1298,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.03400016003740206
+    name: :Line_16_24
     pibranch₊B_src: 0.03400016003740206
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1245,6 +1313,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.06594968328342747
+    name: :Line_17_18
     pibranch₊B_src: 0.06594968328342747
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1259,6 +1328,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.16079999806656406
+    name: :Line_17_27
     pibranch₊B_src: 0.16079999806656406
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1273,6 +1343,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.0
+    name: :Line_19_20
     pibranch₊B_src: 0.0
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1287,6 +1358,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.0
+    name: :Line_19_33
     pibranch₊B_src: 0.0
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1301,6 +1373,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.0
+    name: :Line_20_34
     pibranch₊B_src: 0.0
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1315,6 +1388,7 @@ EdgeModels:
     ARGS:
       - MODEL: Models.PiLine
     pibranch₊B_dst: 0.1282504022879528
+    name: :Line_21_22
     pibranch₊B_src: 0.1282504022879528
     pibranch₊G_dst: 0.0
     pibranch₊G_src: 0.0
@@ -1328,6 +1402,7 @@ EdgeModels:
     CONSTRUCTOR: Line
     ARGS:
       - MODEL: Models.PiLine
+    name: :Line_22_23
     pibranch₊B_dst: 0.09230039064711089
     pibranch₊B_src: 0.09230039064711089
     pibranch₊G_dst: 0.0
@@ -1342,6 +1417,7 @@ EdgeModels:
     CONSTRUCTOR: Line
     ARGS:
       - MODEL: Models.PiLine
+    name: :Line_22_35
     pibranch₊B_dst: 0.0
     pibranch₊B_src: 0.0
     pibranch₊G_dst: 0.0
@@ -1356,6 +1432,7 @@ EdgeModels:
     CONSTRUCTOR: Line
     ARGS:
       - MODEL: Models.PiLine
+    name: :Line_23_24
     pibranch₊B_dst: 0.18050128030143106
     pibranch₊B_src: 0.18050128030143106
     pibranch₊G_dst: 0.0
@@ -1370,6 +1447,7 @@ EdgeModels:
     CONSTRUCTOR: Line
     ARGS:
       - MODEL: Models.PiLine
+    name: :Line_23_36
     pibranch₊B_dst: 0.0
     pibranch₊B_src: 0.0
     pibranch₊G_dst: 0.0
@@ -1384,6 +1462,7 @@ EdgeModels:
     CONSTRUCTOR: Line
     ARGS:
       - MODEL: Models.PiLine
+    name: :Line_25_26
     pibranch₊B_dst: 0.2564997461504503
     pibranch₊B_src: 0.2564997461504503
     pibranch₊G_dst: 0.0
@@ -1398,6 +1477,7 @@ EdgeModels:
     CONSTRUCTOR: Line
     ARGS:
       - MODEL: Models.PiLine
+    name: :Line_25_37
     pibranch₊B_dst: 0.0
     pibranch₊B_src: 0.0
     pibranch₊G_dst: 0.0
@@ -1412,6 +1492,7 @@ EdgeModels:
     CONSTRUCTOR: Line
     ARGS:
       - MODEL: Models.PiLine
+    name: :Line_26_27
     pibranch₊B_dst: 0.11979967705921879
     pibranch₊B_src: 0.11979967705921879
     pibranch₊G_dst: 0.0
@@ -1426,6 +1507,7 @@ EdgeModels:
     CONSTRUCTOR: Line
     ARGS:
       - MODEL: Models.PiLine
+    name: :Line_26_28
     pibranch₊B_dst: 0.3900985890418224
     pibranch₊B_src: 0.3900985890418224
     pibranch₊G_dst: 0.0
@@ -1440,6 +1522,7 @@ EdgeModels:
     CONSTRUCTOR: Line
     ARGS:
       - MODEL: Models.PiLine
+    name: :Line_26_29
     pibranch₊B_dst: 0.5144984478217224
     pibranch₊B_src: 0.5144984478217224
     pibranch₊G_dst: 0.0
@@ -1454,6 +1537,7 @@ EdgeModels:
     CONSTRUCTOR: Line
     ARGS:
       - MODEL: Models.PiLine
+    name: :Line_28_29
     pibranch₊B_dst: 0.12450040614505094
     pibranch₊B_src: 0.12450040614505094
     pibranch₊G_dst: 0.0
@@ -1468,6 +1552,7 @@ EdgeModels:
     CONSTRUCTOR: Line
     ARGS:
       - MODEL: Models.PiLine
+    name: :Line_29_38
     pibranch₊B_dst: 0.0
     pibranch₊B_src: 0.0
     pibranch₊G_dst: 0.0
