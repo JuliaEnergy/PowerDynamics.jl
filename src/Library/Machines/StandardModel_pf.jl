@@ -57,62 +57,6 @@
         dpu=0, [description="dpu * n is turbine shaft friction torque in p.u.;"]
         speedvar=0, [description="speed variations considered in stator voltage equations"]
         speedvar_part=1, [description="speed variations partly neglected in stator voltage equations"]
-        #calculate secondary parameters
-        T″_d = T″_d0 * X″_d/X′_d
-        T″_q = T″_q0 * X″_q/(X′_q * (1-salientpole) + salientpole * X_q)
-        T′_d = T′_d0 * X′_d/X_d
-        T′_q = T′_q0 * X′_q/X_q
-        X_ad = X_d - X_ls, [description="Mutual (magnetising) reactance, d-axis"]
-        X_aq = X_q - X_ls, [description="Mutual (magnetising) reactance, q-axis"]
-        X_1 = X_d - X_ls + X_rld
-        X_2 = X_1 - (X_d - X_ls)^2 / X_d
-        X_3 = (X_2 - X_1 * X″_d/X_d) / (1 - X″_d/X_d)
-        T_1 = X_d / X′_d * T′_d + (1 - X_d/X′_d + X_d/X″_d) * T″_d
-        T_2 = T″_d + T′_d
-        a = (X_2 * T_1 - X_1 * T_2) / (X_1 - X_2)
-        b = X_3 * T″_d * T′_d / (X_3 - X_2)
-        T_σfd = -a/2 + sqrt(a^2/4 - b)
-        T_σ1d = -a/2 - sqrt(a^2/4 - b)
-        X_fd = (T_σfd - T_σ1d) / ((T_1 - T_2)/(X_1 - X_2) + T_σ1d / X_3), [description="Reactance of excitation (field) winding (d-axis)"]
-        X_1d = (T_σ1d - T_σfd) / ((T_1 - T_2)/(X_1 - X_2) + T_σfd / X_3), [description="Reactance of 1d-damper winding (d-axis)"]
-        R_fd = X_fd / (ω_b * T_σfd), [description="Resistance of excitation winding (d-axis)"]
-        R_1d = X_1d / (ω_b * T_σ1d), [description="Resistance of 1d-damper winding (d-axis)"]
-        X_4 = X_q - X_ls + X_rlq
-        X_5 = X_4 - (X_q - X_ls)^2 / X_q
-        X_6 = (X_5 - X_4 * X″_q/X_q) / (1 - X″_q/X_q)
-        T_3 = X_q / X′_q * T′_q + (1 - X_q/X′_q + X_q/X″_q) * T″_q
-        T_4 = T″_q + T′_q
-        c = (X_5 * T_3 - X_4 * T_4) / (X_4 - X_5)
-        d = X_6 * T″_q * T′_q / (X_6 - X_5)
-        T_σ2q = -c/2 + sqrt(c^2/4 - d)
-        T_σ1q = -c/2 - sqrt(c^2/4 - d)
-        X_2qr = (T_σ2q - T_σ1q) / ((T_3 - T_4)/(X_4 - X_5) + T_σ1q / X_6) #round-rotor
-        X_1qr = (T_σ1q - T_σ2q) / ((T_3 - T_4)/(X_4 - X_5) + T_σ2q / X_6) #round-rotor
-        R_2qr = X_2qr / (ω_b * T_σ2q) #round-rotor
-        R_1qr = X_1qr / (ω_b * T_σ1q) #round-rotor
-        X_1qs = (X_q - X_ls) * (X″_q - X_ls) / (X_q - X″_q) #salient pole
-        R_1qs = X″_q / X_q * (X_q - X_ls + X_1qs) / (ω_b * T″_q) #salient pole
-        X_1q = salientpole * X_1qs + (1-salientpole) * X_1qr, [description="Reactance of 1q-damper winding (q-axis)"]
-        R_1q = salientpole * R_1qs + (1-salientpole) * R_1qr, [description="Resistance of 1q-damper winding (q-axis)"]
-        X_2q = (1-salientpole) * X_2qr, [description="Reactance of 2q-damper winding (q-axis)"]
-        R_2q = (1-salientpole) * R_2qr, [description="Resistance of 2q-damper winding (q-axis)"]
-        k_fd = (X_ad * X_1d) / ((X_ad + X_rld) * (X_1d + X_fd) + X_fd * X_1d)
-        k_1d = (X_ad * X_fd) / ((X_ad + X_rld) * (X_1d + X_fd) + X_fd * X_1d)
-        #X″_d = X_ad + X_ls - (k_1d + k_fd) * X_ad #no new definition possible
-        k_1qs = X_aq / (X_aq + X_rlq + X_1q) #salient pole
-        X″_qs = X_aq + X_ls - k_1qs * X_aq #salient pole
-        k_1qr = (X_aq * X_2q)/((X_aq + X_rlq) * (X_2q + X_1q) + X_2q * X_1q) #round rotor
-        k_2qr = (X_aq * X_1q)/((X_aq + X_rlq) * (X_2q + X_1q) + X_2q * X_1q) #round rotor
-        X″_qr = X_aq + X_ls - (k_2qr + k_1qr) * X_aq #round rotor
-        k_1q = salientpole * k_1qs + (1-salientpole) * k_1qr
-        k_2q = (1-salientpole) * k_2qr
-        #X″_q = salientpole * X″_qs + (1-salientpole)* X″_qr #no new definition possible
-        X_det_d = (X_ad + X_rld) * (X_1d + X_fd) + X_fd * X_1d
-        X_det_q = (X_aq + X_rlq) * (X_2q + X_1q) + X_2q * X_1q
-        X_fd_loop = X_ad + X_rld + X_fd
-        X_1d_loop = X_ad + X_rld + X_1d
-        X_1q_loop = X_aq + X_rlq + X_1q
-        X_2q_loop = X_aq + X_rlq + X_2q
         # input/parameter switches
         if !vf_input
             vf_set, [guess=1, bounds=(0,Inf), description="field voltage"]
@@ -161,6 +105,63 @@
         τ_dpe(t), [description="damping torque based on power"]
         τ_ag(t), [description="acceleration time constant in s"]
         n(t), [guess=1, description="rotor speed"]
+        #secondary para,ezers
+        T″_d(t)
+        T″_q(t)
+        T′_d(t)
+        T′_q(t)
+        X_ad(t), [description="Mutual (magnetising) reactance, d-axis"]
+        X_aq(t), [description="Mutual (magnetising) reactance, q-axis"]
+        X_1(t)
+        X_2(t)
+        X_3(t)
+        T_1(t)
+        T_2(t)
+        a(t)
+        b(t)
+        T_σfd(t)
+        T_σ1d(t)
+        X_fd(t), [description="Reactance of excitation (field) winding (d-axis)"]
+        X_1d(t), [description="Reactance of 1d-damper winding (d-axis)"]
+        R_fd(t), [description="Resistance of excitation winding (d-axis)"]
+        R_1d(t), [description="Resistance of 1d-damper winding (d-axis)"]
+        X_4(t)
+        X_5(t)
+        X_6(t)
+        T_3(t)
+        T_4(t)
+        c(t)
+        d(t)
+        T_σ2q(t)
+        T_σ1q(t)
+        X_2qr(t)
+        X_1qr(t)
+        R_2qr(t)
+        R_1qr(t)
+        X_1qs(t)
+        R_1qs(t)
+        X_1q(t), [description="Reactance of 1q-damper winding (q-axis)"]
+        R_1q(t), [description="Resistance of 1q-damper winding (q-axis)"]
+        X_2q(t), [description="Reactance of 2q-damper winding (q-axis)"]
+        R_2q(t), [description="Resistance of 2q-damper winding (q-axis)"]
+        k_fd(t)
+        k_1d(t)
+        X″_d_new(t)
+        k_1qs(t)
+        X″_qs(t)
+        k_1qr(t)
+        k_2qr(t)
+        X″_qr(t)
+        k_1q(t)
+        k_2q(t)
+        X″_q_new(t)
+        X_det_d(t)
+        X_det_q(t)
+        X_fd_loop(t)
+        X_1d_loop(t)
+        X_1q_loop(t)
+        X_2q_loop(t)
+
     end
     begin
         T_park(α) = [sin(α) cos(α); -cos(α) sin(α)]
@@ -170,6 +171,62 @@
                         -cos(α)  sin(α)]
     end
     @equations begin
+        #secondary parameters calculation
+        T″_d ~ T″_d0 * X″_d/X′_d
+        T″_q ~ T″_q0 * X″_q/(X′_q * (1-salientpole) + salientpole * X_q)
+        T′_d ~ T′_d0 * X′_d/X_d
+        T′_q ~ T′_q0 * X′_q/X_q
+        X_ad ~ X_d - X_ls
+        X_aq ~ X_q - X_ls
+        X_1 ~ X_d - X_ls + X_rld
+        X_2 ~ X_1 - (X_d - X_ls)^2 / X_d
+        X_3 ~ (X_2 - X_1 * X″_d/X_d) / (1 - X″_d/X_d)
+        T_1 ~ X_d / X′_d * T′_d + (1 - X_d/X′_d + X_d/X″_d) * T″_d
+        T_2 ~ T″_d + T′_d
+        a ~ (X_2 * T_1 - X_1 * T_2) / (X_1 - X_2)
+        b ~ X_3 * T″_d * T′_d / (X_3 - X_2)
+        T_σfd ~ -a/2 + sqrt(a^2/4 - b)
+        T_σ1d ~ -a/2 - sqrt(a^2/4 - b)
+        X_fd ~ (T_σfd - T_σ1d) / ((T_1 - T_2)/(X_1 - X_2) + T_σ1d / X_3)
+        X_1d ~ (T_σ1d - T_σfd) / ((T_1 - T_2)/(X_1 - X_2) + T_σfd / X_3)
+        R_fd ~ X_fd / (ω_b * T_σfd)
+        R_1d ~ X_1d / (ω_b * T_σ1d)
+        X_4 ~ X_q - X_ls + X_rlq
+        X_5 ~ X_4 - (X_q - X_ls)^2 / X_q
+        X_6 ~ (X_5 - X_4 * X″_q/X_q) / (1 - X″_q/X_q)
+        T_3 ~ X_q / X′_q * T′_q + (1 - X_q/X′_q + X_q/X″_q) * T″_q
+        T_4 ~ T″_q + T′_q
+        c ~ (X_5 * T_3 - X_4 * T_4) / (X_4 - X_5)
+        d ~ X_6 * T″_q * T′_q / (X_6 - X_5)
+        T_σ2q ~ -c/2 + sqrt(c^2/4 - d)
+        T_σ1q ~ -c/2 - sqrt(c^2/4 - d)
+        X_2qr ~ (T_σ2q - T_σ1q) / ((T_3 - T_4)/(X_4 - X_5) + T_σ1q / X_6) #round-rotor
+        X_1qr ~ (T_σ1q - T_σ2q) / ((T_3 - T_4)/(X_4 - X_5) + T_σ2q / X_6) #round-rotor
+        R_2qr ~ X_2qr / (ω_b * T_σ2q) #round-rotor
+        R_1qr ~ X_1qr / (ω_b * T_σ1q) #round-rotor
+        X_1qs ~ (X_q - X_ls) * (X″_q - X_ls) / (X_q - X″_q) #salient pole
+        R_1qs ~ X″_q / X_q * (X_q - X_ls + X_1qs) / (ω_b * T″_q) #salient pole
+        X_1q ~ salientpole * X_1qs + (1-salientpole) * X_1qr
+        R_1q ~ salientpole * R_1qs + (1-salientpole) * R_1qr
+        X_2q ~ (1-salientpole) * X_2qr
+        R_2q ~ (1-salientpole) * R_2qr
+        k_fd ~ (X_ad * X_1d) / ((X_ad + X_rld) * (X_1d + X_fd) + X_fd * X_1d)
+        k_1d ~ (X_ad * X_fd) / ((X_ad + X_rld) * (X_1d + X_fd) + X_fd * X_1d)
+        X″_d_new ~ X_ad + X_ls - (k_1d + k_fd) * X_ad
+        k_1qs ~ X_aq / (X_aq + X_rlq + X_1q) #salient pole
+        X″_qs ~ X_aq + X_ls - k_1qs * X_aq #salient pole
+        k_1qr ~ (X_aq * X_2q)/((X_aq + X_rlq) * (X_2q + X_1q) + X_2q * X_1q) #round rotor
+        k_2qr ~ (X_aq * X_1q)/((X_aq + X_rlq) * (X_2q + X_1q) + X_2q * X_1q) #round rotor
+        X″_qr ~ X_aq + X_ls - (k_2qr + k_1qr) * X_aq #round rotor
+        k_1q ~ salientpole * k_1qs + (1-salientpole) * k_1qr
+        k_2q ~ (1-salientpole) * k_2qr
+        X″_q_new ~ salientpole * X″_qs + (1-salientpole)* X″_qr
+        X_det_d ~ (X_ad + X_rld) * (X_1d + X_fd) + X_fd * X_1d
+        X_det_q ~ (X_aq + X_rlq) * (X_2q + X_1q) + X_2q * X_1q
+        X_fd_loop ~ X_ad + X_rld + X_fd
+        X_1d_loop ~ X_ad + X_rld + X_1d
+        X_1q_loop ~ X_aq + X_rlq + X_1q
+        X_2q_loop ~ X_aq + X_rlq + X_2q
         # Park's transformations
         [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q] * Vn/V_b
         [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i] * Ibase(S_b, V_b)/Ibase(Sn, Vn)

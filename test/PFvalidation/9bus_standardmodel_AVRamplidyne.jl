@@ -417,10 +417,10 @@ axislegend(ax; position=:rt)
 xlims!(ax, 0.9, 10)
 fig
 
-#### ud and uq: generator not good around failure!
+#### ud and uq
 fig = Figure();
 ax = Axis(fig[1, 1]; title="voltage at generator 1")
-ts = range(sol.t[begin],sol.t[end],length=1000)
+ts = range(sol.t[begin],sol.t[end],length=10000)
 vd = sol(ts; idxs=VIndex(1, :machine₊V_d))
 vq = sol(ts; idxs=VIndex(1, :machine₊V_q))
 lines!(ax, ts, vd.u; label="u_d")
@@ -447,10 +447,10 @@ axislegend(ax; position=:rt)
 xlims!(ax, 0.9, 10)
 fig
 
-#### ud and uq: generator not good around failure!
+#### ud and uq
 fig = Figure();
 ax = Axis(fig[1, 1]; title="voltage at generator 3")
-ts = range(sol.t[begin],sol.t[end],length=1000)
+ts = range(sol.t[begin],sol.t[end],length=10000)
 vd = sol(ts; idxs=VIndex(3, :machine₊V_d))
 vq = sol(ts; idxs=VIndex(3, :machine₊V_q))
 lines!(ax, ts, vd.u; label="u_d")
@@ -478,10 +478,10 @@ axislegend(ax; position=:rt)
 xlims!(ax, 0.9, 10)
 fig
 
-#### ud and uq: generator not good around failure!
+#### ud and uq:
 fig = Figure();
 ax = Axis(fig[1, 1]; title="voltage at generator 2")
-ts = range(sol.t[begin],sol.t[end],length=1000)
+ts = range(sol.t[begin],sol.t[end],length=10000)
 vd = sol(ts; idxs=VIndex(2, :machine₊V_d))
 vq = sol(ts; idxs=VIndex(2, :machine₊V_q))
 lines!(ax, ts, vd.u; label="u_d")
