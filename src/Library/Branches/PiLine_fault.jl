@@ -15,7 +15,7 @@
         pos, [description="Fault Position (from src, percent of the line)"]
         active=1, [description="Line active or switched off"]
         shortcircuit=0, [description="shortcircuit on line"]
-        #faultimp, [description="1 if fault impedance given, else 0"]
+        #faultimp=0, [description="1 if fault impedance given, else 0"]
     end
     @components begin
         src = Terminal()
@@ -36,7 +36,7 @@
         i₂ = Ydst * V₂
         V_mnormal = V₁*(1-pos) + V₂*pos #(V₁*Z_b + V₂*Z_a)/(Z_a+Z_b)
         V_m = V_mnormal * (1-shortcircuit) + shortcircuit * (0+0*im) #ifelse(shortcircuit>0, 0.0, V_mnormal)
-        #V_m = (V₁*(1-pos) + V₂*pos)/(1 + Y_f * Z * pos * (1-pos)) * (shortcircuit * faultimp + (1 - shortcircuit)) 
+        #V_m = (V₁*(1-pos) + V₂*pos)/(1 + Y_f * Z * pos * (1-pos)) * (shortcircuit * faultimp + (1 - shortcircuit))
         V_a = V₁ - V_m
         V_b = V_m - V₂
         i_m2 = V_b / Z_b
