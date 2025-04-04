@@ -8,14 +8,14 @@
         B_dst, [description="Susceptance of dst shunt (base unclear?)"]
         r_src=1, [description="Src end transformation ratio"]
         r_dst=1, [description="Src end transformation ratio"]
-        #R_fault=0, [description="Fault Resistance in pu (base unclear?)"]
-        #X_fault=0, [description="Fault Reactance in pu (base unclear?)"]
+        R_fault=0, [description="Fault Resistance in pu (base unclear?)"]
+        X_fault=0, [description="Fault Reactance in pu (base unclear?)"]
         G_fault=0, [description="Fault Resistance in pu (base unclear?)"]
         B_fault=0, [description="Fault Reactance in pu (base unclear?)"]
         pos, [description="Fault Position (from src, percent of the line)"]
         active=1, [description="Line active or switched off"]
         shortcircuit=0, [description="shortcircuit on line"]
-        #faultimp=0, [description="1 if fault impedance given, else 0"]
+        faultimp=0, [description="1 if fault impedance given, else 0"]
     end
     @components begin
         src = Terminal()
@@ -23,7 +23,7 @@
     end
     begin
         Z = R + im*X
-        #Y_f = (G_fault + im * B_fault) * shortcircuit #1/(R_fault + im*X_fault)
+        Y_f = (G_fault + im * B_fault) * shortcircuit #1/(R_fault + im*X_fault)
         Z_a = Z * pos
         Z_b = Z * (1-pos)
         Ysrc = G_src + im*B_src
@@ -34,9 +34,9 @@
         V₂ = r_dst * Vdst
         i₁ = Ysrc * V₁
         i₂ = Ydst * V₂
-        V_mnormal = V₁*(1-pos) + V₂*pos #(V₁*Z_b + V₂*Z_a)/(Z_a+Z_b)
-        V_m = V_mnormal * (1-shortcircuit) + shortcircuit * (0+0*im) #ifelse(shortcircuit>0, 0.0, V_mnormal)
-        #V_m = (V₁*(1-pos) + V₂*pos)/(1 + Y_f * Z * pos * (1-pos)) * (shortcircuit * faultimp + (1 - shortcircuit))
+        #V_mnormal = V₁*(1-pos) + V₂*pos #(V₁*Z_b + V₂*Z_a)/(Z_a+Z_b)
+        #V_m = V_mnormal * (1-shortcircuit) + shortcircuit * (0+0*im) #ifelse(shortcircuit>0, 0.0, V_mnormal)
+        V_m = (V₁*(1-pos) + V₂*pos)/(1 + Y_f * Z * pos * (1-pos)) * (shortcircuit * faultimp + (1 - shortcircuit))
         V_a = V₁ - V_m
         V_b = V_m - V₂
         i_m2 = V_b / Z_b
@@ -46,9 +46,9 @@
         i_f = i_m1 - i_m2
     end
     @equations begin
-        src.i_r ~ active * simplify(real(isrc))
-        src.i_i ~ active * simplify(imag(isrc))
-        dst.i_r ~ active * simplify(real(idst))
-        dst.i_i ~ active * simplify(imag(idst))
+        src.i_r ~ active * real(isrc)
+        src.i_i ~ active * imag(isrc)
+        dst.i_r ~ active * real(idst)
+        dst.i_i ~ active * imag(idst)
     end
 end
