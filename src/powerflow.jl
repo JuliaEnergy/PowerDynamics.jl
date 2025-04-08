@@ -87,10 +87,7 @@ function solve_powerflow!(nw::Network; verbose=true)
         set_current!(nw.im.vertexm[i], pfs.v[i, :busbar₊i_r] + im * pfs.v[i, :busbar₊i_i])
     end
 
-    println("Found powerflow solution:")
-    df = show_powerflow(nw)
-    println(df)
-    nothing
+    show_powerflow(nw)
 end
 
 function show_powerflow(nw::Network)
