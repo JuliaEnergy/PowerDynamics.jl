@@ -41,8 +41,8 @@
         V_b = V_m - V₂
         i_m2 = V_b / Z_b
         i_m1 = V_a / Z_a
-        isrc = -i_m1 - i₁
-        idst = i_m2 - i₂
+        isrc = (-i_m1 - i₁)*r_src
+        idst = (i_m2 - i₂)*r_dst
         i_f = i_m1 - i_m2
     end
     @equations begin
