@@ -118,8 +118,8 @@ function piline(; R, X, B)
     MTKLine(pibranch)
 end
 
-function piline_shortcircuit(; R, X, B, pos, G_fault=0, B_fault=0)
-    @named pibranch = PiLine_fault(;R, X, B_src=B/2, B_dst=B/2, G_src=0, G_dst=0, G_fault, B_fault, pos)#, faultimp)
+function piline_shortcircuit(; R, X, B, pos, G_fault=0, B_fault=0, faultimp=0)
+    @named pibranch = PiLine_fault(;R, X, B_src=B/2, B_dst=B/2, G_src=0, G_dst=0, G_fault, B_fault, pos, faultimp)
     MTKLine(pibranch)
 end
 
@@ -128,11 +128,13 @@ function transformer(; R, X)
     MTKLine(transformer)
 end
 
-function lineparams_pu(; S_b, V_b, line_length, R_l_perkm, X_l_perkm, B_l_perkm)
+function lineparams_pu(; S_b, V_b, line_length, R_l_perkm, X_l_perkm, B_l_perkm, R_f_Ω=1, X_f_Ω=1)
     R_pu = (R_l_perkm * line_length) * S_b / V_b^2
     X_pu = (X_l_perkm * line_length) * S_b / V_b^2
     B_pu = (B_l_perkm * line_length) * V_b^2 / S_b #ω_b * 0.0095491* 10^(-6) #ω*C
-    return (R=R_pu, X=X_pu, B=B_pu)
+    G_f_pu = 1/R_f_Ω * V_b^2 / S_b
+    B_f_pu = 1/X_f_Ω * V_b^2 / S_b
+    return (R=R_pu, X=X_pu, B=B_pu, G_f=G_f_pu, B_f=B_f_pu)
 end
 
 function trafoparams_pu(; S_b, S_n, X_pu_PF, R_pu_PF)
@@ -305,16 +307,28 @@ l45_data = (;
     X_l_perkm = 44.965,
     B_l_perkm = 332.7 * 10^(-6)
 )
-l45_params = lineparams_pu(; l45_data...)
 
-@named l46 = Line(piline(; R=0.0170, X=0.0920, B=0.1580), src=4, dst=6)
+l57_data = (;
+    S_b = 100000000,
+    V_b = 230000,
+    #ω_b = 60 * 2 * π,
+    line_length = 1,
+    R_l_perkm = 16.928,
+    X_l_perkm = 85.169,
+    B_l_perkm = 578.45 * 10^(-6),
+    #R_f_Ω=0,
+    #X_f_Ω=0
+)
+l57_params = lineparams_pu(; l57_data...)
+
+@named l46 = Line(piline(; R=0.0170, X=0.0920, B=0.1580), src=4, dst=6) #here in pu
 @named l69 = Line(piline(; R=0.0390, X=0.1700, B=0.3580), src=6, dst=9)
 @named l78 = Line(piline(; R=0.0085, X=0.0720, B=0.1490), src=7, dst=8)
 @named l89 = Line(piline(; R=0.0119, X=0.1008, B=0.2090), src=8, dst=9)
 @named t14 = Line(transformer(; R=0, X=0.0576), src=1, dst=4)
 @named t27 = Line(transformer(; R=0, X=0.0625), src=2, dst=7)
 @named t39 = Line(transformer(; R=0, X=0.0586), src=3, dst=9)
-@named l57 = Line(piline_shortcircuit(; R=0.0320, X=0.1610, B=0.3060, pos=0.99), src=5, dst=7)
+@named l57 = Line(piline_shortcircuit(; R=l57_params.R, X=l57_params.X, B=l57_params.B, pos=0.99), src=5, dst=7)
 @named t27 = Line(transformer(; R=t27_params.R, X=t27_params.X), src=2, dst=7)
 @named l45 = Line(piline(R=l45_params.R, X=l45_params.X, B=l45_params.B), src=4, dst=5)
 
@@ -531,6 +545,7 @@ xlims!(ax, 0, 5)
 fig
 
 #output
+ref_avr = CSV.read("test/PFvalidation/PFdata/Gen2_standardModelPF_avrdata.csv", DataFrame; header=2, decimal=',', delim=';')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="vfout")
 ts = range(sol.t[begin],sol.t[end],length=10000)
