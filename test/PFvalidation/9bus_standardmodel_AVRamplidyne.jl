@@ -316,8 +316,8 @@ l57_data = (;
     R_l_perkm = 16.928,
     X_l_perkm = 85.169,
     B_l_perkm = 578.45 * 10^(-6),
-    #R_f_Ω=0,
-    #X_f_Ω=0
+    R_f_Ω=20,
+    X_f_Ω=30
 )
 l57_params = lineparams_pu(; l57_data...)
 
@@ -328,7 +328,7 @@ l57_params = lineparams_pu(; l57_data...)
 @named t14 = Line(transformer(; R=0, X=0.0576), src=1, dst=4)
 @named t27 = Line(transformer(; R=0, X=0.0625), src=2, dst=7)
 @named t39 = Line(transformer(; R=0, X=0.0586), src=3, dst=9)
-@named l57 = Line(piline_shortcircuit(; R=l57_params.R, X=l57_params.X, B=l57_params.B, pos=0.99), src=5, dst=7)
+@named l57 = Line(piline_shortcircuit(; R=l57_params.R, X=l57_params.X, B=l57_params.B, pos=0.99, G_fault=l57_params.G_f, B_fault=l57_params.B_f, faultimp=1), src=5, dst=7)
 @named t27 = Line(transformer(; R=t27_params.R, X=t27_params.X), src=2, dst=7)
 @named l45 = Line(piline(R=l45_params.R, X=l45_params.X, B=l45_params.B), src=4, dst=5)
 
@@ -383,7 +383,7 @@ inspect(sol)
 
 #Plot results
 #### Voltage Magnitude
-ref_bus57 = CSV.read("test/PFvalidation/PFdata/Bus5-7_standardModelPF_avrAmplidyne.csv", DataFrame; header=2, decimal=',')
+ref_bus57 = CSV.read("test/PFvalidation/PFdata/Bus5-7_standardModelPF_avrAmplidyne_faultimp.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Bus voltage magnitude (Power Factory Standard Model)")
 ts = range(sol.t[begin],sol.t[end],length=10000)
@@ -398,7 +398,7 @@ xlims!(ax, 0, 5)
 fig
 
 ### magnitude at generator bus
-ref_bus = CSV.read("test/PFvalidation/PFdata/bus_voltmag_avrAmplidyne.csv", DataFrame; header=2, decimal=',')
+ref_bus = CSV.read("test/PFvalidation/PFdata/bus_voltmag_avrAmplidyne_faultimp.csv", DataFrame; header=2, decimal=',')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="Bus voltage magnitude")
 ts = range(sol.t[begin],sol.t[end],length=10000)
@@ -415,69 +415,9 @@ axislegend(ax; position=:rb)
 xlims!(ax, 0.9, 1.5)
 fig
 
-# Bus 1
-ref_gen1 = CSV.read("test/PFvalidation/PFdata/gen1_data_avrAmplidyne.csv", DataFrame; header=2, decimal=',')
-#### id and iq generator
-fig = Figure();
-ax = Axis(fig[1, 1]; title="stator current gen 1")
-ts = range(sol.t[begin],sol.t[end],length=10000)
-id = sol(ts; idxs=VIndex(1, :machine₊I_d))
-iq = sol(ts; idxs=VIndex(1, :machine₊I_q))
-lines!(ax, ts, id.u; label="i_d")
-lines!(ax, ref_gen1."Zeitpunkt in s", ref_gen1."Ständerstrom, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="i_d ref")
-lines!(ax, ts, iq.u; label="i_q")
-lines!(ax, ref_gen1."Zeitpunkt in s", ref_gen1."Ständerstrom, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="i_q ref")
-axislegend(ax; position=:rt)
-xlims!(ax, 0.9, 10)
-fig
-
-#### ud and uq
-fig = Figure();
-ax = Axis(fig[1, 1]; title="voltage at generator 1")
-ts = range(sol.t[begin],sol.t[end],length=10000)
-vd = sol(ts; idxs=VIndex(1, :machine₊V_d))
-vq = sol(ts; idxs=VIndex(1, :machine₊V_q))
-lines!(ax, ts, vd.u; label="u_d")
-lines!(ax, ref_gen1."Zeitpunkt in s", ref_gen1."Spannung, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="u_d ref")
-lines!(ax, ts, vq.u; label="u_q")
-lines!(ax, ref_gen1."Zeitpunkt in s", ref_gen1."Spannung, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="u_q ref")
-axislegend(ax; position=:rb)
-xlims!(ax, 0.9, 2)
-fig
-
-# Bus 3
-ref_gen3 = CSV.read("test/PFvalidation/PFdata/gen3_data_avrAmplidyne.csv", DataFrame; header=2, decimal=',')
-#### id and iq generator
-fig = Figure();
-ax = Axis(fig[1, 1]; title="stator current gen 3")
-ts = range(sol.t[begin],sol.t[end],length=10000)
-id = sol(ts; idxs=VIndex(3, :machine₊I_d))
-iq = sol(ts; idxs=VIndex(3, :machine₊I_q))
-lines!(ax, ts, id.u; label="i_d")
-lines!(ax, ref_gen3."Zeitpunkt in s", ref_gen3."Ständerstrom, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="i_d ref")
-lines!(ax, ts, iq.u; label="i_q")
-lines!(ax, ref_gen3."Zeitpunkt in s", ref_gen3."Ständerstrom, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="i_q ref")
-axislegend(ax; position=:rt)
-xlims!(ax, 0.9, 10)
-fig
-
-#### ud and uq
-fig = Figure();
-ax = Axis(fig[1, 1]; title="voltage at generator 3")
-ts = range(sol.t[begin],sol.t[end],length=10000)
-vd = sol(ts; idxs=VIndex(3, :machine₊V_d))
-vq = sol(ts; idxs=VIndex(3, :machine₊V_q))
-lines!(ax, ts, vd.u; label="u_d")
-lines!(ax, ref_gen3."Zeitpunkt in s", ref_gen3."Spannung, d-Achse in p.u.", color=Cycled(1), linestyle=:dash, label="u_d ref")
-lines!(ax, ts, vq.u; label="u_q")
-lines!(ax, ref_gen3."Zeitpunkt in s", ref_gen3."Spannung, q-Achse in p.u.", color=Cycled(2), linestyle=:dash, label="u_q ref")
-axislegend(ax; position=:rb)
-xlims!(ax, 0.9, 2)
-fig
-
 
 # Bus 2
-ref_gen2 = CSV.read("test/PFvalidation/PFdata/gen2_data_avrAmplidyne.csv", DataFrame; header=2, decimal=',')
+ref_gen2 = CSV.read("test/PFvalidation/PFdata/gen2_data_avrAmplidyne_faultimp.csv", DataFrame; header=2, decimal=',')
 #### id and iq generator
 fig = Figure();
 ax = Axis(fig[1, 1]; title="stator current gen 2")
@@ -507,7 +447,7 @@ xlims!(ax, 0.9, 2)
 fig
 
 #AVR data
-ref_avr = CSV.read("test/PFvalidation/PFdata/Gen2_standardModelPF_avrdata.csv", DataFrame; header=2, decimal=',', delim=';')
+ref_avr = CSV.read("test/PFvalidation/PFdata/Gen2_standardModelPF_avrdata_faultimp.csv", DataFrame; header=2, decimal=',', delim=';')
 #vr in OpPoDyn
 fig = Figure();
 ax = Axis(fig[1, 1]; title="vr")
@@ -545,7 +485,7 @@ xlims!(ax, 0, 5)
 fig
 
 #output
-ref_avr = CSV.read("test/PFvalidation/PFdata/Gen2_standardModelPF_avrdata.csv", DataFrame; header=2, decimal=',', delim=';')
+ref_avr = CSV.read("test/PFvalidation/PFdata/Gen2_standardModelPF_avrdata_faultimp.csv", DataFrame; header=2, decimal=',', delim=';')
 fig = Figure();
 ax = Axis(fig[1, 1]; title="vfout")
 ts = range(sol.t[begin],sol.t[end],length=10000)
@@ -569,7 +509,7 @@ fig
 
 #test deviation from Power Factory
 function states_deviation(i, rmssym, ndsym)
-    ref = CSV.read("test/PFvalidation/PFdata/Gen2_standardModelPF_avrdata.csv", DataFrame; header=2, decimal=',', delim=';')
+    ref = CSV.read("test/PFvalidation/PFdata/Gen2_standardModelPF_avrdata_faultimp.csv", DataFrame; header=2, decimal=',', delim=';')
     ref_t = ref[!, "Zeitpunkt in s"]  # Zeitwerte aus CSV
     ref_v = ref[!, rmssym] # Referenzwerte aus CSV
     sim_v = sol(ref_t, idxs=VIndex(i, ndsym)).u  # Simulation an den gleichen Zeitpunkten auswerten
