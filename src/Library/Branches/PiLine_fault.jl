@@ -23,7 +23,7 @@
     end
     begin
         Z = R + im*X
-        Y_f = (G_fault + im * B_fault) * shortcircuit #1/(R_fault + im*X_fault)
+        #Y_f = (G_fault + im * B_fault) * shortcircuit #1/(R_fault + im*X_fault)
         Z_a = Z * pos
         Z_b = Z * (1-pos)
         Ysrc = G_src + im*B_src
@@ -34,9 +34,8 @@
         V₂ = r_dst * Vdst
         i₁ = Ysrc * V₁
         i₂ = Ydst * V₂
-        #V_mnormal = V₁*(1-pos) + V₂*pos #(V₁*Z_b + V₂*Z_a)/(Z_a+Z_b)
-        #V_m = V_mnormal * (1-shortcircuit) + shortcircuit * (0+0*im) #ifelse(shortcircuit>0, 0.0, V_mnormal)
-        V_m = (V₁*(1-pos) + V₂*pos)/(1 + Y_f * Z * pos * (1-pos)) * (shortcircuit * faultimp + (1 - shortcircuit))
+        V_mnormal = V₁*(1-pos) + V₂*pos #(V₁*Z_b + V₂*Z_a)/(Z_a+Z_b)
+        V_m = V_mnormal * (1-shortcircuit) + shortcircuit * (0+0*im) #ifelse(shortcircuit>0, 0.0, V_mnormal)
         V_a = V₁ - V_m
         V_b = V_m - V₂
         i_m2 = V_b / Z_b
@@ -44,6 +43,10 @@
         isrc = -i_m1 - i₁
         idst = i_m2 - i₂
         i_f = i_m1 - i_m2
+
+        #for fault impedance use (not working)
+        #Y_f = (G_fault + im * B_fault) * shortcircuit
+        #V_m = (V₁*(1-pos) + V₂*pos)/(1 + Y_f * Z * pos * (1-pos)) * (shortcircuit * faultimp + (1 - shortcircuit))
     end
     @equations begin
         src.i_r ~ active * real(isrc)
