@@ -18,7 +18,7 @@ end
        ceiling_function=:exponential
     end
     @components begin
-        vh = RealInput() # generator terminal voltage
+        v_mag = RealInput() # generator terminal voltage
         if vref_input
             vref = RealInput() # reference voltage
         end
@@ -72,9 +72,9 @@ end
             vfceil ~ quadratic_ceiling(abs(vfout), E1, E2, Se1, Se2)
         end
         if tmeas_lag
-            Tr * Dt(vm) ~ vh.u - vm
+            Tr * Dt(vm) ~ v_mag.u - vm
         else
-            vm ~ vh.u
+            vm ~ v_mag.u
         end
 
         Tf*Dt(v_fb) ~ Kf*Dt(vfout) - v_fb
@@ -99,6 +99,9 @@ end
 
 function solve_ceilf(pair1, pair2; u0=[0.01, 1])
     p = [pair1.first, pair1.second, pair2.first, pair2.second]
+    if any(x -> x isa ModelingToolkit.NoValue, p)
+        return (; Ae=ModelingToolkit.NoValue, Be=ModelingToolkit.NoValue)
+    end
     f = (du, u, p) -> begin
         A,B = u
         v1, S1, v2, S2 = p

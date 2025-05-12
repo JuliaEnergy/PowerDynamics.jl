@@ -12,7 +12,7 @@
         X_fault=0, [description="Fault Reactance in pu (base unclear?)"]
         G_fault=0, [description="Fault Resistance in pu (base unclear?)"]
         B_fault=0, [description="Fault Reactance in pu (base unclear?)"]
-        pos, [description="Fault Position (from src, percent of the line)"]
+        pos=0.5, [description="Fault Position (from src, percent of the line)"]
         active=1, [description="Line active or switched off"]
         shortcircuit=0, [description="shortcircuit on line"]
         faultimp=0, [description="1 if fault impedance given, else 0"]
@@ -40,8 +40,8 @@
         V_b = V_m - V₂
         i_m2 = V_b / Z_b
         i_m1 = V_a / Z_a
-        isrc = -i_m1 - i₁
-        idst = i_m2 - i₂
+        isrc = (-i_m1 - i₁)*r_src
+        idst = (i_m2 - i₂)*r_dst
         i_f = i_m1 - i_m2
 
         #for fault impedance use (not working)
