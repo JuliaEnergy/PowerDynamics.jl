@@ -107,7 +107,7 @@ end
     end
     @equations begin
         connect(machine.terminal, busbar.terminal)
-        connect(machine.v_mag_out, avr.vh)
+        connect(machine.v_mag_out, avr.v_mag)
         connect(avr.vf, machine.vf_in)
     end
 end
@@ -462,12 +462,12 @@ axislegend(ax; position=:rb)
 xlims!(ax, 0.9, 5)
 fig
 
-#vh.u
+#v_mag.u
 fig = Figure();
-ax = Axis(fig[1, 1]; title="vh.u")
+ax = Axis(fig[1, 1]; title="v_mag.u")
 ts = range(sol.t[begin],sol.t[end],length=10000)
-vh = sol(ts; idxs=VIndex(2, :machine₊v_mag))
-lines!(ax, ts, vh.u; label="vh.u in OpPoDyn")
+v_mag = sol(ts; idxs=VIndex(2, :machine₊v_mag))
+lines!(ax, ts, v_mag.u; label="v_mag.u in OpPoDyn")
 lines!(ax, ref_avr."Zeitpunkt in s", ref_avr."u", color=Cycled(1), linestyle=:dash, label="u in PowerFactory")
 axislegend(ax; position=:rb)
 xlims!(ax, 0.9, 5)
