@@ -11,6 +11,7 @@ using ModelingToolkit: ModelingToolkit as MTK
 using OrderedCollections
 using DiffEqCallbacks
 isinteractive() && using GLMakie
+using Test
 
 @testset "DynawoPiLine" begin
     @named branchA = DynawoPiLine(XPu=0.022522)
@@ -186,8 +187,8 @@ end
                 Ke=1,
                 Te=0.314,
                 Tr=0.001,
-                Ae=0.0039,
-                Be=1.555)
+                A=0.0039,
+                B=1.555)
             pmech = Blocks.Constant(k=1.63)
             vref = Blocks.Constant(k=1.120103884682511)
             busbar = BusBar()
@@ -195,7 +196,7 @@ end
         @equations begin
             connect(vref.output, avr.vref)
             connect(avr.vf, machine.vf)
-            connect(machine.v_mag_out, avr.vh)
+            connect(machine.v_mag_out, avr.v_mag)
             connect(pmech.output, machine.pm)
             connect(machine.terminal, busbar.terminal)
         end
@@ -252,7 +253,7 @@ end
 end
 
 @testset "SauerPai Generator with AVR and GOV" begin
-    Ae, Be = Library.solve_ceilf(3.3 => 0.6602, 4.5 => 4.2662)
+    A, B = Library.solve_ceilf(3.3 => 0.6602, 4.5 => 4.2662)
 
     @mtkmodel GenBus begin
         @components begin
@@ -281,7 +282,7 @@ end
                 Tf=0.35,
                 Ke=1,
                 Te=0.314,
-                Ae, Be,
+                A, B,
                 tmeas_lag=false)
             gov = TGOV1(
                 R=0.05,
@@ -295,7 +296,7 @@ end
         end
         @equations begin
             connect(machine.terminal, busbar.terminal)
-            connect(machine.v_mag_out, avr.vh)
+            connect(machine.v_mag_out, avr.v_mag)
             connect(avr.vf, machine.vf_in)
             connect(gov.τ_m, machine.τ_m_in)
             connect(machine.ωout, gov.ω_meas)
