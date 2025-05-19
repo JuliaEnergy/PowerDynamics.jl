@@ -3,3 +3,6 @@
 *Manifest-v1.11.toml
 /docs/build/
 /docs/src/generated/
+.vscode
+devenv
+testenv
