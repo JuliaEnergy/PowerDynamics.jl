@@ -95,7 +95,7 @@ include("Machines/StandardModel_pf.jl")
 ####
 #### Control Models
 ####
-export AVRFixed, AVRTypeI, AVRTypeIS
+export AVRFixed, AVRTypeI
 include("Controls/AVRs.jl")
 
 export GovFixed, TurbineGovTypeI, TGOV1
