@@ -3,7 +3,7 @@ module Library
 using ArgCheck: @argcheck
 using ModelingToolkit: ModelingToolkit
 using ModelingToolkit: @connector, @mtkmodel, @variables, @parameters
-using ModelingToolkit: @named, @unpack, ODESystem, Equation, Num, unwrap
+using ModelingToolkit: @named, @unpack, ODESystem, System, Equation, Num, unwrap
 using ModelingToolkit: connect, simplify, getname, unknowns, parameters, iscomplete, rename, defaults
 using ModelingToolkit: get_name, get_eqs, get_observed, get_ctrls, get_defaults, get_schedule,
                        get_connector_type, get_gui_metadata, get_preface, get_initializesystem,
@@ -95,7 +95,7 @@ include("Machines/StandardModel_pf.jl")
 ####
 #### Control Models
 ####
-export AVRFixed, AVRTypeI, AVRTypeIS
+export AVRFixed, AVRTypeI
 include("Controls/AVRs.jl")
 
 export GovFixed, TurbineGovTypeI, TGOV1
