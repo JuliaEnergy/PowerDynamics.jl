@@ -42,7 +42,6 @@ jobs:
         shell: julia --project=testenv --color=yes {0}
         run: |
           using Pkg
-          pkg"add NetworkDynamics#main"
           pkg"dev ."
           pkg"dev ./OpPoDynTesting"
           Pkg.test("OpPoDyn"; coverage=true)
