@@ -45,7 +45,7 @@ The field voltage is provided by an `AVRTypeI`, the torque is provide by a `TGOV
     end
     @equations begin
         connect(machine.terminal, busbar.terminal)
-        connect(machine.v_mag_out, avr.vh)
+        connect(machine.v_mag_out, avr.v_mag)
         connect(avr.vf, machine.vf_in)
         connect(gov.τ_m, machine.τ_m_in)
         connect(machine.ωout, gov.ω_meas)
