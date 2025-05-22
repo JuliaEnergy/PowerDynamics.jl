@@ -37,7 +37,9 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-      - uses: julia-actions/cache@v2
+      - name: Load Julia packages from cache
+        id: julia-cache
+        uses: julia-actions/cache@v2
       - name: Test with specific test dep versions
         shell: julia --project=testenv --color=yes {0}
         run: |
@@ -51,6 +53,14 @@ jobs:
           files: lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
+      - name: Save Julia depot cache on cancel or failure
+        id: julia-cache-save
+        if: cancelled() || failure()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ${{ steps.julia-cache.outputs.cache-paths }}
+          key: ${{ steps.julia-cache.outputs.cache-key }}
 
   docs:
     name: Documentation
@@ -64,7 +74,9 @@ jobs:
       - uses: julia-actions/setup-julia@v2
         with:
           version: 'pre'
-      - uses: julia-actions/cache@v2
+      - name: Load Julia packages from cache
+        id: julia-cache
+        uses: julia-actions/cache@v2
       - name: Configure doc environment
         shell: julia --project=docs --color=yes {0}
         run: |
@@ -86,3 +98,11 @@ jobs:
           using OpPoDyn
           DocMeta.setdocmeta!(OpPoDyn, :DocTestSetup, :(using OpPoDyn); recursive=true)
           doctest(OpPoDyn)
+      - name: Save Julia depot cache on cancel or failure
+        id: julia-cache-save
+        if: cancelled() || failure()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ${{ steps.julia-cache.outputs.cache-paths }}
+          key: ${{ steps.julia-cache.outputs.cache-key }}
