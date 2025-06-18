@@ -43,6 +43,25 @@ function ispfmodel(cf::NetworkDynamics.ComponentModel)
     return false
 end
 
+"""
+    powerflow_model(cf::NetworkDynamics.ComponentModel)
+
+Extract or create a power flow component model from a dynamic component model.
+
+1. If the component has `:pfmodel` metadata, use that model (after validation)
+2. If the component is already a valid power flow model (i.e. no ODE, just constraints), return it as-is
+
+## Returns
+- A component model suitable for power flow analysis (no free parameters or states)
+
+## Validation
+The returned model must satisfy [`ispfmodel`](@ref) criteria:
+- No free parameters (`freep` is empty)
+- No free states (`freeu` is empty)
+- Either no states or zero mass matrix
+
+See also: [`ispfmodel`](@ref), [`pfSlack`](@ref), [`pfPV`](@ref), [`pfPQ`](@ref)
+"""
 function powerflow_model(cf::NetworkDynamics.ComponentModel)
     if has_metadata(cf, :pfmodel)
         pfm = get_metadata(cf, :pfmodel)
@@ -59,6 +78,18 @@ function powerflow_model(cf::NetworkDynamics.ComponentModel)
     error("Cannot create PF component model from :$(cf.name)! Please proved :pfmodel metadata!")
 end
 
+"""
+    powerflow_model(nw::Network)
+
+Create a power flow network model from a dynamic network model.
+
+This method applies [`powerflow_model`](@ref) to all vertex and edge components
+in the network, creating a new network suitable for steady-state power flow analysis.
+
+Returns a new `Network` with the same graph structure but power flow component models
+
+See also: [`solve_powerflow`](@ref)
+"""
 function powerflow_model(nw::Network)
     g = nw.im.g
     vfs = powerflow_model.(nw.im.vertexm);
