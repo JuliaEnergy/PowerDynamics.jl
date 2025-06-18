@@ -4,7 +4,9 @@ using NetworkDynamics: NetworkDynamics, VertexModel, EdgeModel,
                        has_default, set_default!, get_default,
                        has_init, get_init, has_guess, get_guess,
                        has_graphelement, set_graphelement!, get_graphelement, Network,
-                       has_metadata, get_metadata, set_metadata!, NWState, uflat, pflat
+                       has_metadata, get_metadata, set_metadata!, NWState, uflat, pflat,
+                       initialize_componentwise, initialize_componentwise!, interface_values,
+                       find_fixpoint, vidxs, extract_nw
 using ModelingToolkit: ModelingToolkit, ODESystem, structural_simplify, get_name, getname, @named
 using SciMLBase: SciMLBase, solve
 using NonlinearSolve: NonlinearSolve, NonlinearProblem
@@ -27,7 +29,7 @@ include("network_components.jl")
 using DataFrames: DataFrame
 using OrderedCollections: OrderedDict
 export pfSlack, pfPV, pfPQ
-export solve_powerflow!
+export solve_powerflow, initialize_from_pf!, initialize_from_pf, show_powerflow
 include("powerflow.jl")
 
 end

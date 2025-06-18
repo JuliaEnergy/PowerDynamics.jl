@@ -113,8 +113,8 @@ initialize_from_pf_docstring = raw"""
         verbose = true,
         subverbose = false,
         pfnw = powerflow_model(nw),
-        pfs0 = NWState(pfnwnw),
-        pfs = solve_powerflow(pfnw, pfs0; verbose=verbose),
+        pfs0 = NWState(pfnw),
+        pfs = solve_powerflow(pfnw; pfs0, verbose),
         kwargs...
     )
 
@@ -152,12 +152,12 @@ function _init_from_pf(
     verbose = true,
     subverbose = false,
     pfnw = powerflow_model(nw),
-    pfs0 = NWState(pfnwnw),
-    pfs = solve_powerflow(pfnw, pfs0; verbose=verbose),
+    pfs0 = NWState(pfnw),
+    pfs = solve_powerflow(pfnw; pfs0, verbose),
     kwargs...
 )
     interface_vals = interface_values(pfs)
-    initf(nw; verbose, subverbose, kwargs...)
+    initf(nw; default_overrides=interface_vals, verbose, subverbose, kwargs...)
 end
 
 show_powerflow(nw::Network) = show_powerflow(NWState(nw))
