@@ -36,6 +36,7 @@ kwargs = (;
     pages=[
         "Home" => "index.md",
         "Modeling Concepts" => "ModelingConcepts.md",
+        "Initialization" => "initialization.md",
         "Examples" => [
             "generated/ieee9bus.md",]
     ],
