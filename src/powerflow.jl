@@ -188,7 +188,13 @@ function _init_from_pf(
     kwargs...
 )
     interface_vals = interface_values(pfs)
-    initf(nw; default_overrides=interface_vals, verbose, subverbose, kwargs...)
+    pfinitconstraints = specialize_pfinitconstraints(nw, pfs)
+    initf(
+        nw;
+        default_overrides=interface_vals,
+        additional_constraints = pfinitconstraints,
+        verbose, subverbose, kwargs...
+    )
 end
 
 show_powerflow(nw::Network) = show_powerflow(NWState(nw))

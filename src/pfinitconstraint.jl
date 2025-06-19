@@ -78,7 +78,22 @@ function _wrap_symbols!(ex, sym, pfsym, u, pfu)
     end
 end
 
-function pfinitc_to_initc(pfic::PFInitConstraint, pfstate::NWState, cidx)
+function specialize_pfinitconstraints(nw, pfs)
+    dict = Dict{NetworkDynamics.SymbolicIndex, InitConstraint}()
+    vidxs = (VIndex(i) for i in 1:nv(nw))
+    eidxs = (EIndex(i) for i in 1:ne(nw))
+    for cidx in Iterators.flatten((vidxs, eidxs))
+        c = nw[cidx]
+        if has_pfinitconstraint(c)
+            pfic = get_pfinitconstraint(c)
+            ic = specialize_pfinitconstraint(pfic, pfs, cidx)
+            dict[cidx] = pfic
+        end
+    end
+    dict
+end
+
+function specialize_pfinitconstraint(pfic::PFInitConstraint, pfstate::NWState, cidx)
     VEIndex = NetworkDynamics._baseT(cidx)
     @assert cidx isa VEIndex{<:Any, Nothing}
     pfvec = pfstate[collect(VEIndex(cidx.compidx, pfic.pfsym))]
@@ -100,3 +115,59 @@ function Base.show(io::IO, ::MIME"text/plain", @nospecialize(c::PFInitConstraint
         print(io, c.prettyprint)
     end
 end
+
+####
+#### Init constraints
+####
+
+"""
+    has_pfinitconstraint(c::ComponentModel)
+    has_pfinitconstraint(nw::Network, idx::Union{VIndex,EIndex})
+
+Checks if the component has an initialization constraint which depends on the pf state in metadata.
+
+See also: [`get_pfinitconstraint`](@ref), [`set_pfinitconstraint!`](@ref).
+"""
+has_pfinitconstraint(c::NetworkDynamics.ComponentModel) = has_metadata(c, :pfinitconstraint)
+has_pfinitconstraint(nw::Network, idx::NetworkDynamics.VCIndex) = has_pfinitconstraint(getcomp(nw, idx))
+has_pfinitconstraint(nw::Network, idx::NetworkDynamics.ECIndex) = has_pfinitconstraint(getcomp(nw, idx))
+
+"""
+    get_pfinitconstraint(c::NetworkDynamics.ComponentModel)
+    get_pfinitconstraint(nw::Network, idx::Union{VIndex,EIndex})
+
+Retrieves the initialization constraint which depends on pf state for the component model.
+May error if no constraint is present. Use `has_pfinitconstraint` to check first.
+
+See also: [`has_pfinitconstraint`](@ref), [`set_pfinitconstraint!`](@ref).
+"""
+get_pfinitconstraint(c::NetworkDynamics.ComponentModel) = get_metadata(c, :pfinitconstraint)::PFInitConstraint
+get_pfinitconstraint(nw::Network, idx::NetworkDynamics.VCIndex) = get_pfinitconstraint(getcomp(nw, idx))
+get_pfinitconstraint(nw::Network, idx::NetworkDynamics.ECIndex) = get_pfinitconstraint(getcomp(nw, idx))
+
+"""
+    set_pfinitconstraint!(c::NetworkDynamics.ComponentModel, constraint::PFInitConstraint; check=true)
+    set_pfinitconstraint!(nw::Network, idx::Union{VIndex,EIndex}, constraint; check=true)
+
+Sets an additional initialization constraint which depends on the powerflow solution to
+the component. Overwrites any existing pf constraints.
+See also [`delete_pfinitconstraint!`](@ref).
+"""
+function set_pfinitconstraint!(c::NetworkDynamics.ComponentModel, constraint::PFInitConstraint)
+    set_metadata!(c, :pfinitconstraint, constraint)
+end
+set_pfinitconstraint!(nw::Network, idx::NetworkDynamics.VCIndex, constraint; kw...) = set_pfinitconstraint(getcomp(nw, idx), constraint; kw...)
+
+"""
+    delete_pfinitconstraint!(c::NetworkDynamics.ComponentModel)
+    delete_pfinitconstraint!(nw::Network, idx::Union{VIndex,EIndex})
+
+Removes the powerflow dependent initialization constraint from the component model,
+or from a component referenced by `idx` in a network.
+Returns `true` if the constraint existed and was removed, `false` otherwise.
+
+See also: [`set_pfinitconstraint!`](@ref).
+"""
+delete_pfinitconstraint!(c::NetworkDynamics.ComponentModel) = delete_metadata!(c, :pfinitconstraint)
+delete_pfinitconstraint!(nw::Network, idx::NetworkDynamics.VCIndex) = delete_pfinitconstraint!(getcomp(nw, idx))
+delete_pfinitconstraint!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfinitconstraint!(getcomp(nw, idx))
