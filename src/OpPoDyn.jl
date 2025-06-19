@@ -6,7 +6,7 @@ using NetworkDynamics: NetworkDynamics, VertexModel, EdgeModel,
                        has_graphelement, set_graphelement!, get_graphelement, Network,
                        has_metadata, get_metadata, set_metadata!, NWState, uflat, pflat,
                        initialize_componentwise, initialize_componentwise!, interface_values,
-                       find_fixpoint, vidxs, extract_nw
+                       find_fixpoint, vidxs, extract_nw, InitConstraint, SymbolicView
 using ModelingToolkit: ModelingToolkit, ODESystem, structural_simplify, get_name, getname, @named
 using SciMLBase: SciMLBase, solve
 using NonlinearSolve: NonlinearSolve, NonlinearProblem
@@ -16,6 +16,7 @@ using Graphs: SimpleGraph, add_edge!, nv
 using ArgCheck: @argcheck
 using Setfield: @set, @set!
 using SymbolicIndexingInterface: SymbolicIndexingInterface as SII
+using MacroTools: postwalk, @capture
 
 export @attach_metadata!, set_voltage!, set_current!
 include("utils.jl")
@@ -31,5 +32,8 @@ using OrderedCollections: OrderedDict
 export pfSlack, pfPV, pfPQ
 export solve_powerflow, initialize_from_pf!, initialize_from_pf, show_powerflow
 include("powerflow.jl")
+
+export PFInitConstraint, @pfinitconstraint
+include("pfinitconstraint.jl")
 
 end
