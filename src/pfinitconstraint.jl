@@ -3,13 +3,15 @@
     PFInitConstraint(f, sym, pfsym, dim)
 
 A representation of an additional constraint that is applied during the initialization phase of a component.
-In contrast to a [`InitConstraint`](@ref), this constraint may access additonal variables which are available
+In contrast to a [`InitConstraint`](@ref), this constraint may access additional variables which are available
 in the full `NWState` of the solved power flow!
 
-Crucially, this is only necessary for constraints, wnich cannot be expressd in terms of the
+Crucially, this is only necessary for constraints, which cannot be expressed in terms of the
 **interface variables** (voltages and currents).
 
-See also [`@pfinitconstraint`](@ref) for a macro to create such constraints.
+See also: [`@pfinitconstraint`](@ref) for a macro to create such constraints,
+[`PFInitConstraint`](@ref), [`set_pfinitconstraint!`](@ref),
+[`add_pfinitconstraint!`](@ref)
 """
 struct PFInitConstraint{F}
     f::F
@@ -27,6 +29,38 @@ function (c::PFInitConstraint)(res, u, pfu)
 end
 
 """
+    struct PFInitFormula{F}
+    PFInitFormula(f, outsym, sym, pfsym)
+
+A representation of an initialization formula that is applied during the initialization phase of a component.
+In contrast to a [`InitFormula`](@ref), this formula may access additional variables which are available
+in the full `NWState` of the solved power flow!
+
+Crucially, this is only necessary for formulas, which cannot be expressed in terms of the
+**interface variables** (voltages and currents).
+
+Similar to InitFormula, this sets defaults rather than adding constraint equations.
+The formula is applied early in the initialization pipeline before constraints are solved.
+
+See also: [`@pfinitformula`](@ref) for a macro to create such formulas,
+[`PFInitFormula`](@ref), [`set_pfinitformula!`](@ref),
+[`add_pfinitformula!`](@ref)
+"""
+struct PFInitFormula{F}
+    f::F
+    outsym::Vector{Symbol}
+    sym::Vector{Symbol}
+    pfsym::Vector{Symbol}
+    prettyprint::Union{Nothing,String}
+end
+PFInitFormula(f, outsym, sym, pfsym) = PFInitFormula(f, outsym, sym, pfsym, nothing)
+
+# mainly for testing
+function (c::PFInitFormula)(res, u, pfu)
+    c.f(SymbolicView(res, c.outsym), SymbolicView(u, c.sym), SymbolicView(pfu, c.pfsym))
+end
+
+"""
     @pfinitconstraint expr
     @pfinitconstraint begin
         constraint1
@@ -37,7 +71,7 @@ Create a [`PFInitConstraint`](@ref) using macro syntax. Component variables are 
 `:symbol` and power flow state variables with `@pf :symbol`. Multiple constraints can be
 defined in a begin...end block.
 
-See also: [`PFInitConstraint`](@ref), [`set_pfinitconstraint!`](@ref)
+See also: [`PFInitConstraint`](@ref), [`set_pfinitconstraint!`](@ref), [`add_pfinitconstraint!`](@ref)
 """
 macro pfinitconstraint(ex)
     if ex isa QuoteNode || ex.head != :block
@@ -92,6 +126,75 @@ function _wrap_symbols!(ex, sym, pfsym, u, pfu)
 end
 
 """
+    @pfinitformula expr
+    @pfinitformula begin
+        :var1 = expr1
+        :var2 = expr2
+    end
+
+Create a [`PFInitFormula`](@ref) using macro syntax. Component variables are accessed with
+`:symbol` and power flow state variables with `@pf :symbol`. Multiple formulas can be
+defined in a begin...end block.
+
+Unlike constraints, formulas use assignment syntax (`:var = expression`) to set variable values
+during initialization. The left-hand side specifies output variables, and the right-hand side
+can access both component variables and power flow state variables.
+
+See also: [`PFInitFormula`](@ref), [`set_pfinitformula!`](@ref), [`add_pfinitformula!`](@ref)
+"""
+macro pfinitformula(ex)
+    if ex isa QuoteNode || ex.head != :block
+        ex = Base.remove_linenums!(Expr(:block, ex))
+    end
+
+    sym = Symbol[]
+    pfsym = Symbol[]
+    outsym = Symbol[]
+    out = gensym(:out)
+    u = gensym(:u)
+    pfu = gensym(:pfu)
+    body = Expr[]
+
+    for formula in ex.args
+        formula isa Union{Expr, QuoteNode} || continue # skip line number nodes
+
+        # Parse assignment expressions
+        if formula isa Expr && formula.head == :(=)
+            lhs = formula.args[1]
+            rhs = formula.args[2]
+
+            # Extract output symbol from left-hand side
+            if lhs isa QuoteNode && lhs.value isa Symbol
+                push!(outsym, lhs.value)
+                wrapped_rhs = _wrap_symbols!(rhs, sym, pfsym, u, pfu)
+                push!(body, :($(esc(out))[$lhs] = $wrapped_rhs))
+            else
+                error("Left-hand side of formula assignment must be a quoted symbol like :var")
+            end
+        else
+            error("Formula expressions must be assignments of the form :var = expression")
+        end
+    end
+
+    unique!(sym)
+    unique!(pfsym)
+    unique!(outsym)
+
+    s = join(string.(body), "\n")
+    s = replace(s, "(\$(Expr(:escape, Symbol(\"$(string(out))\"))))" => "    out")
+    s = replace(s, "(\$(Expr(:escape, Symbol(\"$(string(u))\"))))" => "u")
+    s = replace(s, "(\$(Expr(:escape, Symbol(\"$(string(pfu))\"))))" => "pfu")
+    s = "PFInitFormula($outsym, $sym, $pfsym) do out, u, pfu\n" * s * "\nend"
+
+    quote
+        PFInitFormula($outsym, $sym, $pfsym, $s) do $(esc(out)), $(esc(u)), $(esc(pfu))
+            $(body...)
+            nothing
+        end
+    end
+end
+
+"""
     specialize_pfinitconstraints(nw, pfs)
 
 Convert all [`PFInitConstraint`](@ref)s in the network to regular [`InitConstraint`](@ref)s
@@ -102,15 +205,15 @@ values embedded.
 Called internally by [`initialize_from_pf[!]`](@ref).
 """
 function specialize_pfinitconstraints(nw, pfs)
-    dict = Dict{NetworkDynamics.SymbolicIndex, InitConstraint}()
+    dict = Dict{NetworkDynamics.SymbolicIndex, Union{InitConstraint, Tuple{Vararg{InitConstraint}}}}()
     vidxs = (VIndex(i) for i in 1:nv(nw))
     eidxs = (EIndex(i) for i in 1:ne(nw))
     for cidx in Iterators.flatten((vidxs, eidxs))
         c = nw[cidx]
         if has_pfinitconstraint(c)
-            pfic = get_pfinitconstraint(c)
-            ic = specialize_pfinitconstraint(pfic, pfs, cidx)
-            dict[cidx] = pfic
+            pfics = get_pfinitconstraints(c)
+            ics = [specialize_pfinitconstraint(pfic, pfs, cidx) for pfic in pfics]
+            dict[cidx] = ics
         end
     end
     dict
@@ -129,11 +232,67 @@ function specialize_pfinitconstraint(pfic::PFInitConstraint, pfstate::NWState, c
     @assert cidx isa VEIndex{<:Any, Nothing}
     pfvec = pfstate[collect(VEIndex(cidx.compidx, pfic.pfsym))]
 
-    pfu = SymbolicView(pfvec, pfic.sym)
+    pfu = SymbolicView(pfvec, pfic.pfsym)
     f = pfic.f
 
     InitConstraint(pfic.sym, pfic.dim) do res, u
         f(res, u, pfu)
+    end
+end
+
+"""
+    specialize_pfinitformulas(nw, pfs)
+
+Convert all [`PFInitFormula`](@ref)s in the network to regular [`InitFormula`](@ref)s
+by specializing them with the power flow solution. Scans through all components and extracts
+power flow variables needed by each formula, creating specialized versions with those
+values embedded.
+
+Called internally by [`initialize_from_pf[!]`](@ref).
+"""
+function specialize_pfinitformulas(nw, pfs)
+    dict = Dict{NetworkDynamics.SymbolicIndex, Union{InitFormula, Tuple{Vararg{InitFormula}}}}()
+    vidxs = (VIndex(i) for i in 1:nv(nw))
+    eidxs = (EIndex(i) for i in 1:ne(nw))
+    for cidx in Iterators.flatten((vidxs, eidxs))
+        c = nw[cidx]
+        if has_pfinitformula(c)
+            pfifs = get_pfinitformulas(c)
+            ifs = [specialize_pfinitformula(pfif, pfs, cidx) for pfif in pfifs]
+            dict[cidx] = ifs
+        end
+    end
+    dict
+end
+
+"""
+    specialize_pfinitformula(pfif::PFInitFormula, pfstate::NWState, cidx)
+
+Convert a single [`PFInitFormula`](@ref) to a regular [`InitFormula`](@ref) by extracting
+the required power flow variables from `pfstate` and embedding them in the formula function.
+
+Called by [`specialize_pfinitformulas`](@ref) for each component with a PFInitFormula.
+"""
+function specialize_pfinitformula(pfif::PFInitFormula, pfstate::NWState, cidx)
+    VEIndex = NetworkDynamics._baseT(cidx)
+    @assert cidx isa VEIndex{<:Any, Nothing}
+    pfvec = pfstate[collect(VEIndex(cidx.compidx, pfif.pfsym))]
+
+    pfu = SymbolicView(pfvec, pfif.pfsym)
+    f = pfif.f
+
+    InitFormula(pfif.outsym, pfif.sym) do res, u
+        f(res, u, pfu)
+    end
+end
+
+function Base.show(io::IO, ::MIME"text/plain", @nospecialize(c::PFInitFormula))
+    if c.prettyprint === nothing
+        r = repr(c)
+        s = replace(r, ", nothing)"=>")")
+        print(io, s)
+    else
+        print(io, c.prettyprint)
     end
 end
 
@@ -164,30 +323,62 @@ has_pfinitconstraint(nw::Network, idx::NetworkDynamics.VCIndex) = has_pfinitcons
 has_pfinitconstraint(nw::Network, idx::NetworkDynamics.ECIndex) = has_pfinitconstraint(getcomp(nw, idx))
 
 """
-    get_pfinitconstraint(c::NetworkDynamics.ComponentModel)
-    get_pfinitconstraint(nw::Network, idx::Union{VIndex,EIndex})
+    get_pfinitconstraints(c::NetworkDynamics.ComponentModel)
+    get_pfinitconstraints(nw::Network, idx::Union{VIndex,EIndex})
 
-Retrieves the initialization constraint which depends on pf state for the component model.
-May error if no constraint is present. Use `has_pfinitconstraint` to check first.
+Retrieves the initialization constraints which depend on pf state for the component model.
+Returns a tuple of constraints, even if only one constraint is present.
+May error if no constraints are present. Use `has_pfinitconstraint` to check first.
 
 See also: [`has_pfinitconstraint`](@ref), [`set_pfinitconstraint!`](@ref).
 """
-get_pfinitconstraint(c::NetworkDynamics.ComponentModel) = get_metadata(c, :pfinitconstraint)::PFInitConstraint
+function get_pfinitconstraints(c::NetworkDynamics.ComponentModel)
+    constraint = get_metadata(c, :pfinitconstraint)
+    return constraint isa Tuple ? constraint : (constraint,)
+end
+get_pfinitconstraints(nw::Network, idx::NetworkDynamics.VCIndex) = get_pfinitconstraints(getcomp(nw, idx))
+get_pfinitconstraints(nw::Network, idx::NetworkDynamics.ECIndex) = get_pfinitconstraints(getcomp(nw, idx))
+
+# Backward compatibility - keep the old function name
+get_pfinitconstraint(c::NetworkDynamics.ComponentModel) = get_metadata(c, :pfinitconstraint)::Union{PFInitConstraint, Tuple{Vararg{PFInitConstraint}}}
 get_pfinitconstraint(nw::Network, idx::NetworkDynamics.VCIndex) = get_pfinitconstraint(getcomp(nw, idx))
 get_pfinitconstraint(nw::Network, idx::NetworkDynamics.ECIndex) = get_pfinitconstraint(getcomp(nw, idx))
 
 """
-    set_pfinitconstraint!(c::NetworkDynamics.ComponentModel, constraint::PFInitConstraint; check=true)
+    set_pfinitconstraint!(c::NetworkDynamics.ComponentModel, constraint; check=true)
     set_pfinitconstraint!(nw::Network, idx::Union{VIndex,EIndex}, constraint; check=true)
 
-Sets an additional initialization constraint which depends on the powerflow solution to
-the component. Overwrites any existing pf constraints.
-See also [`delete_pfinitconstraint!`](@ref).
+Sets initialization constraints which depend on the powerflow solution to the component.
+Accepts either a single `PFInitConstraint` or a tuple of `PFInitConstraint` objects.
+Overwrites any existing pf constraints.
+See also [`delete_pfinitconstraint!`](@ref), [`add_pfinitconstraint!`](@ref).
 """
-function set_pfinitconstraint!(c::NetworkDynamics.ComponentModel, constraint::PFInitConstraint)
+function set_pfinitconstraint!(c::NetworkDynamics.ComponentModel, constraint::Union{PFInitConstraint, Tuple{Vararg{PFInitConstraint}}})
     set_metadata!(c, :pfinitconstraint, constraint)
 end
-set_pfinitconstraint!(nw::Network, idx::NetworkDynamics.VCIndex, constraint; kw...) = set_pfinitconstraint(getcomp(nw, idx), constraint; kw...)
+set_pfinitconstraint!(nw::Network, idx::NetworkDynamics.VCIndex, constraint; kw...) = set_pfinitconstraint!(getcomp(nw, idx), constraint; kw...)
+
+"""
+    add_pfinitconstraint!(c::NetworkDynamics.ComponentModel, constraint::PFInitConstraint)
+    add_pfinitconstraint!(nw::Network, idx::Union{VIndex,EIndex}, constraint)
+
+Adds a new initialization constraint which depends on the powerflow solution to the component.
+If constraints already exist, the new constraint is added to the existing ones.
+If no constraints exist, this is equivalent to `set_pfinitconstraint!`.
+
+See also [`set_pfinitconstraint!`](@ref), [`delete_pfinitconstraint!`](@ref).
+"""
+function add_pfinitconstraint!(c::NetworkDynamics.ComponentModel, constraint::PFInitConstraint)
+    if has_pfinitconstraint(c)
+        existing = get_metadata(c, :pfinitconstraint)
+        new_constraints = existing isa Tuple ? (existing..., constraint) : (existing, constraint)
+        set_metadata!(c, :pfinitconstraint, new_constraints)
+    else
+        set_metadata!(c, :pfinitconstraint, constraint)
+    end
+end
+add_pfinitconstraint!(nw::Network, idx::NetworkDynamics.VCIndex, constraint) = add_pfinitconstraint!(getcomp(nw, idx), constraint)
+add_pfinitconstraint!(nw::Network, idx::NetworkDynamics.ECIndex, constraint) = add_pfinitconstraint!(getcomp(nw, idx), constraint)
 
 """
     delete_pfinitconstraint!(c::NetworkDynamics.ComponentModel)
@@ -202,3 +393,91 @@ See also: [`set_pfinitconstraint!`](@ref).
 delete_pfinitconstraint!(c::NetworkDynamics.ComponentModel) = delete_metadata!(c, :pfinitconstraint)
 delete_pfinitconstraint!(nw::Network, idx::NetworkDynamics.VCIndex) = delete_pfinitconstraint!(getcomp(nw, idx))
 delete_pfinitconstraint!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfinitconstraint!(getcomp(nw, idx))
+
+####
+#### Init formulas
+####
+
+"""
+    has_pfinitformula(c::ComponentModel)
+    has_pfinitformula(nw::Network, idx::Union{VIndex,EIndex})
+
+Checks if the component has an initialization formula which depends on the pf state in metadata.
+
+See also: [`get_pfinitformula`](@ref), [`set_pfinitformula!`](@ref).
+"""
+has_pfinitformula(c::NetworkDynamics.ComponentModel) = has_metadata(c, :pfinitformula)
+has_pfinitformula(nw::Network, idx::NetworkDynamics.VCIndex) = has_pfinitformula(getcomp(nw, idx))
+has_pfinitformula(nw::Network, idx::NetworkDynamics.ECIndex) = has_pfinitformula(getcomp(nw, idx))
+
+"""
+    get_pfinitformulas(c::NetworkDynamics.ComponentModel)
+    get_pfinitformulas(nw::Network, idx::Union{VIndex,EIndex})
+
+Retrieves the initialization formulas which depend on pf state for the component model.
+Returns a tuple of formulas, even if only one formula is present.
+May error if no formulas are present. Use `has_pfinitformula` to check first.
+
+See also: [`has_pfinitformula`](@ref), [`set_pfinitformula!`](@ref).
+"""
+function get_pfinitformulas(c::NetworkDynamics.ComponentModel)
+    formula = get_metadata(c, :pfinitformula)
+    return formula isa Tuple ? formula : (formula,)
+end
+get_pfinitformulas(nw::Network, idx::NetworkDynamics.VCIndex) = get_pfinitformulas(getcomp(nw, idx))
+get_pfinitformulas(nw::Network, idx::NetworkDynamics.ECIndex) = get_pfinitformulas(getcomp(nw, idx))
+
+# Backward compatibility - keep the old function name
+get_pfinitformula(c::NetworkDynamics.ComponentModel) = get_metadata(c, :pfinitformula)::Union{PFInitFormula, Tuple{Vararg{PFInitFormula}}}
+get_pfinitformula(nw::Network, idx::NetworkDynamics.VCIndex) = get_pfinitformula(getcomp(nw, idx))
+get_pfinitformula(nw::Network, idx::NetworkDynamics.ECIndex) = get_pfinitformula(getcomp(nw, idx))
+
+"""
+    set_pfinitformula!(c::NetworkDynamics.ComponentModel, formula; check=true)
+    set_pfinitformula!(nw::Network, idx::Union{VIndex,EIndex}, formula; check=true)
+
+Sets initialization formulas which depend on the powerflow solution to the component.
+Accepts either a single `PFInitFormula` or a tuple of `PFInitFormula` objects.
+Overwrites any existing pf formulas.
+See also [`delete_pfinitformula!`](@ref), [`add_pfinitformula!`](@ref).
+"""
+function set_pfinitformula!(c::NetworkDynamics.ComponentModel, formula::Union{PFInitFormula, Tuple{Vararg{PFInitFormula}}})
+    set_metadata!(c, :pfinitformula, formula)
+end
+set_pfinitformula!(nw::Network, idx::NetworkDynamics.VCIndex, formula; kw...) = set_pfinitformula!(getcomp(nw, idx), formula; kw...)
+
+"""
+    add_pfinitformula!(c::NetworkDynamics.ComponentModel, formula::PFInitFormula)
+    add_pfinitformula!(nw::Network, idx::Union{VIndex,EIndex}, formula)
+
+Adds a new initialization formula which depends on the powerflow solution to the component.
+If formulas already exist, the new formula is added to the existing ones.
+If no formulas exist, this is equivalent to `set_pfinitformula!`.
+
+See also [`set_pfinitformula!`](@ref), [`delete_pfinitformula!`](@ref).
+"""
+function add_pfinitformula!(c::NetworkDynamics.ComponentModel, formula::PFInitFormula)
+    if has_pfinitformula(c)
+        existing = get_metadata(c, :pfinitformula)
+        new_formulas = existing isa Tuple ? (existing..., formula) : (existing, formula)
+        set_metadata!(c, :pfinitformula, new_formulas)
+    else
+        set_metadata!(c, :pfinitformula, formula)
+    end
+end
+add_pfinitformula!(nw::Network, idx::NetworkDynamics.VCIndex, formula) = add_pfinitformula!(getcomp(nw, idx), formula)
+add_pfinitformula!(nw::Network, idx::NetworkDynamics.ECIndex, formula) = add_pfinitformula!(getcomp(nw, idx), formula)
+
+"""
+    delete_pfinitformula!(c::NetworkDynamics.ComponentModel)
+    delete_pfinitformula!(nw::Network, idx::Union{VIndex,EIndex})
+
+Removes the powerflow dependent initialization formula from the component model,
+or from a component referenced by `idx` in a network.
+Returns `true` if the formula existed and was removed, `false` otherwise.
+
+See also: [`set_pfinitformula!`](@ref).
+"""
+delete_pfinitformula!(c::NetworkDynamics.ComponentModel) = delete_metadata!(c, :pfinitformula)
+delete_pfinitformula!(nw::Network, idx::NetworkDynamics.VCIndex) = delete_pfinitformula!(getcomp(nw, idx))
+delete_pfinitformula!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfinitformula!(getcomp(nw, idx))

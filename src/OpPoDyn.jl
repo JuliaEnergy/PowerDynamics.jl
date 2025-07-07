@@ -33,7 +33,7 @@ export pfSlack, pfPV, pfPQ
 export solve_powerflow, initialize_from_pf!, initialize_from_pf, show_powerflow
 include("powerflow.jl")
 
-export PFInitConstraint, @pfinitconstraint
+export PFInitConstraint, @pfinitconstraint, PFInitFormula, @pfinitformula
 include("pfinitconstraint.jl")
 
 end
