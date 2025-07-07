@@ -83,3 +83,53 @@ initialize_componentwise!(nw; default_overrides = interf)
 This step leverages NetworkDynamics.jl's component-wise initialization to determine free internal states and parameters (such as rotor angles or controller setpoints), such that the
 **steady state** of the overall network matches the flows from the power flow solution (i.e. all currents and voltages match).
 
+## Advanced Component Initialization
+
+In some cases, the standard initialization process may not be sufficient. For example, when component initialization constraints cannot be expressed solely in terms of **interface variables** (voltages and currents), but need access to other variables from the complete power flow solution.
+
+### Power Flow Dependent Initialization Constraints
+
+OpPoDyn.jl provides [`PFInitConstraint`](@ref) for these advanced scenarios. Unlike regular [`InitConstraint`](@extref)s from NetworkDynamics.jl, PFInitConstraints can access any variable from the solved power flow state, not just interface variables.
+I.e. you get access to states, parameters and observables from the power flow model of the same component.
+
+#### When to Use PFInitConstraints
+
+Use `PFInitConstraints` when your component's initialization requires:
+- Access to internal variables of other components (e.g., generator power setpoints)
+- Constraints involving power flow quantities that aren't interface variables
+- Complex initialization logic that depends on the complete network state
+
+#### Syntax and Usage
+
+The [`@pfinitconstraint`](@ref) macro provides convenient syntax for defining these constraints:
+
+```julia
+# Single constraint accessing both component and power flow variables
+constraint = @pfinitconstraint :dynamicload₊P - @pf(:PQ₊Pset)
+
+# Multiple constraints in a single block
+constraints = @pfinitconstraint begin
+    :pibranch₊X - @pf(:pibranch₊X) # "copy" parameters from pf
+    :P_gen - @pf(:P_load)          # Power balance constraint
+    :AVR₊Vset - :busbar₊u_mag      # init controller setpoints
+end
+
+# Attach to a component
+set_pfinitconstraint!(my_generator, constraints)
+```
+
+#### Key Syntax Elements
+
+- `:symbol` - Access component's own variables during initialization
+- `@pf :symbol` - Access variables from the solved power flow state
+- Multiple constraints can be combined in a `begin...end` block
+
+### Integration with Initialization Process
+
+PFInitConstraints are automatically handled during [`initialize_from_pf[!]`](@ref):
+
+1. **Power flow solution**: The power flow equations are solved first
+2. **Constraint specialization**: All `PFInitConstraints`` are converted to regular `InitConstraints`` by "specializing" them with the power flow solution (i.e. the `@pf(:x)` blocks are replaced by the actual values)
+3. **Component initialization**: The specialized constraints are passed to NetworkDynamics.jl's component initialization
+
+This process is transparent to the user - simply define your `PFInitConstraints` and use `initialize_from_pf[!]` as usual.

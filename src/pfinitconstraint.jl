@@ -26,6 +26,19 @@ function (c::PFInitConstraint)(res, u, pfu)
     c.f(res, SymbolicView(u, c.sym), SymbolicView(pfu, c.pfsym))
 end
 
+"""
+    @pfinitconstraint expr
+    @pfinitconstraint begin
+        constraint1
+        constraint2
+    end
+
+Create a [`PFInitConstraint`](@ref) using macro syntax. Component variables are accessed with
+`:symbol` and power flow state variables with `@pf :symbol`. Multiple constraints can be
+defined in a begin...end block.
+
+See also: [`PFInitConstraint`](@ref), [`set_pfinitconstraint!`](@ref)
+"""
 macro pfinitconstraint(ex)
     if ex isa QuoteNode || ex.head != :block
         ex = Base.remove_linenums!(Expr(:block, ex))
@@ -78,6 +91,16 @@ function _wrap_symbols!(ex, sym, pfsym, u, pfu)
     end
 end
 
+"""
+    specialize_pfinitconstraints(nw, pfs)
+
+Convert all [`PFInitConstraint`](@ref)s in the network to regular [`InitConstraint`](@ref)s
+by specializing them with the power flow solution. Scans through all components and extracts
+power flow variables needed by each constraint, creating specialized versions with those
+values embedded.
+
+Called internally by [`initialize_from_pf[!]`](@ref).
+"""
 function specialize_pfinitconstraints(nw, pfs)
     dict = Dict{NetworkDynamics.SymbolicIndex, InitConstraint}()
     vidxs = (VIndex(i) for i in 1:nv(nw))
@@ -93,6 +116,14 @@ function specialize_pfinitconstraints(nw, pfs)
     dict
 end
 
+"""
+    specialize_pfinitconstraint(pfic::PFInitConstraint, pfstate::NWState, cidx)
+
+Convert a single [`PFInitConstraint`](@ref) to a regular [`InitConstraint`](@ref) by extracting
+the required power flow variables from `pfstate` and embedding them in the constraint function.
+
+Called by [`specialize_pfinitconstraints`](@ref) for each component with a PFInitConstraint.
+"""
 function specialize_pfinitconstraint(pfic::PFInitConstraint, pfstate::NWState, cidx)
     VEIndex = NetworkDynamics._baseT(cidx)
     @assert cidx isa VEIndex{<:Any, Nothing}
