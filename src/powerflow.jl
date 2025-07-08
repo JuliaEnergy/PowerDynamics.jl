@@ -32,10 +32,19 @@ function pfPQ(; P=0, Q=0)
     b
 end
 
+"""
+    ispfmodel(cf::NetworkDynamics.ComponentModel)
+
+Check if a component model is suitable for power flow analysis.
+
+A component model is considered a valid power flow model if it has no dynamics,
+i.e., either no states or a zero mass matrix.
+
+## Returns
+- `true` if the component is suitable for power flow analysis
+- `false` otherwise
+"""
 function ispfmodel(cf::NetworkDynamics.ComponentModel)
-    # cannot have freep nor freeu
-    isempty(freep(cf)) || return false
-    isempty(freeu(cf)) || return false
     # no states or mass matrix 0
     if NetworkDynamics.dim(cf) == 0 || cf.mass_matrix==LinearAlgebra.UniformScaling(0)
         return true
@@ -52,13 +61,11 @@ Extract or create a power flow component model from a dynamic component model.
 2. If the component is already a valid power flow model (i.e. no ODE, just constraints), return it as-is
 
 ## Returns
-- A component model suitable for power flow analysis (no free parameters or states)
+- A component model suitable for power flow analysis (no dynamics)
 
 ## Validation
 The returned model must satisfy [`ispfmodel`](@ref) criteria:
-- No free parameters (`freep` is empty)
-- No free states (`freeu` is empty)
-- Either no states or zero mass matrix
+- Either no states or zero mass matrix (no dynamics)
 
 See also: [`ispfmodel`](@ref), [`pfSlack`](@ref), [`pfPV`](@ref), [`pfPQ`](@ref)
 """
@@ -128,9 +135,6 @@ function solve_powerflow(
 
     uf = uflat(pfs0)
     pf = pflat(pfs0)
-    any(isnan, uf) && error("Initial state for powerflow model contains NaNs!")
-    any(isnan, pf) && error("Parameters for powerflow model contain NaNs!")
-
     pfs = find_fixpoint(pfnw, pfs0)
     verbose && show_powerflow(pfs)
 
