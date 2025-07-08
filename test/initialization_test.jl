@@ -7,6 +7,7 @@ using OpPoDyn: @capture, postwalk
     ic2 = PFInitConstraint([:x, :y], [:z], 1) do out, u, pfu
         out[1] = u[:x] + u[:y] + pfu[:z]
     end
+
     out1 = [0.0]
     out2 = [0.0]
     u = rand(2)
@@ -76,4 +77,44 @@ end
     if5(out5, u, pfu)
     @test out5[1] ≈ sqrt(5.0)  # sqrt(1^2 + 2^2) = sqrt(5)
     @test out5[2] ≈ 16.0       # 1*3 + 2*4 + 5 = 16
+end
+
+(isinteractive() && @__MODULE__()==Main ? includet : include)("testsystems.jl")
+@testset "Test end to end initialziation" begin
+    @testset "test happy path" begin
+        nw = TestSystems.load_ieee9bus()
+        s0_nonmut = initialize_from_pf(nw)
+        s0_nonmut_meta = NWState(nw)
+        s0_mut = initialize_from_pf!(nw)
+        s0_mut_meta = NWState(nw)
+
+        equal_states(a, b) = uflat(a)==uflat(b) && pflat(a) == pflat(b)
+        @test equal_states(s0_nonmut, s0_mut)
+        @test equal_states(s0_mut, s0_mut_meta)
+        @test !equal_states(s0_nonmut, s0_nonmut_meta)
+    end
+
+    @testset "test add of identical formula/constraint" begin
+        nw = TestSystems.load_ieee9bus()
+        em = nw[EIndex(4)]
+
+        pfif = @pfinitformula :pibranch₊active = @pf(:pbranch₊active)
+        @test add_pfinitformula!(em, pfif)
+        @test !add_pfinitformula!(em, pfif)
+
+        pfic = @pfinitconstraint :pibranch₊active - @pf(:pbranch₊active)
+        @test add_pfinitconstraint!(em, pfic)
+        @test !add_pfinitconstraint!(em, pfic)
+    end
+
+    @testset "test pfinitformula" begin
+        nw = TestSystems.load_ieee9bus()
+
+        em = nw[EIndex(1)]
+
+
+
+        pfnw = powerflow_model(nw)
+
+    end
 end
