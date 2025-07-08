@@ -189,10 +189,12 @@ function _init_from_pf(
 )
     interface_vals = interface_values(pfs)
     pfinitconstraints = specialize_pfinitconstraints(nw, pfs)
+    pfinitformulas = specialize_pfinitformulas(nw, pfs)
     initf(
         nw;
         default_overrides=interface_vals,
-        additional_constraints = pfinitconstraints,
+        additional_initconstraint = pfinitconstraints,
+        additional_initformula = pfinitformulas,
         verbose, subverbose, kwargs...
     )
 end

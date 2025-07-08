@@ -205,7 +205,7 @@ values embedded.
 Called internally by [`initialize_from_pf[!]`](@ref).
 """
 function specialize_pfinitconstraints(nw, pfs)
-    dict = Dict{NetworkDynamics.SymbolicIndex, Union{InitConstraint, Tuple{Vararg{InitConstraint}}}}()
+    dict = Dict{NetworkDynamics.SymbolicIndex, Vector{InitConstraint}}()
     vidxs = (VIndex(i) for i in 1:nv(nw))
     eidxs = (EIndex(i) for i in 1:ne(nw))
     for cidx in Iterators.flatten((vidxs, eidxs))
@@ -251,7 +251,7 @@ values embedded.
 Called internally by [`initialize_from_pf[!]`](@ref).
 """
 function specialize_pfinitformulas(nw, pfs)
-    dict = Dict{NetworkDynamics.SymbolicIndex, Union{InitFormula, Tuple{Vararg{InitFormula}}}}()
+    dict = Dict{NetworkDynamics.SymbolicIndex, Vector{InitFormula}}()
     vidxs = (VIndex(i) for i in 1:nv(nw))
     eidxs = (EIndex(i) for i in 1:ne(nw))
     for cidx in Iterators.flatten((vidxs, eidxs))
