@@ -7,7 +7,8 @@ using NetworkDynamics: NetworkDynamics, VertexModel, EdgeModel,
                        has_metadata, get_metadata, set_metadata!, NWState, uflat, pflat,
                        initialize_componentwise, initialize_componentwise!, interface_values,
                        find_fixpoint, vidxs, extract_nw, SymbolicView,
-                       VIndex, EIndex, InitFormula, InitConstraint
+                       VIndex, EIndex, InitFormula, InitConstraint,
+                       sym, psym
 using ModelingToolkit: ModelingToolkit, ODESystem, structural_simplify, get_name, getname, @named
 using SciMLBase: SciMLBase, solve
 using NonlinearSolve: NonlinearSolve, NonlinearProblem

@@ -1,6 +1,7 @@
 using OpPoDyn
 using NetworkDynamics
 using OpPoDyn: @capture, postwalk
+using Graphs
 
 @testset "Initialization constraint construction" begin
     ic1 = @pfinitconstraint :x + :y + @pf(:z)
@@ -105,16 +106,51 @@ end
         pfic = @pfinitconstraint :pibranch₊active - @pf(:pbranch₊active)
         @test add_pfinitconstraint!(em, pfic)
         @test !add_pfinitconstraint!(em, pfic)
+
+        f1 = copy_pf_parameters(em)
+        f2 = copy_pf_parameters(em)
+        @test f1 == f2
     end
 
     @testset "test pfinitformula" begin
         nw = TestSystems.load_ieee9bus()
-
-        em = nw[EIndex(1)]
-
-
-
         pfnw = powerflow_model(nw)
+        pfs0 = NWState(pfnw)
+        pfs0.p.e[9, :pibranch₊active] = 0 # deactivate a line
+        pfs = solve_powerflow(pfnw; pfs0)
+        @test pfs.p.e[9, :pibranch₊active] == 0
 
+        # cannot initialize because not steadystate
+        @test_throws ErrorException initialize_from_pf(nw; pfs=pfs)
+
+        s0 = initialize_from_pf(nw; pfs=pfs, nwtol=5, tol=5)
+        # without formula/constraint, the parameter is not initialized
+        @test s0.p.e[9, :pibranch₊active] != pfs0.p.e[9, :pibranch₊active]
+
+        # remove the default parameter, initialization can recover
+        # the active state from the interface variables
+        for i in 1:ne(nw)
+            em = nw[EIndex(i)]
+            param = only(filter(s -> contains(string(s), "active"), psym(em)))
+            delete_default!(em, param)
+            set_guess!(em, param, 1.0)
+        end
+        s1 = initialize_from_pf(nw; pfs=pfs, pfnw=nothing, pfs0=nothing, subverbose=EIndex(9));
+        @test s1.p.e[9, :pibranch₊active] ≈ pfs0.p.e[9, :pibranch₊active] atol=1e-10
+
+        # alternative, we can use the copy formula to copy them over
+        for i in 1:ne(nw)
+            em = nw[EIndex(i)]
+            # set default again
+            param = only(filter(s -> contains(string(s), "active"), psym(em)))
+            set_default!(em, param, 1.0)
+
+            # add copy formula
+            form = copy_pf_parameters(em)
+            add_pfinitformula!(em, form)
+        end
+
+        s2 = initialize_from_pf(nw; pfs=pfs, subverbose=EIndex(9));
+        @test s2.p.e[9, :pibranch₊active] == pfs0.p.e[9, :pibranch₊active]
     end
 end

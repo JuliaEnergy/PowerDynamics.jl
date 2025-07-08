@@ -126,7 +126,6 @@ function solve_powerflow(
 )
     pfnw.mass_matrix == LinearAlgebra.UniformScaling(0) || error("Powerflow model must have a mass matrix of 0!")
 
-    pfs0 = NWState(pfnw)
     uf = uflat(pfs0)
     pf = pflat(pfs0)
     any(isnan, uf) && error("Initial state for powerflow model contains NaNs!")

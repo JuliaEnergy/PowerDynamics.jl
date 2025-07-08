@@ -24,7 +24,7 @@ nw = get_dynamic_network(...)
 # extract powerflow model       # ⎫                 ⎫
 pfnw = powerflow_model(nw)      # │                 │
 # initial guess for powerflow   # ⎬ solve_powerflow │
-pfs0 = NWState(pfnw)            # │                 │  
+pfs0 = NWState(pfnw)            # │                 │
 # find fixpoint for pf model    # │                 │
 pfs = find_fixpoint(pfnw, pfs0) # ⎭                 ⎬ initialize_from_pf[!]
 # extract interface (u/i values)#                   │
@@ -36,6 +36,8 @@ initialize_componentwise[!](    #                   │
 )                               #                   ⎭
 ```
 This low-level step-wise interface allows users full control and complete management of the initialization process. However, OpPoDyn.jl also provides higher-level wrapper functions [`solve_powerflow`](@ref) and [`initialize_from_pf`](@ref) that combine these steps for common use cases.
+
+Note: This workflow above is slightly simplified, see [Integration with Initialization Process](@ref) below for the full set of commands.
 
 ### Step 1: Power Flow Model Extraction
 
@@ -163,3 +165,23 @@ Both PFInitConstraints and PFInitFormulas are automatically handled during [`ini
 This process is transparent to the user - simply define your power flow dependent initialization methods and use `initialize_from_pf[!]` as usual.
 
 The underlying mechanism follows NetworkDynamics.jl's [component initialization pipeline](@extref NetworkDynamics.Single-Component-Initialization), with the power flow solution providing additional context for constraint and formula evaluation.
+
+The extended initializaion workflow (automaticially done in `initialize_from_pf[!]`) looks like this:
+
+```julia
+nw = get_dynamic_network(...)
+pfnw = powerflow_model(nw)
+pfs0 = NWState(pfnw)
+pfs = find_fixpoint(pfnw, pfs0)
+interf = interface_values(pfs)
+
+# specialize the constaints an formulas and pass then down
+pfconstraints = specialize_pfinitconstraints(nw, pfs)
+pfformulas    = specialize_pfinitformulas(nw, pfs)
+initialize_componentwise[!](
+    nw;
+    default_overrides = interf,
+    additional_initconstraints = pfconstraints,
+    additional_initformulas = pfformulas,
+)
+```

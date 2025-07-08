@@ -491,3 +491,30 @@ See also: [`set_pfinitformula!`](@ref).
 delete_pfinitformula!(c::NetworkDynamics.ComponentModel) = delete_metadata!(c, :pfinitformula)
 delete_pfinitformula!(nw::Network, idx::NetworkDynamics.VCIndex) = delete_pfinitformula!(getcomp(nw, idx))
 delete_pfinitformula!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfinitformula!(getcomp(nw, idx))
+
+"""
+    copy_pf_parameters(cm::ComponentModel) -> PFInitFormula
+
+Creates a [`PFInitFormula`](@ref) that copies all parameters from the powerflow model
+to the component model. This formula can then be added to the component using
+[`add_pfinitformula!`](@ref).
+
+This is useful for components where the powerflow and dynamic models should have
+identical parameter values, ensuring consistency between the two models.
+
+See also: [`PFInitFormula`](@ref), [`add_pfinitformula!`](@ref)
+"""
+function copy_pf_parameters(cm::NetworkDynamics.ComponentModel)
+    cmpf = powerflow_model(cm)
+    if Set(psym(cm)) != Set(psym(cmpf))
+        throw(ArgumentError("Cannot add parameter copy from powerflow model to component :$(cm.name)! The powerflow model has different parameters than the component model!"))
+    end
+    let _sym=psym(cm), _pfsym=psym(cmpf)
+        PFInitFormula(_sym, Symbol[], _pfsym) do res, _, pfu
+            for p in _sym
+                res[p] = pfu[p]
+            end
+            nothing
+        end
+    end
+end
