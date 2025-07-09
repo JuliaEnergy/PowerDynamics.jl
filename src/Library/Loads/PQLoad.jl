@@ -58,9 +58,9 @@ end
         terminal = Terminal()
     end
     @parameters begin
-        Pset, [description="Active Power demand [pu]"]
-        Qset, [description="Reactive Power demand [pu]"]
-        Vset, [guess=1,description="Nominal voltage [pu]"]
+        Pset, [description="Active Power demand [pu]", guess=-1]
+        Qset, [description="Reactive Power demand [pu]", guess=0]
+        Vset, [guess=1,description="Nominal voltage [pu]", guess=1]
     end
     @variables begin
         P(t), [description="Active Power [pu]"]
