@@ -41,7 +41,7 @@ using OpPoDynTesting
 
     @safetestset "Library tests" begin include("Library_test.jl") end
     @safetestset "utils tests" begin include("utils_test.jl") end
-    @safetestset "pfinitconstraint tests" begin include("pfinitconstraint_test.jl") end
+    @safetestset "initialization tests" begin include("initialization_test.jl") end
 
     @testset "validation tests" begin
         @safetestset "ieee39 RMSPowerSims.jl" begin include(joinpath("validation", "ieee39_RMSPowerSims.jl", "ieee39_validation.jl")) end

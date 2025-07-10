@@ -157,13 +157,13 @@ end
     @testset "pf model with missing defaults" begin
         nw = TestSystems.load_ieee9bus()
         pfnw = powerflow_model(nw)
-        delete_default!(pfnw[VIndex(1)], :pv₊P)
-        delete_default!(pfnw[VIndex(1)], :busbar₊u_i)
+        delete_default!(pfnw[VIndex(3)], :pv₊P)
+        delete_default!(pfnw[VIndex(3)], :busbar₊u_i)
 
         @test_throws ArgumentError solve_powerflow(pfnw)
         pfs0 = NWState(pfnw)
-        pfs0.v[1, :busbar₊u_i] = 0
-        pfs0.p.v[1, :pv₊P] = 2.32
+        pfs0.v[3, :busbar₊u_i] = 0
+        pfs0.p.v[3, :pv₊P] = 0.85
         solve_powerflow(nw; pfs0) # runs now
     end
 end
