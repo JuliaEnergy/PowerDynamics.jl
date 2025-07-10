@@ -166,7 +166,7 @@ state again, as it is stored in the metadata.
 ## Parameters
 - `nw`: The dynamic network model to initialize
 - `verbose`: Whether to print information about the power flow solution (default: true)
-- `subverbose`: Whether to print detailed information during component initialization (default: false)
+- `subverbose`: Whether to print detailed information during component initialization (default: false). Can be Vector [VIndex(1), EIndex(3), ...] for selective output
 - `pfnw`: Power flow network model (default: created from `nw` using `powerflow_model`)
 - `pfs0`: Initial state for power flow calculation (default: created from `pfnw`)
 - `pfs`: Power flow solution (default: calculated using `solve_powerflow`)
