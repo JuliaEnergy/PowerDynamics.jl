@@ -20,6 +20,9 @@ using Setfield: @set, @set!
 using SymbolicIndexingInterface: SymbolicIndexingInterface as SII
 using MacroTools: postwalk, @capture
 
+export isinjectormodel, isbusmodel, isbranchmodel, islinemodel
+include("interfaces.jl")
+
 export @attach_metadata!, set_voltage!, set_current!
 include("utils.jl")
 include("Library/Library.jl")

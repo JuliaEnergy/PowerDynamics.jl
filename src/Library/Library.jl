@@ -64,9 +64,6 @@ include("Bus.jl")
 export LineEnd, MTKLine
 include("Lines.jl")
 
-export isinjectormodel, isbusmodel, isbranchmodel, islinemodel
-include("Interfaces.jl")
-
 include("lib_utils.jl")
 
 ####
