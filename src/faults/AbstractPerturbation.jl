@@ -92,7 +92,7 @@ simulate(np::AbstractPerturbation, powergrid::PowerGrid, op::State, timespan; so
 
 
 "Error to be thrown if something goes wrong during power perturbation"
-struct FieldUpdateError <: PowerDynamicsError
+struct FieldUpdateError <: MarinePowerDynamicsError
     msg::String
 end
 

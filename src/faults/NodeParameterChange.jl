@@ -22,7 +22,7 @@ end
 """
 Error to be thrown if something goes wrong during node parameter perturbation.
 """
-struct NodePerturbationError <: PowerDynamicsError
+struct NodePerturbationError <: MarinePowerDynamicsError
     msg::String
 end
 

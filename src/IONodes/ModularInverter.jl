@@ -1,7 +1,7 @@
 using Unitful
 using BlockSystems
 using .MIComponents
-using PowerDynamics.IOComponents
+using MarinePowerDynamics.IOComponents
 
 export MIParameters
 export Inverter, InverterCS

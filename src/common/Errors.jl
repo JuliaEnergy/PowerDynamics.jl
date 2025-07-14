@@ -2,24 +2,24 @@
 # Licensed under GNU GPL v3 (see LICENSE file)
 
 "Abstract super type of all PowerDynamics.jl Errors."
-abstract type PowerDynamicsError <: Exception end
+abstract type MarinePowerDynamicsError <: Exception end
 
 "Error to be thrown if something goes wrong during the node dynamics construction."
-struct NodeDynamicsError <: PowerDynamicsError
+struct NodeDynamicsError <: MarinePowerDynamicsError
     msg::String
 end
 
 "Error to be thrown if something goes wrong when creating or modifying states."
-struct StateError <: PowerDynamicsError
+struct StateError <: MarinePowerDynamicsError
     msg::String
 end
 
 "Error to be thrown if something goes wrong during the operation point search."
-struct OperationPointError <: PowerDynamicsError
+struct OperationPointError <: MarinePowerDynamicsError
     msg::String
 end
 
 "Error to be thrown if something goes wrong during power grid solving"
-struct GridSolutionError <: PowerDynamicsError
+struct GridSolutionError <: MarinePowerDynamicsError
     msg::String
 end

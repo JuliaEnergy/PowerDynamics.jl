@@ -1,7 +1,7 @@
 # (C) 2018 Potsdam Institute for Climate Impact Research, authors and contributors (see AUTHORS file)
 # Licensed under GNU GPL v3 (see LICENSE file)
 
-module PowerDynamics
+module MarinePowerDynamics
 
 using Markdown # for the @doc
 
@@ -36,7 +36,6 @@ include("nodes/FourthOrderEqGovernorIEEEG1.jl")
 include("nodes/ExciterSaturtionEq.jl")
 include("nodes/experimental/RLCLoad.jl")
 include("nodes/experimental/PVInverterWithFrequencyControl.jl")
-include("nodes/experimental/LinearGenerator.jl")
 include("nodes/experimental/LinearPTO.jl")
 include("nodes/experimental/HydraulicPTO.jl")
 include("nodes/experimental/DirectDrivePTO.jl")
@@ -85,7 +84,7 @@ include("faults/NodeShortCircuit.jl")
 export AbstractNode
 
 # export of the main types and functions
-export PowerDynamicsError,NodeDynamicsError,StateError,GridSolutionError,OperationPointError
+export MarinePowerDynamicsError,NodeDynamicsError,StateError,GridSolutionError,OperationPointError
 export no_internal_masses
 export @DynamicNode, showdefinition
 export construct_vertex

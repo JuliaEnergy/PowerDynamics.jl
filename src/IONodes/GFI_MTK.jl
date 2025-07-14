@@ -1,5 +1,5 @@
 using BlockSystems
-using PowerDynamics.IOComponents
+using MarinePowerDynamics.IOComponents
 
 export GFI
 """

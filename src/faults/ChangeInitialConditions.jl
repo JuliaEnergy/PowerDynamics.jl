@@ -62,13 +62,8 @@ function solve(pg::PowerGrid, x0, timespan; solve_kwargs...)
         return true  # This condition should be set based on your requirement
     end
     
-    function velocityEffect!(integrator)
-        PowerDynamics.ts = integrator.t
-        #println(PowerDynamics.ts)
-    end
 
-
-    cb1 = DiscreteCallback(velocityCondition, velocityEffect!)
+    cb1 = DiscreteCallback(velocityCondition)
     #println("modified solve here")
     #solution = solve(problem, Rodas4(); solve_kwargs...)
     solution = solve(problem, Rodas4(); callback = CallbackSet(cb1), solve_kwargs...)

@@ -1,7 +1,7 @@
-name = "PowerDynamics"
-uuid = "cc46b21f-1b17-51c2-b642-af74c3d3a8be"
-authors = ["Tim Kittel", "Jan Liße", "Sabine Auer", "Anton Plietzsch", "Hans Würfel"]
-version = "3.1.6"
+name = "MarinePowerDynamics"
+uuid = "6a160989-bfe5-4b1a-b51b-7a8c491e4d37"
+authors = ["Tim Kittel", "Jan Liße", "Sabine Auer", "Anton Plietzsch", "Hans Würfel", "Alexander Barajas-Ritchie"]
+version = "1.0.0"
 
 [deps]
 BlockSystems = "4663d367-db1f-4bef-81e7-dc1bd7f7b428"
