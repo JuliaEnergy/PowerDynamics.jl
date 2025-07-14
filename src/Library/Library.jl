@@ -48,6 +48,16 @@ Ibase(S, V) = S/V
 Zbase(S, V) = V^2/S
 Ybase(S, V) = S/V^2
 
+@mtkmodel SystemBase begin
+    @parameters begin
+        SnRef = 100, [description="System base"]
+        fNom = 50, [description="AC system frequency"]
+        ωNom = 2 * π * fNom, [description="System angular frequency"]
+        ωRef0Pu = 1, [description="Reference for system angular frequency (pu base ωNom)"]
+        ω0Pu = 1, [description="System angular frequency (pu base ωNom)"]
+   end
+end
+
 export BusBar, MTKBus, SlackAlgebraic, SlackDifferential, CompositeInjector
 include("Bus.jl")
 
