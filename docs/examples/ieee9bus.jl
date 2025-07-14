@@ -33,7 +33,7 @@ function GeneratorBus(; machine_p=(;), avr_p=(;), gov_p=(;))
         T″_q0=0.01,
         machine_p... # unpack machine parameters
     )
-    @named avr = AVRTypeI(vr_min=-5, vr_max=5,
+    @named avr = AVRTypeI(; vr_min=-5, vr_max=5,
         Ka=20, Ta=0.2,
         Kf=0.063, Tf=0.35,
         Ke=1, Te=0.314,
@@ -41,13 +41,13 @@ function GeneratorBus(; machine_p=(;), avr_p=(;), gov_p=(;))
         tmeas_lag=false,
         avr_p... # unpack AVR parameters
     )
-    @named gov = TGOV1(R=0.05, T1=0.05, T2=2.1, T3=7.0, DT=0, V_max=5, V_min=-5,
+    @named gov = TGOV1(; R=0.05, T1=0.05, T2=2.1, T3=7.0, DT=0, V_max=5, V_min=-5,
         gov_p... # unpack governor parameters
     )
-    # generate the "injector" as combination of multiple components
+    ## generate the "injector" as combination of multiple components
     injector = CompositeInjector(machine, avr, gov; name=:generator)
 
-    # generate the MTKBus (i.e. the MTK model containg the busbar and the injector)
+    ## generate the MTKBus (i.e. the MTK model containg the busbar and the injector)
     mtkbus = MTKBus(injector)
 end
 nothing # hide

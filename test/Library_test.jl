@@ -10,7 +10,7 @@ using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkit: ModelingToolkit as MTK
 using OrderedCollections
 using DiffEqCallbacks
-isinteractive() && using GLMakie
+using CairoMakie
 using Test
 
 @testset "DynawoPiLine" begin

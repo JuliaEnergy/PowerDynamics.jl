@@ -210,7 +210,7 @@ by specializing them with the power flow solution. Scans through all components 
 power flow variables needed by each constraint, creating specialized versions with those
 values embedded.
 
-Called internally by [`initialize_from_pf[!]`](@ref).
+Called internally by [`initialize_from_pf[!]`](@ref initialize_from_pf).
 """
 function specialize_pfinitconstraints(nw, pfs)
     dict = Dict{NetworkDynamics.SymbolicIndex, Vector{InitConstraint}}()
@@ -256,7 +256,7 @@ by specializing them with the power flow solution. Scans through all components 
 power flow variables needed by each formula, creating specialized versions with those
 values embedded.
 
-Called internally by [`initialize_from_pf[!]`](@ref).
+Called internally by [`initialize_from_pf[!]`](@ref initialize_from_pf).
 """
 function specialize_pfinitformulas(nw, pfs)
     dict = Dict{NetworkDynamics.SymbolicIndex, Vector{InitFormula}}()

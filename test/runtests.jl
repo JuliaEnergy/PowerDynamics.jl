@@ -7,7 +7,7 @@ using ModelingToolkit
 using ModelingToolkitStandardLibrary
 using ModelingToolkitStandardLibrary.Blocks
 using Makie
-isinteractive() ? using GLMakie : using CairoMakie
+using CairoMakie
 using OrderedCollections
 
 using OpPoDyn
