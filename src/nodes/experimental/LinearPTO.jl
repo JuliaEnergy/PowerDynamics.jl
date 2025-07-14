@@ -1,5 +1,7 @@
 
-
+using CSV
+using DataFrames
+using Interpolations
 @doc doc"""
 ```Julia
 LinearPTO(;τ_P,τ_Q,K_P,K_Q,V_r,Q,K_pto, C_pto, η, base_power)
@@ -23,29 +25,36 @@ Keyword Arguments
 - base_power: Base power for per-unit conversion
 
 """
-@DynamicNode LinearPTO(τ_P, τ_Q, K_P, K_Q, V_r, Q, K_pto, C_pto, η, base_power, scaling_factor) begin
+@DynamicNode LinearPTO(
+    τ_P, τ_Q, K_P, K_Q, V_r, Q, K_pto, C_pto, η, base_power, scaling_factor, wec_sim_path
+) begin
     @assert τ_P > 0 "time constant active power measurement should be >0"
     @assert τ_Q > 0 "time constant reactive power measurement should be >0"
     @assert K_Q > 0 "reactive power droop constant should be >0"
     @assert K_P > 0 "active power droop constant reactive power measurement should be >0"
+
+    # build interpolants objects
+    df = CSV.read(wec_sim_path, DataFrame)
+    df.Relative_Displacement = df.Float_Position .- df.Spar_Position
+    df.Relative_Velocity = df.Float_Velocity .- df.Spar_Velocity
+    rv_interp = LinearInterpolation(df.Time, df.Relative_Velocity, extrapolation_bc=Line())
+    rd_interp = LinearInterpolation(df.Time, df.Relative_Displacement, extrapolation_bc=Line())
+
 end [[ω, dω]] begin
 
-    # handle time series from WEC simulation 
-    current_time = PowerDynamics.ts
-    closest_time_index = argmin(abs.(wec_simulation_df.Time .- current_time))
-    relative_velocity = wec_simulation_df[closest_time_index, :Relative_Velocity]
-    relative_displacement = wec_simulation_df[closest_time_index, :Relative_Displacement]
-
-    hs = PowerDynamics.wave_data_df[closest_time_index, :Wave_Height]
-
+    relative_velocity = rv_interp(t)
+    relative_displacement = rd_interp(t)
+    if !isfinite(t)
+        relative_velocity = 0.0
+        relative_displacement = 0.0
+    else
+        relative_velocity = rv_interp(t)
+        relative_displacement = rd_interp(t)
+    end
     # Calculate the power from the PTO 
     F_pto = -K_pto * relative_displacement - C_pto * relative_velocity
     P_mech = -F_pto * relative_velocity
     P_elec = η * P_mech
-
-    #P_elec_scaled = scaling_factor * P_elec
-    pre =  (P_elec / base_power)
-    # Convert to per-unit
     P = (P_elec / base_power) * scaling_factor
 
     p = real(u * conj(i))
@@ -56,18 +65,4 @@ end [[ω, dω]] begin
     du = u * 1im * dϕ + dv*(u/v)
     dω = 1/τ_P*(-ω-K_P*(p-P))
 
-    @info "P_mech : $P_mech"
-    @info "P_elec : $P_elec"
-    @info "P no scale: $pre"
-    @info "P : $P"
-    @info "ts : $current_time"
-    # @info "Time index: $closest_time_index"
-    # @info "hs : $hs"
-    # @info "Relative Velocity: $relative_velocity"
-    # @info "Relative Displacement: $relative_displacement"
-    @info "Call number: $(PowerDynamics.temp)"
-    @info "---- End of Step ----"
-    PowerDynamics.temp += 1
 end
-
-export LinearPTO

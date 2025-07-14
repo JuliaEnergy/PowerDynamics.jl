@@ -26,6 +26,7 @@ function cndfunction_builder!(
 
     extracted_vars =  [:($sym = x[$(index+2)] ) for (index, sym) in enumerate(internals.vars)]
     append!(rhsbody.args, extracted_vars)
+    append!(rhsbody.args, [:(t = t)]) # make t available
     append!(rhsbody.args, func_body.args)
     extracted_dvars =  [:(dx[$(index+2)] = $sym) for (index, sym) in enumerate(internals.dvars)]
     du_real = [:(dx[1] = real(du))]

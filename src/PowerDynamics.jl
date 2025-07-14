@@ -108,23 +108,4 @@ export total_current
 export LinearGenerator
 export HydraulicPTO
 
-global wec_simulation_df = DataFrame()
-global pto_elec = []
-global pto_mech = []
-global pto_time = []
-global pto_p = []
-# global pto_di = []
-# global pto_du = []
-# global pto_i = []
-global ts = 0.0
-global initial_pressure_A = 1.0e7  # Initial pressure at point A in Pascals (e.g., 10 MPa)
-global initial_pressure_B = 1.0e7  # Initial pressure at point B in Pascals (e.g., 10 MPa)
- # Initial pressure at point B in Pascals (e.g., 10 MPa)
-global temp = 0       # Initial angular velocity (e.g., start at rest)
-
-# Initialize the log file globally
-# global log_file
-# log_file = open("simulation_log.txt", "w")
-# write(log_file, "Time, Closest Time, Current Velocity\n")
-# #global itr = 0
 end

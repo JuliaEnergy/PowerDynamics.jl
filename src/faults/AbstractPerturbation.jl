@@ -46,8 +46,6 @@ Simulates a [`AbstractPerturbation`](@ref)
 """
 function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1::Array, timespan; solve_kwargs...)
     @assert first(timespan) <= np.tspan_fault[1] "fault cannot begin in the past"
-    #dt = 0.01
-    #@info"AbstractPerturbation"
 
     np_powergrid = np(powergrid)
     regular = rhs(powergrid)
@@ -59,77 +57,32 @@ function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1::Array, tim
 
     # wrap f and introduce parameter: if p=true no error, if p=false errorstate
     _f = (dx, x, p, t) -> p ? regular(dx,x,nothing,t) : error(dx,x,nothing,t)
-
     f = ODEFunction(_f, mass_matrix = regular.mass_matrix, syms = regular.syms)
-
     problem = ODEProblem{true}(f, x1, timespan, true)
-    
-    # function errorState(integrator)
-    #     integrator.p = false
-    #     #println("error")
-    #     #push!( PowerDynamics.velocity_queue,  PowerDynamics.temp)
-    #     # Set the proposed step size to the constant step size dt
-    #     #set_proposed_dt!(integrator, dt)
-    #     integrator.dt = dt
-    #     println(integrator.t)
 
-    # end
-    
-    # function regularState(integrator)
-    #     integrator.p = true
-    #     # Set the proposed step size to the constant step size dt
-    #     #set_proposed_dt!(integrator, dt)
-    #     integrator.dt = dt
-    #     println(integrator.t)
-    # end
-
-    function velocityCondition(u, t, integrator)
-        return true  # This condition should be set based on your requirement
-    end
-    
-    function velocityEffect!(integrator)
-        #@info "time step?: $integrator.t"
-        PowerDynamics.ts = integrator.t
-    end
-    
     function errorState(integrator)
-
         integrator.p = false
-        #integrator.dt = dt
-        #set_proposed_dt!(integrator, dt)
-        # reset the adaptive timestepping
         if integrator.opts.adaptive
             auto_dt_reset!(integrator)
             set_proposed_dt!(integrator, integrator.dt)
-            #set_proposed_dt!(integrator, dt)
         end
     end
 
     function regularState(integrator)
         integrator.p = true
-        #integrator.dt = dt
-        #set_proposed_dt!(integrator, dt)
-        # reset the adaptive timestepping
         if integrator.opts.adaptive
             auto_dt_reset!(integrator)
             set_proposed_dt!(integrator, integrator.dt)
-            #set_proposed_dt!(integrator, dt)
         end
     end
 
     t1 = np.tspan_fault[1]
     t2 = np.tspan_fault[2]
-
     cb1 = PresetTimeCallback([t1], errorState)
     cb2 = PresetTimeCallback([t2], regularState)
-    cb3 = DiscreteCallback(velocityCondition, velocityEffect!)
-    #println("modified solve")
 
-    fixed_dt = 0.1
-    #sol = solve(problem, Rodas4(); callback = CallbackSet(cb1, cb2, cb3), abstol=1e-8, reltol=1e-8, solve_kwargs...)
-    sol = solve(problem, Rodas4(); dt=fixed_dt, adaptive=false, callback = CallbackSet(cb1, cb2, cb3), solve_kwargs...)
-    #sol = solve(problem, Rodas4(); callback = CallbackSet(cb1, cb2, cb3), qmin = 0.3, abstol=1e-6, reltol=1e-6, solve_kwargs...)
-    #sol = solve(problem, Rodas4(); callback = CallbackSet(cb1, cb2, cb3), abstol=1e-8, reltol=1e-8, solve_kwargs...)
+    fixed_dt = 0.01
+    sol = solve(problem, Rodas4(); dt=fixed_dt, adaptive=false, callback = CallbackSet(cb1, cb2), solve_kwargs...)
 
     return PowerGridSolution(sol, powergrid)
 end

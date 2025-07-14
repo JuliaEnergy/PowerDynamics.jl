@@ -75,29 +75,6 @@ function simulate(np::AbstractPerturbation, powergrid::PowerGrid, x1::Array, tim
         set_proposed_dt!(integrator, dt)
     end
     
-    # function errorState(integrator)
-    #     integrator.p = false
-    #     #integrator.dt = dt
-    #     set_proposed_dt!(integrator, dt)
-    #     # reset the adaptive timestepping
-    #     if integrator.opts.adaptive
-    #         auto_dt_reset!(integrator)
-    #         #set_proposed_dt!(integrator, integrator.dt)
-    #         set_proposed_dt!(integrator, dt)
-    #     end
-    # end
-
-    # function regularState(integrator)
-    #     integrator.p = true
-    #     #integrator.dt = dt
-    #     set_proposed_dt!(integrator, dt)
-    #     # reset the adaptive timestepping
-    #     if integrator.opts.adaptive
-    #         auto_dt_reset!(integrator)
-    #         #set_proposed_dt!(integrator, integrator.dt)
-    #         set_proposed_dt!(integrator, dt)
-    #     end
-    # end
 
     t1 = np.tspan_fault[1]
     t2 = np.tspan_fault[2]
