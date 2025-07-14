@@ -3,7 +3,7 @@
     PFInitConstraint(f, sym, pfsym, dim)
 
 A representation of an additional constraint that is applied during the initialization phase of a component.
-In contrast to a [`InitConstraint`](@ref), this constraint may access additional variables which are available
+In contrast to a [`InitConstraint`](@extref), this constraint may access additional variables which are available
 in the full `NWState` of the solved power flow!
 
 Crucially, this is only necessary for constraints, which cannot be expressed in terms of the
@@ -37,7 +37,7 @@ end
     PFInitFormula(f, outsym, sym, pfsym)
 
 A representation of an initialization formula that is applied during the initialization phase of a component.
-In contrast to a [`InitFormula`](@ref), this formula may access additional variables which are available
+In contrast to a [`InitFormula`](@extref), this formula may access additional variables which are available
 in the full `NWState` of the solved power flow!
 
 Crucially, this is only necessary for formulas, which cannot be expressed in terms of the

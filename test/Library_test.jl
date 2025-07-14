@@ -102,7 +102,6 @@ end
         end
     end
     @named genbus = GenBus()
-    # genbus = pin_parameters(genbus)
     genf = Bus(genbus; verbose=false)
 
     @named slack = SlackDifferential(u_init_r=0.90081)

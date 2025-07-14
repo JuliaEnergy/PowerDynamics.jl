@@ -56,7 +56,7 @@ If the `:pfmodel` is **not** set, it assumes that the same model is used for bot
 
 ### Step 2: Power Flow Solution
 
-The power flow problem is solved using NetworkDynamics.jl's [`find_fixpoint`](@exref) function,
+The power flow problem is solved using NetworkDynamics.jl's [`find_fixpoint`](@extref) function,
 which internally uses NonlinearSolve.jl:
 
 ```julia
@@ -108,7 +108,7 @@ Both methods can access any variable from the solved power flow state, not just 
 
 **Key difference**: Constraints **increase the number of equations** that must be satisfied during initialization, while formulas **reduce the number of free variables** by setting additional default values.
 
-These are power flow-aware extensions of NetworkDynamics.jl's standard [`InitConstraint`](@extref NetworkDynamics.Initialization-Constraints-(InitConstraints)) and [`InitFormula`](@extref NetworkDynamics.Initialization-Formulas-(InitFormulas)) mechanisms.
+These are power flow-aware extensions of NetworkDynamics.jl's standard [`InitConstraint`](@extref) and [`InitFormula`](@extref) mechanisms.
 
 ### Power Flow Dependent Initialization Constraints
 
@@ -156,7 +156,7 @@ set_pfinitformula!(my_generator, formulas)
 
 ### Integration with Initialization Process
 
-Both PFInitConstraints and PFInitFormulas are automatically handled during [`initialize_from_pf[!]`](@ref `initialize_from_pf`):
+Both PFInitConstraints and PFInitFormulas are automatically handled during [`initialize_from_pf[!]`](@ref initialize_from_pf):
 
 1. **Power flow solution**: The power flow equations are solved first
 2. **Specialization**: All `PFInitConstraints` and `PFInitFormulas` are converted to regular `InitConstraints` and `InitFormulas` by "specializing" them with the power flow solution (i.e. the `@pf(:x)` blocks are replaced by the actual values)

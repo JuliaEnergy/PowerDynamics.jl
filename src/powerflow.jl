@@ -1,3 +1,11 @@
+"""
+    pfSlack(; V=missing, δ=missing, u_r=missing, u_i=missing)
+
+Create a slack bus for power flow analysis.
+
+A slack bus maintains constant voltage magnitude and phase angle (or real and imaginary voltage components).
+Either provide voltage magnitude `V` and phase angle `δ`, or provide real and imaginary voltage components `u_r` and `u_i`.
+"""
 function pfSlack(; V=missing, δ=missing, u_r=missing, u_i=missing)
     if !ismissing(V) && ismissing(u_r) && ismissing(u_i)
         δ = ismissing(δ) ? 0 : δ
@@ -16,6 +24,14 @@ function pfSlack(; V=missing, δ=missing, u_r=missing, u_i=missing)
     b
 end
 
+"""
+    pfPV(; P, V)
+
+Create a PV bus for power flow analysis.
+
+A PV bus maintains constant active power injection and voltage magnitude.
+The reactive power and voltage phase angle are determined by the power flow solution.
+"""
 function pfPV(; P, V)
     @named pv = Library.PVConstraint(; P, V)
     mtkbus = MTKBus(pv, name=:pvbus)
@@ -24,6 +40,14 @@ function pfPV(; P, V)
     b
 end
 
+"""
+    pfPQ(; P=0, Q=0)
+
+Create a PQ bus for power flow analysis.
+
+A PQ bus has specified active and reactive power injections.
+The voltage magnitude and phase angle are determined by the power flow solution.
+"""
 function pfPQ(; P=0, Q=0)
     @named pq = Library.PQConstraint(; P, Q)
     mtkbus = MTKBus(pq, name=:pqbus)
@@ -202,7 +226,14 @@ function _init_from_pf(
     )
 end
 
-show_powerflow(nw::Network) = show_powerflow(NWState(nw))
+"""
+    show_powerflow(s::NWState/Network)
+
+Display power flow results in a tabular format.
+
+Extract and format power flow solution data from a network state, showing bus-level information
+including voltage magnitudes, phase angles, active power, and reactive power.
+"""
 function show_powerflow(s::NWState)
     NV = nv(extract_nw(s))
     dict = OrderedDict()
@@ -215,3 +246,4 @@ function show_powerflow(s::NWState)
 
     DataFrame(dict)
 end
+show_powerflow(nw::Network) = show_powerflow(NWState(nw))

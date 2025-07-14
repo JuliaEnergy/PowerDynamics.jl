@@ -16,6 +16,27 @@ using NonlinearSolve: NonlinearProblem
 using SciMLBase: SciMLBase, solve
 
 export Terminal
+
+"""
+    Terminal
+
+A ModelingToolkit connector for electrical terminals in power system components.
+
+Represents an electrical connection point with complex voltage and current in dq coordinates.
+The terminal defines the interface between power system components like buses, lines, and machines.
+
+# Variables
+- `u_r(t)`: d-axis voltage component
+- `u_i(t)`: q-axis voltage component
+- `i_r(t)`: d-axis current component (flow variable)
+- `i_i(t)`: q-axis current component (flow variable)
+
+# Notes
+Current variables are defined as flow variables, meaning they sum to zero at connection points
+according to Kirchhoff's current law.
+
+See also: [`BusBar`](@ref), [`LineEnd`](@ref)
+"""
 @connector Terminal begin
     u_r(t), [description="d-voltage"]
     u_i(t), [description="q-voltage"]
@@ -23,26 +44,6 @@ export Terminal
     i_i(t), [guess=0, description="q-current", connect=Flow]
 end
 
-@mtkmodel SystemBase begin
-    @parameters begin
-        SnRef = 100, [description="System base"]
-        fNom = 50, [description="AC system frequency"]
-        ωNom = 2 * π * fNom, [description="System angular frequency"]
-        ωRef0Pu = 1, [description="Reference for system angular frequency (pu base ωNom)"]
-        ω0Pu = 1, [description="System angular frequency (pu base ωNom)"]
-   end
-end
-
-@mtkmodel PUBase begin
-    @parameters begin
-        S, [description="Base power in MVA"]
-        V, [description="Base voltage in kV"]
-        ω, [description="System angular frequency in rad/s"]
-        I=S/V, [description="Base current in kA"]
-        Z=V^2/S, [description="Base impedance in Ω"]
-        Y=S/V^2, [description="Base admittance in S"]
-    end
-end
 Ibase(S, V) = S/V
 Zbase(S, V) = V^2/S
 Ybase(S, V) = S/V^2
@@ -53,10 +54,9 @@ include("Bus.jl")
 export LineEnd, MTKLine
 include("Lines.jl")
 
-export iscomponentmodel, isbusmodel, isbranchmodel, islinemodel
+export isinjectormodel, isbusmodel, isbranchmodel, islinemodel
 include("Interfaces.jl")
 
-export pin_parameters
 include("lib_utils.jl")
 
 ####

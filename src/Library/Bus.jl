@@ -25,6 +25,19 @@
     end
 end
 
+"""
+    @named busbar = BusBar()
+
+A ModelingToolkit model representing the physical connection point within a bus in power systems.
+It represents the physical busbar where all injectors and lines attach.
+
+Within OpPoDyn.jl, it serves as an interface between the MTK world and the NetworkDynamics world:
+A MTK model containing a `BusBar` the highest level is consdered a busmodel (see [`isbusmodel`](@ref))
+and describes the dynamics of an entire bus. It can be transformed in a [`VertexModel`](@extref)
+by calling [`Bus`](@ref).
+
+See also: [`Terminal`](@ref), [`MTKBus`](@ref), [`Bus`](@ref)
+"""
 @mtkmodel BusBar begin
     @extend BusBase()
     @components begin
@@ -66,8 +79,38 @@ end
     end
 end
 
+"""
+    MTKBus(injectors...; name=:bus)
+
+Create a ModelingToolkit bus system by connecting multiple injector components.
+
+Constructs a bus ODESystem by connecting all provided injector components to a
+central [`BusBar`](@ref). Each injector component must satisfy the injector
+model interface (see [`isinjectormodel`](@ref)).
+
+# Arguments
+- `injectors...`: Variable number of injector components (generators, loads, etc.)
+- `name=:bus`: Name for the resulting bus system
+
+# Returns
+- An `ODESystem` representing the complete bus with all connected injectors
+
+```
+                                 ┌────────────────────┐
+                                 │MTKBus   ┌─────────┐│
+                                 │        ┌┤Generator││
+        ┌─────────┐   ┌────┐     │┌──────┐│└─────────┘│
+MTKBus(o┤Generator│, o┤Load│) => ││BusBar├o           │
+        └─────────┘   └────┘     │└──────┘│┌────┐     │
+                                 │        └┤Load│     │
+                                 │         └────┘     │
+                                 └────────────────────┘
+```
+
+See also: [`Bus`](@ref), [`BusBar`](@ref), [`isinjectormodel`](@ref)
+"""
 function MTKBus(injectors...; name=:bus)
-    if !all(iscomponentmodel.(injectors))
+    if !all(isinjectormodel.(injectors))
         throw(ArgumentError("All components must satisfy the bus component model interface!"))
     end
     @named busbar = BusBar()
@@ -100,7 +143,7 @@ Create a injector object which contains several subsystems. Every subsystem whic
 to a newly created terminal of the composite injector. Can contain further systems, such as controllers, with the
 additional connection equations `eqs`.
 
-For example, one could create a composite injector with three subsustens:
+For example, one could create a composite injector with three subsystems:
 - a generator,
 - a controller, and
 - a load;
@@ -113,31 +156,33 @@ It will automaticially create a new terminal `t` (thus satisfing the [Injector
 Interface](@ref)) which will be connected to the terminals of the subsystems
 which have a terminal (machine and load in this case).
 
-        ┌────────────────────────────────────┐
-        │ CompositeInjector                  │
-        │              ╭───→───╮ measurements│
-        │    ┌─────────┴─┐   ┌─┴──────────┐  │
-    (t) │  o─┤ Generator │   │ Controller │  │
-     o──┼──┤ └─────────┬─┘   └─┬──────────┘  │
-        │  │           ╰───←───╯ actuation   │
-        │  │ ┌──────┐                        │
-        │  o─┤ Load │                        │
-        │    └──────┘                        │
-        └────────────────────────────────────┘
+```
+    ┌────────────────────────────────────┐
+    │ CompositeInjector                  │
+    │              ╭───→───╮ measurements│
+    │    ┌─────────┴─┐   ┌─┴──────────┐  │
+(t) │  o─┤ Generator │   │ Controller │  │
+ o──┼──┤ └─────────┬─┘   └─┬──────────┘  │
+    │  │           ╰───←───╯ actuation   │
+    │  │ ┌──────┐                        │
+    │  o─┤ Load │                        │
+    │    └──────┘                        │
+    └────────────────────────────────────┘
+````
 """
 function CompositeInjector(systems, eqs; name=Symbol(join(ModelingToolkit.getname.(systems), "_")))
     @named terminal = Terminal()
     ivs = ModelingToolkit.get_iv.(systems)
     @assert allequal(ivs) "Systems have different independent variables! $ivs"
     iv = first(ivs)
-    termeqs = [connect(sys.terminal, terminal) for sys in systems if iscomponentmodel(sys)]
+    termeqs = [connect(sys.terminal, terminal) for sys in systems if isinjectormodel(sys)]
     ODESystem(vcat(termeqs,eqs), iv; systems=vcat(terminal, systems), name)
 end
 
 function CompositeInjector(systems...; kwargs...)
     systems = collect(systems) # tuple -> vector
-    with_terminal = filter(iscomponentmodel, systems)
-    without_terminal = filter(x->!iscomponentmodel(x), systems)
+    with_terminal = filter(isinjectormodel, systems)
+    without_terminal = filter(x->!isinjectormodel(x), systems)
 
     outputs = mapreduce(vcat, systems) do sys
         subouts = filter(ModelingToolkit.get_systems(sys)) do subsys

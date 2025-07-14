@@ -41,6 +41,7 @@ export add_pfinitconstraint!, add_pfinitformula!
 export set_pfinitconstraint!, set_pfinitformula!
 export has_pfinitconstraint, has_pfinitformula
 export get_pfinitconstraints, get_pfinitformulas
+export delete_pfinitconstraint!, delete_pfinitformula!
 include("pfinitconstraint.jl")
 
 end

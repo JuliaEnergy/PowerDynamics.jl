@@ -1,10 +1,43 @@
 ####
 #### Network level Bus representation
 ####
+
+"""
+    Bus(sys::ODESystem; verbose=false, name=getname(sys), kwargs...)
+
+Create a VertexModel from an ODESystem that satisfies the bus model interface.
+
+# Arguments
+- `sys::ODESystem`: The system must satisfy the bus model interface (see [`isbusmodel`](@ref))
+- `verbose::Bool=false`: Enable verbose output during creation
+- `name`: Name for the bus (defaults to system name)
+- `kwargs...`: Additional keyword arguments passed to the Bus constructor
+
+# Returns
+- A [`VertexModel`](@extref) representing the bus
+
+```
+
+                                          ╔═════════════════════════╗
+                                          ║ VertexModel (compiled)  ║
+    ┌────────────────────┐      Network   ║  ┌────────────────────┐ ║
+    │MTKBus   ┌─────────┐│     interface  ║  │MTKBus   ┌─────────┐│ ║
+    │        ┌┤Generator││                ║  │        ┌┤Generator││ ║
+    │┌──────┐│└─────────┘│      current ────→│┌──────┐│└─────────┘│ ║
+Bus(││BusBar├o           │) =>            ║  ││BusBar├o           │ ║
+    │└──────┘│┌────┐     │      voltage ←────│└──────┘│┌────┐     │ ║
+    │        └┤Load│     │                ║  │        └┤Load│     │ ║
+    │         └────┘     │                ║  │         └────┘     │ ║
+    └────────────────────┘                ║  └────────────────────┘ ║
+                                          ╚═════════════════════════╝
+```
+
+See also: [`MTKBus`](@ref)
+"""
 function Bus(sys::ODESystem; verbose=false, name=getname(sys), kwargs...)
     if !isbusmodel(sys)
         msg = "The system must satisfy the bus model interface!"
-        if iscomponentmodel(sys)
+        if isinjectormodel(sys)
             msg *= " $(get_name(sys)) satisfies the component interface, did you mean to use `MTKBus`?"
         end
         throw(ArgumentError(msg))
@@ -54,6 +87,40 @@ end
 ####
 #### Network level Line representation
 ####
+"""
+    Line(sys::ODESystem; verbose=false, name=getname(sys), kwargs...)
+
+Create an EdgeModel from an ODESystem that satisfies the line model interface.
+
+# Arguments
+- `sys::ODESystem`: The system must satisfy the line model interface (see [`islinemodel`](@ref))
+- `verbose::Bool=false`: Enable verbose output during creation
+- `name`: Name for the line (defaults to system name)
+- `kwargs...`: Additional keyword arguments passed to the Line constructor
+
+# Returns
+- An [`EdgeModel`](@extref) representing the line
+
+
+```
+
+                                             ╔══════════════════════════════╗
+                                             ║ EdgeModel (compiled)         ║
+     ┌─────────────────────────────┐     src ║ ┌──────────────────────────┐ ║ dst
+     │MTKLine   ┌───────┐          │  vertex ║ │MTKLine   ┌────┐          │ ║ vertex
+     │         ┌┤BranchA├┐         │         ║ │         ┌┤    ├┐         │ ║
+     │┌───────┐│└───────┘│┌───────┐│     u ───→│┌───────┐│└────┘│┌───────┐│←─── u
+Line(││LineEnd├o         o┤LineEnd││) =>     ║ ││LineEnd├o      o┤LineEnd││ ║
+     │└───────┘│┌───────┐│└───────┘│     i ←───│└───────┘│┌────┐│└───────┘│───→ i
+     │  :src   └┤BranchB├┘  :dst   │         ║ │         └┤    ├┘         │ ║
+     │          └───────┘          │         ║ │          └────┘          │ ║
+     └─────────────────────────────┘         ║ └──────────────────────────┘ ║
+                                             ╚══════════════════════════════╝
+```
+
+
+See also: [`MTKLine`](@ref)
+"""
 function Line(sys::ODESystem; verbose=false, name=getname(sys), kwargs...)
     if !islinemodel(sys)
         msg = "The system must satisfy the ine model interface!"

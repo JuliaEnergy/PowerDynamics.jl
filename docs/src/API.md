@@ -1,8 +1,28 @@
 # API Reference
 ## Modeling Tools
+### Constructors for ND Models
+Those functions help you to bridge from MTK models to NetworkDynamics.jl Models:
 ```@docs
 Bus
 Line
+```
+
+### Basic Component Modeling
+```@docs
+Library.Terminal
+Library.BusBar
+Library.LineEnd
+Library.MTKBus
+Library.MTKLine
+Library.CompositeInjector
+```
+
+### Helpers
+```@docs
+Library.isbusmodel
+Library.isinjectormodel
+Library.islinemodel
+Library.isbranchmodel
 ```
 
 ## Powerflow Tools
@@ -22,18 +42,25 @@ powerflow_model
 ```
 
 ## Initialization
+### Powerflow dependent constraints and formulas
 ```@docs
 PFInitConstraint
 @pfinitconstraint
 PFInitFormula
 @pfinitformula
 copy_pf_parameters
-add_pfinitconstraint!
+```
+
+### Metadata Accesors
+```@docs
 add_pfinitformula!
-set_pfinitconstraint!
 set_pfinitformula!
-has_pfinitconstraint
 has_pfinitformula
-get_pfinitconstraints
 get_pfinitformulas
+delete_pfinitformulas
+add_pfinitconstraint!
+set_pfinitconstraint!
+has_pfinitconstraint
+get_pfinitconstraints
+delete_pfinitconstraints
 ```
