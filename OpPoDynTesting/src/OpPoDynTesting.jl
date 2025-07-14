@@ -12,8 +12,8 @@ using ModelingToolkit: @named
 using Makie: Makie, lines, Figure, Axis, axislegend, lines!, Cycled
 using OrderedCollections: OrderedDict
 
-using OpPoDyn: OpPoDyn, Bus, Line
-using OpPoDyn.Library: DynawoPiLine, MTKLine, SlackDifferential
+using OpPoDyn: OpPoDyn, Bus, Line, MTKLine
+using OpPoDyn.Library: DynawoPiLine, SlackDifferential
 
 using JLD2: JLD2
 using Test: Test, @test, @test_broken

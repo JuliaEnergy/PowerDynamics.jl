@@ -9,20 +9,20 @@ Line
 
 ### Basic Component Modeling
 ```@docs
-Library.Terminal
-Library.BusBar
-Library.LineEnd
-Library.MTKBus
-Library.MTKLine
-Library.CompositeInjector
+Terminal
+BusBar
+LineEnd
+MTKBus
+MTKLine
+CompositeInjector
 ```
 
 ### Helpers
 ```@docs
-Library.isbusmodel
-Library.isinjectormodel
-Library.islinemodel
-Library.isbranchmodel
+isbusmodel
+isinjectormodel
+islinemodel
+isbranchmodel
 ```
 
 ## Powerflow Tools
@@ -39,6 +39,7 @@ solve_powerflow
 initialize_from_pf
 show_powerflow
 powerflow_model
+ispfmodel
 ```
 
 ## Initialization
@@ -57,10 +58,10 @@ add_pfinitformula!
 set_pfinitformula!
 has_pfinitformula
 get_pfinitformulas
-delete_pfinitformulas
+delete_pfinitformulas!
 add_pfinitconstraint!
 set_pfinitconstraint!
 has_pfinitconstraint
 get_pfinitconstraints
-delete_pfinitconstraints
+delete_pfinitconstraints!
 ```

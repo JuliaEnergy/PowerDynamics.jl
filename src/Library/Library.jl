@@ -1,52 +1,13 @@
 module Library
 
 using ArgCheck: @argcheck
-using ModelingToolkit: ModelingToolkit
-using ModelingToolkit: @connector, @mtkmodel, @variables, @parameters
-using ModelingToolkit: @named, @unpack, ODESystem, System, Equation, Num, unwrap
-using ModelingToolkit: connect, simplify, getname, unknowns, parameters, iscomplete, rename, defaults
-using ModelingToolkit: get_name, get_eqs, get_observed, get_ctrls, get_defaults, get_schedule,
-                       get_connector_type, get_gui_metadata, get_preface, get_initializesystem,
-                       get_continuous_events, get_discrete_events, get_parameter_dependencies, get_iv,
-                       get_discrete_subsystems, get_solved_unknowns, get_systems, get_tspan, get_guesses
-using ModelingToolkit: t_nounits as t, D_nounits as Dt
-using Symbolics: Symbolics, Symbolic, iscall, fixpoint_sub
+using ..OpPoDyn: Terminal, BusBase, Ibase
+using ModelingToolkit: ModelingToolkit, @named, @mtkmodel, @variables, @parameters, simplify,
+                       t_nounits as t, D_nounits as Dt
+using ModelingToolkit: @unpack, Equation, Num, System # needed for @mtkmodel?
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using NonlinearSolve: NonlinearProblem
 using SciMLBase: SciMLBase, solve
-
-export Terminal
-
-"""
-    Terminal
-
-A ModelingToolkit connector for electrical terminals in power system components.
-
-Represents an electrical connection point with complex voltage and current in dq coordinates.
-The terminal defines the interface between power system components like buses, lines, and machines.
-
-# Variables
-- `u_r(t)`: d-axis voltage component
-- `u_i(t)`: q-axis voltage component
-- `i_r(t)`: d-axis current component (flow variable)
-- `i_i(t)`: q-axis current component (flow variable)
-
-# Notes
-Current variables are defined as flow variables, meaning they sum to zero at connection points
-according to Kirchhoff's current law.
-
-See also: [`BusBar`](@ref), [`LineEnd`](@ref)
-"""
-@connector Terminal begin
-    u_r(t), [description="d-voltage"]
-    u_i(t), [description="q-voltage"]
-    i_r(t), [guess=0, description="d-current", connect=Flow]
-    i_i(t), [guess=0, description="q-current", connect=Flow]
-end
-
-Ibase(S, V) = S/V
-Zbase(S, V) = V^2/S
-Ybase(S, V) = S/V^2
 
 @mtkmodel SystemBase begin
     @parameters begin
@@ -58,13 +19,35 @@ Ybase(S, V) = S/V^2
    end
 end
 
-export BusBar, MTKBus, SlackAlgebraic, SlackDifferential, CompositeInjector
-include("Bus.jl")
+export SlackAlgebraic, SlackDifferential
 
-export LineEnd, MTKLine
-include("Lines.jl")
+@mtkmodel SlackAlgebraic begin
+    @components begin
+        busbar = BusBase()
+    end
+    @parameters begin
+        u_set_r=1, [description="bus d-voltage setpoint"]
+        u_set_i=0, [description="bus q-voltage setpoint"]
+    end
+    @equations begin
+        busbar.u_r ~ u_set_r
+        busbar.u_i ~ u_set_i
+    end
+end
 
-include("lib_utils.jl")
+@mtkmodel SlackDifferential begin
+    @parameters begin
+        u_init_r=1, [description="bus d-voltage initial value"]
+        u_init_i=0, [description="bus q-voltage initial value"]
+    end
+    @components begin
+        busbar = BusBase(;u_r=u_init_r, u_i=u_init_i)
+    end
+    @equations begin
+        Dt(busbar.u_r) ~ 0
+        Dt(busbar.u_i) ~ 0
+    end
+end
 
 ####
 #### Machine Models

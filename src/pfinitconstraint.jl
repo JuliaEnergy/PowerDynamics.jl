@@ -324,7 +324,7 @@ end
 
 Checks if the component has an initialization constraint which depends on the pf state in metadata.
 
-See also: [`get_pfinitconstraint`](@ref), [`set_pfinitconstraint!`](@ref).
+See also: [`get_pfinitconstraints`](@ref), [`set_pfinitconstraint!`](@ref).
 """
 has_pfinitconstraint(c::NetworkDynamics.ComponentModel) = has_metadata(c, :pfinitconstraint)
 has_pfinitconstraint(nw::Network, idx::NetworkDynamics.VCIndex) = has_pfinitconstraint(getcomp(nw, idx))
@@ -354,7 +354,7 @@ get_pfinitconstraints(nw::Network, idx::NetworkDynamics.ECIndex) = get_pfinitcon
 Sets initialization constraints which depend on the powerflow solution to the component.
 Accepts either a single `PFInitConstraint` or a tuple of `PFInitConstraint` objects.
 Overwrites any existing pf constraints.
-See also [`delete_pfinitconstraint!`](@ref), [`add_pfinitconstraint!`](@ref).
+See also [`delete_pfinitconstraints!`](@ref), [`add_pfinitconstraint!`](@ref).
 """
 function set_pfinitconstraint!(c::NetworkDynamics.ComponentModel, constraint::Union{PFInitConstraint, Tuple{Vararg{PFInitConstraint}}})
     set_metadata!(c, :pfinitconstraint, constraint)
@@ -371,7 +371,7 @@ If no constraints exist, this is equivalent to `set_pfinitconstraint!`.
 
 Returns `true` if the constraint was successfully added, `false` if it already exists.
 
-See also [`set_pfinitconstraint!`](@ref), [`delete_pfinitconstraint!`](@ref).
+See also [`set_pfinitconstraint!`](@ref), [`delete_pfinitconstraints!`](@ref).
 """
 function add_pfinitconstraint!(c::NetworkDynamics.ComponentModel, constraint::PFInitConstraint)
     if has_pfinitconstraint(c)
@@ -390,8 +390,8 @@ add_pfinitconstraint!(nw::Network, idx::NetworkDynamics.VCIndex, constraint) = a
 add_pfinitconstraint!(nw::Network, idx::NetworkDynamics.ECIndex, constraint) = add_pfinitconstraint!(getcomp(nw, idx), constraint)
 
 """
-    delete_pfinitconstraint!(c::NetworkDynamics.ComponentModel)
-    delete_pfinitconstraint!(nw::Network, idx::Union{VIndex,EIndex})
+    delete_pfinitconstraints!(c::NetworkDynamics.ComponentModel)
+    delete_pfinitconstraints!(nw::Network, idx::Union{VIndex,EIndex})
 
 Removes the powerflow dependent initialization constraint from the component model,
 or from a component referenced by `idx` in a network.
@@ -399,9 +399,9 @@ Returns `true` if the constraint existed and was removed, `false` otherwise.
 
 See also: [`set_pfinitconstraint!`](@ref).
 """
-delete_pfinitconstraint!(c::NetworkDynamics.ComponentModel) = delete_metadata!(c, :pfinitconstraint)
-delete_pfinitconstraint!(nw::Network, idx::NetworkDynamics.VCIndex) = delete_pfinitconstraint!(getcomp(nw, idx))
-delete_pfinitconstraint!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfinitconstraint!(getcomp(nw, idx))
+delete_pfinitconstraints!(c::NetworkDynamics.ComponentModel) = delete_metadata!(c, :pfinitconstraint)
+delete_pfinitconstraints!(nw::Network, idx::NetworkDynamics.VCIndex) = delete_pfinitconstraints!(getcomp(nw, idx))
+delete_pfinitconstraints!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfinitconstraints!(getcomp(nw, idx))
 
 ####
 #### Init formulas
@@ -413,7 +413,7 @@ delete_pfinitconstraint!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfi
 
 Checks if the component has an initialization formula which depends on the pf state in metadata.
 
-See also: [`get_pfinitformula`](@ref), [`set_pfinitformula!`](@ref).
+See also: [`get_pfinitformulas`](@ref), [`set_pfinitformula!`](@ref).
 """
 has_pfinitformula(c::NetworkDynamics.ComponentModel) = has_metadata(c, :pfinitformula)
 has_pfinitformula(nw::Network, idx::NetworkDynamics.VCIndex) = has_pfinitformula(getcomp(nw, idx))
@@ -443,7 +443,7 @@ get_pfinitformulas(nw::Network, idx::NetworkDynamics.ECIndex) = get_pfinitformul
 Sets initialization formulas which depend on the powerflow solution to the component.
 Accepts either a single `PFInitFormula` or a tuple of `PFInitFormula` objects.
 Overwrites any existing pf formulas.
-See also [`delete_pfinitformula!`](@ref), [`add_pfinitformula!`](@ref).
+See also [`delete_pfinitformulas!`](@ref), [`add_pfinitformula!`](@ref).
 """
 function set_pfinitformula!(c::NetworkDynamics.ComponentModel, formula::Union{PFInitFormula, Tuple{Vararg{PFInitFormula}}})
     set_metadata!(c, :pfinitformula, formula)
@@ -460,7 +460,7 @@ If no formulas exist, this is equivalent to `set_pfinitformula!`.
 
 Returns `true` if the formula was successfully added, `false` if it already exists.
 
-See also [`set_pfinitformula!`](@ref), [`delete_pfinitformula!`](@ref).
+See also [`set_pfinitformula!`](@ref), [`delete_pfinitformulas!`](@ref).
 """
 function add_pfinitformula!(c::NetworkDynamics.ComponentModel, formula::PFInitFormula)
     if has_pfinitformula(c)
@@ -479,8 +479,8 @@ add_pfinitformula!(nw::Network, idx::NetworkDynamics.VCIndex, formula) = add_pfi
 add_pfinitformula!(nw::Network, idx::NetworkDynamics.ECIndex, formula) = add_pfinitformula!(getcomp(nw, idx), formula)
 
 """
-    delete_pfinitformula!(c::NetworkDynamics.ComponentModel)
-    delete_pfinitformula!(nw::Network, idx::Union{VIndex,EIndex})
+    delete_pfinitformulas!(c::NetworkDynamics.ComponentModel)
+    delete_pfinitformulas!(nw::Network, idx::Union{VIndex,EIndex})
 
 Removes the powerflow dependent initialization formula from the component model,
 or from a component referenced by `idx` in a network.
@@ -488,9 +488,9 @@ Returns `true` if the formula existed and was removed, `false` otherwise.
 
 See also: [`set_pfinitformula!`](@ref).
 """
-delete_pfinitformula!(c::NetworkDynamics.ComponentModel) = delete_metadata!(c, :pfinitformula)
-delete_pfinitformula!(nw::Network, idx::NetworkDynamics.VCIndex) = delete_pfinitformula!(getcomp(nw, idx))
-delete_pfinitformula!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfinitformula!(getcomp(nw, idx))
+delete_pfinitformulas!(c::NetworkDynamics.ComponentModel) = delete_metadata!(c, :pfinitformula)
+delete_pfinitformulas!(nw::Network, idx::NetworkDynamics.VCIndex) = delete_pfinitformulas!(getcomp(nw, idx))
+delete_pfinitformulas!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfinitformulas!(getcomp(nw, idx))
 
 """
     copy_pf_parameters(cm::ComponentModel) -> PFInitFormula

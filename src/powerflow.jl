@@ -147,7 +147,7 @@ Uses [`find_fixpoint`](@extref) from NetworkDynamics to solve the algebraic powe
 ## Returns
 - A `NWState` containing the solved power flow solution
 
-See also [`intitialize_from_pf`](@ref).
+See also [`initialize_from_pf`](@ref).
 """
 function solve_powerflow(
     nw::Network;

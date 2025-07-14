@@ -1,6 +1,6 @@
 using OpPoDyn
 using OpPoDyn.Library
-using OpPoDyn.Library: pin_parameters
+using OpPoDyn: pin_parameters
 using ModelingToolkit
 using ModelingToolkit: t_nounits as t, D_nounits as Dt
 using ModelingToolkit: get_name
