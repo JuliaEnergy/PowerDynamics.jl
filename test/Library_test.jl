@@ -13,6 +13,8 @@ using DiffEqCallbacks
 using CairoMakie
 using Test
 
+@info "Start Library tests"
+
 @testset "DynawoPiLine" begin
     @named branchA = DynawoPiLine(XPu=0.022522)
     @named branchB = DynawoPiLine(XPu=0.04189)

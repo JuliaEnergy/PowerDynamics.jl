@@ -16,6 +16,7 @@ using OpPoDynTesting
 
 @testset "OpPoDyn.jl Tests" begin
     @testset "Package Quality Tests" begin
+        @info "Begin Package quatlity tests"
         Aqua.test_all(OpPoDyn;
             ambiguities=false,
             persistent_tasks=false)

@@ -3,6 +3,8 @@ using NetworkDynamics
 using OpPoDyn: @capture, postwalk
 using Graphs
 
+@info "Start Initialization tests"
+
 @testset "Initialization constraint construction" begin
     ic1 = @pfinitconstraint :x + :y + @pf(:z)
     ic2 = PFInitConstraint([:x, :y], [:z], 1) do out, u, pfu
