@@ -1,0 +1,5 @@
+[deps]
+MarinePowerDynamics = "6a160989-bfe5-4b1a-b51b-7a8c491e4d37"
+OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+TimerOutputs = "a759f4b9-e2f1-59dc-863e-4aeb61b1ea8f"

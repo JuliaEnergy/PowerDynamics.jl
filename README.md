@@ -55,3 +55,17 @@ MarinePowerDynamics.jl introduces the **LinearPTO node**, supporting dynamic cou
   - Adjusted macro logic to pass simulation time (`t`) explicitly into node dynamics.
 
 ---
+### Installation Issues
+
+If you're attemping to add this package to an existing Julia environment and encounter issues, try the following:
+
+```julia
+
+using Pkg
+Pkg.activate(".") # from root directory of your environment or project
+Pkg.develop(path="MarinePowerDynamics.jl") # may need to update this path based on your local setup
+Pkg.add(PackageSpec(name="TimerOutputs", version="0.5.24")) # known dependency issue
+Pkg.instantiate()
+Pkg.precompile()
+
+```

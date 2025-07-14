@@ -55,18 +55,10 @@ function simulate(p::ChangeInitialConditions, powergrid, x0::State, timespan; so
 end
 
 
-
 function solve(pg::PowerGrid, x0, timespan; solve_kwargs...)
     problem = ODEProblem{iipfunc}(rhs(pg),x0.vec,timespan)
-    function velocityCondition(u, t, integrator)
-        return true  # This condition should be set based on your requirement
-    end
-    
 
-    cb1 = DiscreteCallback(velocityCondition)
-    #println("modified solve here")
-    #solution = solve(problem, Rodas4(); solve_kwargs...)
-    solution = solve(problem, Rodas4(); callback = CallbackSet(cb1), solve_kwargs...)
+    solution = solve(problem, Rodas4(); solve_kwargs...)
     PowerGridSolution(solution, pg)
 end
 
