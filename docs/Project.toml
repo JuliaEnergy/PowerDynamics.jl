@@ -23,7 +23,7 @@ OpPoDynTesting = {path = "../OpPoDynTesting"}
 
 [compat]
 CSV = "0.10.15"
-CairoMakie = "0.13.6"
+CairoMakie = "0.15"
 DataFrames = "≥0.0.1"
 DiffEqCallbacks = "≥0.0.1"
 Documenter = "1.11.4"

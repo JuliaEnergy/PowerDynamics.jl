@@ -10,8 +10,10 @@ using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkit: ModelingToolkit as MTK
 using OrderedCollections
 using DiffEqCallbacks
-isinteractive() && using GLMakie
+using CairoMakie
 using Test
+
+@info "Start Library tests"
 
 @testset "DynawoPiLine" begin
     @named branchA = DynawoPiLine(XPu=0.022522)
@@ -102,7 +104,6 @@ end
         end
     end
     @named genbus = GenBus()
-    # genbus = pin_parameters(genbus)
     genf = Bus(genbus; verbose=false)
 
     @named slack = SlackDifferential(u_init_r=0.90081)

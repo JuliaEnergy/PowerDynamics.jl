@@ -1,8 +1,11 @@
 using OpPoDyn
 using OpPoDyn.Library
+using OpPoDyn: pin_parameters
 using ModelingToolkit
 using ModelingToolkit: t_nounits as t, D_nounits as Dt
 using ModelingToolkit: get_name
+
+@info "Start Utils tests"
 
 @testset "test @attach_metadata!" begin
     @mtkmodel MyModel begin

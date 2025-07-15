@@ -42,10 +42,6 @@ julia> pwd() # make sure you're in the right folder
 ```@index
 ```
 
-```@autodocs
-Modules = [OpPoDyn]
-```
-
 ## Funding
 Development of this project was in part funded by the *German Federal Ministry for Economic Affairs and Climate Action* as part of the *OpPoDyn*-Project (Project ID 01258425/1, 2024-2027).
 

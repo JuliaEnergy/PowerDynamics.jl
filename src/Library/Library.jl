@@ -1,27 +1,13 @@
 module Library
 
 using ArgCheck: @argcheck
-using ModelingToolkit: ModelingToolkit
-using ModelingToolkit: @connector, @mtkmodel, @variables, @parameters
-using ModelingToolkit: @named, @unpack, ODESystem, System, Equation, Num, unwrap
-using ModelingToolkit: connect, simplify, getname, unknowns, parameters, iscomplete, rename, defaults
-using ModelingToolkit: get_name, get_eqs, get_observed, get_ctrls, get_defaults, get_schedule,
-                       get_connector_type, get_gui_metadata, get_preface, get_initializesystem,
-                       get_continuous_events, get_discrete_events, get_parameter_dependencies, get_iv,
-                       get_discrete_subsystems, get_solved_unknowns, get_systems, get_tspan, get_guesses
-using ModelingToolkit: t_nounits as t, D_nounits as Dt
-using Symbolics: Symbolics, Symbolic, iscall, fixpoint_sub
+using ..OpPoDyn: Terminal, BusBase, Ibase
+using ModelingToolkit: ModelingToolkit, @named, @mtkmodel, @variables, @parameters, simplify,
+                       t_nounits as t, D_nounits as Dt
+using ModelingToolkit: @unpack, Equation, Num, System # needed for @mtkmodel?
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using NonlinearSolve: NonlinearProblem
 using SciMLBase: SciMLBase, solve
-
-export Terminal
-@connector Terminal begin
-    u_r(t), [description="d-voltage"]
-    u_i(t), [description="q-voltage"]
-    i_r(t), [guess=0, description="d-current", connect=Flow]
-    i_i(t), [guess=0, description="q-current", connect=Flow]
-end
 
 @mtkmodel SystemBase begin
     @parameters begin
@@ -33,31 +19,35 @@ end
    end
 end
 
-@mtkmodel PUBase begin
+export SlackAlgebraic, SlackDifferential
+
+@mtkmodel SlackAlgebraic begin
+    @components begin
+        busbar = BusBase()
+    end
     @parameters begin
-        S, [description="Base power in MVA"]
-        V, [description="Base voltage in kV"]
-        ω, [description="System angular frequency in rad/s"]
-        I=S/V, [description="Base current in kA"]
-        Z=V^2/S, [description="Base impedance in Ω"]
-        Y=S/V^2, [description="Base admittance in S"]
+        u_set_r=1, [description="bus d-voltage setpoint"]
+        u_set_i=0, [description="bus q-voltage setpoint"]
+    end
+    @equations begin
+        busbar.u_r ~ u_set_r
+        busbar.u_i ~ u_set_i
     end
 end
-Ibase(S, V) = S/V
-Zbase(S, V) = V^2/S
-Ybase(S, V) = S/V^2
 
-export BusBar, MTKBus, SlackAlgebraic, SlackDifferential, CompositeInjector
-include("Bus.jl")
-
-export LineEnd, MTKLine
-include("Lines.jl")
-
-export iscomponentmodel, isbusmodel, isbranchmodel, islinemodel
-include("Interfaces.jl")
-
-export pin_parameters
-include("lib_utils.jl")
+@mtkmodel SlackDifferential begin
+    @parameters begin
+        u_init_r=1, [description="bus d-voltage initial value"]
+        u_init_i=0, [description="bus q-voltage initial value"]
+    end
+    @components begin
+        busbar = BusBase(;u_r=u_init_r, u_i=u_init_i)
+    end
+    @equations begin
+        Dt(busbar.u_r) ~ 0
+        Dt(busbar.u_i) ~ 0
+    end
+end
 
 ####
 #### Machine Models

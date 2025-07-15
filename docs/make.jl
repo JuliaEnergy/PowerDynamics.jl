@@ -1,4 +1,5 @@
 using OpPoDyn
+using OpPoDyn.Library
 using Documenter
 using Literate
 using DocumenterInterLinks
@@ -20,9 +21,8 @@ for example in filter(contains(r".jl$"), readdir(example_dir, join=true))
     Literate.script(example, outdir; keep_comments=true)
 end
 
-
 kwargs = (;
-    modules=[OpPoDyn],
+    modules=[OpPoDyn, OpPoDyn.Library],
     authors="Hans Würfel <git@wuerfel.io> and contributors",
     sitename="OpPoDyn.jl",
     linkcheck=true,
@@ -36,6 +36,8 @@ kwargs = (;
     pages=[
         "Home" => "index.md",
         "Modeling Concepts" => "ModelingConcepts.md",
+        "Initialization" => "initialization.md",
+        "API.md",
         "Examples" => [
             "generated/ieee9bus.md",]
     ],

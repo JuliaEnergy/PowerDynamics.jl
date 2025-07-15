@@ -21,35 +21,34 @@ The 3 generator buses are modeld using a SauerPai 6th order machine model with
 variable field voltage and mechanical torque input.
 The field voltage is provided by an `AVRTypeI`, the torque is provide by a `TGOV1` model.
 =#
-@mtkmodel GenBus begin
-    @components begin
-        machine = SauerPaiMachine(;
-            vf_input=true,
-            τ_m_input=true,
-            S_b=100,
-            V_b=1,
-            ω_b=2π*60,
-            R_s=0.000125,
-            T″_d0=0.01,
-            T″_q0=0.01,
-            X_d, X′_d, X″_d, X_q, X′_q, X″_q, X_ls, T′_d0, T′_q0, H # free per machine parameter
-        )
-        avr = AVRTypeI(vr_min=-5, vr_max=5,
-            Ka=20, Ta=0.2,
-            Kf=0.063, Tf=0.35,
-            Ke=1, Te=0.314,
-            E1=3.3, Se1=0.6602, E2=4.5, Se2=4.2662,
-            tmeas_lag=false)
-        gov = TGOV1(R=0.05, T1=0.05, T2=2.1, T3=7.0, DT=0, V_max=5, V_min=-5)
-        busbar = BusBar()
-    end
-    @equations begin
-        connect(machine.terminal, busbar.terminal)
-        connect(machine.v_mag_out, avr.v_mag)
-        connect(avr.vf, machine.vf_in)
-        connect(gov.τ_m, machine.τ_m_in)
-        connect(machine.ωout, gov.ω_meas)
-    end
+function GeneratorBus(; machine_p=(;), avr_p=(;), gov_p=(;))
+    @named machine = SauerPaiMachine(;
+        vf_input=true,
+        τ_m_input=true,
+        S_b=100,
+        V_b=1,
+        ω_b=2π*60,
+        R_s=0.000125,
+        T″_d0=0.01,
+        T″_q0=0.01,
+        machine_p... # unpack machine parameters
+    )
+    @named avr = AVRTypeI(; vr_min=-5, vr_max=5,
+        Ka=20, Ta=0.2,
+        Kf=0.063, Tf=0.35,
+        Ke=1, Te=0.314,
+        E1=3.3, Se1=0.6602, E2=4.5, Se2=4.2662,
+        tmeas_lag=false,
+        avr_p... # unpack AVR parameters
+    )
+    @named gov = TGOV1(; R=0.05, T1=0.05, T2=2.1, T3=7.0, DT=0, V_max=5, V_min=-5,
+        gov_p... # unpack governor parameters
+    )
+    ## generate the "injector" as combination of multiple components
+    injector = CompositeInjector(machine, avr, gov; name=:generator)
+
+    ## generate the MTKBus (i.e. the MTK model containg the busbar and the injector)
+    mtkbus = MTKBus(injector)
 end
 nothing # hide
 
@@ -58,17 +57,14 @@ nothing # hide
 ## Load Busses
 
 The dynamic loads are modeld as static Y-loads. Those have 3 parameters: `Pset`, `Qset` and `Vset`.
+For now, those parameters will be left free. We'll initialize them later on from the powerflow results.
+
 The `Vset` parameter is left free for now. Later on it is automaticially determined to match the
 behavior of the static power flow load model.
 =#
-@mtkmodel LoadBus begin
-    @components begin
-        busbar = BusBar()
-        load = ConstantYLoad(Pset, Qset)
-    end
-    @equations begin
-        connect(load.terminal, busbar.terminal)
-    end
+function ConstantYLoadBus()
+    @named load = ConstantYLoad()
+    MTKBus(load; name=:loadbus)
 end
 nothing #hide
 
@@ -78,23 +74,23 @@ nothing #hide
 
 The parameters of the machines are obtaind from the data table from the RTDS datasheet.
 =#
-gen1p = (;machine__X_ls=0.01460, machine__X_d=0.1460, machine__X′_d=0.0608, machine__X″_d=0.06, machine__X_q=0.1000, machine__X′_q=0.0969, machine__X″_q=0.06, machine__T′_d0=8.96, machine__T′_q0=0.310, machine__H=23.64)
-gen2p = (;machine__X_ls=0.08958, machine__X_d=0.8958, machine__X′_d=0.1198, machine__X″_d=0.11, machine__X_q=0.8645, machine__X′_q=0.1969, machine__X″_q=0.11, machine__T′_d0=6.00, machine__T′_q0=0.535, machine__H= 6.40)
-gen3p = (;machine__X_ls=0.13125, machine__X_d=1.3125, machine__X′_d=0.1813, machine__X″_d=0.18, machine__X_q=1.2578, machine__X′_q=0.2500, machine__X″_q=0.18, machine__T′_d0=5.89, machine__T′_q0=0.600, machine__H= 3.01)
+gen1p = (;X_ls=0.01460, X_d=0.1460, X′_d=0.0608, X″_d=0.06, X_q=0.1000, X′_q=0.0969, X″_q=0.06, T′_d0=8.96, T′_q0=0.310, H=23.64)
+gen2p = (;X_ls=0.08958, X_d=0.8958, X′_d=0.1198, X″_d=0.11, X_q=0.8645, X′_q=0.1969, X″_q=0.11, T′_d0=6.00, T′_q0=0.535, H= 6.40)
+gen3p = (;X_ls=0.13125, X_d=1.3125, X′_d=0.1813, X″_d=0.18, X_q=1.2578, X′_q=0.2500, X″_q=0.18, T′_d0=5.89, T′_q0=0.600, H= 3.01)
 nothing #hide
 
 #=
 We instantiate all models as modeling toolkit models.
 =#
-@named mtkbus1 = GenBus(; gen1p...)
-@named mtkbus2 = GenBus(; gen2p...)
-@named mtkbus3 = GenBus(; gen3p...)
-@named mtkbus4 = MTKBus()
-@named mtkbus5 = LoadBus(;load__Pset=-1.25, load__Qset=-0.5)
-@named mtkbus6 = LoadBus(;load__Pset=-0.90, load__Qset=-0.3)
-@named mtkbus7 = MTKBus()
-@named mtkbus8 = LoadBus(;load__Pset=-1.0, load__Qset=-0.35)
-@named mtkbus9 = MTKBus()
+mtkbus1 = GeneratorBus(; machine_p=gen1p)
+mtkbus2 = GeneratorBus(; machine_p=gen2p)
+mtkbus3 = GeneratorBus(; machine_p=gen3p)
+mtkbus4 = MTKBus() # <- bus with no injectors, essentially
+mtkbus5 = ConstantYLoadBus()
+mtkbus6 = ConstantYLoadBus()
+mtkbus7 = MTKBus()
+mtkbus8 = ConstantYLoadBus()
+mtkbus9 = MTKBus()
 nothing #hide
 
 #=
@@ -118,6 +114,18 @@ The loads are modeled as PQ buses.
 @named bus8 = Bus(mtkbus8; vidx=8, pf=pfPQ(P=-1.0, Q=-0.35))
 @named bus9 = Bus(mtkbus9; vidx=9)
 nothing #hide
+
+#=
+Later on in initialization, we want to ensure that the internal parameters
+of the loads are initialized to match the powerflow results.
+We have 3 free parameters: `Vset`, `Pset` and `Qset`.
+To help the initialization, we can provide a [`InitFormula`](@extref NetworkDynamics.InitFormula)
+to set the `Vset` parameter to the voltage magnitude of the bus.
+=#
+vset_formula = @initformula :load₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
+add_initformula!(bus5, vset_formula)
+add_initformula!(bus6, vset_formula)
+add_initformula!(bus8, vset_formula)
 
 #=
 ## Branches
@@ -157,37 +165,34 @@ Finally, we can build the network by providing the vertices and edges.
 =#
 vertexfs = [bus1, bus2, bus3, bus4, bus5, bus6, bus7, bus8, bus9];
 edgefs = [l45, l46, l57, l69, l78, l89, t14, t27, t39];
-nw = Network(vertexfs, edgefs)
+nw = Network(vertexfs, edgefs; warn_order=false)
 
 #=
-## Powerflow
+## System Initialization
 
-To initialize the system, we first solve the static powerflow problem.
-Internally, `OpPoDyn.jl` builds an equivalent network but replaces each dynamic model
-with the given static power flow model.
-The static powerflow problem is solved, after which the power flow solution (bus voltages
-and currents) are stored as `default` values in the vertex models.
+To initialize the system for dynamic simulation, we use `initialize_from_pf!` which 
+performs a unified powerflow solving and component initialization process.
+
+Internally, this function:
+1. Builds an equivalent static powerflow network from the dynamic models
+2. Solves the static powerflow equations using the specified powerflow models (pfSlack, pfPV, pfPQ)
+3. Uses the powerflow solution to initialize all dynamic component states and parameters
+
+This ensures that the dynamic model starts from a steady-state condition that matches
+the powerflow solution. Specifically, it determines:
+- Bus voltages and currents from the powerflow solution
+- Unknown `Vset` parameters for load buses
+- Internal machine states (flux linkages, rotor angles, etc.)
+- Controller states and references for AVRs and governors
 =#
-solve_powerflow!(nw)
+u0 = initialize_from_pf(nw);
 nothing #hide
 
 #=
-## Component initialization
-
-The power flow solution provided all the "interface states" (i.e. voltages and currents).
-With that information, we can initialize the free states and parameters of the dynamic models,
-such that the dynamic steady state matches the static power flow solution.
-
-When calling `initialize!`,  `OpPoDyn.jl` will loop through all the dynamic models
-in the system, automaticially creating and solving a nonlinear initialization problem for each of them.
-
-Concretly, here were solving for the following things:
-- unknown `Vset` for load busses,
-- unknown internal machine and controller states as well as the free govenor and
-  avr references (parameters) of the generator busses.
+We could check the initial state of some of the variables, we expect the model to be initialized in
+a way, that the setpoint of the constant Y-loads matches the powerfow constraints.
 =#
-OpPoDyn.initialize!(nw)
-nothing #hide
+u0[VIndex(5, :load₊Pset)] ≈ -1.25 && u0[VIndex(5, :load₊Qset)] ≈ -0.5
 
 #=
 ## Disturbance
@@ -205,32 +210,43 @@ set_callback!(l46, cb)
 nothing # hide
 
 #=
-## Build Network
+## Dynamic Simulation
 
-Finally, we can build the network by providing the vertices and edges.
+With the system properly initialized, we can now set up and run the dynamic simulation.
+We create an ODE problem using the initialized state and simulate the system response
+to the line outage disturbance.
 =#
-u0 = NWState(nw)
 prob = ODEProblem(nw, uflat(u0), (0,15), pflat(u0); callback=get_callbacks(nw))
 sol = solve(prob, Rodas5P())
 nothing
 
 #=
 ## Plotting the Solution
+
+Finally, we visualize the simulation results showing the system response to the 
+line outage at t=1.0 seconds. The plots show active power, voltage magnitudes,
+and generator frequencies across the simulation time.
 =#
 fig = Figure(size=(600,800));
-ax = Axis(fig[1, 1]; title="Active power")
+
+## Active power at selected buses
+ax = Axis(fig[1, 1]; title="Active Power", xlabel="Time [s]", ylabel="Power [pu]")
 for i in [1,2,3,5,6,8]
     lines!(ax, sol; idxs=VIndex(i,:busbar₊P), label="Bus $i", color=Cycled(i))
 end
 axislegend(ax)
-ax = Axis(fig[2, 1]; title="Voltage magnitude")
+
+## Voltage magnitude at all buses
+ax = Axis(fig[2, 1]; title="Voltage Magnitude", xlabel="Time [s]", ylabel="Voltage [pu]")
 for i in 1:9
     lines!(ax, sol; idxs=VIndex(i,:busbar₊u_mag), label="Bus $i", color=Cycled(i))
 end
-axislegend(ax)
-ax = Axis(fig[3, 1]; title="Frequency")
+
+## Generator frequencies
+ax = Axis(fig[3, 1]; title="Generator Frequency", xlabel="Time [s]", ylabel="Frequency [pu]")
 for i in 1:3
-    lines!(ax, sol; idxs=VIndex(i,:machine₊ω), label="Bus $i", color=Cycled(i))
+    lines!(ax, sol; idxs=VIndex(i,:generator₊machine₊ω), label="Gen $i", color=Cycled(i))
 end
 axislegend(ax)
+
 fig #hide
