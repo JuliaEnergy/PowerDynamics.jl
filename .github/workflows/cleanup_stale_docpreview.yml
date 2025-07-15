@@ -80,7 +80,8 @@ jobs:
             git config user.email "documenter@juliadocs.github.io"
             git commit -m "delete previews"
             git branch gh-pages-new $(echo "delete history" | git commit-tree HEAD^{tree})
-            # git push --force origin gh-pages-new:gh-pages
+            echo "Force push changes to upstream repo"
+            git push --force origin gh-pages-new:gh-pages
           else
             echo "No previews to clean up"
           fi
