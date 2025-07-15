@@ -61,8 +61,7 @@ jobs:
                   echo "Delete $preview_dir (PR #$pr_number is $pr_state)"
                   deleted_previews="$deleted_previews $preview_dir"
 
-                  # Uncomment these lines to actually delete:
-                  # git rm -rf "$preview_dir"
+                  git rm -rf "$preview_dir"
                 else
                   echo "Keeping $preview_dir (PR #$pr_number is open)"
                 fi
@@ -77,11 +76,10 @@ jobs:
           if [ -n "$deleted_previews" ]; then
             echo "Clean up history for:$deleted_previews"
 
-            # Uncomment these lines to actually commit and clean history:
-            # git config user.name "Documenter.jl"
-            # git config user.email "documenter@juliadocs.github.io"
-            # git commit -m "delete previews"
-            # git branch gh-pages-new $(echo "delete history" | git commit-tree HEAD^{tree})
+            git config user.name "Documenter.jl"
+            git config user.email "documenter@juliadocs.github.io"
+            git commit -m "delete previews"
+            git branch gh-pages-new $(echo "delete history" | git commit-tree HEAD^{tree})
             # git push --force origin gh-pages-new:gh-pages
           else
             echo "No previews to clean up"
