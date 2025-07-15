@@ -51,7 +51,8 @@ Check if an ODESystem satisfies the bus model interface.
 
 A bus model must contain a component named `:busbar` that satisfies the busbar
 interface. Bus models represent the complete dynamics of a power system bus and
-can be transformed into a [`VertexModel`](@extref) using [`Bus`](@ref).
+can be transformed into a [`VertexModel`](@extref NetworkDynamics.VertexModel-Tuple{})
+using [`Bus`](@ref).
 
 ```
 ┌───────────────────────────┐
@@ -97,7 +98,7 @@ Check if an ODESystem satisfies the line model interface.
 
 A line model must contain two components named `:src` and `:dst` that both
 satisfy the line end interface. Line models represent transmission lines and can
-be transformed into an [`EdgeModel`](@extref) using [`Line`](@ref).
+be transformed into an [`EdgeModel`](@extref NetworkDynamics.EdgeModel-Tuple{}) using [`Line`](@ref).
 
 ```
 ┌──────────────────────────────────────┐

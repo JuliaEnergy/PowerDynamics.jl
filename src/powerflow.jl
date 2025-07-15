@@ -136,7 +136,7 @@ end
 
 Solve the power flow equations for a given network.
 
-Uses [`find_fixpoint`](@extref) from NetworkDynamics to solve the algebraic power flow equations.
+Uses [`find_fixpoint`](@extref NetworkDynamics.find_fixpoint) from NetworkDynamics to solve the algebraic power flow equations.
 
 ## Parameters
 - `nw`: The dynamic network model
@@ -199,7 +199,7 @@ state again, as it is stored in the metadata.
 ## Returns
 - A fully initialized network state
 
-See also: [`solve_powerflow`](@ref), [`initialize_componentwise`](@extref), [`interface_values`](@extref)
+See also: [`solve_powerflow`](@ref), [`initialize_componentwise`](@extref NetworkDynamics.initialize_componentwise), [`interface_values`](@extref NetworkDynamics.interface_values)
 """
 @doc initialize_from_pf_docstring
 initialize_from_pf(nw; kw...) = _init_from_pf(initialize_componentwise, nw; kw...)

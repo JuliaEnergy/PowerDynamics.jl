@@ -14,7 +14,7 @@ Create a VertexModel from an ODESystem that satisfies the bus model interface.
 - `kwargs...`: Additional keyword arguments passed to the Bus constructor
 
 # Returns
-- A [`VertexModel`](@extref) representing the bus
+- A [`VertexModel`](@extref NetworkDynamics.VertexModel-Tuple{}) representing the bus
 
 ```
 
@@ -99,7 +99,7 @@ Create an EdgeModel from an ODESystem that satisfies the line model interface.
 - `kwargs...`: Additional keyword arguments passed to the Line constructor
 
 # Returns
-- An [`EdgeModel`](@extref) representing the line
+- An [`EdgeModel`](@extref NetworkDynamics.EdgeModel-Tuple{}) representing the line
 
 
 ```

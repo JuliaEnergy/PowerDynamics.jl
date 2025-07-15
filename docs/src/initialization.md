@@ -2,7 +2,7 @@
 
 Initialization of power grid simulations requires a multi-step approach that combines steady-state power flow analysis with dynamic component initialization. OpPoDyn.jl provides a structured framework for this process, building on the initialization capabilities of NetworkDynamics.jl.
 
-For general background on NetworkDynamics initialization concepts, see the [NetworkDynamics Initialization Guide](@extref NetworkDynamics.Initialization).
+For general background on NetworkDynamics initialization concepts, see the [NetworkDynamics Initialization Guide](@extref Initialization).
 
 ## Overview
 
@@ -14,7 +14,7 @@ This is typically achieved through a two-step process:
 1. Solve the power flow problem to determine steady-state electrical conditions
 2. Initialize dynamic components using the power flow solution as boundary conditions
 
-This follows the [Two-Step Initialization Pattern](@extref NetworkDynamics.Component-wise-Network-Initialization) described in NetworkDynamics.jl, specialized for power grid applications.
+This follows the [Two-Step Initialization Pattern](@extref Component-wise-Network-Initialization) described in NetworkDynamics.jl, specialized for power grid applications.
 
 ## Multi-Step Initialization Process
 
@@ -56,7 +56,7 @@ If the `:pfmodel` is **not** set, it assumes that the same model is used for bot
 
 ### Step 2: Power Flow Solution
 
-The power flow problem is solved using NetworkDynamics.jl's [`find_fixpoint`](@extref) function,
+The power flow problem is solved using NetworkDynamics.jl's [`find_fixpoint`](@extref NetworkDynamics.find_fixpoint) function,
 which internally uses NonlinearSolve.jl:
 
 ```julia
@@ -86,16 +86,16 @@ Finally, each dynamic component is initialized individually using the power flow
 initialize_componentwise!(nw; default_overrides = interf)
 ```
 
-This step leverages NetworkDynamics.jl's [component-wise initialization](@extref NetworkDynamics.Component-wise-Network-Initialization) to determine free internal states and parameters (such as rotor angles or controller setpoints), such that the
+This step leverages NetworkDynamics.jl's [component-wise initialization](@extref Component-wise-Network-Initialization) to determine free internal states and parameters (such as rotor angles or controller setpoints), such that the
 **steady state** of the overall network matches the flows from the power flow solution (i.e. all currents and voltages match).
 
-For details on how component initialization works, see the [Single Component Initialization](@extref NetworkDynamics.Single-Component-Initialization) section in NetworkDynamics.jl.
+For details on how component initialization works, see the [Single Component Initialization](@extref Single-Component-Initialization) section in NetworkDynamics.jl.
 
 ## Advanced Component Initialization
 
 In some cases, the standard initialization process may not be sufficient. For example, when component initialization constraints cannot be expressed solely in terms of **interface variables** (voltages and currents), but need access to other variables from the complete power flow solution.
 
-NetworkDynamics.jl provides general [InitFormulas and InitConstraints](@extref NetworkDynamics.Advanced-Component-Initialization:-Formulas-and-Constraints) for advanced component initialization. OpPoDyn.jl extends these concepts with power flow-aware variants that can access the complete power flow solution.
+NetworkDynamics.jl provides general [InitFormulas and InitConstraints](@extref  Advanced-Component-Initialization:-Formulas-and-Constraints) for advanced component initialization. OpPoDyn.jl extends these concepts with power flow-aware variants that can access the complete power flow solution.
 
 ### PFInitConstraints vs PFInitFormulas
 
@@ -108,11 +108,11 @@ Both methods can access any variable from the solved power flow state, not just 
 
 **Key difference**: Constraints **increase the number of equations** that must be satisfied during initialization, while formulas **reduce the number of free variables** by setting additional default values.
 
-These are power flow-aware extensions of NetworkDynamics.jl's standard [`InitConstraint`](@extref) and [`InitFormula`](@extref) mechanisms.
+These are power flow-aware extensions of NetworkDynamics.jl's standard [`InitConstraint`](@extref NetworkDynamics.InitConstraint) and [`InitFormula`](@extref NetworkDynamics.InitFormula) mechanisms.
 
 ### Power Flow Dependent Initialization Constraints
 
-[`PFInitConstraint`](@ref) adds constraint equations to the initialization problem. Unlike regular [`InitConstraint`](@extref)s from NetworkDynamics.jl, PFInitConstraints can access power flow variables.
+[`PFInitConstraint`](@ref) adds constraint equations to the initialization problem. Unlike regular [`InitConstraint`](@extref NetworkDynamics.InitConstraint)s from NetworkDynamics.jl, PFInitConstraints can access power flow variables.
 
 The [`@pfinitconstraint`](@ref) macro provides convenient syntax for defining these constraints:
 
@@ -164,7 +164,7 @@ Both PFInitConstraints and PFInitFormulas are automatically handled during [`ini
 
 This process is transparent to the user - simply define your power flow dependent initialization methods and use `initialize_from_pf[!]` as usual.
 
-The underlying mechanism follows NetworkDynamics.jl's [component initialization pipeline](@extref NetworkDynamics.Single-Component-Initialization), with the power flow solution providing additional context for constraint and formula evaluation.
+The underlying mechanism follows NetworkDynamics.jl's [component initialization pipeline](@extref Single-Component-Initialization), with the power flow solution providing additional context for constraint and formula evaluation.
 
 The extended initializaion workflow (automaticially done in `initialize_from_pf[!]`) looks like this:
 
