@@ -1,14 +1,9 @@
 module OpPoDyn
 
-using NetworkDynamics: NetworkDynamics, VertexModel, EdgeModel,
-                       has_default, set_default!, get_default,
-                       has_init, get_init, has_guess, get_guess,
-                       has_graphelement, set_graphelement!, get_graphelement, Network,
-                       has_metadata, get_metadata, set_metadata!, NWState, uflat, pflat,
-                       initialize_componentwise, initialize_componentwise!, interface_values,
-                       find_fixpoint, vidxs, extract_nw, SymbolicView,
-                       VIndex, EIndex, InitFormula, InitConstraint,
-                       sym, psym
+using Reexport: Reexport, @reexport
+@reexport using NetworkDynamics
+using NetworkDynamics: SymbolicView
+
 using SciMLBase: SciMLBase, solve
 using NonlinearSolve: NonlinearSolve, NonlinearProblem
 using ForwardDiff: ForwardDiff

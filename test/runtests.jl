@@ -22,13 +22,14 @@ using OpPoDynTesting
             persistent_tasks=false)
         @test_broken isempty(Docs.undocumented_names(OpPoDyn))
 
-        @test check_no_implicit_imports(OpPoDyn) === nothing
+        @test check_no_implicit_imports(OpPoDyn; skip=(Base, Core, NetworkDynamics)) === nothing
+        # mtkmodel macro depends on some symbols
         @test_broken check_no_stale_explicit_imports(OpPoDyn) === nothing
 
         path = joinpath(pkgdir(OpPoDyn),"src","Library","Library.jl")
         @test check_no_implicit_imports(OpPoDyn.Library, path) === nothing
+        # mtkmodel macro depends on some symbols
         @test_broken check_no_stale_explicit_imports(OpPoDyn.Library, path) === nothing
-
 
         # check the testing subpackage
         Aqua.test_all(OpPoDynTesting;
