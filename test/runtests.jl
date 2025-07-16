@@ -43,6 +43,7 @@ using OpPoDynTesting
 
     @safetestset "Library tests" begin include("Library_test.jl") end
     @safetestset "utils tests" begin include("utils_test.jl") end
+    @safetestset "modeling_tools tests" begin include("modeling_tools_test.jl") end
     @safetestset "initialization tests" begin include("initialization_test.jl") end
 
     @testset "validation tests" begin

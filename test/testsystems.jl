@@ -58,7 +58,7 @@ function load_ieee9bus()
             gov_p... # unpack governor parameters
         )
         # generate the "injector" as combination of multiple components
-        injector = CompositeInjector(machine, avr, gov; name=:generator)
+        injector = CompositeInjector([machine, avr, gov]; name=:generator)
 
         # generate the MTKBus (i.e. the MTK model containg the busbar and the injector)
         mtkbus = MTKBus(injector)
