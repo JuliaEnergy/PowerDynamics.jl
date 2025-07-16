@@ -229,25 +229,27 @@ end
 MTKBus(; name=:bus) = KirchoffBus(; name)
 
 """
-    CompositeInjector(systems, eqs; name=Symbol(join(getname.(systems), "_")))
+    CompositeInjector(systems, eqs=autoconnections(systems); name=Symbol(join(getname.(systems), "_")))
 
-Create a injector object which contains several subsystems. Every subsystem which has a `terminal` will be connected
-to a newly created terminal of the composite injector. Can contain further systems, such as controllers, with the
-additional connection equations `eqs`.
+Create an injector object which contains several subsystems. Every subsystem which has a `terminal` will be connected
+to a newly created terminal of the composite injector. The subsystems are namespaced within the composite injector.
+
+There are two options for additional connections between the subsystems:
+- interconnections will be created automatically using some name-matching heuristics using `autoconnections(systems)`:
+  It searches all `Blocks.RealOutput` and `Blocks.RealInput`, and tries to find a single matching output for each input.
+- alternatively pass connecting equations of the form `[connect(sys1.output, sys2.input)]` explicitly
 
 For example, one could create a composite injector with three subsystems:
 - a generator,
 - a controller, and
 - a load;
-which is augmented with 2 equations
-- one for the measurments, and
-- one for the actuation.
+which is augmented with 2 connection equations
+- one for the measurements (generator -> controller), and
+- one for the actuation (controller -> generator).
 
-The returned `CompositeInjector` system has the following structure: It will
-automaticially create a new terminal `t` (thus satisfing the injector interface,
-see [`isinjectormodel`](@ref)) which will be connected to the terminals of the
-subsystems which have a terminal (machine and load in this case).
-
+The returned model contains a new terminal `:terminal` at the toplevel, thus
+satisfying the injector interface, see [`isinjectormodel`](@ref)). It can be used
+as such in the [`MTKBus`](@ref) constructor.
 ```
     ┌────────────────────────────────────┐
     │ CompositeInjector                  │
@@ -260,21 +262,19 @@ subsystems which have a terminal (machine and load in this case).
     │  o─┤ Load │                        │
     │    └──────┘                        │
     └────────────────────────────────────┘
-````
+```
 """
-function CompositeInjector(systems, eqs; name=Symbol(join(ModelingToolkit.getname.(systems), "_")))
+function CompositeInjector(systems, eqs=autoconnections(systems); name=Symbol(join(ModelingToolkit.getname.(systems), "_")))
     @named terminal = Terminal()
     ivs = ModelingToolkit.get_iv.(systems)
     @assert allequal(ivs) "Systems have different independent variables! $ivs"
     iv = first(ivs)
     termeqs = [connect(sys.terminal, terminal) for sys in systems if isinjectormodel(sys)]
-    ODESystem(vcat(termeqs,eqs), iv; systems=vcat(terminal, systems), name)
+    ODESystem(vcat(termeqs, eqs), iv; systems=vcat(terminal, systems), name)
 end
 
-function CompositeInjector(systems...; kwargs...)
+function autoconnections(systems)
     systems = collect(systems) # tuple -> vector
-    with_terminal = filter(isinjectormodel, systems)
-    without_terminal = filter(x->!isinjectormodel(x), systems)
 
     outputs = mapreduce(vcat, systems) do sys
         subouts = filter(ModelingToolkit.get_systems(sys)) do subsys
@@ -299,20 +299,19 @@ function CompositeInjector(systems...; kwargs...)
     outnames = collect(keys(out_dict))
     eqs = []
     for (iname, isys) in in_dict
-        out = findmatch(iname, outnames)
+        out = _findmatch(iname, outnames)
         push!(eqs, connect(out_dict[out], isys))
     end
-    CompositeInjector(systems, eqs; kwargs...)
+    return eqs
 end
-
-function findmatch(in_symbol, outs_symbol)
+function _findmatch(in_symbol, outs_symbol)
     in = string(in_symbol)
     outs = string.(outs_symbol)
 
     # try with full name
     idx = findall(isequal(in), outs)
     if isempty(idx)
-        # try to strip comon pre and suffixes
+        # try to strip common pre and suffixes
         inshort = replace(in, r"(_meas|meas|_in|in)$" => "")
         outsshort = replace.(outs, r"(_meas|meas|_out|out)$" => "")
 
@@ -320,14 +319,31 @@ function findmatch(in_symbol, outs_symbol)
     end
 
     if isempty(idx)
-        error("Could not find a match for $in in $outs")
+        error("Could not find a matchin output for input :$in in $(Symbol.(outs))")
     elseif length(idx) == 1
         return outs_symbol[only(idx)]
     else
-        error("Multiple matches found for $in in $outs")
+        error("Multiple possible matches found for input :$in. Candidates: $(Symbol.(outs[idx]))")
     end
 end
 
+"""
+    Ibase(S, V)
+
+Calculates current pu base based on Sbase and Vbase: Ibase = Sbase/Vbase.
+"""
 Ibase(S, V) = S/V
+
+"""
+    Zbase(S, V)
+
+Calculates impedance pu base based on Sbase and Vbase: Zbase = Vbase²/Sbase.
+"""
 Zbase(S, V) = V^2/S
+
+"""
+    Ybase(S, V)
+
+Calculates admittance pu base based on Sbase and Vbase: Ybase = Sbase/Vbase².
+"""
 Ybase(S, V) = S/V^2
