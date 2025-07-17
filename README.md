@@ -4,8 +4,11 @@
 
 # PowerDynamics.jl
 
-
 PowerDynamics.jl: An Open-Source Framework Written in Julia for Dynamic Power Grid Modeling and Analysis. [Please check out the Docs.](https://juliaenergy.github.io/PowerDynamics.jl/stable/)
+
+> [!IMPORTANT]
+> In Q2/2024 we started a complete rewrite of PowerDynamics.jl, which is much closer aligned to the modern SciML-Stack, heavily leaning on [ModelingToolkit.jl](https://github.com/SciML/ModelingToolkit.jl) for equation based models and a vastly modernized version of our backend, [NetworkDynamics.jl](https://github.com/JuliaDynamics/NetworkDynamics.jl)
+> The new PowerDynamics improved significantly in terms of modeling, initialization and solution analysis. However, some models and tools previously available are not yet avilable. If you've want to continue using the (unmaintained) old version, stick with PowerDynamics@v3.
 
 ## Citation
 
@@ -24,7 +27,6 @@ If you use PowerDynamics.jl in your research publications, [please cite our pape
 ```
 
 ## Funding
+Development of this project was in part funded by the *German Federal Ministry for Economic Affairs and Climate Action* as part of the *OpPoDyn*-Project ([Project ID 01258425/1](https://www.enargus.de/pub/bscw.cgi/?op=enargus.eps2&q=%2201258425/1%22), 2024-2027).
 
-Development of `PowerDynamics.jl` was in part funded by the *German Federal Ministry for Economic Affairs and Climate Action*
-
-<img src="bmwk_logo_en.svg" width="300"/>
+<img src="docs/src/assets/bmwk_logo_en.svg" width="300"/>
