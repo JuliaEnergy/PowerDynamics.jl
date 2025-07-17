@@ -5,8 +5,8 @@ In this example, we're going to model the IEEE 9 bus system.
 
 The parameters are mainly adopted from the RTDS data.
 =#
-using OpPoDyn
-using OpPoDyn.Library
+using PowerDynamics
+using PowerDynamics.Library
 using ModelingToolkit
 using NetworkDynamics
 using Graphs

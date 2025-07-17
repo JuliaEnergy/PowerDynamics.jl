@@ -1,4 +1,4 @@
-module OpPoDyn
+module PowerDynamics
 
 using Reexport: Reexport, @reexport
 @reexport using NetworkDynamics

@@ -1,6 +1,6 @@
 # Powergrid Initialization
 
-Initialization of power grid simulations requires a multi-step approach that combines steady-state power flow analysis with dynamic component initialization. OpPoDyn.jl provides a structured framework for this process, building on the initialization capabilities of NetworkDynamics.jl.
+Initialization of power grid simulations requires a multi-step approach that combines steady-state power flow analysis with dynamic component initialization. PowerDynamics.jl provides a structured framework for this process, building on the initialization capabilities of NetworkDynamics.jl.
 
 For general background on NetworkDynamics initialization concepts, see the [NetworkDynamics Initialization Guide](@extref Initialization).
 
@@ -35,7 +35,7 @@ initialize_componentwise[!](    #                   │
     default_overrides = interf  #                   │
 )                               #                   ⎭
 ```
-This low-level step-wise interface allows users full control and complete management of the initialization process. However, OpPoDyn.jl also provides higher-level wrapper functions [`solve_powerflow`](@ref) and [`initialize_from_pf`](@ref) that combine these steps for common use cases.
+This low-level step-wise interface allows users full control and complete management of the initialization process. However, PowerDynamics.jl also provides higher-level wrapper functions [`solve_powerflow`](@ref) and [`initialize_from_pf`](@ref) that combine these steps for common use cases.
 
 Note: This workflow above is slightly simplified, see [Integration with Initialization Process](@ref) below for the full set of commands.
 
@@ -95,7 +95,7 @@ For details on how component initialization works, see the [Single Component Ini
 
 In some cases, the standard initialization process may not be sufficient. For example, when component initialization constraints cannot be expressed solely in terms of **interface variables** (voltages and currents), but need access to other variables from the complete power flow solution.
 
-NetworkDynamics.jl provides general [InitFormulas and InitConstraints](@extref  Advanced-Component-Initialization:-Formulas-and-Constraints) for advanced component initialization. OpPoDyn.jl extends these concepts with power flow-aware variants that can access the complete power flow solution.
+NetworkDynamics.jl provides general [InitFormulas and InitConstraints](@extref  Advanced-Component-Initialization:-Formulas-and-Constraints) for advanced component initialization. PowerDynamics.jl extends these concepts with power flow-aware variants that can access the complete power flow solution.
 
 ### PFInitConstraints vs PFInitFormulas
 

@@ -1,7 +1,7 @@
 """
-Test systems module for OpPoDyn.jl
+Test systems module for PowerDynamics.jl
 
-This module provides pre-configured test systems for testing OpPoDyn functionality.
+This module provides pre-configured test systems for testing PowerDynamics functionality.
 Similar to NetworkDynamics' ComponentLibrary.jl, this provides reusable network models.
 
 Usage:
@@ -11,8 +11,8 @@ Usage:
 """
 module TestSystems
 
-using OpPoDyn
-using OpPoDyn.Library
+using PowerDynamics
+using PowerDynamics.Library
 using ModelingToolkit
 using NetworkDynamics
 using Graphs

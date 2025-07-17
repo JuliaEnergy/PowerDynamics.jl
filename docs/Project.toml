@@ -10,16 +10,16 @@ JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
 ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 NetworkDynamics = "22e9dc34-2a0d-11e9-0de0-8588d035468b"
-OpPoDyn = "88be6d57-9a19-43dd-942c-8912817e6f84"
-OpPoDynTesting = "97638210-66c4-447f-990e-d00c2b05d7ca"
+PowerDynamics = "88be6d57-9a19-43dd-942c-8912817e6f84"
+PowerDynamicsTesting = "97638210-66c4-447f-990e-d00c2b05d7ca"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 OrdinaryDiffEqNonlinearSolve = "127b3ac7-2247-4354-8eb6-78cf4e7c58e8"
 OrdinaryDiffEqRosenbrock = "43230ef6-c299-4910-a778-202eb28ce4ce"
 OrdinaryDiffEqTsit5 = "b1df2697-797e-41e3-8120-5422d3b24e4a"
 
 [sources]
-OpPoDyn = {path = ".."}
-OpPoDynTesting = {path = "../OpPoDynTesting"}
+PowerDynamics = {path = ".."}
+PowerDynamicsTesting = {path = "../PowerDynamicsTesting"}
 
 [compat]
 CSV = "0.10.15"
@@ -33,8 +33,8 @@ JSON = "0.21.4"
 Literate = "2.20.1"
 ModelingToolkit = "≥0.0.1"
 NetworkDynamics = "≥0.0.1"
-OpPoDyn = "≥0.0.1"
-OpPoDynTesting = "≥0.0.1"
+PowerDynamics = "≥0.0.1"
+PowerDynamicsTesting = "≥0.0.1"
 OrderedCollections = "≥0.0.1"
 OrdinaryDiffEqNonlinearSolve = "1.9.0"
 OrdinaryDiffEqRosenbrock = "1.10.0"

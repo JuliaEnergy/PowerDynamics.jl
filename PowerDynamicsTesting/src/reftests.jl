@@ -1,4 +1,4 @@
-const REFDIR = Ref(joinpath(pkgdir(OpPoDyn),"assets"))
+const REFDIR = Ref(joinpath(pkgdir(PowerDynamics),"assets"))
 const TMPDIR = Ref(tempdir())
 const THREASHOLD = 200
 const LAST = Ref("")

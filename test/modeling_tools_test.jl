@@ -1,7 +1,7 @@
 using Test
-using OpPoDyn
-using OpPoDyn.Library
-using OpPoDyn: autoconnections, CompositeInjector
+using PowerDynamics
+using PowerDynamics.Library
+using PowerDynamics: autoconnections, CompositeInjector
 using ModelingToolkit
 using ModelingToolkit: t_nounits as t, D_nounits as Dt
 using ModelingToolkitStandardLibrary.Blocks

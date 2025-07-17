@@ -1,4 +1,4 @@
-module OpPoDynTesting
+module PowerDynamicsTesting
 
 using Graphs: SimpleGraph, add_edge!, path_graph
 using NetworkDynamics: Network, NWState, uflat, pflat
@@ -12,8 +12,8 @@ using ModelingToolkit: @named
 using Makie: Makie, lines, Figure, Axis, axislegend, lines!, Cycled
 using OrderedCollections: OrderedDict
 
-using OpPoDyn: OpPoDyn, Bus, Line, MTKLine
-using OpPoDyn.Library: DynawoPiLine, SlackDifferential
+using PowerDynamics: PowerDynamics, Bus, Line, MTKLine
+using PowerDynamics.Library: DynawoPiLine, SlackDifferential
 
 using JLD2: JLD2
 using Test: Test, @test, @test_broken
@@ -28,4 +28,4 @@ export @reftest, set_reference_dir, refup
 include("reftests.jl")
 
 
-end # module OpPoDynTesting
+end # module PowerDynamicsTesting

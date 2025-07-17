@@ -1,4 +1,4 @@
-name = "OpPoDynTesting"
+name = "PowerDynamicsTesting"
 uuid = "97638210-66c4-447f-990e-d00c2b05d7ca"
 authors = ["Hans Würfel <git@wuerfel.io>"]
 version = "0.1.0"
@@ -10,7 +10,7 @@ JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 NetworkDynamics = "22e9dc34-2a0d-11e9-0de0-8588d035468b"
-OpPoDyn = "88be6d57-9a19-43dd-942c-8912817e6f84"
+PowerDynamics = "88be6d57-9a19-43dd-942c-8912817e6f84"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 OrdinaryDiffEqNonlinearSolve = "127b3ac7-2247-4354-8eb6-78cf4e7c58e8"
 OrdinaryDiffEqRosenbrock = "43230ef6-c299-4910-a778-202eb28ce4ce"
@@ -20,7 +20,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [sources]
 NetworkDynamics = {rev = "main", url = "https://github.com/JuliaDynamics/NetworkDynamics.jl"}
-OpPoDyn = {path = ".."}
+PowerDynamics = {path = ".."}
 
 [compat]
 DiffEqCallbacks = "≥0.0.1"
@@ -29,7 +29,7 @@ JLD2 = "0.5.2"
 Makie = "0.24"
 ModelingToolkit = "≥0.0.1"
 NetworkDynamics = "≥0.0.1"
-OpPoDyn = "≥0.0.1"
+PowerDynamics = "≥0.0.1"
 OrderedCollections = "≥0.0.1"
 OrdinaryDiffEqNonlinearSolve = "1.2.1"
 OrdinaryDiffEqRosenbrock = "1.2.0"

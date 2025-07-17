@@ -58,7 +58,7 @@ end
 A ModelingToolkit model representing the physical connection point within a bus in power systems.
 It represents the physical busbar where all injectors and lines attach.
 
-Within OpPoDyn.jl, it serves as an interface between the MTK world and the
+Within PowerDynamics.jl, it serves as an interface between the MTK world and the
 NetworkDynamics world: A MTK model containing a `BusBar` the highest level is
 consdered a busmodel (see [`isbusmodel`](@ref)) and describes the dynamics of an
 entire bus. It can be transformed in a [`VertexModel`](@extref
@@ -85,7 +85,7 @@ end
 A ModelingToolkit model representing one end of a transmission line in power systems.
 It represents the physical connection point at the end of a transmission line.
 
-Within OpPoDyn.jl, it serves as an interface between the MTK world and the
+Within PowerDynamics.jl, it serves as an interface between the MTK world and the
 NetworkDynamics world: A MTK model containing two `LineEnd`s (named `:src` and
 `:dst`) at the highest level is considered a linemodel (see
 [`islinemodel`](@ref)) and describes the dynamics of an entire line. It can be

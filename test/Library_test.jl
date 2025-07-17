@@ -1,6 +1,6 @@
-using OpPoDyn
-using OpPoDyn.Library
-using OpPoDynTesting
+using PowerDynamics
+using PowerDynamics.Library
+using PowerDynamicsTesting
 using ModelingToolkit
 using NetworkDynamics
 using Graphs
@@ -162,7 +162,7 @@ end
 @testset "IPSLPSAT" begin
     @mtkmodel GenBus begin
         @components begin
-            machine = OpPoDyn.Library.IPSLPSATOrder4(;
+            machine = PowerDynamics.Library.IPSLPSATOrder4(;
                 Sn=100,
                 Vn=18,
                 V_b=18,
@@ -220,7 +220,7 @@ end
 @testset "SauerPai Generator" begin
     @mtkmodel GenBus begin
         @components begin
-            machine = OpPoDyn.Library.SauerPaiMachine(;
+            machine = PowerDynamics.Library.SauerPaiMachine(;
                 vf_input=false,
                 τ_m_input=false,
                 S_b=100,
@@ -258,7 +258,7 @@ end
 
     @mtkmodel GenBus begin
         @components begin
-            machine = OpPoDyn.Library.SauerPaiMachine(;
+            machine = PowerDynamics.Library.SauerPaiMachine(;
                 vf_input=true,
                 τ_m_input=true,
                 S_b=100,

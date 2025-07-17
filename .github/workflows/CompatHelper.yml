@@ -19,7 +19,7 @@ jobs:
             "",
             "docs",
             "test",
-            "OpPoDynTesting",
+            "PowerDynamicsTesting",
           ])
         shell: julia --color=yes {0}
         env:

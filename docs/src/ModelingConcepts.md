@@ -25,7 +25,7 @@ The current for injectors is always in injector convention, i.e. positive curren
 
 !!! details "Code example: definition of PQ load as injector"
     ```@example concepts
-    using OpPoDyn, OpPoDyn.Library, ModelingToolkit
+    using PowerDynamics, PowerDynamics.Library, ModelingToolkit
     using ModelingToolkit: D_nounits as Dt, t_nounits as t
     @mtkmodel MyPQLoad begin
         @components begin
@@ -75,7 +75,7 @@ For simple models (direct connections of a few injectors) it is possible to use 
 
 !!! details "Code example: definition of a Bus containing a swing equation and a load"
     ```@example concepts
-    using OpPoDyn, OpPoDyn.Library, ModelingToolkit
+    using PowerDynamics, PowerDynamics.Library, ModelingToolkit
     @mtkmodel MyMTKBus begin
         @components begin
             busbar = BusBar()
@@ -114,7 +114,7 @@ Examples for branches are: PI─Model branches, dynamic RL branches or transform
 
 !!! details "Code example: algebraic R-line" 
     ```@example conceps
-    using OpPoDyn, OpPoDyn.Library, ModelingToolkit
+    using PowerDynamics, PowerDynamics.Library, ModelingToolkit
     @mtkmodel MyRLine begin
         @components begin
             src = Terminal()
@@ -162,7 +162,7 @@ LineEnd(:src) ──o── Transformer ──o── Pi─Line ──o── Li
 
 !!! details "Code example: Transmission line with two pi-branches"
     ```@example concepts
-    using OpPoDyn, OpPoDyn.Library, ModelingToolkit
+    using PowerDynamics, PowerDynamics.Library, ModelingToolkit
     @mtkmodel MyMTKLine begin
         @components begin
             src = LineEnd()
@@ -203,7 +203,7 @@ The exact structure here is not clear yet!
 
 The result would look something like that:
 ```@example concepts
-using OpPoDyn, OpPoDyn.Library, ModelingToolkit
+using PowerDynamics, PowerDynamics.Library, ModelingToolkit
 using Graphs, NetworkDynamics
 using OrdinaryDiffEqRosenbrock, OrdinaryDiffEqNonlinearSolve
 using CairoMakie

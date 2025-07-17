@@ -45,8 +45,8 @@ jobs:
         run: |
           using Pkg
           pkg"dev ."
-          pkg"dev ./OpPoDynTesting"
-          Pkg.test("OpPoDyn"; coverage=true)
+          pkg"dev ./PowerDynamicsTesting"
+          Pkg.test("PowerDynamics"; coverage=true)
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v5
         with:
@@ -95,9 +95,9 @@ jobs:
         shell: julia --project=docs --color=yes {0}
         run: |
           using Documenter: DocMeta, doctest
-          using OpPoDyn
-          DocMeta.setdocmeta!(OpPoDyn, :DocTestSetup, :(using OpPoDyn); recursive=true)
-          doctest(OpPoDyn)
+          using PowerDynamics
+          DocMeta.setdocmeta!(PowerDynamics, :DocTestSetup, :(using PowerDynamics); recursive=true)
+          doctest(PowerDynamics)
       - name: Save Julia depot cache on cancel or failure
         id: julia-cache-save
         if: cancelled() || failure()

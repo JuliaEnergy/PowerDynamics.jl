@@ -10,35 +10,35 @@ using Makie
 using CairoMakie
 using OrderedCollections
 
-using OpPoDyn
-using OpPoDyn.Library
-using OpPoDynTesting
+using PowerDynamics
+using PowerDynamics.Library
+using PowerDynamicsTesting
 
-@testset "OpPoDyn.jl Tests" begin
+@testset "PowerDynamics.jl Tests" begin
     @testset "Package Quality Tests" begin
         @info "Begin Package quatlity tests"
-        Aqua.test_all(OpPoDyn;
+        Aqua.test_all(PowerDynamics;
             ambiguities=false,
             persistent_tasks=false)
-        @test_broken isempty(Docs.undocumented_names(OpPoDyn))
+        @test_broken isempty(Docs.undocumented_names(PowerDynamics))
 
-        @test check_no_implicit_imports(OpPoDyn; skip=(Base, Core, NetworkDynamics)) === nothing
+        @test check_no_implicit_imports(PowerDynamics; skip=(Base, Core, NetworkDynamics)) === nothing
         # mtkmodel macro depends on some symbols
-        @test_broken check_no_stale_explicit_imports(OpPoDyn) === nothing
+        @test_broken check_no_stale_explicit_imports(PowerDynamics) === nothing
 
-        path = joinpath(pkgdir(OpPoDyn),"src","Library","Library.jl")
-        @test check_no_implicit_imports(OpPoDyn.Library, path) === nothing
+        path = joinpath(pkgdir(PowerDynamics),"src","Library","Library.jl")
+        @test check_no_implicit_imports(PowerDynamics.Library, path) === nothing
         # mtkmodel macro depends on some symbols
-        @test_broken check_no_stale_explicit_imports(OpPoDyn.Library, path) === nothing
+        @test_broken check_no_stale_explicit_imports(PowerDynamics.Library, path) === nothing
 
         # check the testing subpackage
-        Aqua.test_all(OpPoDynTesting;
+        Aqua.test_all(PowerDynamicsTesting;
             ambiguities=false,
             persistent_tasks=false)
-        @test_broken isempty(Docs.undocumented_names(OpPoDynTesting))
+        @test_broken isempty(Docs.undocumented_names(PowerDynamicsTesting))
 
-        @test check_no_implicit_imports(OpPoDynTesting) === nothing
-        @test_broken check_no_stale_explicit_imports(OpPoDynTesting) === nothing
+        @test check_no_implicit_imports(PowerDynamicsTesting) === nothing
+        @test_broken check_no_stale_explicit_imports(PowerDynamicsTesting) === nothing
     end
 
     @safetestset "Library tests" begin include("Library_test.jl") end

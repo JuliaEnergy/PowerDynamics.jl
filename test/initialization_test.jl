@@ -1,6 +1,6 @@
-using OpPoDyn
+using PowerDynamics
 using NetworkDynamics
-using OpPoDyn: @capture, postwalk
+using PowerDynamics: @capture, postwalk
 using Graphs
 
 @info "Start Initialization tests"
