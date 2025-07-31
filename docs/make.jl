@@ -35,11 +35,12 @@ kwargs = (;
     ),
     pages=[
         "Home" => "index.md",
-        "Modeling Concepts" => "ModelingConcepts.md",
-        "Initialization" => "initialization.md",
-        "API.md",
-        "Examples" => [
-            "generated/ieee9bus.md",]
+        # "Modeling Concepts" => "ModelingConcepts.md",
+        # "Initialization" => "initialization.md",
+        # "API.md",
+        # "Examples" => [
+        #     "generated/ieee9bus.md",
+        # ]
     ],
     warnonly=[:missing_docs],
 )
@@ -57,7 +58,7 @@ if haskey(ENV,"GITHUB_ACTIONS")
         makedocs(; kwargs_warnonly...)
     end
 
-    deploydocs(; repo="github.com/JuliaEnergy/PowerDynamics.jl",
+    deploydocs(; repo="github.com/JuliaEnergy/PowerDynamics.jl.git",
             devbranch="main", push_preview=true)
 
     success || throw(thrown_ex)
