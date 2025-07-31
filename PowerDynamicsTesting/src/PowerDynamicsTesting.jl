@@ -2,7 +2,7 @@ module PowerDynamicsTesting
 
 using Graphs: SimpleGraph, add_edge!, path_graph
 using NetworkDynamics: Network, NWState, uflat, pflat
-using NetworkDynamics: SymbolicIndex, VIndex, EIndex, vidxs, eidxs
+using NetworkDynamics: SymbolicIndex, VIndex, EIndex, vidxs, eidxs, SII
 using SciMLBase: SciMLBase, ODEProblem, solve, auto_dt_reset!
 using OrdinaryDiffEqRosenbrock: Rodas5P, Rosenbrock23
 using OrdinaryDiffEqTsit5: Tsit5
@@ -13,7 +13,7 @@ using Makie: Makie, lines, Figure, Axis, axislegend, lines!, Cycled
 using OrderedCollections: OrderedDict
 
 using PowerDynamics: PowerDynamics, Bus, Line, MTKLine
-using PowerDynamics.Library: DynawoPiLine, SlackDifferential
+using PowerDynamics.Library: PiLine, SlackDifferential
 
 using JLD2: JLD2
 using Test: Test, @test, @test_broken

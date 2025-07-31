@@ -3,7 +3,7 @@ module Library
 using ArgCheck: @argcheck
 using ..PowerDynamics: Terminal, BusBase, Ibase
 using ModelingToolkit: ModelingToolkit, @named, @mtkmodel, @variables, @parameters, simplify,
-                       t_nounits as t, D_nounits as Dt
+                       t_nounits as t, D_nounits as Dt, ODESystem
 using ModelingToolkit: @unpack, Equation, Num, System # needed for @mtkmodel?
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using NonlinearSolve: NonlinearProblem
@@ -55,32 +55,11 @@ end
 export SauerPaiMachine
 include("Machines/SauerPaiMachine.jl")
 
-export DynawoMachine
-include("Machines/DynawoMachine.jl")
-
 export Swing
 include("Machines/Swing.jl")
 
-export IPSLPSATOrder4
-include("Machines/IPSLPSAT.jl")
-
 export ClassicalMachine
 include("Machines/ClassicalMachine.jl")
-
-export ClassicalMachine_powerfactory
-include("Machines/ClassicalMachine_powerfactory.jl")
-
-#export StandardModel_pf
-#include("Machines/StandardModel_pf.jl")
-
-export StandardModel_pf_testneu
-include("Machines/StandardModel_pf_testneu.jl")
-
-export StandardModel_pf
-include("Machines/StandardModel_pf.jl")
-
-#export MarconatoModel
-#include("Machines/MarconatoModel.jl")
 
 ####
 #### Control Models
@@ -97,24 +76,22 @@ include("Controls/Govs.jl")
 export PQLoad, VoltageDependentLoad, ConstantYLoad, ZIPLoad
 include("Loads/PQLoad.jl")
 
+
 ####
 #### Line Models
 ####
-export DynawoPiLine
-include("Branches/DynawoPiLine.jl")
 export PiLine
 include("Branches/PiLine.jl")
 export PiLine_fault
 include("Branches/PiLine_fault.jl")
 
-export DynawoFixedRatioTransformer
-include("Transformers/DynawoFixedRatioTransformer.jl")
 
 ####
 #### Fault models
 ####
 export RXGroundFault
 include("Faults/Faults.jl")
+
 
 ####
 #### Powerflow models

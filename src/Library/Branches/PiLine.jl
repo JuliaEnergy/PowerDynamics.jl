@@ -1,11 +1,11 @@
 @mtkmodel PiLine begin
     @parameters begin
-        R, [description="Resistance of branch in pu (base unclear?)"]
-        X, [description="Reactance of branch in pu (base unclear?)"]
-        G_src, [description="Conductance of src shunt (base unclear?)"]
-        B_src, [description="Susceptance of src shunt (base unclear?)"]
-        G_dst, [description="Conductance of dst shunt (base unclear?)"]
-        B_dst, [description="Susceptance of dst shunt (base unclear?)"]
+        R=0, [description="Resistance of branch in pu"]
+        X=0.1, [description="Reactance of branch in pu"]
+        G_src=0, [description="Conductance of src shunt"]
+        B_src=0, [description="Susceptance of src shunt"]
+        G_dst=0, [description="Conductance of dst shunt"]
+        B_dst=0, [description="Susceptance of dst shunt"]
         r_src=1, [description="src end transformation ratio"]
         r_dst=1, [description="dst end transformation ratio"]
         active=1, [description="Line active or at fault"]

@@ -44,13 +44,13 @@ function line_between_slacks(edgef)
         "voltage magnitude" => OrderedDict(
             "magnitude at dst" => VIndex(2, :busbar₊u_mag)),
         "src end active power" => OrderedDict(
-            "line injection toward bus" => EIndex(1, :src₊P)),
+            "line injection toward src" => EIndex(1, :src₊P)),
         "dst end active power" => OrderedDict(
-            "line injection toward bus" => EIndex(1, :dst₊P)),
+            "line injection toward dst" => EIndex(1, :dst₊P)),
         "src end reactive power" => OrderedDict(
-            "line injection toward bus" => EIndex(1, :src₊Q)),
+            "line injection toward src" => EIndex(1, :src₊Q)),
         "dst end reactive power" => OrderedDict(
-            "line injection toward bus" => EIndex(1, :dst₊Q))
+            "line injection toward dst" => EIndex(1, :dst₊Q))
     )
 
     return TrajectoriesOfInterest(sol, plotspec)
@@ -58,7 +58,7 @@ end
 
 function bus_on_slack(busf; tmax=6, toilength=1000, argscale=1, magscale=1)
     slack = Bus(SlackDifferential(name=:slack_src))
-    @named branch = DynawoPiLine(XPu=0.04189)
+    @named branch = PiLine(X=0.1)
     edgef = Line(MTKLine(branch))
     g = path_graph(2)
 
@@ -68,11 +68,18 @@ function bus_on_slack(busf; tmax=6, toilength=1000, argscale=1, magscale=1)
         # show(stderr, MIME"text/plain"(), u0)
         # println(stderr)
         error("Initial conditions contain NaNs")
+
     end
     if any(isnan.(pflat(u0)))
         # show(stderr, MIME"text/plain"(), u0.p)
         # println(stderr)
         @warn "Parameters contain NaNs"
+        printstyled("Parameters contain NaNs:\n", color=:yellow)
+        for (s, val) in zip(SII.parameter_symbols(u0), pflat(u0))
+            if isnan(val)
+                printstyled(" - $s = NaN\n", color=:yellow)
+            end
+        end
     end
 
     tstops = collect(range(0,tmax, length=7))[2:end-1]

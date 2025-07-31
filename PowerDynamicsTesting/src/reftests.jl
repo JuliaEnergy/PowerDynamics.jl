@@ -43,6 +43,12 @@ _intestset() = Test.get_testset() !== Test.FallbackTestSet()
 
 function _save_and_compare(name::String, toi; tol=1e-6)
     @assert !isempty(REFDIR[]) "Please set REFDIR[]!"
+    @assert !isfile(REFDIR[]) "$(REFDIR[]) seems to be a file!"
+    if !isdir(REFDIR[])
+        @info "Create reference directory $(REFDIR[])"
+        mkpath(REFDIR[])
+    end
+
     refpath = joinpath(REFDIR[], name*".jld2")
     if !isfile(refpath)
         savetoi(refpath, toi)
