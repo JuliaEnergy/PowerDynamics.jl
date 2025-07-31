@@ -167,8 +167,8 @@ LineEnd(:src) ──o── Transformer ──o── Pi─Line ──o── Li
         @components begin
             src = LineEnd()
             dst = LineEnd()
-            branch1 = DynawoPiLine()
-            branch2 = DynawoPiLine()
+            branch1 = PiLine()
+            branch2 = PiLine()
         end
         @equations begin
             connect(src.terminal, branch1.src)
@@ -182,7 +182,7 @@ LineEnd(:src) ──o── Transformer ──o── Pi─Line ──o── Li
     ```
     Alternatively, an equivalent model with multiple valid branch models in parallel could be created and instantiated with the convenience constructor
     ```@example concepts
-    line = MTKLine(DynawoPiLine(;name=:branch1), DynawoPiLine(;name=:branch2))
+    line = MTKLine(PiLine(;name=:branch1), PiLine(;name=:branch2))
     nothing #hide
     ```
 
@@ -225,8 +225,8 @@ vertex2f = Bus(bus2mtk) # extract component function
 ```
 Define the powerline connecting both nodes
 ```@example concepts
-@named branch1 = DynawoPiLine()
-@named branch2 = DynawoPiLine()
+@named branch1 = PiLine()
+@named branch2 = PiLine()
 linemtk = MTKLine(branch1, branch2; name=:powerline)
 edgef = Line(linemtk) # extract component function
 ```
