@@ -19,7 +19,7 @@ using SciMLBase: SciMLBase, solve
    end
 end
 
-export SlackAlgebraic, SlackDifferential
+export SlackAlgebraic, SlackDifferential, VariableFrequencySlack
 
 @mtkmodel SlackAlgebraic begin
     @components begin
@@ -46,6 +46,25 @@ end
     @equations begin
         Dt(busbar.u_r) ~ 0
         Dt(busbar.u_i) ~ 0
+    end
+end
+
+@mtkmodel VariableFrequencySlack begin
+    @components begin
+        busbar = BusBase()
+    end
+    @parameters begin
+        V, [guess=1, description="bus voltage magnitude"]
+        ω = 1, [description="slack frequency in pu (base ωNom)"]
+        ω_b=2π*50, [description="System base frequency in rad/s"]
+    end
+    @variables begin
+        δ(t), [guess=0, description="voltage angle"]
+    end
+    @equations begin
+        Dt(δ) ~ ω_b*(ω - 1)
+        busbar.u_r ~ V * cos(δ)
+        busbar.u_i ~ V * sin(δ)
     end
 end
 

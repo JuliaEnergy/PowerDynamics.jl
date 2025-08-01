@@ -58,7 +58,7 @@ The `Terminal`─Connector is an important building block for every model.
 It represents a connection point with constant voltage in dq─coordinates `u_r` and `u_i` and enforces the Kirchhoff constraints `sum(i_r)=0` and `sum(i_i)=0`.
 
 ### Modeling of Buses
-#### Model class `Injector`
+#### [Model class `Injector`](@id Injector Interface)
 
 An injector is a class of components with a single `Terminal()` (called `:terminal`).
 Examples for injectors might be Generators, Shunts, Loads.
@@ -103,7 +103,7 @@ The current for injectors is always in injector convention, i.e. positive curren
     nothing #hide
     ```
 
-#### Model class `MTKBus`
+#### [Model class `MTKBus`](@id MTKBus Interface)
 A `MTKBus` is a class of models, which are used to describe the dynamic behavior of a full bus in a power grid.
 Each `MTKBus` must contain a predefined model of type `BusBar()` (named `:busbar`).
 This busbar represents the connection point to the grid.
@@ -151,7 +151,7 @@ For simple models (direct connections of a few injectors) it is possible to use 
     to get an instance of a model which is structurally equivalent to `MyMTKBus`.
 
 ### Line Modeling
-#### Model class `Branch`
+#### [Model class `Branch`](@id Branch Interface)
 A branch is the two-port equivalent to an injector.
 It needs to have two `Terminal()`s, one is called `:src`, the other `:dst`.
 
@@ -187,7 +187,7 @@ Examples for branches are: PI─Model branches, dynamic RL branches or transform
     nothing #hide
     ```
 
-#### Model class: `MTKLine`
+#### [Model class: `MTKLine`](@id MTKLine Interface)
 Similar to the `MTKBus`, a `MTKLine` is a model class which represents a transmission line in the network.
 
 It must contain two `LineEnd()` instances, one called `:src`, one called `:dst`.
