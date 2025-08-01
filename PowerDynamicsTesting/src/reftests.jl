@@ -67,7 +67,7 @@ function _save_and_compare(name::String, toi; tol=1e-6)
         pluspath = replace(refpath, r"\.jld2$" => s"+.jld2")
         plotpath = replace(refpath, r"\.jld2$" => s"_comparison.png")
         if diff < tol
-            _intestset() || printstyled("Test Passed"; color=:green, bold=true)
+            _intestset() || printstyled("Test Passed (diff $diff < $tol)"; color=:green, bold=true)
             # remove the tmp file
             rm(tmppath)
             # if the test succeds, delete the pluspath if it was there
@@ -84,15 +84,15 @@ function _save_and_compare(name::String, toi; tol=1e-6)
                 try
                     plustoi = loadtoi(pluspath)
                     if compare(plustoi, toi) < tol
-                        printstyled("Test Failed: New $(name)+.jld2 matches the existing one! Call `refup()` to accept.\n"; color=:red, bold=true)
+                        printstyled("Test Failed (diff $diff ≥ $tol): New $(name)+.jld2 matches the existing one! Call `refup()` to accept.\n"; color=:red, bold=true)
                     else
-                        printstyled("Test Failed: New $(name)+.jld2 differs from existing one! Call `refup()` to accept.\n"; color=:red, bold=true)
+                        printstyled("Test Failed (diff $diff ≥ $tol): New $(name)+.jld2 differs from existing one! Call `refup()` to accept.\n"; color=:red, bold=true)
                     end
                 catch e
-                    printstyled("Test Failed: stored new version as $(name)+.jld2, existing one could not be read. Call `refup()` to accept.\n"; color=:red, bold=true)
+                    printstyled("Test Failed (diff $diff ≥ $tol): stored new version as $(name)+.jld2, existing one could not be read. Call `refup()` to accept.\n"; color=:red, bold=true)
                 end
             else
-                printstyled("Test Failed: stored new version as $(name)+.jld2. Call `refup()` to accept.\n"; color=:red, bold=true)
+                printstyled("Test Failed (diff $diff ≥ $tol): stored new version as $(name)+.jld2. Call `refup()` to accept.\n"; color=:red, bold=true)
             end
             mv(tmppath, pluspath, force=true)
 

@@ -53,6 +53,14 @@ jobs:
           files: lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
+      - name: Upload test comparison images
+        if: always() && hashFiles('assets/*.png') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-comparison-images-julia-${{ matrix.version }}-${{ matrix.os }}
+          path: "assets/*.png"
+          retention-days: 30
+          compression-level: 0
       - name: Save Julia depot cache on cancel or failure
         id: julia-cache-save
         if: cancelled() || failure()
