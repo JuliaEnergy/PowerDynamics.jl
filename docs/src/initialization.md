@@ -47,12 +47,12 @@ The first step creates a simplified, algebraic representation of the power grid 
 pfnw = powerflow_model(nw)
 ```
 
-This function extracts the power flow network from the full dynamic network model, creating a steady-state representation. The power flow network itself is also a `Network` in the NetworkDyanamics.jl sense.
+This function extracts the power flow network from the full dynamic network model, creating a steady-state representation. The power flow network itself is also a `Network` in the NetworkDynamics.jl sense.
 
 The `powerflow_model` function determines the appropriate power flow representation for each dynamic Node and LineModel by:
 checking if `:pfmodel` metadata is set, which points to a different component model specifically designed for power flow analysis
 
-If the `:pfmodel` is **not** set, it assumes that the same model is used for both power flow and dynamic simulation. This is the case for purly static models such as PiLines or PQ-Loads.
+If the `:pfmodel` is **not** set, it assumes that the same model is used for both power flow and dynamic simulation. This is the case for purely static models such as PiLines or PQ-Loads.
 
 ### Step 2: Power Flow Solution
 
@@ -166,7 +166,7 @@ This process is transparent to the user - simply define your power flow dependen
 
 The underlying mechanism follows NetworkDynamics.jl's [component initialization pipeline](@extref Single-Component-Initialization), with the power flow solution providing additional context for constraint and formula evaluation.
 
-The extended initializaion workflow (automaticially done in `initialize_from_pf[!]`) looks like this:
+The extended initialization workflow (automatically done in `initialize_from_pf[!]`) looks like this:
 
 ```julia
 nw = get_dynamic_network(...)
@@ -175,7 +175,7 @@ pfs0 = NWState(pfnw)
 pfs = find_fixpoint(pfnw, pfs0)
 interf = interface_values(pfs)
 
-# specialize the constaints an formulas and pass then down
+# specialize the constraints and formulas and pass them down
 pfconstraints = specialize_pfinitconstraints(nw, pfs)
 pfformulas    = specialize_pfinitformulas(nw, pfs)
 initialize_componentwise[!](
