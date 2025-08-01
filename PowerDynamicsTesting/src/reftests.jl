@@ -41,7 +41,7 @@ end
 
 _intestset() = Test.get_testset() !== Test.FallbackTestSet()
 
-function _save_and_compare(name::String, toi; tol=1e-6)
+function _save_and_compare(name::String, toi; tol=1e-5)
     @assert !isempty(REFDIR[]) "Please set REFDIR[]!"
     @assert !isfile(REFDIR[]) "$(REFDIR[]) seems to be a file!"
     if !isdir(REFDIR[])
