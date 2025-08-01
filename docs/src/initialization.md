@@ -1,6 +1,6 @@
 # Powergrid Initialization
 
-Initialization of power grid simulations requires a multi-step approach that combines steady-state power flow analysis with dynamic component initialization. PowerDynamics.jl provides a structured framework for this process, building on the initialization capabilities of NetworkDynamics.jl.
+Initialization of power grid simulations follows a multi-step approach that combines steady-state power flow analysis with dynamic component initialization. PowerDynamics.jl provides a structured framework for this process, building on the initialization capabilities of NetworkDynamics.jl.
 
 For general background on NetworkDynamics initialization concepts, see the [NetworkDynamics Initialization Guide](@extref Initialization).
 
@@ -12,7 +12,7 @@ Power grid initialization involves finding valid initial conditions that satisfy
 
 This is typically achieved through a two-step process:
 1. Solve the power flow problem to determine steady-state electrical conditions
-2. Initialize dynamic components using the power flow solution as boundary conditions
+2. Initialize dynamic components using the power flow solution as boundary conditions, i.e. find the initial states/parameters of the dynamical models in a way, that they are in a steady state at the powerflow solution.
 
 This follows the [Two-Step Initialization Pattern](@extref Component-wise-Network-Initialization) described in NetworkDynamics.jl, specialized for power grid applications.
 
@@ -57,7 +57,7 @@ If the `:pfmodel` is **not** set, it assumes that the same model is used for bot
 ### Step 2: Power Flow Solution
 
 The power flow problem is solved using NetworkDynamics.jl's [`find_fixpoint`](@extref NetworkDynamics.find_fixpoint) function,
-which internally uses NonlinearSolve.jl:
+which internally uses [NonlinearSolve.jl](https://github.com/SciML/NonlinearSolve.jl):
 
 ```julia
 pfs0 = NWState(pfnw)            # Initial guess for power flow state

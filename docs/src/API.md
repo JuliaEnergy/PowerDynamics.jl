@@ -1,67 +1,93 @@
-# API Reference
-## Modeling Tools
-### Constructors for ND Models
-Those functions help you to bridge from MTK models to NetworkDynamics.jl Models:
-```@docs
-Bus
-Line
-```
+# API
 
-### Basic Component Modeling
+The following functions are designed for public use.
+
+## Modeling Tools
+
+### Connectors and Base Components
 ```@docs
 Terminal
 BusBar
 LineEnd
+```
+
+### Bus and Line Construction
+```@docs
 MTKBus
 MTKLine
 CompositeInjector
 ```
 
-### Helpers
+### Base Unit Calculations
 ```@docs
-isbusmodel
-isinjectormodel
-islinemodel
-isbranchmodel
+Ibase
+Zbase
+Ybase
 ```
 
-## Powerflow Tools
-### Powerflow Components
+## Network Components
+```@docs
+Bus
+Line
+simplify_mtkbus
+simplify_mtkline
+```
+
+## Interface Checking Functions
+```@docs
+isinjectormodel
+isbusmodel
+isbranchmodel
+islinemodel
+```
+
+## Utility Functions
+```@docs
+@attach_metadata!
+set_voltage!
+set_current!
+```
+
+## Power Flow Analysis
+
+### Power Flow Bus Types
 ```@docs
 pfSlack
 pfPV
 pfPQ
 ```
 
-### Powerflow Helpers
+### Power Flow Solution Functions
 ```@docs
 solve_powerflow
+initialize_from_pf!
 initialize_from_pf
 show_powerflow
 powerflow_model
 ispfmodel
 ```
 
-## Initialization
-### Powerflow dependent constraints and formulas
+## Power Flow Initialization Constraints
+
+### Constraint Types
 ```@docs
 PFInitConstraint
 @pfinitconstraint
 PFInitFormula
 @pfinitformula
-copy_pf_parameters
 ```
 
-### Metadata Accesors
+### Constraint Management Functions
 ```@docs
-add_pfinitformula!
-set_pfinitformula!
-has_pfinitformula
-get_pfinitformulas
-delete_pfinitformulas!
 add_pfinitconstraint!
+add_pfinitformula!
 set_pfinitconstraint!
+set_pfinitformula!
 has_pfinitconstraint
+has_pfinitformula
 get_pfinitconstraints
+get_pfinitformulas
 delete_pfinitconstraints!
+delete_pfinitformulas!
+copy_pf_parameters
 ```

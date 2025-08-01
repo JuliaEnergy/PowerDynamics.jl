@@ -3,6 +3,11 @@ using PowerDynamics.Library
 using Documenter
 using Literate
 using DocumenterInterLinks
+using ModelingToolkit
+using Graphs
+using NetworkDynamics
+using OrdinaryDiffEqRosenbrock, OrdinaryDiffEqNonlinearSolve
+using CairoMakie
 
 links = InterLinks(
     "NetworkDynamics" => "https://juliadynamics.github.io/NetworkDynamics.jl/stable/",
@@ -12,18 +17,21 @@ DocMeta.setdocmeta!(PowerDynamics, :DocTestSetup, :(using PowerDynamics); recurs
 
 # generate examples
 example_dir = joinpath(@__DIR__, "examples")
+tutorial_dir = joinpath(@__DIR__, "tutorials")
 outdir = joinpath(@__DIR__, "src", "generated")
 isdir(outdir) && rm(outdir, recursive=true)
 mkpath(outdir)
 
-for example in filter(contains(r".jl$"), readdir(example_dir, join=true))
-    Literate.markdown(example, outdir)
-    Literate.script(example, outdir; keep_comments=true)
+for dir in (example_dir, tutorial_dir)
+    for script in filter(contains(r".jl$"), readdir(dir, join=true))
+        Literate.markdown(script, outdir)
+        Literate.script(script, outdir; keep_comments=true)
+    end
 end
 
 kwargs = (;
     modules=[PowerDynamics, PowerDynamics.Library],
-    authors="Hans Würfel <git@wuerfel.io> and contributors",
+    authors="Hans Würfel, Tim Kittel, Jan Liße, Sabine Auer, Anton Plietzsch and contributors",
     sitename="PowerDynamics.jl",
     linkcheck=true,
     pagesonly=true,
@@ -37,10 +45,14 @@ kwargs = (;
         "Home" => "index.md",
         "Modeling Concepts" => "ModelingConcepts.md",
         "Initialization" => "initialization.md",
-        "API.md",
+        # "Component Library" => "Library.md",
+        "Tutorials" => [
+            # "generated/custom_bus.md",
+        ],
         "Examples" => [
-            "generated/ieee9bus.md",
-        ]
+            # "generated/ieee9bus.md",
+        ],
+        "API" => "API.md",
     ],
     warnonly=[:missing_docs],
 )
