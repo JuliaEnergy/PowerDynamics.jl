@@ -48,7 +48,7 @@ A crucial part of using this Library is understanding the relationship between M
 In a nutshell, ModelingToolkit models are **symbolic models**, i.e. they consist of symbolic equations which are not yet "compiled" for use as a numeric model.
 The modeling in MTK is very flexible and similar to the Modelica language.
 What we need in the end is models in the structure defined in the equations above.
-For that, we need the MTK Models to have a specific structure. Then we can use the [`Bus`](@ref) and [`Line`](@ref) function to compile the MTK models and create [`EdgeModel`](@extref  Component Models with MTK) and [`VertexModel`](@extref  Component Models with MTK) objects from them.
+For that, we need the MTK Models to have a specific structure. Then we can use the [`Bus`](@ref) and [`Line`](@ref) function to compile the MTK models and create [`EdgeModel`](@extref NetworkDynamics Component-Models-with-MTK) and [`VertexModel`](@extref NetworkDynamics Component-Models-with-MTK) objects from them.
 Those objects are not symbolic anymore but compiled numeric versions of the symbolically created systems.
 
 ## ModelingToolkit Models
@@ -243,7 +243,7 @@ LineEnd(:src) ──o── Transformer ──o── Pi─Line ──o── Li
 ## From MTK Models to NetworkDynamics
 Both `MTKLine` and `MTKBus` are still purely symbolic ModelingToolkit models.
 However they have an important property: they possess the correct input-output-structure
-and variable names to be compiled into [`VertexModel`](@extref Component Models with MTK) and [`EdgeModel`](@extref Component Models with MTK)
+and variable names to be compiled into [`VertexModel`](@extref NetworkDynamics Component-Models-with-MTK) and [`EdgeModel`](@extref NetworkDynamics Component-Models-with-MTK)
 models.
 To do so, PowerDynamics.jl provides the [`Line`](@ref) and [`Bus`](@ref) constructors.
 

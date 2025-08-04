@@ -8,6 +8,7 @@ This page documents all the pre-built components available in the PowerDynamics.
 ```@docs
 SlackAlgebraic
 SlackDifferential
+VariableFrequencySlack
 ```
 
 ## Machine Models

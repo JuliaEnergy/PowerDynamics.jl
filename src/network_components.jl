@@ -70,6 +70,14 @@ function Bus(vertexf::VertexModel; copy=true, vidx=nothing, pf=nothing, name=ver
     vertexf
 end
 
+"""
+    simplify_mtkbus(sys::ODESystem; busbar=:busbar)
+
+Structurally simplify a bus model ODESystem by eliminating equations.
+
+Closely matches what `VertexModel` does, but returns the `ODESystem` after
+the simplifications rather than compiling it into a `VertexModel`.
+"""
 function simplify_mtkbus(sys::ODESystem; busbar=:busbar)
     @argcheck isbusmodel(sys) "The system must satisfy the bus model interface!"
     io = _busio(sys, busbar)
@@ -150,6 +158,14 @@ function Line(edgef::EdgeModel; copy=true, src=nothing, dst=nothing, name=edgef.
     edgef
 end
 
+"""
+    simplify_mtkline(sys::ODESystem; src=:src, dst=:dst)
+
+Structurally simplify a line model ODESystem by eliminating equations.
+
+Closely matches what `EdgeModel` does, but returns the `ODESystem` after
+the simplifications rather than compiling it into an `EdgeModel`.
+"""
 function simplify_mtkline(sys::ODESystem; src=:src, dst=:dst)
     @argcheck islinemodel(sys) "The system must satisfy the lie model interface!"
     io = _lineio(sys, src, dst)

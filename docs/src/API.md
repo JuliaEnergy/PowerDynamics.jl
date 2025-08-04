@@ -41,13 +41,6 @@ isbranchmodel
 islinemodel
 ```
 
-## Utility Functions
-```@docs
-@attach_metadata!
-set_voltage!
-set_current!
-```
-
 ## Power Flow Analysis
 
 ### Power Flow Bus Types
