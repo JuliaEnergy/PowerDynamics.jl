@@ -3,7 +3,7 @@
 
 In this Tutorial, we will define a custom bus model that can be used in PowerDynamics.jl.
 
-The model we set out to recreate is the classical machine from Chapter 15.1 from Milanos book
+The model we set out to recreate is the classical machine from Chapter 15.1 from Milano's book
 
 > F. Milano, Power System Modelling and Scripting,  Berlin, Heidelberg: Springer Berlin Heidelberg, 2010. doi: 10.1007/978-3-642-13669-6.
 
@@ -109,7 +109,7 @@ end
 @named machine = MilanoClassicalMachine();
 
 #=
-We can assure, that the model satisfies the [Injector Interface](@ref) by checking
+We can verify that the model satisfies the [Injector Interface](@ref) by checking
 =#
 isinjectormodel(machine)
 
@@ -306,7 +306,7 @@ The implemented PSS is a simple device, which adjusts the excitation voltage
 based on frequency deviation. It consists of a washout filter to remove steady-state errors
 and only react to frequency changes, and a gain to amplify the response.
 
-To achive this goal we will:
+To achieve this goal we will:
 1. Modify the Milano machine model to include a controllable field voltage input and a rotor frequency measurement output.
 2. Create a simple PSS model that takes the frequency input and outputs a stabilizing signal to the field voltage.
 3. Combine the machine and PSS into a new composite model that forms an injector.
@@ -422,7 +422,7 @@ Therefore, our combined injector model needs to look something like this:
     │            vf_base        │
     └───────────────────────────┘
 ```
-Notably, similar how to left `vf_set` free for initialization in the previous example,
+Notably, similar to how we left `vf_set` free for initialization in the previous example,
 now we need to leave `vf_base` free.
 
 We define a new mtkmodel which combines machine with controller and forms a new injector:
@@ -452,9 +452,9 @@ isinjectormodel(gen_with_pss) # Verify it's still an injector
 #=
 Since this is an injector, we can use `MTKBus(gen_with_pss)` to build the symbolic bus model.
 However, this leads to another level of namespacing, as the overall bus will have variable names like
-`gen_with_pss₊machine₊δ` due to the capsulation.
+`gen_with_pss₊machine₊δ` due to the encapsulation.
 
-Alternatively, we could have define a model which directly implements the `MTKBus` interface:
+Alternatively, we could define a model which directly implements the `MTKBus` interface:
 ```
 ┌─────────────────────────────────────┐
 │MyMTKBus                             │
