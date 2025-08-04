@@ -126,6 +126,7 @@ vset_formula = @initformula :load₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^
 add_initformula!(bus5, vset_formula)
 add_initformula!(bus6, vset_formula)
 add_initformula!(bus8, vset_formula)
+nothing #hide
 
 #=
 ## Branches
@@ -207,7 +208,7 @@ deactivate_line = ComponentAffect([], [:pibranch₊active]) do u, p, ctx
 end
 cb = PresetTimeComponentCallback([1.0], deactivate_line)
 set_callback!(l46, cb)
-nothing # hide
+l46 # printout shows that the callback is set
 
 #=
 ## Dynamic Simulation
@@ -218,7 +219,7 @@ to the line outage disturbance.
 =#
 prob = ODEProblem(nw, uflat(u0), (0,15), pflat(u0); callback=get_callbacks(nw))
 sol = solve(prob, Rodas5P())
-nothing
+nothing #hide
 
 #=
 ## Plotting the Solution

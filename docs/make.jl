@@ -47,10 +47,11 @@ kwargs = (;
         "Initialization" => "initialization.md",
         # "Component Library" => "Library.md",
         "Tutorials" => [
-            "generated/custom_bus.md",
+            # "generated/custom_bus.md",
         ],
         "Examples" => [
             # "generated/ieee9bus.md",
+            "generated/ieee39_part1.md",
         ],
         "API" => "API.md",
         "🔗 NetworkDynamics.jl Docs" => "networkdynamics_forward.md",

@@ -46,11 +46,15 @@ function Bus(sys::ODESystem; verbose=false, name=getname(sys), kwargs...)
     vertexf = VertexModel(sys, io.in, io.out; verbose, name)
     Bus(vertexf; copy=false, kwargs...)
 end
-function Bus(vertexf::VertexModel; copy=true, vidx=nothing, pf=nothing, name=vertexf.name, pairs...)
-    if copy
-        vertexf = Base.copy(vertexf)
-    end
-    if name != vertexf.name
+"""
+    Bus(template::VertexModel; copy=true, vidx=nothing, pf=nothing, name=template.name, pairs...)
+
+Similar to the `Bus` constructor, but takes a pre-compiled `VertexModel`. It copies the VertexModel
+and applies the keyword arguments. This is usefull when you want to create new bus models based on a template.
+"""
+function Bus(template::VertexModel; copy=true, vidx=nothing, pf=nothing, name=template.name, pairs...)
+    vertexf = copy ? Base.copy(template) : template
+    if name != template.name
         vertexf = VertexModel(vertexf; name, allow_output_sym_clash=true)
     end
 

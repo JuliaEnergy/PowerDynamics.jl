@@ -38,7 +38,7 @@ while run
     try
         include("make.jl")
     catch e
-        @info "make.jl error" e
+        @error "make.jl error" exception=(e, catch_backtrace())
     end
 
     printstyled("\n\nDocs are served at http://localhost:$port\n\n", color=:blue, bold=true)

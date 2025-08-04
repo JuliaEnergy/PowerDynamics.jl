@@ -19,6 +19,7 @@ OrdinaryDiffEqRosenbrock = "43230ef6-c299-4910-a778-202eb28ce4ce"
 OrdinaryDiffEqTsit5 = "b1df2697-797e-41e3-8120-5422d3b24e4a"
 PowerDynamics = "cc46b21f-1b17-51c2-b642-af74c3d3a8be"
 PowerDynamicsTesting = "97638210-66c4-447f-990e-d00c2b05d7ca"
+SparseConnectivityTracer = "9f842d2f-2579-4b1d-911e-f412cf18a3f5"
 
 [sources]
 PowerDynamics = {path = ".."}
