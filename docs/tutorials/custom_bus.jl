@@ -1,5 +1,5 @@
 #=
-# Define a Custom Bus
+# Define a Custom Bus Model
 
 In this Tutorial, we will define a custom bus model that can be used in PowerDynamics.jl.
 
@@ -22,7 +22,7 @@ i_r, i_i    └───────────────────┘
 ```
 
 The received values for $u_r$, $u_i$, $i_r$, and $i_i$ at the terminal are in the global
-synchronous dq frame. The internal state $δ$ describs the rotor angle of the machin in this frame.
+synchronous dq frame. The internal state $δ$ describes the rotor angle of the machine in this frame.
 In order to obtain the **local** dq-frame voltages and currents, we need to apply a Park transformation.
 
 ```@raw html
@@ -32,7 +32,7 @@ In order to obtain the **local** dq-frame voltages and currents, we need to appl
 </picture>
 ```
 
-Additional to the transformation, the mode is defined by the following equations:
+In addition to the transformation, the model is defined by the following equations:
 ```math
 \begin{aligned}
 \frac{d\delta}{dt} &= \omega_b(\omega - 1) &\text{(Milano 15.5)} \\
@@ -149,8 +149,8 @@ isbusmodel(mtkbus) # assert that the created model satisfies the interface
 
 #=
 ## Compiling bus to `VertexModel`
-To actual simulate the system, we need to *compile* the model, i.e. transformig it from a
-purly symbolic representation to a numerical one.
+To actually simulate the system, we need to *compile* the model, i.e. transforming it from a
+purely symbolic representation to a numerical one.
 =#
 Bus(mtkbus)
 
@@ -163,7 +163,6 @@ a transmission line. This will allow us to observe the machine's dynamic behavio
 in response to a frequency disturbance.
 
 First, we create a slack bus that provides the voltage and frequency reference for the system.
-We'll also add a frequency disturbance event to observe the machine's response.
 =#
 slackbus = Bus(
     PowerDynamics.VariableFrequencySlack(name=:variable_slack),
@@ -172,23 +171,23 @@ slackbus = Bus(
 )
 
 #=
-We define a frequency event that increases the system frequency at t=1 second.
+We define a frequency event that increases the system frequency at t=1 second
+(see ND docs on [Callbacks](@extref NetworkDynamics) for details).
 This disturbance will cause our machine to respond dynamically as it tries to
 maintain synchronism with the network.
 =#
 freq_event = PresetTimeComponentCallback(
-    1,
+    1, # trigger at time 1
     ComponentAffect([],[:V,:ω]) do u, p, ctx
-        @info "Adapt frequency"
         p[:ω] = 1.01 # set frequency to 1.01 pu
-        # p[:V] = 1.001
     end
 )
 set_callback!(slackbus, freq_event)
+nothing #hide
 
 #=
 Next, we create the generator bus using our custom Milano machine model.
-We specify it as a PV bus in the power flow with 1 pu voltage and 1 pu active power.
+We specify it as a PV bus for the power flow with 1 pu voltage and 1 pu active power.
 =#
 genbus = Bus(
     mtkbus,
@@ -209,19 +208,36 @@ nw = Network([slackbus, genbus], line)
 #=
 Before running dynamic simulation, we initialize the system from power flow.
 This ensures that all dynamic states start from a steady-state condition.
+
+To do so, we use the function [`initialize_from_pf!`](@ref), which does several steps:
+1. Calculate the powerflow according to the powerflow models.
+2. Initialize the "free" states and parameters of the dynamical components, such that
+   the system is in a steady state.
+
+More information on initialization can be found in the docs on [Powergrid Initialization](@ref).
 =#
-initialize_from_pf!(nw) # initialize the network and store the steady state in the components
+initialize_from_pf!(nw)
+nothing #hide
 
 #=
 Let's examine the initial state of our generator bus to verify proper initialization.
 =#
 dump_initial_state(nw[VIndex(2)])
+#=
+The printout shows us several important aspects:
+The free internal states $\delta$, $\omega$ and the free internal parameters
+$P_{\mathrm m}$ and $vf_{\mathrm{set}}$ have been initialized.
+We see, that both power and excitation voltage are slightly above the given (1,1) for the powerflow,
+which is expected since there are some losses in the model.
+However the initialized state matches the powerflow solution at the **network interface**,
+i.e. `busbar₊P` and `busbar₊u_mag` are both 1 pu.
+=#
 
 #=
 ## Dynamic Simulation
 
 With the system properly initialized, we can set up and solve the dynamic simulation.
-We simulate for 10 seconds to capture the machine's response to the frequency disturbance.
+We simulate for 100 seconds to capture the machine's response to the frequency disturbance.
 =#
 s0 = NWState(nw)
 prob = ODEProblem(nw, uflat(s0), (0,100), pflat(s0), callback=get_callbacks(nw))
@@ -235,63 +251,32 @@ Now let's create comprehensive plots to visualize how our custom Milano machine
 responds to the frequency disturbance. We'll plot several key variables that
 demonstrate the machine's electromechanical dynamics.
 =#
-
 let
-    fig = Figure(size=(800, 1000));
+    fig = Figure(size=(800, 600));
 
     ax1 = Axis(fig[1, 1];
         title="Rotor Angle",
         xlabel="Time [s]",
         ylabel="Rotor Angle δ [rad]")
-    lines!(ax1, sol; idxs=VIndex(2, :machine₊δ), color=:blue, linewidth=2)
-    vlines!(ax1, [1.0], color=:red, linestyle=:dash, alpha=0.7, label="Frequency disturbance")
+    lines!(ax1, sol; idxs=VIndex(2, :machine₊δ), linewidth=2)
     axislegend(ax1)
 
     ax2 = Axis(fig[2, 1];
         title="Rotor Speed",
         xlabel="Time [s]",
         ylabel="Rotor Speed ω [pu]")
-    lines!(ax2, sol; idxs=VIndex(2, :machine₊ω), color=:green, linewidth=2)
-    vlines!(ax2, [1.0], color=:red, linestyle=:dash, alpha=0.7)
-    hlines!(ax2, [1.0], color=:black, linestyle=:dot, alpha=0.5, label="Synchronous speed")
+    lines!(ax2, sol; idxs=VIndex(2, :machine₊ω), linewidth=2)
     axislegend(ax2)
 
     ax3 = Axis(fig[3, 1];
-        title="Machine Currents",
-        xlabel="Time [s]",
-        ylabel="Current [pu]")
-    lines!(ax3, sol; idxs=VIndex(2, :machine₊I_d), label="I_d", color=:orange, linewidth=2)
-    lines!(ax3, sol; idxs=VIndex(2, :machine₊I_q), label="I_q", color=:purple, linewidth=2)
-    vlines!(ax3, [1.0], color=:red, linestyle=:dash, alpha=0.7)
-    axislegend(ax3)
-
-    ax4 = Axis(fig[4, 1];
         title="Machine Voltages",
         xlabel="Time [s]",
         ylabel="Voltage [pu]")
-    lines!(ax4, sol; idxs=VIndex(2, :machine₊V_d), label="V_d", color=:cyan, linewidth=2)
-    lines!(ax4, sol; idxs=VIndex(2, :machine₊V_q), label="V_q", color=:magenta, linewidth=2)
-    vlines!(ax4, [1.0], color=:red, linestyle=:dash, alpha=0.7)
-    axislegend(ax4)
-
-    ax5 = Axis(fig[5, 1];
-        title="Electrical Torque",
-        xlabel="Time [s]",
-        ylabel="Torque [pu]")
-    lines!(ax5, sol; idxs=VIndex(2, :machine₊τ_e), color=:brown, linewidth=2)
-    vlines!(ax5, [1.0], color=:red, linestyle=:dash, alpha=0.7)
-
-    ax6 = Axis(fig[6, 1];
-        title="Bus Power",
-        xlabel="Time [s]",
-        ylabel="Power [pu]")
-    lines!(ax6, sol; idxs=VIndex(2, :busbar₊P), label="Active Power", color=:darkblue, linewidth=2)
-    lines!(ax6, sol; idxs=VIndex(2, :busbar₊Q), label="Reactive Power", color=:darkred, linewidth=2)
-    vlines!(ax6, [1.0], color=:red, linestyle=:dash, alpha=0.7)
-    axislegend(ax6)
-    save("machine_response.png", fig)
+    lines!(ax3, sol; idxs=VIndex(2, :machine₊V_d), color=Cycled(1), linewidth=2)
+    lines!(ax3, sol; idxs=VIndex(2, :machine₊V_q), color=Cycled(2), linewidth=2)
+    axislegend(ax3)
     fig
-end |> display
+end
 
 #=
 ## Observing the Poor Damping Problem
@@ -305,26 +290,40 @@ This poor damping behavior occurs because:
 2. **Constant field voltage**: No dynamic response to help stabilize the machine
 3. **No mechanical damping**: The swing equation has no friction losses
 
+The only source of damping here is, that we have specified a *constant
+mechanical power* rather than a constant mechanical torque.
+
 To solve this problem, real power systems use control systems, particularly
 **Power System Stabilizers (PSS)** that are specifically designed to damp
 electromechanical oscillations.
 
-## Adding a Power System Stabilizer
+## Adding a Power System Stabilizer (PSS)
 
 Let's create an improved machine model with controllable field voltage and
 add the simplest possible PSS to demonstrate the damping improvement.
+
+The implemented PSS is a simple device, which adjusts the excitation voltage
+based on frequency deviation. It consists of a washout filter to remove steady-state errors
+and only react to frequency changes, and a gain to amplify the response.
+
+To achive this goal we will:
+1. Modify the Milano machine model to include a controllable field voltage input and a rotor frequency measurement output.
+2. Create a simple PSS model that takes the frequency input and outputs a stabilizing signal to the field voltage.
+3. Combine the machine and PSS into a new composite model that forms an injector.
+4. Repeat the simulation above with our new controlled-generator model and compare the results.
 =#
 
 #=
 ### Controllable Machine Model
 
 First, we create a modified Milano machine with control inputs/outputs:
+`vf_in` for field voltage and `ω_out` for frequency output.
 =#
 
 @mtkmodel MilanoControllableMachine begin
     @components begin
         terminal=Terminal()
-        # Control interface
+        ## Control interface
         vf_in = RealInput(guess=1)  # field voltage input
         ω_out = RealOutput()        # frequency output for PSS
     end
@@ -376,6 +375,7 @@ First, we create a modified Milano machine with control inputs/outputs:
         ω_out.u ~ ω
     end
 end
+nothing #hide
 
 #=
 ### Simple Power System Stabilizer
@@ -386,30 +386,47 @@ ensures the PSS only responds to frequency changes, not steady-state errors.
 
 @mtkmodel SimplePSS begin
     @components begin
-        ω_in = RealInput()         # frequency input from machine
-        vst = RealOutput()         # stabilizer output signal
+        ω_in = RealInput() # frequency input from machine
+        vst = RealOutput() # stabilizer output signal
     end
     @parameters begin
         Tw=10, [description="washout time constant"]
-        Ks=10, [description="stabilizer gain"]
+        Ks=20, [description="stabilizer gain"]
     end
     @variables begin
-        x(t), [guess=0, description="washout filter state"]
+        y(t), [guess=0, description="washout filter output"]
     end
     @equations begin
-        # Washout filter: removes DC, responds only to frequency changes
-        Dt(x) ~ (ω_in.u - 1 - x) / Tw  # (ω_in.u - 1) gives frequency deviation
-        vst.u ~ Ks * x
+        ## Washout filter: dy/dt = (ω - y)/Tw
+        Dt(y) ~ (ω_in.u - y) / Tw
+        ## output gain
+        vst.u ~ Ks * (ω_in.u - y)
     end
 end
+nothing #hide
 
 #=
 ### Complete Generator with PSS
 
-Now we create a composite model that combines the controllable machine with
-the PSS, properly connecting the control loop.
-=#
+The PSS only adds an **offset** to the field voltage based on the frequency input.
+Therefore, our combined injector model needs to look something like this:
+```
+    ┌───────────────────────────┐
+    │GeneratorWithPss           │
+    │         ╭─────→─────╮     │
+(t) │ ┌───────┴─┐ ω_out ┌─┴───┐ │
+ o──┼─┤ Machine │       │ PSS │ │
+    │ └───────┬─┘       └─┬───┘ │
+    │   vf_in ╰──←─(+)──←─╯ vst │
+    │               ↑           │
+    │            vf_base        │
+    └───────────────────────────┘
+```
+Notably, similar how to left `vf_set` free for initialization in the previous example,
+now we need to leave `vf_base` free.
 
+We define a new mtkmodel which combines machine with controller and forms a new injector:
+=#
 @mtkmodel GeneratorWithPSS begin
     @components begin
         terminal = Terminal()
@@ -420,11 +437,11 @@ the PSS, properly connecting the control loop.
         vf_base, [guess=1.0, description="base field voltage"]
     end
     @equations begin
-        # Connect terminals
+        ## Connect terminals
         connect(terminal, machine.terminal)
-        # Connect control loop: machine frequency → PSS → back to machine field voltage
+        ## Connect control loop: machine frequency → PSS → back to machine field voltage
         connect(machine.ω_out, pss.ω_in)
-        # Sum base field voltage with PSS output
+        ## Sum base field voltage with PSS output
         machine.vf_in.u ~ vf_base + pss.vst.u
     end
 end
@@ -432,6 +449,48 @@ end
 @named gen_with_pss = GeneratorWithPSS()
 isinjectormodel(gen_with_pss) # Verify it's still an injector
 
+#=
+Since this is an injector, we can use `MTKBus(gen_with_pss)` to build the symbolic bus model.
+However, this leads to another level of namespacing, as the overall bus will have variable names like
+`gen_with_pss₊machine₊δ` due to the capsulation.
+
+Alternatively, we could have define a model which directly implements the `MTKBus` interface:
+```
+┌─────────────────────────────────────┐
+│MyMTKBus                             │
+│                   ╭─────→─────╮     │
+│┌──────┐   ┌───────┴─┐ ω_out ┌─┴───┐ │
+││BusBar├─o─┤ Machine │       │ PSS │ │
+│└──────┘   └───────┬─┘       └─┬───┘ │
+│             vf_in ╰──←─(+)──←─╯ vst │
+│                         ↑           │
+│                      vf_base        │
+└─────────────────────────────────────┘
+```
+=#
+@mtkmodel CustomMTKBus begin
+    @components begin
+        busbar = BusBar()
+        machine = MilanoControllableMachine()
+        pss = SimplePSS()
+    end
+    @parameters begin
+        vf_base, [guess=1.0, description="base field voltage"]
+    end
+    @equations begin
+        connect(busbar.terminal, machine.terminal)
+        connect(machine.ω_out, pss.ω_in)
+        machine.vf_in.u ~ vf_base + pss.vst.u
+    end
+end
+@named genbus_custom = CustomMTKBus()
+@assert isbusmodel(genbus_custom)
+
+#=
+In practice, it doesn't really matter which approach you choose, as both will work.
+However this highlights the flexibility of the MTK modeling framework **before**
+you go to the compiled-model domain by calling `Bus` on the model fulfilling the `MTKBus` interface.
+=#
 
 #=
 ## Simulation with PSS
@@ -450,12 +509,12 @@ genbus_pss = Bus(
 # Create network with PSS-equipped generator
 nw_pss = Network([slackbus, genbus_pss], line)
 initialize_from_pf!(nw_pss)
+nothing #hide
 
 # Run simulation with simple PSS
 s0_pss = NWState(nw_pss)
 prob_pss = ODEProblem(nw_pss, uflat(s0_pss), (0,100), pflat(s0_pss), callback=get_callbacks(nw_pss))
 sol_pss = solve(prob_pss, Rodas5P())
-
 nothing #hide
 
 #=
@@ -465,87 +524,26 @@ Let's create comparison plots to clearly see the damping improvement:
 =#
 
 let
-    fig = Figure(size=(1000, 800));
+    fig = Figure(size=(800, 600));
 
-    # Compare rotor speeds
+    ## Compare rotor speeds
     ax1 = Axis(fig[1, 1];
         title="Rotor Speed Comparison: Effect of PSS on Damping",
         xlabel="Time [s]",
         ylabel="Rotor Speed ω [pu]")
-    lines!(ax1, sol; idxs=VIndex(2, :machine₊ω), label="No PSS (Unstable)", color=:red, linewidth=3)
-    lines!(ax1, sol_pss; idxs=VIndex(2, :gen_with_pss₊machine₊ω), label="Simple PSS", color=:blue, linewidth=2)
-    vlines!(ax1, [1.0], color=:black, linestyle=:dash, alpha=0.7, label="Frequency Disturbance")
-    hlines!(ax1, [1.0], color=:gray, linestyle=:dot, alpha=0.5, label="Synchronous Speed")
+    lines!(ax1, sol; idxs=VIndex(2, :machine₊ω), label="No PSS", color=Cycled(2))
+    lines!(ax1, sol_pss; idxs=VIndex(2, :gen_with_pss₊machine₊ω), label="Simple PSS", color=Cycled(1), linewidth=2)
     axislegend(ax1, position=:rt)
     xlims!(ax1, 0, 30)  # Focus on first 30 seconds
 
-    # Compare rotor angles
+    ## PSS Output - shows the actual stabilizer signal
     ax2 = Axis(fig[2, 1];
-        title="Rotor Angle Comparison",
+        title="PSS Output Signal",
         xlabel="Time [s]",
-        ylabel="Rotor Angle δ [rad]")
-    lines!(ax2, sol; idxs=VIndex(2, :machine₊δ), label="No PSS", color=:red, linewidth=3)
-    lines!(ax2, sol_pss; idxs=VIndex(2, :gen_with_pss₊machine₊δ), label="Simple PSS", color=:blue, linewidth=2)
-    vlines!(ax2, [1.0], color=:black, linestyle=:dash, alpha=0.7)
+        ylabel="PSS Output [pu]")
+    lines!(ax2, sol_pss; idxs=VIndex(2, :gen_with_pss₊pss₊vst₊u), label="PSS Output", linewidth=2)
     axislegend(ax2, position=:rt)
     xlims!(ax2, 0, 30)
 
-    # Detailed view of first 10 seconds
-    ax3 = Axis(fig[3, 1];
-        title="Detailed View: First 10 Seconds After Disturbance",
-        xlabel="Time [s]",
-        ylabel="Rotor Speed ω [pu]")
-    lines!(ax3, sol; idxs=VIndex(2, :machine₊ω), label="No PSS", color=:red, linewidth=3)
-    lines!(ax3, sol_pss; idxs=VIndex(2, :gen_with_pss₊machine₊ω), label="Simple PSS", color=:blue, linewidth=2)
-    vlines!(ax3, [1.0], color=:black, linestyle=:dash, alpha=0.7)
-    hlines!(ax3, [1.0], color=:gray, linestyle=:dot, alpha=0.5)
-    axislegend(ax3, position=:rt)
-    xlims!(ax3, 0, 10)
-    ylims!(ax3, 0.995, 1.015)
-
-    save("pss_action.png", fig)
     fig
-end |> display
-
-#=
-## Summary
-
-This tutorial demonstrated the complete process of implementing and improving
-a custom generator model in PowerDynamics.jl:
-
-**Part 1: Basic Milano Classical Machine**
-- Implemented Milano's classical machine equations from Chapter 15.1
-- Showed how to use ModelingToolkit DSL for power system components
-- Demonstrated proper Park transformations and interface compliance
-
-**Part 2: Identifying the Stability Problem**
-- Revealed poor damping characteristics typical of classical machine models
-- Explained the physical reasons: no damper windings, constant field voltage, no mechanical damping
-- Showed that oscillations persist for hundreds of seconds without control
-
-**Part 3: Control System Solution**
-- Created a controllable machine model with input/output interfaces
-- Implemented the simplest possible PSS: washout filter + gain
-- Used composite models to connect machine and PSS properly
-
-**Part 4: Demonstrating the Improvement**
-- Compared simulations with no PSS and simple PSS
-- Showed dramatic damping improvement with properly tuned control systems
-- Illustrated the importance of PSS parameter selection for stability
-
-**Key Learning Points:**
-- Classical machine models need control systems for realistic behavior
-- PSS parameter tuning is critical: too aggressive gains can cause instability
-- Simple PSS (washout + gain): Use moderate gains (Ks ≈ 5-15) and appropriate time constants (Tw ≈ 2s)
-- ModelingToolkit allows easy creation of both component models and control systems
-- Proper input/output interfaces enable flexible system composition
-
-**PSS Design Guidelines:**
-- Start with conservative parameters and increase damping gradually
-- Washout time constant: 1-10 seconds (removes DC component)
-- Simple PSS gain: 5-20 (POSITIVE for damping - increases field voltage when frequency rises)
-- Key insight: Higher field voltage → higher electrical torque → slows down accelerating rotor
-
-This example provides a foundation for implementing other custom generator models
-and control systems in PowerDynamics.jl.
-=#
+end
