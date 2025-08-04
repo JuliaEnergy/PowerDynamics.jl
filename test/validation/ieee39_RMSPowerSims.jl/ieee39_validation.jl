@@ -3,7 +3,7 @@ using PowerDynamics.Library
 using ModelingToolkit
 using NetworkDynamics
 using CairoMakie
-using JSON
+import JSON
 using OrderedCollections
 using DataFrames
 using OrdinaryDiffEqRosenbrock
@@ -42,7 +42,7 @@ end
 branch_df = sort!(dict_to_df(json["branch"]; index=Int[], f_bus=Int[], t_bus=Int[], br_r=Float64[], br_x=Float64[], tap=Float64[], shift=Float64[], br_status=Int[], transformer=Int[], g_fr=Float64[], b_fr=Float64[], g_to=Float64[], b_to=Float64[]), :index)
 
 # define commbinde bus dataframe which contains all the dynamical parameters
-bus_df = let
+bus_df, _dynload_df, _machine_df, _avr_df, _gov_df = let
     bus_df = sort!(dict_to_df(json["bus"]; index=Int[], bus_type=Int[], base_kv=Float64[], vm=Float64[], va=Float64[]), :index)
 
     # add loads data to bus_df
@@ -91,7 +91,7 @@ bus_df = let
     leftjoin!(bus_df, _machine_df; on=:index=>:bus)
     leftjoin!(bus_df, _avr_df; on=:index=>:bus)
     leftjoin!(bus_df, _gov_df; on=:index=>:bus)
-    bus_df
+    bus_df, _dynload_df, _machine_df, _avr_df, _gov_df
 end
 
 # TODO: check vref/pset after init
@@ -102,6 +102,129 @@ has_load(i) = !ismissing(bus_df[i, :pd])
 has_gen(i) = !ismissing(bus_df[i, :pg])
 has_avr(i) = !ismissing(bus_df[i, :Vref])
 has_gov(i) = !ismissing(bus_df[i, :P_set])
+
+####
+#### Export data for simpler import in examples (commented out)
+####
+#=
+reduced_branch_df = select(
+    branch_df,
+    # :index => :branch,
+    :f_bus => :src_bus,
+    :t_bus => :dst_bus,
+    :transformer => :transformer,
+    :tap => ByRow(t -> 1/t) => :r_src,
+    :br_r => :R,
+    :br_x => :X,
+    :g_fr => :G_src,
+    :g_to => :G_dst,
+    :b_fr => :B_src,
+    :b_to => :B_dst,
+)
+sort!(reduced_branch_df, [:src_bus, :dst_bus])
+CSV.write(joinpath(pkgdir(PowerDynamics), "docs", "examples", "ieee39data", "branch.csv"), reduced_branch_df)
+
+transform_bustype = i -> begin
+    if i==1
+        :PQ
+    elseif i==2
+        :PV
+    elseif i==3
+        :Slack
+    else
+        error("Unknown bus type $i")
+    end
+end
+
+function get_bus_category(bus_num)
+    load = has_load(bus_num)
+    gen = has_gen(bus_num)
+    avr = has_avr(bus_num)
+    gov = has_gov(bus_num)
+
+    if !load && !gen
+        return :junction
+    elseif load && !gen
+        return :load
+    elseif !load && gen && avr && gov
+        return :ctrld_machine
+    elseif load && gen && avr && gov
+        return :ctrld_machine_load
+    elseif load && gen && !avr && !gov
+        return :unctrld_machine_load
+    end
+end
+
+reduced_bus_df = select(
+    bus_df,
+    :index => :bus,
+    :bus_type=>ByRow(transform_bustype)=>:bus_type,
+    :index => ByRow(get_bus_category) => :category,
+    [:pd, :pg] => ByRow((d,g)->(ismissing(d) ? 0 : -d) + (ismissing(g) ? 0 : g)) => :P,
+    [:qd, :qg] => ByRow((d,g)->(ismissing(d) ? 0 : -d) + (ismissing(g) ? 0 : g)) => :Q,
+    :vg=>:V,
+    :base_kv,
+    :index => ByRow(has_load) => :has_load,
+    :index => ByRow(has_gen) => :has_gen,
+    :index => ByRow(has_avr) => :has_avr,
+    :index => ByRow(has_gov) => :has_gov,
+)
+CSV.write(joinpath(pkgdir(PowerDynamics), "docs", "examples", "ieee39data", "bus.csv"), reduced_bus_df)
+
+load_with_bus = leftjoin(_dynload_df, select(bus_df, :index, :pd, :qd); on=:bus=>:index)
+load_reduced = select(
+    load_with_bus,
+    :bus,
+    :pd => ByRow(x->-x) => :Pset,
+    :qd => ByRow(x->-x) => :Qset,
+    :Kpz=>:KpZ,
+    :Kqz=>:KqZ,
+    :Kpi=>:KpI,
+    :Kqi=>:KqI,
+    [:Kpz, :Kpi] => ByRow((Kpz,Kpi)->1-Kpz-Kpi) => :KpC,
+    [:Kqz, :Kqi] => ByRow((Kqz,Kqi)->1-Kqz-Kqi) => :KqC,
+)
+CSV.write(joinpath(pkgdir(PowerDynamics), "docs", "examples", "ieee39data", "load.csv"), load_reduced)
+
+# Create machine.csv with parameters for SauerPaiMachine
+# First join machine data with bus data to get mbase, base_kv, vbase
+machine_with_bus = leftjoin(_machine_df, select(bus_df, :index, :mbase, :base_kv, :vbase); on=:bus=>:index)
+machine_csv = select(machine_with_bus,
+    :bus,
+    :mbase => :Sn, :base_kv => :V_b, :vbase => :Vn,
+    :Rs => :R_s, :Xl => :X_ls,
+    :Xd => :X_d, :Xq => :X_q,
+    :Xd_d => :X′_d, :Xq_d => :X′_q,
+    :Xd_dd => :X″_d, :Xq_dd => :X″_q,
+    :Td_d => :T′_d0, :Tq_d => :T′_q0,
+    :Td_dd => :T″_d0, :Tq_dd => :T″_q0,
+    :H,
+    :bus => ByRow(i -> 0) => :D, # no damping
+)
+CSV.write(joinpath(pkgdir(PowerDynamics), "docs", "examples", "ieee39data", "machine.csv"), machine_csv)
+
+# Create avr.csv with parameters for AVRTypeI
+avr_csv = select(_avr_df,
+    :bus,
+    :Ka, :Ke, :Kf, :Ta, :Tf, :Te, :Tr,
+    :Vrmin => :vr_min, :Vrmax => :vr_max,
+    :E1, :Se1, :E2, :Se2
+)
+CSV.write(joinpath(pkgdir(PowerDynamics), "docs", "examples", "ieee39data", "avr.csv"), avr_csv)
+
+# Create gov.csv with parameters for TGOV1
+gov_csv = select(_gov_df,
+    :bus,
+    :Vmin => :V_min,
+    :Vmax => :V_max,
+    :Rd => :R,
+    :T1, :T2, :T3,
+    :bus => ByRow(i->0) => :DT,
+    :bus => ByRow(i -> 1) => :ω_ref,
+)
+CSV.write(joinpath(pkgdir(PowerDynamics), "docs", "examples", "ieee39data", "gov.csv"), gov_csv)
+=#
+
 
 @time branches = let
     branches = []
