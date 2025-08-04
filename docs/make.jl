@@ -53,7 +53,7 @@ kwargs = (;
             # "generated/ieee9bus.md",
         ],
         "API" => "API.md",
-        "🔗 `NetworkDynamics.jl` Docs" => "networkdynamics_forward.md",
+        "🔗 NetworkDynamics.jl Docs" => "networkdynamics_forward.md",
     ],
     warnonly=[:missing_docs],
 )
