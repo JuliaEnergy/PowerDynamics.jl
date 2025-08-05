@@ -10,20 +10,21 @@ PowerDynamics.jl is a Julia package for modeling and simulating power grid dynam
 
 - **[Modeling Concepts](@ref)** - Learn the fundamental concepts behind PowerDynamics modeling
 - **[Component Library](@ref)** - Explore the available power system component models
-- **[Initialization](@ref)** - Understand how to properly initialize power system simulations
-- **[API Reference](@ref)** - Complete function and type documentation
+- **[Powergrid Initialization](@ref)** - Understand how to properly initialize power system simulations
+- **[API Reference](@ref API)** - Complete function and type documentation
 
 It is also highly recommend to out check the docs on
 [NetworkDynamics.jl](https://github.com/PIK-ICoNe/NetworkDynamics.jl)
 as those explain lots of the underlying functionality and concepts
 
 ## Tutorials
-- **[Custom Components](@ref)** - Creating your own bus models
+- **[Custom Components](@ref custom_bus)** - Creating your own bus models
 
 ## Examples
-- **[IEEE 9-Bus System](@ref)** - Basic power system simulation
-- **[IEEE 39-Bus System Part 1](@ref)** - Large-scale system modeling
-- **[IEEE 39-Bus System Part 2](@ref)** - Advanced analysis techniques
+- **[IEEE 9-Bus System](@ref ieee9bus)** - Basic power system simulation
+- **[IEEE 39-Bus System Part 1](@ref ieee39-part1)** - Modeling of a larger System 
+- **[IEEE 39-Bus System Part 2](@ref ieee39-part2)** - Advanced Initialization Tutorial 
+- **[IEEE 39-Bus System Part 3](@ref ieee39-part3)** - Dynamic Simulation and Parameter Tuning 
 
 !!! warning "PowerDynamics.Library Under Active Development"
     **The PowerDynamics.Library component library is currently excluded from semantic versioning and is under heavy development.**

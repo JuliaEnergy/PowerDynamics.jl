@@ -1,5 +1,5 @@
 #=
-# IEEE 9Bus Example
+# [IEEE 9Bus Example](@id ieee9bus)
 
 In this example, we're going to model the IEEE 9 bus system.
 

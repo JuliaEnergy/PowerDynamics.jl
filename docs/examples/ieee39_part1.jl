@@ -1,5 +1,5 @@
 #=
-# IEEE39 Bus Tutorial - Part I: Model Creation
+# [IEEE39 Bus Tutorial - Part I: Model Creation](@id ieee39-part1)
 
 This is the first part of a three-part tutorial series for the IEEE 39-bus test system:
 
