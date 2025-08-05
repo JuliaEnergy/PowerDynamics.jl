@@ -1,5 +1,5 @@
 """
-    Terminal
+    @named t = Terminal()
 
 A ModelingToolkit connector for electrical terminals in power system components.
 

@@ -4,43 +4,31 @@ CurrentModule = PowerDynamics
 
 # PowerDynamics
 
-Documentation for [PowerDynamics](https://github.com/JuliaEnergy/PowerDynamics.jl).
+PowerDynamics.jl is a Julia package for modeling and simulating power grid dynamics. It provides a comprehensive framework for analyzing electrical power systems, including synchronous machines, loads, lines, and various control elements. The package is built on top of [NetworkDynamics.jl](https://github.com/PIK-ICoNe/NetworkDynamics.jl) and offers both predefined component models and the flexibility to create custom power system components.
 
-## Project Structure
-The project is structured as follows
+## Getting Started
 
-```
-PowerDynamics/
-├── assets: contains asses for reference tests
-├── docs: contains this documentation
-├── PowerDynamicsTesting: helper package for testing, defines test utilities like reference tests
-├── Project.toml
-├── src: source code
-│   ├── Library: submodule for library, all the models live here
-│   └── ...
-└── test: test code
-```
-At this stage, this project is meant to be used with the `main` branch from NetworkDynamics.
-Unfortunately, it also depends on the unregistered subpackage `PowerDynamicsTesting` which makes instantiating the environment a bit tricky (because you can neither add `NetworkDynamics#main` nor `PowerDynamicstesting#../PowerDynamicsTesting` without it complaining about the other dependency.
-Thanks to the `[sources]` block in `Project.toml` in Julia v1.11, this shouldn'te be a problem anymore.
+- **[Modeling Concepts](@ref)** - Learn the fundamental concepts behind PowerDynamics modeling
+- **[Component Library](@ref)** - Explore the available power system component models
+- **[Initialization](@ref)** - Understand how to properly initialize power system simulations
+- **[API Reference](@ref)** - Complete function and type documentation
 
-If you want to use the realse version of Julia v1.10 I suggest to create a new development environment:
+It is also highly recommend to out check the docs on
+[NetworkDynamics.jl](https://github.com/PIK-ICoNe/NetworkDynamics.jl)
+as those explain lots of the underlying functionality and concepts
 
-```julia
-julia> pwd() # make sure you're in the right folder
-".../.julia/dev/PowerDynamics"
+## Tutorials
+- **[Custom Components](@ref)** - Creating your own bus models
 
-(v1.10) pkg> activate devenv
+## Examples
+- **[IEEE 9-Bus System](@ref)** - Basic power system simulation
+- **[IEEE 39-Bus System Part 1](@ref)** - Large-scale system modeling
+- **[IEEE 39-Bus System Part 2](@ref)** - Advanced analysis techniques
 
-(devenv) pkg> dev NetworkDynamics
+!!! warning "PowerDynamics.Library Under Active Development"
+    **The PowerDynamics.Library component library is currently excluded from semantic versioning and is under heavy development.**
 
-(devenv) pkg> dev ./PowerDynamicsTesting
-
-(devenv) pkg> dev .
-```
-
-```@index
-```
+    While PowerDynamics itself follows semantic versioning, the Library submodule's API is highly unstable and variable names, function signatures, and model interfaces may change frequently without notice. If you are using specific models from PowerDynamics.Library in their current state, we strongly recommend copying them to your own source code to avoid breaking changes in future updates.
 
 ## Funding
 Development of this project was in part funded by the *German Federal Ministry for Economic Affairs and Climate Action* as part of the *OpPoDyn*-Project (Project ID 01258425/1, 2024-2027).

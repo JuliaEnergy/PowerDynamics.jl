@@ -45,7 +45,7 @@ kwargs = (;
         "Home" => "index.md",
         "Modeling Concepts" => "ModelingConcepts.md",
         "Initialization" => "initialization.md",
-        # "Component Library" => "Library.md",
+        "Component Library" => "Library.md",
         "Tutorials" => [
             # "generated/custom_bus.md",
         ],
