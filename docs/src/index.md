@@ -31,6 +31,47 @@ as those explain lots of the underlying functionality and concepts
 
     While PowerDynamics itself follows semantic versioning, the Library submodule's API is highly unstable and variable names, function signatures, and model interfaces may change frequently without notice. If you are using specific models from PowerDynamics.Library in their current state, we strongly recommend copying them to your own source code to avoid breaking changes in future updates.
 
+## Reproducibility
+
+```@raw html
+<details><summary>Direct dependencies used for this documentation:</summary>
+```
+
+```@example
+using Pkg # hide
+Pkg.status() # hide
+```
+
+```@raw html
+</details>
+```
+
+```@raw html
+<details><summary>Julia Version:</summary>
+```
+
+```@example
+using InteractiveUtils # hide
+versioninfo() # hide
+```
+
+```@raw html
+</details>
+```
+
+```@raw html
+<details><summary>Full Manifest:</summary>
+```
+
+```@example
+using Pkg # hide
+Pkg.status(; mode = PKGMODE_MANIFEST) # hide
+```
+
+```@raw html
+</details>
+```
+
 ## Funding
 Development of this project was in part funded by the *German Federal Ministry for Economic Affairs and Climate Action* as part of the *OpPoDyn*-Project (Project ID 01258425/1, 2024-2027).
 

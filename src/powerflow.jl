@@ -164,7 +164,7 @@ get_pfmodel(nw::Network, idx::NetworkDynamics.ECIndex) = get_pfmodel(getcomp(nw,
 Sets the power flow model for the component.
 Overwrites any existing power flow model.
 
-See also [`remove_pfmodel!`](@ref), [`get_pfmodel`](@ref).
+See also [`delete_pfmodel!`](@ref), [`get_pfmodel`](@ref).
 """
 function set_pfmodel!(c::NetworkDynamics.ComponentModel, model)
     set_metadata!(c, :pfmodel, model)
