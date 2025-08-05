@@ -11,10 +11,11 @@ use the updated `*.md` and source files. This way the Julia session keeps alive 
 individual builds are much faster.
 =#
 using Pkg
+Pkg.activate(@__DIR__)
+
 using Revise
 using LiveServer
 
-Pkg.activate(@__DIR__)
 if VERSION ≤ v"1.11-"
     Pkg.develop(PackageSpec(path=dirname(@__DIR__))) # adds the package this script is called from
 end

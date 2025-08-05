@@ -1,5 +1,5 @@
 #=
-# Define a Custom Bus Model
+# [Define a Custom Bus Model](@id custom_bus)
 
 In this Tutorial, we will define a custom bus model that can be used in PowerDynamics.jl.
 
