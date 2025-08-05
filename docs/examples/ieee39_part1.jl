@@ -476,9 +476,10 @@ vertex ║ │MTKLine                       │ ║ vertex
        ║ └──────────────────────────────┘ ║
        ╚══════════════════════════════════╝
 ```
+(We used the `PiLine_fault` model since we plan on simulating short circuits later.)
 =#
 
-@named piline_template = Line(MTKLine(PiLine(;name=:piline)))
+@named piline_template = Line(MTKLine(PiLine_fault(;name=:piline)))
 
 #=
 Each transmission element is created by:
@@ -494,7 +495,7 @@ for row in eachrow(branch_df)
     ## Apply electrical parameters from CSV data
     for col_name in names(branch_df)
         if col_name ∉ ["src_bus", "dst_bus", "transformer"]
-            set_default!(line, col_name, row[col_name])
+            set_default!(line, Regex(col_name*"\$"), row[col_name])
         end
     end
 
