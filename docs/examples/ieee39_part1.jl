@@ -450,7 +450,7 @@ for row in eachrow(bus_df)
     elseif row.bus_type == "Slack"
         pfSlack(V=row.V, δ=0)   ## Slack bus: fixed V and angle
     end
-    set_metadata!(bus, :pfmodel, pf_model)
+    set_pfmodel!(bus, pf_model)
 
     push!(busses, bus)
 end

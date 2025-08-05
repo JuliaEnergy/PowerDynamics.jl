@@ -60,6 +60,14 @@ powerflow_model
 ispfmodel
 ```
 
+### Power Flow Model Management Functions
+```@docs
+has_pfmodel
+get_pfmodel
+set_pfmodel!
+delete_pfmodel!
+```
+
 ## Power Flow Initialization Constraints
 
 ### Constraint Types

@@ -63,7 +63,7 @@ function Bus(template::VertexModel; copy=true, vidx=nothing, pf=nothing, name=te
     end
     if !isnothing(pf)
         if ispfmodel(pf)
-            set_metadata!(vertexf, :pfmodel, pf)
+            set_pfmodel!(vertexf, pf)
         else
             throw(ArgumentError("The provided pf model is invalid!"))
         end

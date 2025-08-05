@@ -94,8 +94,8 @@ The returned model must satisfy [`ispfmodel`](@ref) criteria:
 See also: [`ispfmodel`](@ref), [`pfSlack`](@ref), [`pfPV`](@ref), [`pfPQ`](@ref)
 """
 function powerflow_model(cf::NetworkDynamics.ComponentModel)
-    if has_metadata(cf, :pfmodel)
-        pfm = get_metadata(cf, :pfmodel)
+    if has_pfmodel(cf)
+        pfm = get_pfmodel(cf)
         if !ispfmodel(pfm)
             error("Provided :pfmodel for :$(cf.name) is no valid powerflow model!")
         end
@@ -127,6 +127,64 @@ function powerflow_model(nw::Network)
     efs = powerflow_model.(nw.im.edgem);
     Network(g, vfs, efs)
 end
+
+####
+#### Power Flow Model Accessors
+####
+
+"""
+    has_pfmodel(c::ComponentModel)
+    has_pfmodel(nw::Network, idx::Union{VIndex,EIndex})
+
+Checks if the component has a power flow model in metadata.
+
+See also: [`get_pfmodel`](@ref), [`set_pfmodel!`](@ref).
+"""
+has_pfmodel(c::NetworkDynamics.ComponentModel) = has_metadata(c, :pfmodel)
+has_pfmodel(nw::Network, idx::NetworkDynamics.VCIndex) = has_pfmodel(getcomp(nw, idx))
+has_pfmodel(nw::Network, idx::NetworkDynamics.ECIndex) = has_pfmodel(getcomp(nw, idx))
+
+"""
+    get_pfmodel(c::NetworkDynamics.ComponentModel)
+    get_pfmodel(nw::Network, idx::Union{VIndex,EIndex})
+
+Retrieves the power flow model for the component model.
+May error if no power flow model is present. Use `has_pfmodel` to check first.
+
+See also: [`has_pfmodel`](@ref), [`set_pfmodel!`](@ref).
+"""
+get_pfmodel(c::NetworkDynamics.ComponentModel) = get_metadata(c, :pfmodel)
+get_pfmodel(nw::Network, idx::NetworkDynamics.VCIndex) = get_pfmodel(getcomp(nw, idx))
+get_pfmodel(nw::Network, idx::NetworkDynamics.ECIndex) = get_pfmodel(getcomp(nw, idx))
+
+"""
+    set_pfmodel!(c::NetworkDynamics.ComponentModel, model)
+    set_pfmodel!(nw::Network, idx::Union{VIndex,EIndex}, model)
+
+Sets the power flow model for the component.
+Overwrites any existing power flow model.
+
+See also [`remove_pfmodel!`](@ref), [`get_pfmodel`](@ref).
+"""
+function set_pfmodel!(c::NetworkDynamics.ComponentModel, model)
+    set_metadata!(c, :pfmodel, model)
+end
+set_pfmodel!(nw::Network, idx::NetworkDynamics.VCIndex, model) = set_pfmodel!(getcomp(nw, idx), model)
+set_pfmodel!(nw::Network, idx::NetworkDynamics.ECIndex, model) = set_pfmodel!(getcomp(nw, idx), model)
+
+"""
+    delete_pfmodel!(c::NetworkDynamics.ComponentModel)
+    delete_pfmodel!(nw::Network, idx::Union{VIndex,EIndex})
+
+Removes the power flow model from the component model,
+or from a component referenced by `idx` in a network.
+Returns `true` if the power flow model existed and was removed, `false` otherwise.
+
+See also: [`set_pfmodel!`](@ref).
+"""
+delete_pfmodel!(c::NetworkDynamics.ComponentModel) = delete_metadata!(c, :pfmodel)
+delete_pfmodel!(nw::Network, idx::NetworkDynamics.VCIndex) = delete_pfmodel!(getcomp(nw, idx))
+delete_pfmodel!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfmodel!(getcomp(nw, idx))
 
 """
     solve_powerflow(nw::Network;
