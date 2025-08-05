@@ -51,7 +51,7 @@ kwargs = (;
         ],
         "Examples" => [
             # "generated/ieee9bus.md",
-            "generated/ieee39_part1.md",
+            "IEEE39 Part I" => "generated/ieee39_part1.md",
         ],
         "API" => "API.md",
         "🔗 NetworkDynamics.jl Docs" => "networkdynamics_forward.md",

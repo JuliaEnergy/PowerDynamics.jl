@@ -1,11 +1,11 @@
 #=
-# IEEE39 Bus Tutorial - Part 1: Model Creation
+# IEEE39 Bus Tutorial - Part I: Model Creation
 
 This is the first part of a three-part tutorial series for the IEEE 39-bus test system:
 
-- **Part 1: Model Creation** (this tutorial) - Build the network structure with buses, lines, and components
-- **Part 2: Initialization** - Perform power flow calculations and dynamic initialization
-- **Part 3: Dynamic Simulation** - Run time-domain simulations and analyze system behavior
+- **Part I: Model Creation** (this tutorial) - Build the network structure with buses, lines, and components
+- **Part II: Initialization** - Perform power flow calculations and dynamic initialization
+- **Part III: Dynamic Simulation** - Run time-domain simulations and analyze system behavior
 
 In this first part, we'll construct the complete IEEE 39-bus network model using PowerDynamics.jl,
 including generators, loads, transmission lines, and control systems.
@@ -166,7 +166,7 @@ nothing #hide
 
 
 #=
-## Model Definition
+## Subcomponent Definition
 As stated above, our buses fall in 5 different categories.
 We will define a "template" for each of those categories and then create the individual buses from those templates.
 By doing so, we can reach substantial performance improvements, as we do not have repeatedly **compile** the same models (the symbolic simplification is quite costly).
@@ -270,6 +270,7 @@ interface  ║  │MTKBus           │ ║
 
 @named junction_bus_template = Bus(MTKBus())
 strip_defaults!(junction_bus_template)  ## Clear default parameters for manual setting
+junction_bus_template #hide
 
 #=
 ### Load Bus
@@ -290,7 +291,7 @@ interface  ║  │MTKBus          │ ║
 
 @named load_bus_template = Bus(MTKBus(load))
 strip_defaults!(load_bus_template)
-nothing #hide
+load_bus_template #hide
 
 #=
 ### Generator Bus (Controlled)
@@ -323,8 +324,7 @@ strip_defaults!(ctrld_machine_bus_template)
 ## Set system-wide base values for all generators
 set_default!(ctrld_machine_bus_template, r"S_b$", BASE_MVA)
 set_default!(ctrld_machine_bus_template, r"ω_b$", 2π*BASE_FREQ)
-nothing #hide
-
+ctrld_machine_bus_template # hide
 
 #=
 ### Generator + Load Bus (Controlled)
@@ -358,6 +358,7 @@ Buses with both controlled generators and loads
 strip_defaults!(ctrld_machine_load_bus_template)
 set_default!(ctrld_machine_load_bus_template, r"S_b$", BASE_MVA)
 set_default!(ctrld_machine_load_bus_template, r"ω_b$", 2π*BASE_FREQ)
+ctrld_machine_load_bus_template #hide
 
 #=
 ### Generator + Load Bus (Uncontrolled)
@@ -385,6 +386,7 @@ Buses with uncontrolled generators and loads
 strip_defaults!(unctrld_machine_load_bus_template)
 set_default!(unctrld_machine_load_bus_template, r"S_b$", BASE_MVA)
 set_default!(unctrld_machine_load_bus_template, r"ω_b$", 2π*BASE_FREQ)
+unctrld_machine_load_bus_template #hide
 
 #=
 ## Bus Instantiation and Parameter Setting
@@ -405,6 +407,7 @@ function apply_csv_params!(bus, table, bus_index)
         end
     end
 end
+nothing #hide
 
 #=
 For each bus in the system, we:
@@ -456,6 +459,17 @@ end
 
 The IEEE 39-bus system includes both transmission lines and transformers,
 all modeled using the π-line equivalent circuit model.
+```
+       ╔══════════════════════════════════╗
+       ║ EdgeModel (compiled)             ║
+   src ║ ┌──────────────────────────────┐ ║ dst
+vertex ║ │MTKLine                       │ ║ vertex
+   u ───→│┌───────┐ ┌────────┐ ┌───────┐│←─── u
+       ║ ││LineEnd├o┤ PiLine ├o┤LineEnd││ ║
+   i ←───│└───────┘ └────────┘ └───────┘│───→ i
+       ║ └──────────────────────────────┘ ║
+       ╚══════════════════════════════════╝
+```
 =#
 
 @named piline_template = Line(MTKLine(PiLine(;name=:piline)))
@@ -497,5 +511,3 @@ The network `nw` now contains the complete IEEE 39-bus model structure.
 In Part 2 of this tutorial series, we'll initialize this network by solving
 the power flow and setting up the dynamic initial conditions.
 =#
-
-nothing #hide
