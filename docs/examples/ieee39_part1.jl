@@ -10,8 +10,10 @@ This is the first part of a three-part tutorial series for the IEEE 39-bus test 
 In this first part, we'll construct the complete IEEE 39-bus network model using PowerDynamics.jl,
 including generators, loads, transmission lines, and control systems.
 
+This script can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
+
 ## System Structure
-The system consist of 39 buses (with 10 generators and 19 loads) and 46 branches (12 of which are transformers).
+The system consists of 39 buses (with 10 generators and 19 loads) and 46 branches (12 of which are transformers).
 
 The buses fall into the following categories:
 - Junction: pure transient buses without dynamic components
@@ -20,7 +22,7 @@ The buses fall into the following categories:
 - Controlled Machine + Load: buses with controlled machines and loads
 - Uncontrolled Machine + Load: buses with uncontrolled machines and loads
 
-For the powerflow solution, we have a slack bus, PV busses and PQ busses.
+For the power flow solution, we have a slack bus, PV buses and PQ buses.
 
 For the dynamic simulation, we will use the following models:
 - ZIP Load for loads,
@@ -29,9 +31,9 @@ For the dynamic simulation, we will use the following models:
 
 ## Setup and Data Loading
 
-!!! note: No Proper Importer exists yet
+!!! warning "No Standardized Data Import"
     As of now, PowerDynamics.jl does not support any advanced import mechanisms for power grids.
-    Therefore, this tutorial loas the data from some custom CSV files.
+    Therefore, this tutorial loads the data from some custom CSV files.
 
 First, we'll load the required packages and read the system data from CSV files.
 The IEEE 39-bus system data is organized into separate files for different components.
@@ -172,8 +174,8 @@ We will define a "template" for each of those categories and then create the ind
 By doing so, we can reach substantial performance improvements, as we do not have repeatedly **compile** the same models (the symbolic simplification is quite costly).
 Instead, we copy the templates and adjust parameters.
 
-However befor we can define the bus templates, we need to define the individual subcomponents.
-Those subcomponents are MTK models and not yet compiled node models. See [Modeling Concets](@ref) and the [custom bus tutorial](@ref custom_bus).
+However, before we can define the bus templates, we need to define the individual subcomponents.
+Those subcomponents are MTK models and not yet compiled node models. See [Modeling Concepts](@ref) and the [custom bus tutorial](@ref custom_bus).
 
 ### Load Model
 We use the ZIP load model which represents loads. Those loads satisfy the [Injector Interface](@ref).
@@ -211,11 +213,11 @@ nothing #hide
 #=
 **Controlled Machine**: Includes automatic voltage regulator (AVR) and turbine governor controls.
 
-The controled machine is modeld as a **composite injector**, it consts
+The controlled machine is modeled as a **composite injector**, it consists
 of 3 subcomponents: the machine, the AVR and the governor.
 The AVR receives the voltage magnitude measurement from the terminal of the machine and sets the field voltage.
 The governor receives the frequency measurement and sets the mechanical torque.
-Together, the satisfy the [Injector Interface](@ref).
+Together, they satisfy the [Injector Interface](@ref).
 
 ```
       ┌───────────────────────────────┐
@@ -251,7 +253,7 @@ nothing # hide
 #=
 ## Bus Template Creation
 
-No we have all the components (i.e. the MTK models) so we can combine them into full bus models and compile the methods.
+Now we have all the components (i.e. the MTK models) so we can combine them into full bus models and compile the methods.
 
 ### Junction Bus
 Pure transmission buses with no generation or load
@@ -420,7 +422,6 @@ For each bus in the system, we:
 busses = []
 for row in eachrow(bus_df)
     i = row.bus
-    println("Bus $i: $(row.category)")
 
     ## Select template based on bus category
     bus = if row.category == "junction"
@@ -459,6 +460,11 @@ end
 
 The IEEE 39-bus system includes both transmission lines and transformers,
 all modeled using the π-line equivalent circuit model.
+
+The model consists of several layers:
+1. The `PiModel`, which fulfills the [Branch interface](@ref) as it has two terminals
+2. The [`MTKLine`](@ref) constructor, which creates a MTK model fulfilling the [Line Interface](@ref)
+3. The compiled `EdgeModel` created by calling the [`Line`](@ref) constructor
 ```
        ╔══════════════════════════════════╗
        ║ EdgeModel (compiled)             ║
@@ -482,8 +488,6 @@ Each transmission element is created by:
 
 branches = []
 for row in eachrow(branch_df)
-    println("Branch: $(row.src_bus) -> $(row.dst_bus)")
-
     ## Create line instance with topology
     line = Line(piline_template; src=row.src_bus, dst=row.dst_bus)
 
