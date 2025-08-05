@@ -58,9 +58,9 @@ The system data is stored in CSV files containing:
     | `bus` | Bus number (unique identifier) |
     | `bus_type` | Power flow bus type: "PQ" (load), "PV" (generator), "Slack" (reference) |
     | `category` | Component category: "junction", "load", "ctrld\_machine", "ctrld\_machine\_load", "unctrld\_machine\_load" |
-    | `P` | Active power injection [pu] (positive = generation, negative = load) |
-    | `Q` | Reactive power injection [pu] (positive = generation, negative = load) |
-    | `V` | Voltage magnitude [pu] (for PV and Slack buses) |
+    | `P` | Active power injection [pu] \(positive = generation, negative = load\) |
+    | `Q` | Reactive power injection [pu] \(positive = generation, negative = load\) |
+    | `V` | Voltage magnitude [pu] \(for PV and Slack buses\) |
     | `base_kv` | Base voltage level [kV] |
     | `has_load` | Boolean flag indicating presence of load component |
     | `has_gen` | Boolean flag indicating presence of generator component |
@@ -175,7 +175,7 @@ By doing so, we can reach substantial performance improvements, as we do not hav
 Instead, we copy the templates and adjust parameters.
 
 However, before we can define the bus templates, we need to define the individual subcomponents.
-Those subcomponents are MTK models and not yet compiled node models. See [Modeling Concepts](@ref) and the [custom bus tutorial](@ref custom_bus).
+Those subcomponents are MTK models and not yet compiled node models. See [Modeling Concepts](@ref) and the [custom bus tutorial](@ref custom-bus).
 
 ### Load Model
 We use the ZIP load model which represents loads. Those loads satisfy the [Injector Interface](@ref).
@@ -462,8 +462,8 @@ The IEEE 39-bus system includes both transmission lines and transformers,
 all modeled using the π-line equivalent circuit model.
 
 The model consists of several layers:
-1. The `PiModel`, which fulfills the [Branch interface](@ref) as it has two terminals
-2. The [`MTKLine`](@ref) constructor, which creates a MTK model fulfilling the [Line Interface](@ref)
+1. The `PiModel`, which fulfills the [Branch Interface](@ref) as it has two terminals
+2. The [`MTKLine`](@ref) constructor, which creates a MTK model fulfilling the [MTKLine Interface](@ref)
 3. The compiled `EdgeModel` created by calling the [`Line`](@ref) constructor
 ```
        ╔══════════════════════════════════╗

@@ -4,7 +4,7 @@ CurrentModule = PowerDynamics
 
 # PowerDynamics
 
-PowerDynamics.jl is a Julia package for modeling and simulating power grid dynamics. It provides a comprehensive framework for analyzing electrical power systems, including synchronous machines, loads, lines, and various control elements. The package is built on top of [NetworkDynamics.jl](https://github.com/PIK-ICoNe/NetworkDynamics.jl) and offers both predefined component models and the flexibility to create custom power system components.
+PowerDynamics.jl is a Julia package for modeling and simulating power grid dynamics. It provides a comprehensive framework for analyzing electrical power systems, including synchronous machines, loads, lines, and various control elements. The package is built on top of [NetworkDynamics.jl](https://github.com/JuliaDynamics/NetworkDynamics.jl) and offers both predefined component models and the flexibility to create custom power system components.
 
 ## Getting Started
 
@@ -14,11 +14,11 @@ PowerDynamics.jl is a Julia package for modeling and simulating power grid dynam
 - **[API Reference](@ref API)** - Complete function and type documentation
 
 It is also highly recommend to out check the docs on
-[NetworkDynamics.jl](https://github.com/PIK-ICoNe/NetworkDynamics.jl)
+[NetworkDynamics.jl](https://github.com/JuliaDynamics/NetworkDynamics.jl)
 as those explain lots of the underlying functionality and concepts
 
 ## Tutorials
-- **[Custom Components](@ref custom_bus)** - Creating your own bus models
+- **[Custom Components](@ref custom-bus)** - Creating your own bus models
 
 ## Examples
 - **[IEEE 9-Bus System](@ref ieee9bus)** - Basic power system simulation

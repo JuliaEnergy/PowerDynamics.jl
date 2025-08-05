@@ -47,10 +47,10 @@ kwargs = (;
         "Initialization" => "initialization.md",
         "Component Library" => "Library.md",
         "Tutorials" => [
-            # "generated/custom_bus.md",
+            "generated/custom_bus.md",
         ],
         "Examples" => [
-            # "generated/ieee9bus.md",
+            "generated/ieee9bus.md",
             "IEEE39 Part I: Modeling" => "generated/ieee39_part1.md",
             "IEEE39 Part II: Initialization" => "generated/ieee39_part2.md",
             "IEEE39 Part III: Simulation" => "generated/ieee39_part3.md",
