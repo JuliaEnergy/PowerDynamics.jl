@@ -1,10 +1,11 @@
 # # IEEE39 Bus Tutorial - Part I: Model Creation
 #
-# This is the first part of a three-part tutorial series for the IEEE 39-bus test system:
+# This is the first part of a four-part tutorial series for the IEEE 39-bus test system:
 #
 # - **Part I: Model Creation** (this tutorial) - Build the network structure with buses, lines, and components
 # - **Part II: Initialization** - Perform power flow calculations and dynamic initialization
 # - **Part III: Dynamic Simulation** - Run time-domain simulations and analyze system behavior
+# - **Part IV: Advanced Modeling & Parameter Optimization** - Create custom components and optimize system parameters
 #
 # In this first part, we'll construct the complete IEEE 39-bus network model using PowerDynamics.jl,
 # including generators, loads, transmission lines, and control systems.
@@ -147,7 +148,7 @@ nothing #hide
 # > | `V_max` | Maximum valve position [pu] |
 # > | `R` | Governor droop [Machine PU] |
 # > | `T1` | First transient time constant [s] |
-# > | `T2` | Second transient time constant [s]  |
+# > | `T2` | Second transient time constant [s] |
 # > | `T3` | Third transient time constant [s] |
 # > | `DT` | Turbine damping coefficient |
 # > | `ω_ref` | Reference frequency [pu] |
@@ -167,16 +168,16 @@ BASE_FREQ = 60.0
 nothing #hide
 
 # ## Subcomponent Definition
-# As stated above, our buses fall in 5 different categories.
+# As stated above, our buses fall into 5 different categories.
 # We will define a "template" for each of those categories and then create the individual buses from those templates.
-# By doing so, we can reach substantial performance improvements, as we do not have repeatedly **compile** the same models (the symbolic simplification is quite costly).
+# By doing so, we can reach substantial performance improvements, as we do not have to repeatedly **compile** the same models (the symbolic simplification is quite costly).
 # Instead, we copy the templates and adjust parameters.
 #
 # However, before we can define the bus templates, we need to define the individual subcomponents.
 # Those subcomponents are MTK models and not yet compiled node models. See Modeling Concepts and the custom bus tutorial.
 #
 # ### Load Model
-# We use the ZIP load model which represents loads. Those loads satisfy the Injector Interface.
+# We use the ZIP load model to represent loads. This model satisfies the Injector Interface.
 # ```
 # (t) ┌──────────┐
 #  o──┤ ZIP Load │
@@ -208,7 +209,7 @@ nothing #hide
 
 # **Controlled Machine**: Includes automatic voltage regulator (AVR) and turbine governor controls.
 #
-# The controlled machine is modeled as a **composite injector**, it consists
+# The controlled machine is modeled as a **composite injector**. It consists
 # of 3 subcomponents: the machine, the AVR and the governor.
 # The AVR receives the voltage magnitude measurement from the terminal of the machine and sets the field voltage.
 # The governor receives the frequency measurement and sets the mechanical torque.
@@ -246,7 +247,7 @@ nothing # hide
 
 # ## Bus Template Creation
 #
-# Now we have all the components (i.e. the MTK models) so we can combine them into full bus models and compile the methods.
+# Now we have all the components (i.e., the MTK models) so we can combine them into full bus models and compile the methods.
 #
 # ### Junction Bus
 # Pure transmission buses with no generation or load
@@ -441,7 +442,7 @@ end
 # all modeled using the π-line equivalent circuit model.
 #
 # The model consists of several layers:
-# 1. The `PiModel`, which fulfills the Branch Interface as it has two terminals
+# 1. The `PiModel`, which satisfies the Branch Interface as it has two terminals
 # 2. The `MTKLine` constructor, which creates a MTK model fulfilling the MTKLine Interface
 # 3. The compiled `EdgeModel` created by calling the `Line` constructor
 # ```
@@ -455,8 +456,9 @@ end
 #        ║ └──────────────────────────────┘ ║
 #        ╚══════════════════════════════════╝
 # ```
+# (We used the `PiLine_fault` model since we plan on simulating short circuits later.)
 
-@named piline_template = Line(MTKLine(PiLine(;name=:piline)))
+@named piline_template = Line(MTKLine(PiLine_fault(;name=:piline)))
 
 # Each transmission element is created by:
 # 1. Instantiating a line from the template with source and destination buses
@@ -470,7 +472,7 @@ for row in eachrow(branch_df)
     # Apply electrical parameters from CSV data
     for col_name in names(branch_df)
         if col_name ∉ ["src_bus", "dst_bus", "transformer"]
-            set_default!(line, col_name, row[col_name])
+            set_default!(line, Regex(col_name*"\$"), row[col_name])
         end
     end
 

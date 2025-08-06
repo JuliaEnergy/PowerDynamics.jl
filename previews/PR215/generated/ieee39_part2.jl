@@ -1,5 +1,12 @@
 # # IEEE39 Bus Tutorial - Part II: Initialization
 #
+# This is the second part of a four-part tutorial series for the IEEE 39-bus test system:
+#
+# - **Part I: Model Creation** - Build the network structure with buses, lines, and components
+# - **Part II: Initialization** (this tutorial) - Perform power flow calculations and dynamic initialization
+# - **Part III: Dynamic Simulation** - Run time-domain simulations and analyze system behavior
+# - **Part IV: Advanced Modeling & Parameter Optimization** - Create custom components and optimize system parameters
+#
 # The goal of this tutorial is to get an understanding of the initialization process in PowerDynamics.jl.
 #
 # For comprehensive documentation on initialization, see:
@@ -17,7 +24,9 @@
 #
 # As a prerequisite, we load part I of the tutorial, which contains the network model:
 
-include(joinpath(@__DIR__, "ieee39_part1.jl"))
+using PowerDynamics
+EXAMPLEDIR = joinpath(pkgdir(PowerDynamics), "docs", "examples")
+include(joinpath(EXAMPLEDIR, "ieee39_part1.jl"))
 nw # nw object now available
 
 # The initialization process in PowerDynamics.jl is a two-step process: first we
@@ -39,7 +48,7 @@ pfnw = powerflow_model(nw)
 
 nw[VIndex(30)]
 
-# We already see from the printout that we have a power flow model :pvbus attached to the generator model.
+# From the printout, we can see that a power flow model `:pvbus` is attached to the generator model.
 #
 # We can extract the attached PV power flow model by calling `powerflow_model`
 
@@ -59,7 +68,7 @@ powerflow_model(nw[VIndex(30)])
 
 nw[EIndex(1)]
 
-# No internal states, no :pfmodel
+# This model has no internal states and no `:pfmodel` metadata.
 
 @assert ispfmodel(nw[EIndex(1)]) # is pf model itself
 powerflow_model(nw[EIndex(1)]) === nw[EIndex(1)]
@@ -124,7 +133,7 @@ interf = interface_values(pfs)
 # > \begin{aligned}
 # > M_{\mathrm e}\,\frac{\mathrm{d}}{\mathrm{d}t}x_{\mathrm e} = \color{red}{0} &= f_{\mathrm e}\left(x_{\mathrm e}, \color{red}{\begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}},p_\mathrm{e}, t\right)\\
 # > \color{red}{\begin{bmatrix}i_r^\mathrm{src}\\i_r^\mathrm{dst}\end{bmatrix}} &= g^\mathrm{src}_{\mathrm e}\left(x_{\mathrm e},\color{red}{ \begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}}, p_\mathrm{e}, t\right)\\
-# > \color{red}{\begin{bmatrix}i_r^\mathrm{dst}\\i_r^\mathrm{dst}\end{bmatrix}} &= g^\mathrm{dst}_{\mathrm e}\left(x_{\mathrm e}, \color{red}{\begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}}, p_\mathrm{e}, t\right)\\
+# > \color{red}{\begin{bmatrix}i_r^\mathrm{dst}\\i_i^\mathrm{dst}\end{bmatrix}} &= g^\mathrm{dst}_{\mathrm e}\left(x_{\mathrm e}, \color{red}{\begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}}, p_\mathrm{e}, t\right)\\
 # > \end{aligned}
 # > ```
 #
@@ -240,7 +249,7 @@ nothing # hide
 #
 # > **No more default_overrides**
 # >
-# > Note how we can skip the `default_overrides` keyword argument, since the first (failing) call of `initialize_component!` already "burned in" the default overrides! Mutating state is a powerful tool, but needs care!
+# > Note how we can skip the `default_overrides` keyword argument, since the first (failing) call of `initialize_component!` already "burned in" the default overrides! Mutating state is a powerful tool, but it needs care!
 #
 # ### Method 2: Adding an `init_formula`
 # The problem with the previous method is that it is quite manual.
