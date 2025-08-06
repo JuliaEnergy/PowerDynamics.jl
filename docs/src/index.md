@@ -22,9 +22,10 @@ as those explain lots of the underlying functionality and concepts
 
 ## Examples
 - **[IEEE 9-Bus System](@ref ieee9bus)** - Basic power system simulation
-- **[IEEE 39-Bus System Part 1](@ref ieee39-part1)** - Modeling of a larger System 
-- **[IEEE 39-Bus System Part 2](@ref ieee39-part2)** - Advanced Initialization Tutorial 
-- **[IEEE 39-Bus System Part 3](@ref ieee39-part3)** - Dynamic Simulation and Parameter Tuning 
+- **[IEEE 39-Bus System Part 1](@ref ieee39-part1)** - Modeling of a larger System
+- **[IEEE 39-Bus System Part 2](@ref ieee39-part2)** - Advanced Initialization Tutorial
+- **[IEEE 39-Bus System Part 3](@ref ieee39-part3)** - Dynamic Simulation
+- **[IEEE 39-Bus System Part 4](@ref ieee39-part4)** - Advanced Modeling & Parameter Optimization
 
 !!! warning "PowerDynamics.Library Under Active Development"
     **The PowerDynamics.Library component library is currently excluded from semantic versioning and is under heavy development.**

@@ -1,6 +1,13 @@
 #=
 # [IEEE39 Bus Tutorial - Part II: Initialization](@id ieee39-part2)
 
+This is the second part of a four-part tutorial series for the IEEE 39-bus test system:
+
+- **Part I: Model Creation** - Build the network structure with buses, lines, and components
+- **Part II: Initialization** (this tutorial) - Perform power flow calculations and dynamic initialization
+- **Part III: Dynamic Simulation** - Run time-domain simulations and analyze system behavior
+- **Part IV: Advanced Modeling & Parameter Optimization** - Create custom components and optimize system parameters
+
 The goal of this tutorial is to get an understanding of the initialization process in PowerDynamics.jl.
 
 For comprehensive documentation on initialization, see:
@@ -18,7 +25,8 @@ process demonstrated here.
 As a prerequisite, we load part I of the tutorial, which contains the network model:
 =#
 
-include(joinpath(@__DIR__, "ieee39_part1.jl"))
+EXAMPLEDIR = joinpath(pkgdir(PowerDynamics), "docs", "examples")
+include(joinpath(EXAMPLEDIR, "ieee39_part1.jl"))
 nw # nw object now available
 
 #=

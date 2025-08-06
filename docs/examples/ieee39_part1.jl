@@ -1,11 +1,12 @@
 #=
 # [IEEE39 Bus Tutorial - Part I: Model Creation](@id ieee39-part1)
 
-This is the first part of a three-part tutorial series for the IEEE 39-bus test system:
+This is the first part of a four-part tutorial series for the IEEE 39-bus test system:
 
 - **Part I: Model Creation** (this tutorial) - Build the network structure with buses, lines, and components
 - **Part II: Initialization** - Perform power flow calculations and dynamic initialization
 - **Part III: Dynamic Simulation** - Run time-domain simulations and analyze system behavior
+- **Part IV: Advanced Modeling & Parameter Optimization** - Create custom components and optimize system parameters
 
 In this first part, we'll construct the complete IEEE 39-bus network model using PowerDynamics.jl,
 including generators, loads, transmission lines, and control systems.
