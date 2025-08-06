@@ -74,21 +74,21 @@ line 11, which connects buses 5 and 8.
 The transmission line models in our network include built-in parameters for fault simulation:
 
 - `pibranch₊shortcircuit`: When set to 1, this simulates a three-phase to ground short circuit along the line. The position in percentage can be given as a parameter too.
-- `pibranch₊active`: When set to 0, this completely disconnects the line from the network (no current flowing into line or out of line, i.e. the line is disconnected at both ends.)
+- `pibranch₊active`: When set to 0, this completely disconnects the line from the network (no current flowing into line or out of line, i.e., the line is disconnected at both ends)
 
 ### Callback Functions for Disturbance Events
 
 In order to simulate discrete perturbations, such as enabling a short circuit or disabling
-a line we need to use **callbacks**.
+a line, we need to use **callbacks**.
 Callbacks are a neat [feature of DifferentialEquations.jl](https://docs.sciml.ai/DiffEqDocs/stable/features/callback_functions/),
-which allow you to stop the solver under certain conditions and trigger a user defined affect function to change the state of the system.
+which allow you to stop the solver under certain conditions and trigger a user-defined affect function to change the state of the system.
 
 NetworkDynamics [inherits this functionality as well](@extref Callbacks).
 In addition, ND.jl provides a new type of callback: component callbacks.
 Those are callbacks which are attached to a single component rather than the full network,
 bringing the effect handling to the component level.
 
-Here we'll define 2 component callbacks: one to enable a short circuit at a given time and
+Here we'll define two component callbacks: one to enable a short circuit at a given time and
 one to disable the line at a given time.
 =#
 
@@ -149,7 +149,7 @@ The simulation process involves:
 3. Solving the ODE using a suitable numerical method
 4. Analyzing the results
 
-Note that we use [`get_callbacks`](@extref `NetworkDynamics.get_callbacks`) to collect the
+Note that we use [`get_callbacks`](@extref NetworkDynamics.get_callbacks) to collect the
 component callbacks, transform them into a `CallbackSet` compatible with the DifferentialEquations.jl ecosystem and pass them to the ODEProblem.
 =#
 
@@ -212,9 +212,9 @@ end
 
 #=
 **Observations:**
-- **Normal operation (t < 0.1s)**: Steady power flow through the line. Power towards destination is positive while power towards source is negative. This means we have a net transmission from bus 5 to bus 8.
-- **Short circuit (0.1s < t < 0.2s)**: Dramatic power flow change due to short circuit. Both source and destination show negative power, which means we have active power flowing from both sides towards the short circuit.
-- **Line disconnection (t > 0.2s)**: Zero power flow as line is permanently out of service
+- **Normal operation (t < 0.1s)**: Steady power flow through the line. Power towards destination is positive while power towards source is negative. This means we have net transmission from bus 5 to bus 8.
+- **Short circuit (0.1s < t < 0.2s)**: Dramatic power flow change due to the short circuit. Both source and destination show negative power, which means we have active power flowing from both sides towards the short circuit.
+- **Line disconnection (t > 0.2s)**: Zero power flow as the line is permanently out of service
 
 The power absorption during the fault demonstrates the severe electrical stress that short circuits
 place on the system. The protective relay action at t=0.2s successfully isolates the fault.
@@ -252,7 +252,7 @@ let fig = Figure(; size=(800, 500))
 end
 
 #=
-Observations: Both buses experience voltage depression during the short circuit but are able to recover after the short circuit is cleared by disconnection of the line.
+**Observations:** Both buses experience voltage depression during the short circuit but are able to recover after the short circuit is cleared by disconnection of the line.
 
 The voltage recovery demonstrates the system's ability to adapt to the new network topology
 after the line outage. The generators' automatic voltage regulators help maintain voltage stability.
@@ -285,5 +285,5 @@ let fig = Figure(; size=(800, 600))
 end
 
 #=
-Once again, we see how all bus voltages are affected by the short circuit and the overall voltage drops. However after the fault is cleared, the system achieves a synchronous steady-state again.
+Once again, we see how all bus voltages are affected by the short circuit and the overall voltage drops. However, after the fault is cleared, the system achieves a synchronous steady-state again.
 =#

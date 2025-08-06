@@ -15,7 +15,7 @@ For comprehensive documentation on initialization, see:
 - [PowerDynamics.jl initialization docs](@ref "Advanced Component Initialization")
 
 !!! tip "Quick Start"
-    If you're looking for the practical initialization approach without diving into implementation details, 
+    If you're looking for the practical initialization approach without diving into implementation details,
     jump directly to the [Initialize all Components](@ref initialize-all-components) section at the end.
 
 This tutorial goes deep into the initialization internals for educational purposes. In practice, 
@@ -25,6 +25,7 @@ process demonstrated here.
 As a prerequisite, we load part I of the tutorial, which contains the network model:
 =#
 
+using PowerDynamics
 EXAMPLEDIR = joinpath(pkgdir(PowerDynamics), "docs", "examples")
 include(joinpath(EXAMPLEDIR, "ieee39_part1.jl"))
 nw # nw object now available
@@ -49,7 +50,7 @@ individual components. For example, we have this rather complex dynamic model at
 =#
 nw[VIndex(30)]
 #=
-We already see from the printout that we have a power flow model :pvbus attached to the generator model.
+From the printout, we can see that a power flow model `:pvbus` is attached to the generator model.
 
 We can extract the attached PV power flow model by calling `powerflow_model`
 =#
@@ -69,7 +70,7 @@ For example, the PiLine models are completely static:
 =#
 nw[EIndex(1)]
 #=
-No internal states, no :pfmodel
+This model has no internal states and no `:pfmodel` metadata.
 =#
 @assert ispfmodel(nw[EIndex(1)]) # is pf model itself
 powerflow_model(nw[EIndex(1)]) === nw[EIndex(1)]
@@ -135,7 +136,7 @@ This leaves us with a system of $N=\mathrm{dim}(x) + \mathrm{dim}(u)$ equations 
     \begin{aligned}
     M_{\mathrm e}\,\frac{\mathrm{d}}{\mathrm{d}t}x_{\mathrm e} = \color{red}{0} &= f_{\mathrm e}\left(x_{\mathrm e}, \color{red}{\begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}},p_\mathrm{e}, t\right)\\
     \color{red}{\begin{bmatrix}i_r^\mathrm{src}\\i_r^\mathrm{dst}\end{bmatrix}} &= g^\mathrm{src}_{\mathrm e}\left(x_{\mathrm e},\color{red}{ \begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}}, p_\mathrm{e}, t\right)\\
-    \color{red}{\begin{bmatrix}i_r^\mathrm{dst}\\i_r^\mathrm{dst}\end{bmatrix}} &= g^\mathrm{dst}_{\mathrm e}\left(x_{\mathrm e}, \color{red}{\begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}}, p_\mathrm{e}, t\right)\\
+    \color{red}{\begin{bmatrix}i_r^\mathrm{dst}\\i_i^\mathrm{dst}\end{bmatrix}} &= g^\mathrm{dst}_{\mathrm e}\left(x_{\mathrm e}, \color{red}{\begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}}, p_\mathrm{e}, t\right)\\
     \end{aligned}
     ```
 
@@ -252,7 +253,7 @@ nothing # hide
 The initialization succeeded now!
 
 !!! note "No more default_overrides"
-    Note how we can skip the `default_overrides` keyword argument, since the first (failing) call of `initialize_component!` already "burned in" the default overrides! Mutating state is a powerful tool, but needs care!
+    Note how we can skip the `default_overrides` keyword argument, since the first (failing) call of `initialize_component!` already "burned in" the default overrides! Mutating state is a powerful tool, but it needs care!
 
 ### Method 2: Adding an `init_formula`
 The problem with the previous method is that it is quite manual.

@@ -145,7 +145,7 @@ The system data is stored in CSV files containing:
     | `V_max` | Maximum valve position [pu] |
     | `R` | Governor droop [Machine PU] |
     | `T1` | First transient time constant [s] |
-    | `T2` | Second transient time constant [s]  |
+    | `T2` | Second transient time constant [s] |
     | `T3` | Third transient time constant [s] |
     | `DT` | Turbine damping coefficient |
     | `ω_ref` | Reference frequency [pu] |
@@ -170,16 +170,16 @@ nothing #hide
 
 #=
 ## Subcomponent Definition
-As stated above, our buses fall in 5 different categories.
+As stated above, our buses fall into 5 different categories.
 We will define a "template" for each of those categories and then create the individual buses from those templates.
-By doing so, we can reach substantial performance improvements, as we do not have repeatedly **compile** the same models (the symbolic simplification is quite costly).
+By doing so, we can reach substantial performance improvements, as we do not have to repeatedly **compile** the same models (the symbolic simplification is quite costly).
 Instead, we copy the templates and adjust parameters.
 
 However, before we can define the bus templates, we need to define the individual subcomponents.
 Those subcomponents are MTK models and not yet compiled node models. See [Modeling Concepts](@ref) and the [custom bus tutorial](@ref custom-bus).
 
 ### Load Model
-We use the ZIP load model which represents loads. Those loads satisfy the [Injector Interface](@ref).
+We use the ZIP load model to represent loads. This model satisfies the [Injector Interface](@ref).
 ```
 (t) ┌──────────┐
  o──┤ ZIP Load │
@@ -214,7 +214,7 @@ nothing #hide
 #=
 **Controlled Machine**: Includes automatic voltage regulator (AVR) and turbine governor controls.
 
-The controlled machine is modeled as a **composite injector**, it consists
+The controlled machine is modeled as a **composite injector**. It consists
 of 3 subcomponents: the machine, the AVR and the governor.
 The AVR receives the voltage magnitude measurement from the terminal of the machine and sets the field voltage.
 The governor receives the frequency measurement and sets the mechanical torque.
@@ -254,7 +254,7 @@ nothing # hide
 #=
 ## Bus Template Creation
 
-Now we have all the components (i.e. the MTK models) so we can combine them into full bus models and compile the methods.
+Now we have all the components (i.e., the MTK models) so we can combine them into full bus models and compile the methods.
 
 ### Junction Bus
 Pure transmission buses with no generation or load
@@ -463,7 +463,7 @@ The IEEE 39-bus system includes both transmission lines and transformers,
 all modeled using the π-line equivalent circuit model.
 
 The model consists of several layers:
-1. The `PiModel`, which fulfills the [Branch Interface](@ref) as it has two terminals
+1. The `PiModel`, which satisfies the [Branch Interface](@ref) as it has two terminals
 2. The [`MTKLine`](@ref) constructor, which creates a MTK model fulfilling the [MTKLine Interface](@ref)
 3. The compiled `EdgeModel` created by calling the [`Line`](@ref) constructor
 ```
