@@ -263,6 +263,7 @@ To do so, we use the [`MTKBus(injectors...)`](@ref MTKBus) constructor.
 @named swing = Swing(; Pm=1, V=1, D=0.1)
 @named load = PQLoad(; Pset=-.5, Qset=0)
 bus1mtk = MTKBus(swing, load; name=:swingbus)
+show(stdout, MIME"text/plain"(), bus1mtk) #hide
 ```
 This results in an MTK model, which fulfills the `MTKBus` interface and thus can be compiled into an actual `VertexModel` for simulation:
 
@@ -284,6 +285,7 @@ by putting both Branches in parallel:
 @named branch1 = PiLine()
 @named branch2 = PiLine()
 linemtk = MTKLine(branch1, branch2; name=:powerline)
+show(stdout, MIME"text/plain"(), bus1mtk) #hide
 ```
 Similar to before, we need to compile the MTKModel by calling [`Line`](@ref).
 ```@example concepts
