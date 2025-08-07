@@ -1,0 +1,2 @@
+# Large test data files - treat as binary to avoid slowing down search/diff operations
+test/validation/ieee39_RMSPowerSims.jl/data/*.csv binary
