@@ -298,58 +298,75 @@ protected_template = Line(mtkline; name=:protected_piline)
 
 We implement the callbacks as outlined in the NetworkDynamic docs on Callbacks.
 
-Each callback is split in two parts: the *condition* and the *affect* function.
-The condition is called at each timestep. If the condition is met, the affect is calld.
-We start with implementing the overcurrent condition.
-For a [`ComponentCondition`](@extref NetworkDynamics.ComponentCondition), we need to specify
-which symbols we want to monitor. We need two: the parameter `I_max` and the current magnitudes at both ends.
-By checking
+For robust overcurrent protection, we need **two complementary callbacks**:
+- A **continuous callback** that detects smooth threshold crossings using root-finding
+- A **discrete callback** that catches instantaneous jumps above the threshold
+
+This dual approach is necessary because discrete events (like short circuits) can cause
+the current to jump above the threshold without crossing it smoothly, which continuous
+callbacks might miss.
+
+#### Overcurrent Callbacks
+
+For [`ComponentCondition`](@extref NetworkDynamics.ComponentCondition), we need to specify
+which symbols to monitor. By checking the available "observed" symbols (i.e. derive symbols that are not directly part of the states or parameters):
 =#
 obssym(protected_template)
 #=
-We see, that we have lots of "observed" symbols available, for example the
-current maginutes `:src₊i_mag` and `:dst₊i_mag`.
-In our condition, we just need to compare the bigger of the two too the `I_max` parameter.
+We see current magnitudes `:src₊i_mag` and `:dst₊i_mag` are available.
+We'll monitor both ends and compare the maximum to the `I_max` parameter.
 
-Note that the callback is a rootfind process, so we need to return the
-difference between limit and current magnitude (which its zero once the limit is
-reached).
+**Condition Definitions:**
+
+The **continuous condition** uses root-finding, returning the difference between
+limit and current magnitude (zero when the limit is reached):
 =#
 continuous_overcurrent_condition = ComponentCondition([:src₊i_mag, :dst₊i_mag], [:piline₊I_max]) do u, p, t
     p[:piline₊I_max] - max(u[:src₊i_mag], u[:dst₊i_mag])
 end
 nothing #hide #md
+
 #=
-Next up, we need to implement the affect function. Here we check, if the cutoff is allready scheduled.
-If not, it sets the `t_cutoff` parameter to the current time plus the delay time, and tells the integrator
-to explicitly step to this cutoff time (see docs on the [Integrator Interface](https://docs.sciml.ai/DiffEqDocs/stable/basics/integrator/)).
+The **discrete condition** uses a boolean check that triggers whenever
+the current exceeds the threshold:
+=#
+discrete_overcurrent_condition = ComponentCondition([:src₊i_mag, :dst₊i_mag], [:piline₊I_max]) do u, p, t
+    max(u[:src₊i_mag], u[:dst₊i_mag]) ≥ p[:piline₊I_max]
+end
+nothing #hide #md
+
+#=
+**Shared Affect Function:**
+
+Both callbacks use the same affect function. When triggered, it schedules
+the line cutoff by setting `t_cutoff` and tells the integrator to step to that time:
 =#
 overcurrent_affect = ComponentAffect([], [:piline₊t_cutoff, :piline₊t_delay]) do u, p, ctx
-    if p[:piline₊t_cutoff] == Inf # otherwise, it is allready sheduled for cutoff
+    if p[:piline₊t_cutoff] == Inf # otherwise, it is already scheduled for cutoff
         tcutoff = ctx.t + p[:piline₊t_delay]
-        println("Line $(ctx.src)→$(ctx.dst) overcurrent at t=$(ctx.t), sheduling cutoff at t=$tcutoff")
+        println("Line $(ctx.src)→$(ctx.dst) overcurrent at t=$(ctx.t), scheduling cutoff at t=$tcutoff")
         p[:piline₊t_cutoff] = tcutoff
         ## tell the integrator to explicitly step to the cutoff time
         add_tstop!(ctx.integrator, tcutoff)
     end
 end
 nothing #hide #md
+
 #=
-We then build the overall callback by combining the condition and the affect function.
+**Callback Assembly:**
+
+Finally, we build both callbacks by combining their respective conditions with the shared affect function:
 =#
 continuous_overcurrent_callback = ContinuousComponentCallback(continuous_overcurrent_condition, overcurrent_affect)
-
-#=
-NEEDS TEXT
-=#
-discrete_overcurrent_condition = ComponentCondition([:src₊i_mag, :dst₊i_mag], [:piline₊I_max]) do u, p, t
-    max(u[:src₊i_mag], u[:dst₊i_mag]) ≥ p[:piline₊I_max]
-end
 discrete_overcurrent_callback = DiscreteComponentCallback(discrete_overcurrent_condition, overcurrent_affect)
+nothing #hide #md
 
 #=
-Nextup, we need to define the cutoff callback. Since we expect the solver to explicitly hit the
-cutoff time, we don't need implement a continuouse callback but instead use a discrete callback.
+#### Cutoff Callback
+
+The cutoff callback switches off the line when the scheduled cutoff time is reached.
+Since we expect the solver to explicitly hit the cutoff time (via `add_tstop!`), 
+we only need a discrete callback:
 =#
 cutoff_condition = ComponentCondition([], [:piline₊t_cutoff]) do u, p, t
     t == p[:piline₊t_cutoff]
@@ -359,8 +376,12 @@ cutoff_affect = ComponentAffect([], [:piline₊active]) do u, p, ctx
     p[:piline₊active] = 0 # switch off the line
 end
 cutoff_callback = DiscreteComponentCallback(cutoff_condition, cutoff_affect)
+nothing #hide #md
+
 #=
-Finally, we can add the callbacks to the protected template.
+#### Adding Callbacks to Template
+
+Finally, we add all three callbacks to the protected template:
 =#
 set_callback!(protected_template,
     (continuous_overcurrent_callback, discrete_overcurrent_callback, cutoff_callback))
