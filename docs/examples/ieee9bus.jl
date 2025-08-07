@@ -50,7 +50,7 @@ function GeneratorBus(; machine_p=(;), avr_p=(;), gov_p=(;))
     ## generate the MTKBus (i.e. the MTK model containg the busbar and the injector)
     mtkbus = MTKBus(injector)
 end
-nothing # hide
+nothing #hide #md
 
 
 #=
@@ -66,7 +66,7 @@ function ConstantYLoadBus()
     @named load = ConstantYLoad()
     MTKBus(load; name=:loadbus)
 end
-nothing #hide
+nothing #hide #md
 
 
 #=
@@ -77,7 +77,7 @@ The parameters of the machines are obtaind from the data table from the RTDS dat
 gen1p = (;X_ls=0.01460, X_d=0.1460, X′_d=0.0608, X″_d=0.06, X_q=0.1000, X′_q=0.0969, X″_q=0.06, T′_d0=8.96, T′_q0=0.310, H=23.64)
 gen2p = (;X_ls=0.08958, X_d=0.8958, X′_d=0.1198, X″_d=0.11, X_q=0.8645, X′_q=0.1969, X″_q=0.11, T′_d0=6.00, T′_q0=0.535, H= 6.40)
 gen3p = (;X_ls=0.13125, X_d=1.3125, X′_d=0.1813, X″_d=0.18, X_q=1.2578, X′_q=0.2500, X″_q=0.18, T′_d0=5.89, T′_q0=0.600, H= 3.01)
-nothing #hide
+nothing #hide #md
 
 #=
 We instantiate all models as modeling toolkit models.
@@ -91,7 +91,7 @@ mtkbus6 = ConstantYLoadBus()
 mtkbus7 = MTKBus()
 mtkbus8 = ConstantYLoadBus()
 mtkbus9 = MTKBus()
-nothing #hide
+nothing #hide #md
 
 #=
 After this, we can build the `NetworkDynamics` components using the `Bus`-constructor.
@@ -113,7 +113,7 @@ The loads are modeled as PQ buses.
 @named bus7 = Bus(mtkbus7; vidx=7)
 @named bus8 = Bus(mtkbus8; vidx=8, pf=pfPQ(P=-1.0, Q=-0.35))
 @named bus9 = Bus(mtkbus9; vidx=9)
-nothing #hide
+nothing #hide #md
 
 #=
 Later on in initialization, we want to ensure that the internal parameters
@@ -126,7 +126,7 @@ vset_formula = @initformula :load₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^
 add_initformula!(bus5, vset_formula)
 add_initformula!(bus6, vset_formula)
 add_initformula!(bus8, vset_formula)
-nothing #hide
+nothing #hide #md
 
 #=
 ## Branches
@@ -157,7 +157,7 @@ end
 @named t14 = Line(transformer(; R=0, X=0.0576), src=1, dst=4)
 @named t27 = Line(transformer(; R=0, X=0.0625), src=2, dst=7)
 @named t39 = Line(transformer(; R=0, X=0.0586), src=3, dst=9)
-nothing #hide
+nothing #hide #md
 
 #=
 ## Build Network
@@ -187,7 +187,7 @@ the powerflow solution. Specifically, it determines:
 - Controller states and references for AVRs and governors
 =#
 u0 = initialize_from_pf(nw);
-nothing #hide
+nothing #hide #md
 
 #=
 We could check the initial state of some of the variables, we expect the model to be initialized in
@@ -219,7 +219,7 @@ to the line outage disturbance.
 =#
 prob = ODEProblem(nw, uflat(u0), (0,15), pflat(u0); callback=get_callbacks(nw))
 sol = solve(prob, Rodas5P())
-nothing #hide
+nothing #hide #md
 
 #=
 ## Plotting the Solution
@@ -250,4 +250,4 @@ for i in 1:3
 end
 axislegend(ax)
 
-fig #hide
+fig #hide #md

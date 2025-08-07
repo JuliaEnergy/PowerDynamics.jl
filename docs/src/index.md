@@ -39,8 +39,8 @@ as those explain lots of the underlying functionality and concepts
 ```
 
 ```@example
-using Pkg # hide
-Pkg.status() # hide
+using Pkg #hide
+Pkg.status() #hide
 ```
 
 ```@raw html
@@ -52,8 +52,8 @@ Pkg.status() # hide
 ```
 
 ```@example
-using InteractiveUtils # hide
-versioninfo() # hide
+using InteractiveUtils #hide
+versioninfo() #hide
 ```
 
 ```@raw html
@@ -65,8 +65,8 @@ versioninfo() # hide
 ```
 
 ```@example
-using Pkg # hide
-Pkg.status(; mode = PKGMODE_MANIFEST) # hide
+using Pkg #hide
+Pkg.status(; mode = PKGMODE_MANIFEST) #hide
 ```
 
 ```@raw html

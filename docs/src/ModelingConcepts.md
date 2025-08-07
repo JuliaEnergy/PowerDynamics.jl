@@ -306,7 +306,7 @@ Then we can solve the problem
 ```@example concepts
 prob = ODEProblem(nw, uflat(u0), (0,1), pflat(u0))
 sol = solve(prob, Rodas5P())
-@assert OrdinaryDiffEqRosenbrock.SciMLBase.successful_retcode(sol) # hide
+@assert OrdinaryDiffEqRosenbrock.SciMLBase.successful_retcode(sol) #hide
 nothing #hide
 ```
 And finally we can plot the solution:

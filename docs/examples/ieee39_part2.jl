@@ -158,11 +158,11 @@ dump_initial_state(gen; obs=false)
 Right now, we have 2 free parameters, 2 free inputs, 2 free outputs and 15 free states.
 We can use [`initialize_component`](@extref `NetworkDynamics.initialize_component`) to find values for the free symbols:
 =#
-try #hide
+try #hide #md
 initialize_component(gen)
-catch e #hide
-    @error e.msg #hide
-end #hide
+catch e #hide #md
+    @error e.msg #hide #md
+end #hide #md
 #=
 Wait! The initialization failed! Why? Well, we need to apply additional defaults, so called `default_overwrites` for the inputs/outputs to make the system solvable.
 =#
@@ -173,7 +173,7 @@ interf_v30 = Dict( # manually define interface values for demonstration
     :busbar₊i_r => -2.30145,
 )
 initialize_component(gen; default_overrides=interf_v30)
-nothing #hide
+nothing #hide #md
 #=
 !!! note "Mutating vs non-mutating Initialization"
     The non mutating [`initialize_component`](@extref `NetworkDynamics.initialize_component`) returns a dictionary
@@ -216,11 +216,11 @@ interf_v39 = Dict(
   :busbar₊i_i => -1.72223,
   :busbar₊i_r => 0.720135,
 )
-try #hide
+try #hide #md
 initialize_component!(nw[VIndex(39)]; default_overrides=interf_v39)
-catch e #hide
-    @error e.msg #hide
-end #hide
+catch e #hide #md
+    @error e.msg #hide #md
+end #hide #md
 
 #=
 Even though we set the interface values, the problem is still underconstrained!
@@ -228,11 +228,11 @@ Let's check the free symbols:
 =#
 println("free u: ", free_u(nw[VIndex(39)]))
 println("free p: ", free_p(nw[VIndex(39)]))
-nothing #hide
+nothing #hide #md
 #=
 We see 8 free states and 3 free parameters, however we only have 8 state + 2 output equations:
 =#
-nw[VIndex(39)] #hide
+nw[VIndex(39)] #hide #md
 
 #=
 Even though we have enough set parameters to initialize machine and load on its own, we cannot do it simultaneously.
@@ -248,7 +248,7 @@ u_r = get_initial_state(vm_manual, :busbar₊u_r)
 u_i = get_initial_state(vm_manual, :busbar₊u_i)
 set_default!(vm_manual, :ZIPLoad₊Vset, sqrt(u_r^2 + u_i^2))
 initialize_component!(vm_manual)
-nothing # hide
+nothing #hide #md
 #=
 The initialization succeeded now!
 
@@ -270,14 +270,14 @@ V_\mathrm{set} = \sqrt{u_r^2 + u_i^2}
 vm_formula = copy(nw[VIndex(39)])
 formula = @initformula :ZIPLoad₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
 set_initformula!(vm_formula, formula)
-vm_formula # hide
+vm_formula #hide #md
 #=
 The printout shows 1 additional initialization equation was attached to the model.
 
 The initialization works now:
 =#
 initialize_component!(vm_formula)
-nothing # hide
+nothing #hide #md
 #=
 The init formula is applied early in the initialization process, essentially writing a new `default` for `ZIPLoad₊Vset` based on the other defaults.
 
@@ -298,12 +298,12 @@ constraint = @initconstraint begin
   :ZIPLoad₊Vset - sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
 end
 set_initconstraint!(vm_constraint, constraint)
-vm_constraint # hide
+vm_constraint #hide #md
 #=
 With this added constraint, the initialization process is solvable again, since we now have 11 equations for the 11 free variables.
 =#
 initialize_component!(vm_constraint)
-nothing #hide
+nothing #hide #md
 #=
 For this particular case, method (2) is the way to go. However there are cases where the constraint is more complex and cannot be expressed as a formula.
 
@@ -319,13 +319,13 @@ Let's define the init formulas for the two buses which have loads and machines:
 formula = @initformula :ZIPLoad₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
 set_initformula!(nw[VIndex(31)], formula)
 set_initformula!(nw[VIndex(39)], formula)
-nothing #hide
+nothing #hide #md
 
 #=
 With that, the componentwise initialization of the whole network is possible:
 =#
 initialize_componentwise!(nw; default_overrides=interf)
-nothing #hide
+nothing #hide #md
 #=
 Even shorter, we can just use [`initialize_from_pf!`](@ref) to do everything from
 exporting the power flow model, finding the fixpoint and initializing all components:

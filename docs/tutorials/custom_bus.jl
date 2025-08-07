@@ -183,7 +183,7 @@ freq_event = PresetTimeComponentCallback(
     end
 )
 set_callback!(slackbus, freq_event)
-nothing #hide
+nothing #hide #md
 
 #=
 Next, we create the generator bus using our custom Milano machine model.
@@ -217,7 +217,7 @@ To do so, we use the function [`initialize_from_pf!`](@ref), which does several 
 More information on initialization can be found in the docs on [Powergrid Initialization](@ref).
 =#
 initialize_from_pf!(nw)
-nothing #hide
+nothing #hide #md
 
 #=
 Let's examine the initial state of our generator bus to verify proper initialization.
@@ -242,7 +242,7 @@ We simulate for 100 seconds to capture the machine's response to the frequency d
 s0 = NWState(nw)
 prob = ODEProblem(nw, uflat(s0), (0,100), pflat(s0), callback=get_callbacks(nw))
 sol = solve(prob, Rodas5P())
-nothing #hide
+nothing #hide #md
 
 #=
 ## Visualizing the Results
@@ -375,7 +375,7 @@ First, we create a modified Milano machine with control inputs/outputs:
         ω_out.u ~ ω
     end
 end
-nothing #hide
+nothing #hide #md
 
 #=
 ### Simple Power System Stabilizer
@@ -403,7 +403,7 @@ ensures the PSS only responds to frequency changes, not steady-state errors.
         vst.u ~ Ks * (ω_in.u - y)
     end
 end
-nothing #hide
+nothing #hide #md
 
 #=
 ### Complete Generator with PSS
@@ -509,13 +509,13 @@ genbus_pss = Bus(
 # Create network with PSS-equipped generator
 nw_pss = Network([slackbus, genbus_pss], line)
 initialize_from_pf!(nw_pss)
-nothing #hide
+nothing #hide #md
 
 # Run simulation with simple PSS
 s0_pss = NWState(nw_pss)
 prob_pss = ODEProblem(nw_pss, uflat(s0_pss), (0,100), pflat(s0_pss), callback=get_callbacks(nw_pss))
 sol_pss = solve(prob_pss, Rodas5P())
-nothing #hide
+nothing #hide #md
 
 #=
 ## Comparing Results: With and Without PSS
