@@ -101,7 +101,7 @@ pfs = find_fixpoint(pfnw, pfs0)
 #=
 As a result, we get a `NWState` object which contains the **full state** for the power flow model.
 
-Since power flow model and dynamic model share the same topology and the same interface (i.e. nodes create voltages, edges create currents), we can extract the interface values from the power flow model state and apply them to the dynamic model:
+Since power flow model and dynamic model share the same topology and the same *network interface* (i.e. nodes create voltages, edges create currents), we can extract the interface values from the power flow model state and apply them to the dynamic model:
 =#
 interf = interface_values(pfs)
 #=
@@ -135,7 +135,7 @@ This leaves us with a system of $N=\mathrm{dim}(x) + \mathrm{dim}(u)$ equations 
     ```math
     \begin{aligned}
     M_{\mathrm e}\,\frac{\mathrm{d}}{\mathrm{d}t}x_{\mathrm e} = \color{red}{0} &= f_{\mathrm e}\left(x_{\mathrm e}, \color{red}{\begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}},p_\mathrm{e}, t\right)\\
-    \color{red}{\begin{bmatrix}i_r^\mathrm{src}\\i_r^\mathrm{dst}\end{bmatrix}} &= g^\mathrm{src}_{\mathrm e}\left(x_{\mathrm e},\color{red}{ \begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}}, p_\mathrm{e}, t\right)\\
+    \color{red}{\begin{bmatrix}i_r^\mathrm{src}\\i_i^\mathrm{src}\end{bmatrix}} &= g^\mathrm{src}_{\mathrm e}\left(x_{\mathrm e},\color{red}{ \begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}}, p_\mathrm{e}, t\right)\\
     \color{red}{\begin{bmatrix}i_r^\mathrm{dst}\\i_i^\mathrm{dst}\end{bmatrix}} &= g^\mathrm{dst}_{\mathrm e}\left(x_{\mathrm e}, \color{red}{\begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}}, p_\mathrm{e}, t\right)\\
     \end{aligned}
     ```

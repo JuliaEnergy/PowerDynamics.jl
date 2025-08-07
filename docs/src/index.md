@@ -6,6 +6,11 @@ CurrentModule = PowerDynamics
 
 PowerDynamics.jl is a Julia package for modeling and simulating power grid dynamics. It provides a comprehensive framework for analyzing electrical power systems, including synchronous machines, loads, lines, and various control elements. The package is built on top of [NetworkDynamics.jl](https://github.com/JuliaDynamics/NetworkDynamics.jl) and offers both predefined component models and the flexibility to create custom power system components.
 
+!!! warning "PowerDynamics.Library Under Active Development"
+    **The PowerDynamics.Library component library is currently excluded from semantic versioning and is under heavy development.**
+
+    While PowerDynamics itself follows semantic versioning, the Library submodule's API is highly unstable and variable names, function signatures, and model interfaces may change frequently without notice. If you are using specific models from PowerDynamics.Library in their current state, we strongly recommend copying them to your own source code to avoid breaking changes in future updates.
+
 ## Getting Started
 
 - **[Modeling Concepts](@ref)** - Learn the fundamental concepts behind PowerDynamics modeling
@@ -26,11 +31,6 @@ as those explain lots of the underlying functionality and concepts
 - **[IEEE 39-Bus System Part 2](@ref ieee39-part2)** - Advanced Initialization Tutorial
 - **[IEEE 39-Bus System Part 3](@ref ieee39-part3)** - Dynamic Simulation
 - **[IEEE 39-Bus System Part 4](@ref ieee39-part4)** - Advanced Modeling & Parameter Optimization
-
-!!! warning "PowerDynamics.Library Under Active Development"
-    **The PowerDynamics.Library component library is currently excluded from semantic versioning and is under heavy development.**
-
-    While PowerDynamics itself follows semantic versioning, the Library submodule's API is highly unstable and variable names, function signatures, and model interfaces may change frequently without notice. If you are using specific models from PowerDynamics.Library in their current state, we strongly recommend copying them to your own source code to avoid breaking changes in future updates.
 
 ## Reproducibility
 

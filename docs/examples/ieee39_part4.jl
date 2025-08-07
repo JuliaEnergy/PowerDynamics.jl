@@ -171,7 +171,7 @@ end;
 
 Following the descriptions in [Modeling Concepts](@ref), we build an MTKBus using
 the droop as the single injector and then compile the bus model, similar to
-how we define the templates in [part I](@ieee39-part1):
+how we define the templates in [part I](@ref ieee39-part1):
 
 ```
            ╔═════════════════════════╗
@@ -246,7 +246,7 @@ set_jac_prototype!(nw_droop; remove_conditions=true)
 #=
 Additionally, we've set the jacobian prototype for performance gains during
 simulation and optimization, see NetworkDynamics docs on
-[Sparsity Detection](@extref).
+[Sparsity Detection](@extref sparsity_detection).
 =#
 
 #=

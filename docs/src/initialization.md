@@ -2,7 +2,9 @@
 
 Initialization of power grid simulations follows a multi-step approach that combines steady-state power flow analysis with dynamic component initialization. PowerDynamics.jl provides a structured framework for this process, building on the initialization capabilities of NetworkDynamics.jl.
 
-For general background on NetworkDynamics initialization concepts, see the [NetworkDynamics Initialization Guide](@extref Initialization).
+For general background on NetworkDynamics initialization concepts, see the [NetworkDynamics Initialization Guide](@extref initialization-guide).
+
+This document is a technical description of the process, for a hands-on example which goes through the initialization process of a full network check out the [Part II of the  the IEEE39 Bus Example](@ref ieee39-part2).
 
 ## Overview
 
@@ -100,7 +102,7 @@ NetworkDynamics.jl provides general [InitFormulas and InitConstraints](@extref  
 ### PFInitConstraints vs PFInitFormulas
 
 | Method | Purpose | Usage |
-|--------|---------|-------|
+|:-------|:--------|:------|
 | [`PFInitConstraint`](@ref) | Add constraint equations that must be satisfied | When you need to enforce specific relationships between variables |
 | [`PFInitFormula`](@ref) | Set default initial values directly | When you need to initialize variables based on power flow results |
 

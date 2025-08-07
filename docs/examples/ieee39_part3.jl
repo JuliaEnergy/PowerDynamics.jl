@@ -149,7 +149,7 @@ The simulation process involves:
 3. Solving the ODE using a suitable numerical method
 4. Analyzing the results
 
-Note that we use [`get_callbacks`](@extref NetworkDynamics.get_callbacks) to collect the
+Note that we use [`get_callbacks`](@extref NetworkDynamics.get_callbacks-Tuple{Network}) to collect the
 component callbacks, transform them into a `CallbackSet` compatible with the DifferentialEquations.jl ecosystem and pass them to the ODEProblem.
 =#
 

@@ -27,8 +27,8 @@ The edge model on the other hand looks like this:
 ```math
 \begin{aligned}
 M_{\mathrm e}\,\frac{\mathrm{d}}{\mathrm{d}t}x_{\mathrm e} &= f_{\mathrm e}\left(x_{\mathrm e}, \begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}, \begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix},p_\mathrm{e}, t\right)\\
-\begin{bmatrix}i_r^\mathrm{src}\\i_r^\mathrm{dst}\end{bmatrix} &= g^\mathrm{src}_{\mathrm e}\left(x_{\mathrm e}, \begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}, \begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}, p_\mathrm{e}, t\right)\\
-\begin{bmatrix}i_r^\mathrm{dst}\\i_r^\mathrm{dst}\end{bmatrix} &= g^\mathrm{dst}_{\mathrm e}\left(x_{\mathrm e}, \begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}, \begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}, p_\mathrm{e}, t\right)\\
+\begin{bmatrix}i_r^\mathrm{src}\\i_i^\mathrm{src}\end{bmatrix} &= g^\mathrm{src}_{\mathrm e}\left(x_{\mathrm e}, \begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}, \begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}, p_\mathrm{e}, t\right)\\
+\begin{bmatrix}i_r^\mathrm{dst}\\i_i^\mathrm{dst}\end{bmatrix} &= g^\mathrm{dst}_{\mathrm e}\left(x_{\mathrm e}, \begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}, \begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}, p_\mathrm{e}, t\right)\\
 \end{aligned}
 ```
 There are a few notable differences:
@@ -270,14 +270,14 @@ This results in an MTK model, which fulfills the `MTKBus` interface and thus can
 vertex1f = Bus(bus1mtk) # extract component function
 ```
 
-As a second bus in this example, we use a [`SlackDifferential`](@ref) from the Library.
+As a second bus in this example, we use a [`SlackDifferential`]() from the Library.
 This model is not an Injector but an MTKBus directly, as it does not make sense to connect anything else to a slack bus.
 ```@example concepts
 bus2mtk = SlackDifferential(; name=:slackbus)
 vertex2f = Bus(bus2mtk) # extract component function
 ```
 
-For the connecting line, we instantiate two [`PiLine`](@ref) from the library.
+For the connecting line, we instantiate two [`PiLine`]() from the library.
 Each PiLine fulfills the Branch interface. Therefore we can define a `MTKLine` model
 by putting both Branches in parallel:
 ```@example concepts

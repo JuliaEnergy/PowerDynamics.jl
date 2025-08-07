@@ -12,6 +12,11 @@ using CairoMakie
 links = InterLinks(
     "NetworkDynamics" => "https://juliadynamics.github.io/NetworkDynamics.jl/stable/",
 )
+#=
+# manually look for interlinks for debuggin purposes
+links["NetworkDynamics"]("get_callbacks") # search for name in all
+links["NetworkDynamics"]("Sparsity") # search for name in all
+=#
 
 DocMeta.setdocmeta!(PowerDynamics, :DocTestSetup, :(using PowerDynamics); recursive=true)
 
