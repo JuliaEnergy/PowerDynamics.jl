@@ -2,7 +2,7 @@
 # Tutorial on custom Line Models
 
 In this tutoral we'll implement a custom line model: a line with over power protection.
-To make it more interesting, this kind of line will monitor the current magnitude continously.
+To make it more interesting, this kind of line will monitor the current magnitude continuously.
 The safty protection is triggered whenever the current magnitude exceeds a threshold,
 however, to make the model more realistic, the protection is not triggered immediately but instead
 after a delay.
@@ -220,9 +220,9 @@ which allow you to stop the solver under certain conditions and trigger a user-d
 Their general capability is [extended in NetworkDynamics](@extref NetworkDynamics.Callbacks).
 
 We want to implement the following behavior:
-1. Continously monitor the current magnitude and compare to the maximal current threashhold.
+1. Continuously monitor the current magnitude and compare to the maximal current threashhold.
 2. If the maximum current is reached at time $t$, mark the line as to be switched off at time $t_\mathrm{cutoff} = t + \Delta t$.
-3. Continously monitor time of the simulation and switch off the line at $t_\mathrm{cutoff}$.
+3. Continuously monitor time of the simulation and switch off the line at $t_\mathrm{cutoff}$.
 
 The way to implement this is by introducing 3 new parameters:
 - `I_max`, the maximum current magnitude,
@@ -230,8 +230,8 @@ The way to implement this is by introducing 3 new parameters:
 - `t_delay`, the delay time after which the line should be switched off.
 
 Additional, we need to define 2 callbacks:
-- A [ContinousComponentCallback](@extref
-  NetworkDynamics.ContinousComponentCallback) to monitor the current
+- A [ContinuousComponentCallback](@extref
+  NetworkDynamics.ContinuousComponentCallback) to monitor the current
   magnitude, if the current magnitude exceeds the threshold, we set the
   `t_cutoff` to the current time plus the delay time. It also tells the solver to explicitly step to this cutoff time.
 - A [DiscreteComponentCallback](@extref NetworkDynamics.DiscreteComponentCallback) which compares the current time to the cutoff time
@@ -315,7 +315,7 @@ Note that the callback is a rootfind process, so we need to return the
 difference between limit and current magnitude (which its zero once the limit is
 reached).
 =#
-continous_overcurrent_condition = ComponentCondition([:src₊i_mag, :dst₊i_mag], [:piline₊I_max]) do u, p, t
+continuous_overcurrent_condition = ComponentCondition([:src₊i_mag, :dst₊i_mag], [:piline₊I_max]) do u, p, t
     p[:piline₊I_max] - max(u[:src₊i_mag], u[:dst₊i_mag])
 end
 nothing #hide #md
@@ -337,7 +337,7 @@ nothing #hide #md
 #=
 We then build the overall callback by combining the condition and the affect function.
 =#
-continous_overcurrent_callback = ContinousComponentCallback(continous_overcurrent_condition, overcurrent_affect)
+continuous_overcurrent_callback = ContinuousComponentCallback(continuous_overcurrent_condition, overcurrent_affect)
 
 #=
 NEEDS TEXT
@@ -349,7 +349,7 @@ discrete_overcurrent_callback = DiscreteComponentCallback(discrete_overcurrent_c
 
 #=
 Nextup, we need to define the cutoff callback. Since we expect the solver to explicitly hit the
-cutoff time, we don't need implement a continouse callback but instead use a discrete callback.
+cutoff time, we don't need implement a continuouse callback but instead use a discrete callback.
 =#
 cutoff_condition = ComponentCondition([], [:piline₊t_cutoff]) do u, p, t
     t == p[:piline₊t_cutoff]
@@ -363,7 +363,7 @@ cutoff_callback = DiscreteComponentCallback(cutoff_condition, cutoff_affect)
 Finally, we can add the callbacks to the protected template.
 =#
 set_callback!(protected_template,
-    (continous_overcurrent_callback, discrete_overcurrent_callback, cutoff_callback))
+    (continuous_overcurrent_callback, discrete_overcurrent_callback, cutoff_callback))
 protected_template #hide #md
 
 #=
@@ -377,7 +377,7 @@ much more elegantly now by just using the `ProtectedPiLine` model.
 Lets load the first part of that tutorial to get the IEEE39 Grid model.
 Also, we initialize the model (the quintessence of [part II](@ref ieee39-part2)).
 =#
-EXAMPLEDIR = joinpath(pkgdir(PowerDynamics), "docs", "examples")
+# EXAMPLEDIR = joinpath(pkgdir(PowerDynamics), "docs", "examples")
 # include(joinpath(EXAMPLEDIR, "ieee39_part1.jl"))
 # formula = @initformula :ZIPLoad₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
 # set_initformula!(nw[VIndex(31)], formula)
@@ -448,9 +448,10 @@ s0_protected[EIndex(AFFECTED_LINE, :piline₊I_max)] = 1.1 * i_at_steadys
 Secondly, we neet to introduce some perturbation, for that we'll recreate the short circuit scenario from the IEEE39 example.
 Notably, this time we only need to start the short circuit, as the protection is now "baked into" the line model.
 =#
-_enable_short = ComponentAffect([], [:piline₊active]) do u, p, ctx
+_enable_short = ComponentAffect([], [:piline₊shortcircuit]) do u, p, ctx
     @info "Short circuit activated on line $(ctx.src)→$(ctx.dst) at t = $(ctx.t)s"
-    p[:piline₊active] = 0
+    # p[:piline₊active] = 0
+    p[:piline₊shortcircuit] = 1
 end
 shortcircuit_cb = PresetTimeComponentCallback(0.1, _enable_short)
 known_cbs = filter(!Base.Fix2(isa, PresetTimeComponentCallback), get_callbacks(nw_protected[EIndex(AFFECTED_LINE)]))
@@ -466,6 +467,7 @@ prob = ODEProblem(
 )
 break
 @time sol = solve(prob, Rodas5P());
+~45 seconds?
 
 let fig = Figure(; size=(800, 600))
     ax = Axis(fig[1, 1];
