@@ -346,6 +346,16 @@ vertex ║ │         ┌┤ ProtectedPiBranch A ├┐         │ ║ vertex
 ```
 =#
 protected_template = Line(mtkline; name=:protected_piline)
+#=
+!!! tip "Reduced complexity of compiled Model"
+    Note, that the compiled model still has **no states**, i.e. it directly calculates
+    the terminal currents from the terminal voltages and the parameters. This is a perfect
+    showcase of why equation based modeling matters: we still can *access* all of the internal variables,
+    like the currents per branch. However those are all just "observed" and
+    don't add to the *numeric dimensionality* of our model. (Even though the
+    complexity of calculating the output currents is slightly higher than that
+    of the simple PI-Line model).
+=#
 
 #=
 ### Definition of the Callbacks
@@ -397,7 +407,7 @@ function discrete_overcurrent_condition(branchname)
     t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
 
     ComponentCondition([I_mag], [I_max, t_cutoff]) do u, p, t
-        p[t_cutoff] != Inf && return false # return fals if cuttoff already scheduled
+        p[t_cutoff] != Inf && return false # return false if cutoff already scheduled
         u[I_mag] ≥ p[I_max]
     end
 end
@@ -417,7 +427,7 @@ function overcurrent_affect(branchname)
         p[t_cutoff] != Inf && return # return early if already scheduled for cutoff
         tcutoff = ctx.t + p[t_delay]
         println("$branchname of line $(ctx.src)→$(ctx.dst) overcurrent at t=$(ctx.t), scheduling cutoff at t=$tcutoff")
-        ## update the paramter of the edge to store the cutoff time
+        ## update the parameter of the edge to store the cutoff time
         p[t_cutoff] = tcutoff
         ## tell the integrator to explicitly step to the cutoff time
         add_tstop!(ctx.integrator, tcutoff)
