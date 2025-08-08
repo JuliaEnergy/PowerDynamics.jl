@@ -97,7 +97,7 @@ pfs = find_fixpoint(pfnw, pfs0)
 
 # As a result, we get a `NWState` object which contains the **full state** for the power flow model.
 #
-# Since power flow model and dynamic model share the same topology and the same interface (i.e. nodes create voltages, edges create currents), we can extract the interface values from the power flow model state and apply them to the dynamic model:
+# Since power flow model and dynamic model share the same topology and the same *network interface* (i.e. nodes create voltages, edges create currents), we can extract the interface values from the power flow model state and apply them to the dynamic model:
 
 interf = interface_values(pfs)
 
@@ -132,7 +132,7 @@ interf = interface_values(pfs)
 # > ```math
 # > \begin{aligned}
 # > M_{\mathrm e}\,\frac{\mathrm{d}}{\mathrm{d}t}x_{\mathrm e} = \color{red}{0} &= f_{\mathrm e}\left(x_{\mathrm e}, \color{red}{\begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}},p_\mathrm{e}, t\right)\\
-# > \color{red}{\begin{bmatrix}i_r^\mathrm{src}\\i_r^\mathrm{dst}\end{bmatrix}} &= g^\mathrm{src}_{\mathrm e}\left(x_{\mathrm e},\color{red}{ \begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}}, p_\mathrm{e}, t\right)\\
+# > \color{red}{\begin{bmatrix}i_r^\mathrm{src}\\i_i^\mathrm{src}\end{bmatrix}} &= g^\mathrm{src}_{\mathrm e}\left(x_{\mathrm e},\color{red}{ \begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}}, p_\mathrm{e}, t\right)\\
 # > \color{red}{\begin{bmatrix}i_r^\mathrm{dst}\\i_i^\mathrm{dst}\end{bmatrix}} &= g^\mathrm{dst}_{\mathrm e}\left(x_{\mathrm e}, \color{red}{\begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}}, p_\mathrm{e}, t\right)\\
 # > \end{aligned}
 # > ```
@@ -155,11 +155,7 @@ dump_initial_state(gen; obs=false)
 # Right now, we have 2 free parameters, 2 free inputs, 2 free outputs and 15 free states.
 # We can use `initialize_component` to find values for the free symbols:
 
-try #hide
 initialize_component(gen)
-catch e #hide
-    @error e.msg #hide
-end #hide
 
 # Wait! The initialization failed! Why? Well, we need to apply additional defaults, so called `default_overwrites` for the inputs/outputs to make the system solvable.
 
@@ -170,7 +166,6 @@ interf_v30 = Dict( # manually define interface values for demonstration
     :busbar₊i_r => -2.30145,
 )
 initialize_component(gen; default_overrides=interf_v30)
-nothing #hide
 
 # > **Mutating vs non-mutating Initialization**
 # >
@@ -213,22 +208,15 @@ interf_v39 = Dict(
   :busbar₊i_i => -1.72223,
   :busbar₊i_r => 0.720135,
 )
-try #hide
 initialize_component!(nw[VIndex(39)]; default_overrides=interf_v39)
-catch e #hide
-    @error e.msg #hide
-end #hide
 
 # Even though we set the interface values, the problem is still underconstrained!
 # Let's check the free symbols:
 
 println("free u: ", free_u(nw[VIndex(39)]))
 println("free p: ", free_p(nw[VIndex(39)]))
-nothing #hide
 
 # We see 8 free states and 3 free parameters, however we only have 8 state + 2 output equations:
-
-nw[VIndex(39)] #hide
 
 # Even though we have enough set parameters to initialize machine and load on its own, we cannot do it simultaneously.
 # Intuitively speaking, it's just not clear for the solver which of the two components provides how much power.
@@ -243,7 +231,6 @@ u_r = get_initial_state(vm_manual, :busbar₊u_r)
 u_i = get_initial_state(vm_manual, :busbar₊u_i)
 set_default!(vm_manual, :ZIPLoad₊Vset, sqrt(u_r^2 + u_i^2))
 initialize_component!(vm_manual)
-nothing # hide
 
 # The initialization succeeded now!
 #
@@ -266,14 +253,12 @@ nothing # hide
 vm_formula = copy(nw[VIndex(39)])
 formula = @initformula :ZIPLoad₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
 set_initformula!(vm_formula, formula)
-vm_formula # hide
 
 # The printout shows 1 additional initialization equation was attached to the model.
 #
 # The initialization works now:
 
 initialize_component!(vm_formula)
-nothing # hide
 
 # The init formula is applied early in the initialization process, essentially writing a new `default` for `ZIPLoad₊Vset` based on the other defaults.
 #
@@ -294,12 +279,10 @@ constraint = @initconstraint begin
   :ZIPLoad₊Vset - sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
 end
 set_initconstraint!(vm_constraint, constraint)
-vm_constraint # hide
 
 # With this added constraint, the initialization process is solvable again, since we now have 11 equations for the 11 free variables.
 
 initialize_component!(vm_constraint)
-nothing #hide
 
 # For this particular case, method (2) is the way to go. However there are cases where the constraint is more complex and cannot be expressed as a formula.
 #
@@ -315,12 +298,10 @@ nothing #hide
 formula = @initformula :ZIPLoad₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
 set_initformula!(nw[VIndex(31)], formula)
 set_initformula!(nw[VIndex(39)], formula)
-nothing #hide
 
 # With that, the componentwise initialization of the whole network is possible:
 
 initialize_componentwise!(nw; default_overrides=interf)
-nothing #hide
 
 # Even shorter, we can just use `initialize_from_pf!` to do everything from
 # exporting the power flow model, finding the fixpoint and initializing all components:

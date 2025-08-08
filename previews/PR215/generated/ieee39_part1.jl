@@ -46,7 +46,6 @@ using DataFrames
 using CSV
 
 DATA_DIR = joinpath(pkgdir(PowerDynamics), "docs", "examples", "ieee39data")
-nothing #hide
 
 # The system data is stored in CSV files containing:
 #
@@ -159,13 +158,11 @@ load_df = CSV.read(joinpath(DATA_DIR, "load.csv"), DataFrame)
 machine_df = CSV.read(joinpath(DATA_DIR, "machine.csv"), DataFrame)
 avr_df = CSV.read(joinpath(DATA_DIR, "avr.csv"), DataFrame)
 gov_df = CSV.read(joinpath(DATA_DIR, "gov.csv"), DataFrame)
-nothing #hide
 
 # System base values follow the IEEE 39-bus standard:
 
 BASE_MVA = 100.0
 BASE_FREQ = 60.0
-nothing #hide
 
 # ## Subcomponent Definition
 # As stated above, our buses fall into 5 different categories.
@@ -185,7 +182,6 @@ nothing #hide
 # ```
 
 load = ZIPLoad(;name=:ZIPLoad)
-nothing #hide
 
 # ### Generator Models
 #
@@ -205,7 +201,6 @@ uncontrolled_machine = SauerPaiMachine(;
     vf_input=false,   ## No external field voltage input
     name=:machine,
 )
-nothing #hide
 
 # **Controlled Machine**: Includes automatic voltage regulator (AVR) and turbine governor controls.
 #
@@ -243,7 +238,6 @@ controlled_machine = CompositeInjector(
     [_machine, _avr, _gov],
     name=:ctrld_gen
 )
-nothing # hide
 
 # ## Bus Template Creation
 #
@@ -265,7 +259,6 @@ nothing # hide
 
 @named junction_bus_template = Bus(MTKBus())
 strip_defaults!(junction_bus_template)  ## Clear default parameters for manual setting
-junction_bus_template #hide
 
 # ### Load Bus
 # Buses with only load components
@@ -284,7 +277,6 @@ junction_bus_template #hide
 
 @named load_bus_template = Bus(MTKBus(load))
 strip_defaults!(load_bus_template)
-load_bus_template #hide
 
 # ### Generator Bus (Controlled)
 # Buses with controlled generators (machine + AVR + governor)
@@ -315,7 +307,6 @@ strip_defaults!(ctrld_machine_bus_template)
 # Set system-wide base values for all generators
 set_default!(ctrld_machine_bus_template, r"S_b$", BASE_MVA)
 set_default!(ctrld_machine_bus_template, r"ω_b$", 2π*BASE_FREQ)
-ctrld_machine_bus_template # hide
 
 # ### Generator + Load Bus (Controlled)
 # Buses with both controlled generators and loads
@@ -347,7 +338,6 @@ ctrld_machine_bus_template # hide
 strip_defaults!(ctrld_machine_load_bus_template)
 set_default!(ctrld_machine_load_bus_template, r"S_b$", BASE_MVA)
 set_default!(ctrld_machine_load_bus_template, r"ω_b$", 2π*BASE_FREQ)
-ctrld_machine_load_bus_template #hide
 
 # ### Generator + Load Bus (Uncontrolled)
 # Buses with uncontrolled generators and loads
@@ -373,7 +363,6 @@ ctrld_machine_load_bus_template #hide
 strip_defaults!(unctrld_machine_load_bus_template)
 set_default!(unctrld_machine_load_bus_template, r"S_b$", BASE_MVA)
 set_default!(unctrld_machine_load_bus_template, r"ω_b$", 2π*BASE_FREQ)
-unctrld_machine_load_bus_template #hide
 
 # ## Bus Instantiation and Parameter Setting
 #
@@ -392,7 +381,6 @@ function apply_csv_params!(bus, table, bus_index)
         end
     end
 end
-nothing #hide
 
 # For each bus in the system, we:
 # 1. Select the appropriate template based on its category

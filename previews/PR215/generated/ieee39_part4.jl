@@ -44,7 +44,6 @@ using Sparspak
 EXAMPLEDIR = joinpath(pkgdir(PowerDynamics), "docs", "examples")
 include(joinpath(EXAMPLEDIR, "ieee39_part1.jl"))  # Creates the basic network model
 include(joinpath(EXAMPLEDIR, "ieee39_part3.jl"))  # Provides initialized network and reference solution
-nothing # hide
 
 # ## Integration of a Droop-Controlled Inverter
 #
@@ -166,7 +165,7 @@ end;
 #
 # Following the descriptions in Modeling Concepts, we build an MTKBus using
 # the droop as the single injector and then compile the bus model, similar to
-# how we define the templates in [part I](@ieee39-part1):
+# how we define the templates in part I:
 #
 # ```
 #            ╔═════════════════════════╗
@@ -192,14 +191,12 @@ set_initformula!(
     droop_bus_template,
     @initformula(:inverter₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2))
 )
-nothing # hide
 
 # ### Network Modification with Droop Inverter
 #
 # We'll replace bus 32 (originally a controlled generator bus) with our new droop inverter bus.
 
 DROOP_BUS_IDX = 32
-nothing #hide
 
 # To do so, we first collect all the "old" vertex and edge models.
 #
@@ -212,14 +209,12 @@ nothing #hide
 
 vertex_models = [copy(nw[VIndex(i)]) for i in 1:nv(nw)];
 edge_models = [copy(nw[EIndex(i)]) for i in 1:ne(nw)];
-nothing # hide
 
 # Now we need to replace the original bus model at index `DROOP_BUS_IDX` with our new droop inverter bus.
 # However, we don't want to lose the original power flow model associated with this bus, so we
 # need to attach it to the droop bus model:
 
 original_pfmodel = get_pfmodel(vertex_models[DROOP_BUS_IDX])
-nothing #hide
 
 # We can then use the `Bus` constructor to essentially copy the droop_bus_template
 # and adjust some properties, like the powerflow model and the vertex index.
@@ -245,7 +240,6 @@ set_jac_prototype!(nw_droop; remove_conditions=true)
 # This all happens within `initialize_from_pf!`:
 
 s0_droop = initialize_from_pf!(nw_droop; verbose=false)
-nothing #hide
 
 # Let's examine the initialized state of our droop inverter:
 
@@ -328,7 +322,6 @@ end
 # bus:
 
 opt_ref = sol(0.3:0.1:10, idxs=[VIndex(1:39, :busbar₊u_r), VIndex(1:39, :busbar₊u_i)])
-nothing #hide
 
 # Next, we need to identify the "tunable" parameters. This is a bit tricky, because
 # the overall `nw_droop` has 1271 parameters, so we need to find the indices of the
@@ -378,7 +371,6 @@ function loss(p)
     res = opt_ref.u - x.u
     l2loss = sum(abs2, reduce(vcat, res))
 end
-nothing #hide
 
 # ### Optimization Execution
 #
@@ -386,7 +378,6 @@ nothing #hide
 
 # Create optimization function with automatic differentiation
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), Optimization.AutoForwardDiff())
-nothing # hide
 
 # To better monitor the optimization progress, we want to store the optimized parameters
 # at every iteration of the optimizer. We can do so by defining a callback function
@@ -398,14 +389,12 @@ callback = function (state, l)
     println("Iteration $(state.iter): loss = $l\t p = $(state.u)")
     return false  # Continue optimization
 end
-nothing #hide
 
 # That callback will snapshot the current parameter values at every step of the gradient descent.
 #
 # With that, we can run the optimization:
 
 optprob = Optimization.OptimizationProblem(optf, p0; callback)
-VERBOSE_CALLBACK = false #hide
 
 @time optsol = Optimization.solve(optprob, Optimisers.Adam(0.06), maxiters = 50)
 
@@ -414,7 +403,6 @@ println("Initial parameters: ", p0)
 println("Optimized parameters: ", optsol.u)
 println("Initial loss: ", loss(p0))
 println("Final loss: ", loss(optsol.u))
-nothing #hide
 
 # ### Optimization Results Analysis
 #
@@ -465,7 +453,6 @@ comparison_fig = plot_optimization_comparison(p0, pobs)
 record(comparison_fig, "parameter_evolution.mp4", optimization_states; framerate=10) do s
     pobs[] = s.u
 end
-nothing #hide
 
 # ![timeseries evolution animation](parameter_evolution.mp4)
 

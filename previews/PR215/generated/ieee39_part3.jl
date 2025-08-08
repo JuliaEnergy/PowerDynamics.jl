@@ -54,7 +54,6 @@ set_initformula!(nw[VIndex(39)], formula)
 
 # Initialize the complete network from power flow solution
 s0 = initialize_from_pf!(nw; verbose=false)
-nothing #hide
 
 # ## Short Circuit Disturbance Definition
 #
@@ -86,7 +85,6 @@ nothing #hide
 
 # Select the line to be affected by the short circuit
 AFFECTED_LINE = 11
-nothing #hide
 
 # Let's examine the transmission line that will experience the short circuit. This line connects
 # two important buses in the network and its outage will test the system's stability.
@@ -94,27 +92,21 @@ nothing #hide
 # Now we define callback functions to model the disturbance sequence:
 
 # Define callback to enable short circuit at t=0.1s
-VERBOSE_CALLBACK = true #hide
 _enable_short = ComponentAffect([], [:piline₊shortcircuit]) do u, p, ctx
-    if VERBOSE_CALLBACK #hide
     @info "Short circuit activated on line $(ctx.src)→$(ctx.dst) at t = $(ctx.t)s"
-    end #hide
     p[:piline₊shortcircuit] = 1
 end
 shortcircuit_cb = PresetTimeComponentCallback(0.1, _enable_short)
 
 # Define callback to disconnect line at t=0.2s (fault clearing)
 _disable_line = ComponentAffect([], [:piline₊active]) do u, p, ctx
-    if VERBOSE_CALLBACK #hide
     @info "Line $(ctx.src)→$(ctx.dst) disconnected at t = $(ctx.t)s"
-    end #hide
     p[:piline₊active] = 0
 end
 deactivate_cb = PresetTimeComponentCallback(0.2, _disable_line)
 
 # Attach both callbacks to the selected line
 set_callback!(nw, EIndex(AFFECTED_LINE), (shortcircuit_cb, deactivate_cb))
-nothing #hide
 
 # The callbacks are now attached to line 11. During simulation:
 # 1. At t=0.1s, the short circuit callback activates, simulating the fault
