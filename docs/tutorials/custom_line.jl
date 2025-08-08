@@ -14,6 +14,7 @@ To use it for some initial parturbations too, we'll also implement a basic short
 =#
 using PowerDynamics
 using ModelingToolkit
+using ModelingToolkit: D_nounits as Dt, t_nounits as t
 using NetworkDynamics
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
@@ -151,12 +152,12 @@ This trick can be used inside `@mtkmodel` as well, by just defining thos complex
 =#
 
 #=
-## Implement the CustomPiLine MTKModel
+## Implement the CustomPiBranch MTKModel
 
 With the equations and the knowlege on how to use complex terms within MTK
 Models the definition is relatively straigh forward:
 =#
-@mtkmodel CustomPiLine begin
+@mtkmodel CustomPiBranch begin
     @parameters begin
         R, [description="Resistance of branch in pu"]
         X, [description="Reactance of branch in pu"]
@@ -168,7 +169,7 @@ Models the definition is relatively straigh forward:
         r_dst=1, [description="src end transformation ratio"]
         ## fault parameters
         pos=0.5, [description="Fault Position (from src, percent of the line)"]
-        G_f=0.2, [description="Fault conductance in pu"]
+        G_f=1, [description="Fault conductance in pu"]
         B_f=0, [description="Fault susceptance in pu"]
         shortcircuit=0, [description="shortcircuit on line"]
         ## parameter to "switch of" the line
@@ -222,8 +223,8 @@ This is equivalent of opening two ideal breakers on both ends of the line when `
 
 Lastly lets ensure that our model satisfies the [Branch Interface](@ref):
 =#
-@named piline = CustomPiLine()
-isbranchmodel(piline)
+@named pibranch = CustomPiBranch()
+isbranchmodel(pibranch)
 
 #=
 ## Extending the model for dynamic over-current Protection
@@ -252,21 +253,29 @@ Additional, we need to define 2 callbacks:
   and switches off the line by setting the `active` parameter to `false`.
 
 !!! note
-    NetworkDynamics currently does not support Events Defined in MTK models. So we need to split the implementation:
-    The new parameters need to be introduced to the `MTKModel` (extending CustomPiLine), the callbacks need to be defined
+    NetworkDynamics currently does not support Events defined in MTK models. So we need to split the implementation:
+    The new parameters need to be introduced to the `MTKModel` (extending CustomPiBranch), the callbacks need to be defined
     for the *compield VertexModel*.
 
-### Extension of the CustomPiLine MTKModel
-Lets add the new parameters to the `CustomPiLine` model by *extending* the model.
+### Extension of the CustomPiBranch MTKModel
+Lets add the new parameters to the `CustomPiBranch` model by *extending* the model.
 Extend means, that we essentially copy-past the whole model definitions and are able to add
 new parameters, equations, variables and so on.
+
+We add an additional "observed" state `I_mag`, which allways contains the current magnitude at the src or dst terminal (whatever is higher).
 =#
-@mtkmodel ProtectedPiLine begin
-    @extend CustomPiLine()
+@mtkmodel ProtectedPiBranch begin
+    @extend CustomPiBranch()
     @parameters begin
         I_max=Inf, [description="Maximum current magnitude"]
         t_cutoff=Inf, [description="Time when the line should be switched off"]
         t_delay=0.1, [description="Delay time after which the line should be switched off"]
+    end
+    @variables begin
+        I_mag(t), [description="Current magnitude at src or dst terminal"]
+    end
+    @equations begin
+        I_mag ~ max(sqrt(src.i_r^2 + src.i_i^2), sqrt(dst.i_r^2 + dst.i_i^2))
     end
 end
 nothing #hide
@@ -280,14 +289,15 @@ First, we need to form something satisfying the [MTKLine Interface](@ref)
  │ MTKLine                                       │
  │┌─────────┐                         ┌─────────┐│
  ││ LineEnd │   ┌─────────────────┐   │ LineEnd ││
- ││  :src   ├─o─┤ ProtectedPiLine ├─o─┤  :dst   ││
+ ││  :src   ├─o─┤ ProtectedPiBranch ├─o─┤  :dst   ││
  ││         │   └─────────────────┘   │         ││
  │└─────────┘                         └─────────┘│
  └───────────────────────────────────────────────┘
 ```
 =#
-branch = ProtectedPiLine(; name=:piline)
-mtkline = MTKLine(branch)
+branchA = ProtectedPiBranch(; name=:pibranchA)
+branchB = ProtectedPiBranch(; name=:pibranchB)
+mtkline = MTKLine(branchA, branchB)
 nothing #hide #md
 #=
 Then, we take the mtkline and put it into a compiled [`EdgeModel`](@extref NetworkDynamics.EdgeModel-Tuple{}) by
@@ -299,7 +309,7 @@ calling the [`Line`](@ref) constructor
    src ║ ┌─────────────────────────────────────┐ ║ dst
 vertex ║ │MTKLine                              │ ║ vertex
    u ───→│┌───────┐ ┌───────────────┐ ┌───────┐│←─── u
-       ║ ││LineEnd├o┤ProtectedPiLine├o┤LineEnd││ ║
+       ║ ││LineEnd├o┤ProtectedPiBranch├o┤LineEnd││ ║
    i ←───│└───────┘ └───────────────┘ └───────┘│───→ i
        ║ └─────────────────────────────────────┘ ║
        ╚═════════════════════════════════════════╝
@@ -335,8 +345,15 @@ We'll monitor both ends and compare the maximum to the `I_max` parameter.
 The **continuous condition** uses root-finding, returning the difference between
 limit and current magnitude (zero when the limit is reached):
 =#
-continuous_overcurrent_condition = ComponentCondition([:src₊i_mag, :dst₊i_mag], [:piline₊I_max]) do u, p, t
-    p[:piline₊I_max] - max(u[:src₊i_mag], u[:dst₊i_mag])
+function continuous_overcurrent_condition(branchname)
+    I_mag = Symbol(branchname, "₊", :I_mag) # pilineX₊I_mag
+    I_max = Symbol(branchname, "₊", :I_max) # pilineX₊I_max
+    t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
+    ComponentCondition([I_mag], [I_max, t_cutoff]) do u, p, t
+        ## return max if allready sheduled
+        p[t_cutoff] != Inf && return Inf
+        p[I_max] - u[I_mag]
+    end
 end
 nothing #hide #md
 
@@ -344,8 +361,15 @@ nothing #hide #md
 The **discrete condition** uses a boolean check that triggers whenever
 the current exceeds the threshold:
 =#
-discrete_overcurrent_condition = ComponentCondition([:src₊i_mag, :dst₊i_mag], [:piline₊I_max]) do u, p, t
-    max(u[:src₊i_mag], u[:dst₊i_mag]) ≥ p[:piline₊I_max]
+function discrete_overcurrent_condition(branchname)
+    I_mag = Symbol(branchname, "₊", :I_mag) # pilineX₊I_mag
+    I_max = Symbol(branchname, "₊", :I_max) # pilineX₊I_max
+    t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
+    ComponentCondition([I_mag], [I_max, t_cutoff]) do u, p, t
+        ## return false if allready sheduled
+        p[t_cutoff] != Inf && return false
+        u[I_mag] ≥ p[I_max]
+    end
 end
 nothing #hide #md
 
@@ -355,24 +379,18 @@ nothing #hide #md
 Both callbacks use the same affect function. When triggered, it schedules
 the line cutoff by setting `t_cutoff` and tells the integrator to step to that time:
 =#
-overcurrent_affect = ComponentAffect([], [:piline₊t_cutoff, :piline₊t_delay]) do u, p, ctx
-    if p[:piline₊t_cutoff] == Inf # otherwise, it is already scheduled for cutoff
-        tcutoff = ctx.t + p[:piline₊t_delay]
-        println("Line $(ctx.src)→$(ctx.dst) overcurrent at t=$(ctx.t), scheduling cutoff at t=$tcutoff")
-        p[:piline₊t_cutoff] = tcutoff
+function overcurrent_affect(branchname)
+    t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
+    t_delay = Symbol(branchname, "₊", :t_delay)   # pilineX₊t_delay
+    ComponentAffect([], [t_cutoff, t_delay]) do u, p, ctx
+        p[t_cutoff] != Inf && return # return early if allready schedule for cutoff
+        tcutoff = ctx.t + p[t_delay]
+        println("$branchname of line $(ctx.src)→$(ctx.dst) overcurrent at t=$(ctx.t), scheduling cutoff at t=$tcutoff")
+        p[t_cutoff] = tcutoff
         ## tell the integrator to explicitly step to the cutoff time
         add_tstop!(ctx.integrator, tcutoff)
     end
 end
-nothing #hide #md
-
-#=
-**Callback Assembly:**
-
-Finally, we build both callbacks by combining their respective conditions with the shared affect function:
-=#
-continuous_overcurrent_callback = ContinuousComponentCallback(continuous_overcurrent_condition, overcurrent_affect)
-discrete_overcurrent_callback = DiscreteComponentCallback(discrete_overcurrent_condition, overcurrent_affect)
 nothing #hide #md
 
 #=
@@ -382,23 +400,47 @@ The cutoff callback switches off the line when the scheduled cutoff time is reac
 Since we expect the solver to explicitly hit the cutoff time (via `add_tstop!`),
 we only need a discrete callback:
 =#
-cutoff_condition = ComponentCondition([], [:piline₊t_cutoff]) do u, p, t
-    t == p[:piline₊t_cutoff]
+function cutoff_condition(branchname)
+    t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
+    ComponentCondition([], [t_cutoff]) do u, p, t
+        t == p[t_cutoff]
+    end
 end
-cutoff_affect = ComponentAffect([], [:piline₊active]) do u, p, ctx
-    println("Line $(ctx.src)→$(ctx.dst) cutoff at t=$(ctx.t)")
-    p[:piline₊active] = 0 # switch off the line
+function cutoff_affect(branchname)
+    active = Symbol(branchname, "₊", :active) # pilineX₊active
+    ComponentAffect([], [active]) do u, p, ctx
+        println("$branchname of line $(ctx.src)→$(ctx.dst) cutoff at t=$(ctx.t)")
+        p[active] = 0 # switch off the line
+    end
 end
-cutoff_callback = DiscreteComponentCallback(cutoff_condition, cutoff_affect)
+function cutoff_callback(branchname)
+    DiscreteComponentCallback(cutoff_condition(branchname), cutoff_affect(branchname))
+end
 nothing #hide #md
 
 #=
 #### Adding Callbacks to Template
-
+We build both callbacks by combining their respective conditions and affects.
 Finally, we add all three callbacks to the protected template:
 =#
-set_callback!(protected_template,
-    (continuous_overcurrent_callback, discrete_overcurrent_callback, cutoff_callback))
+function branch_callbacks(branchname)
+    oc_affect = overcurrent_affect(branchname)
+    oc1 = ContinuousComponentCallback(
+        continuous_overcurrent_condition(branchname),
+        overcurrent_affect(branchname, "cont")
+    )
+    oc2 = DiscreteComponentCallback(
+        discrete_overcurrent_condition(branchname),
+        overcurrent_affect(branchname, "disc")
+    )
+    cut = DiscreteComponentCallback(
+        cutoff_condition(branchname),
+        cutoff_affect(branchname)
+    )
+    (oc1, oc2, cut)
+end
+set_callback!(protected_template, branch_callbacks(:pibranchA))
+add_callback!(protected_template, branch_callbacks(:pibranchB))
 protected_template #hide #md
 
 #=
@@ -407,39 +449,52 @@ protected_template #hide #md
 In the last part of this tutorial, we want to see our protected line in action.
 The third part of the [IEEE39 Grid Tutorial](@ref ieee39-part3) simulates a short circuit on a line.
 To do so, it uses two callbacks: one to enable the short circuit and one to disable the line. We can do this
-much more elegantly now by just using the `ProtectedPiLine` model.
+much more elegantly now by just using the `ProtectedPiBranch` model.
 
 Lets load the first part of that tutorial to get the IEEE39 Grid model.
 Also, we initialize the model (the quintessence of [part II](@ref ieee39-part2)).
 =#
 EXAMPLEDIR = joinpath(pkgdir(PowerDynamics), "docs", "examples")
-include(joinpath(EXAMPLEDIR, "ieee39_part1.jl"))
-formula = @initformula :ZIPLoad₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
-set_initformula!(nw[VIndex(31)], formula)
-set_initformula!(nw[VIndex(39)], formula)
-s0 = initialize_from_pf!(nw; verbose=false)
+# include(joinpath(EXAMPLEDIR, "ieee39_part1.jl"))
+# formula = @initformula :ZIPLoad₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
+# set_initformula!(nw[VIndex(31)], formula)
+# set_initformula!(nw[VIndex(39)], formula)
+# s0 = initialize_from_pf!(nw; verbose=false)
 nothing #hide #md
 
 #=
 ### Derive Network with new line models
-We need to build our own model by replacing the line model with our `ProtectedPiLine`.
+We need to build our own model by replacing the line model with our `ProtectedPiBranch`.
 For that, we need to create a small helper function, which taks the edge model
 from the olde network, and creates a protected line model with similar
 parameters.
-This is relativly straigh forward, as we use the exact same variable names. So essentially
-we just need to copy all the `:default` metadata from the edge models to copy their parameters.
+
+
+For two parallel branches to behave like the original single branch:
+- Impedances (R, X): 2× original (parallel combination gives original)
+- Shunt admittances (G, B): 0.5× original (parallel combination gives original)
+- Transformation ratios (r): same as original
+
 =#
 function protected_line_from_line(e::EdgeModel)
     new = copy(protected_template)
     ## copy src and destination information
     src_dst = get_graphelement(e)
     set_graphelement!(new, src_dst)
-    ## copy all electrical parameter values
-    for p in [:piline₊R, :piline₊X,
-              :piline₊G_src, :piline₊B_src,
-              :piline₊G_dst, :piline₊B_dst,
-              :piline₊r_src, :piline₊r_dst]
-        set_default!(new, p, get_default(e, p))
+    for branch in [:pibranchA, :pibranchB]
+        ## Impedances: double them (2× original)
+        set_default!(new, Symbol(branch, "₊", :R), 2 * get_default(e, :piline₊R))
+        set_default!(new, Symbol(branch, "₊", :X), 2 * get_default(e, :piline₊X))
+
+        ## Shunt admittances: halve them (0.5× original)
+        set_default!(new, Symbol(branch, "₊", :G_src), 0.5 * get_default(e, :piline₊G_src))
+        set_default!(new, Symbol(branch, "₊", :B_src), 0.5 * get_default(e, :piline₊B_src))
+        set_default!(new, Symbol(branch, "₊", :G_dst), 0.5 * get_default(e, :piline₊G_dst))
+        set_default!(new, Symbol(branch, "₊", :B_dst), 0.5 * get_default(e, :piline₊B_dst))
+
+        ## Transformation ratios: keep same
+        set_default!(new, Symbol(branch, "₊", :r_src), get_default(e, :piline₊r_src))
+        set_default!(new, Symbol(branch, "₊", :r_dst), get_default(e, :piline₊r_dst))
     end
     new
 end
@@ -471,84 +526,84 @@ They are identical! If we would have made an error in our line model, the steady
 ### Simualate with the line models
 There are two things left to do: firstoff, we need to set the `I_max` parameter for the lines we want to protec.
 
-We set the threashold to 120% of the powerflow solution:
+We set the threashold to 130% of the powerflow solution:
 =#
-AFFECTED_LINE = 11
-i_at_steadys = max(s0[EIndex(AFFECTED_LINE, :src₊i_mag)], s0[EIndex(AFFECTED_LINE, :dst₊i_mag)])
-s0_protected[EIndex(AFFECTED_LINE, :piline₊I_max)] = 2 * i_at_steadys
+AFFECTED_LINE = 24
 
 for i in 1:46
-    local i_at_steadys = max(s0[EIndex(i, :src₊i_mag)], s0[EIndex(i, :dst₊i_mag)])
-    s0_protected[EIndex(i, :piline₊I_max)] = 2 * i_at_steadys
+    i_at_steadys = s0_protected[EIndex(i, :pibranchA₊I_mag)]
+    s0_protected[EIndex(i, :pibranchA₊I_max)] = 1.3*i_at_steadys
+    i_at_steadys = s0_protected[EIndex(i, :pibranchB₊I_mag)]
+    s0_protected[EIndex(i, :pibranchB₊I_max)] = 1.3*i_at_steadys
 end
 
 #=
 Secondly, we neet to introduce some perturbation, for that we'll recreate the short circuit scenario from the IEEE39 example.
 Notably, this time we only need to start the short circuit, as the protection is now "baked into" the line model.
 =#
-_enable_short = ComponentAffect([], [:piline₊shortcircuit]) do u, p, ctx
-    @info "Short circuit activated on line $(ctx.src)→$(ctx.dst) at t = $(ctx.t)s"
-    # p[:piline₊active] = 0
-    p[:piline₊shortcircuit] = 1
+_enable_short = ComponentAffect([], [:pibranchA₊shortcircuit]) do u, p, ctx
+    @info "Short circuit activated on branch A of line $(ctx.src)→$(ctx.dst) at t = $(ctx.t)s"
+    p[:pibranchA₊shortcircuit] = 1
 end
 shortcircuit_cb = PresetTimeComponentCallback(0.1, _enable_short)
-known_cbs = filter(!Base.Fix2(isa, PresetTimeComponentCallback), get_callbacks(nw_protected[EIndex(AFFECTED_LINE)]))
+known_cbs = filter(cb -> !(cb isa PresetTimeComponentCallback), get_callbacks(nw_protected[EIndex(AFFECTED_LINE)]))
 set_callback!(nw_protected, EIndex(AFFECTED_LINE), (shortcircuit_cb, known_cbs...))
 nw_protected[EIndex(AFFECTED_LINE)] #hide #md
 
-s0_protected[EPIndex(:,:piline₊G_f)] .= 6
+#=
+With all those callbacks set, we can go ahead simulating the system.
+=#
 prob = ODEProblem(
     nw_protected,
     uflat(s0_protected),
     (0.0, 15),
     copy(pflat(s0_protected));
-    callback=get_callbacks(nw_protected)
+    callback=get_callbacks(nw_protected),
+    dtmax=0.01,
 )
-@time sol = solve(prob, Rodas5P());
-break
+sol = solve(prob, Rodas5P());
 
-let fig = Figure(; size=(800, 600))
+#=
+From the printout we see, that the short circuit on Branch A activated at 0.1 and lead to
+a line shutdown at 0.2, which cleared the fault..
+However, due to the introduce dynamics in the system, the branch B of the affected line failed to, much later at
+around 1.5 seconds after the short circuit.
+
+Lets look at the
+=#
+
+fig = let fig = Figure()
     ax = Axis(fig[1, 1];
         title="Current Magnitude Across All Lines",
         xlabel="Time [s]",
-        ylabel="Current Magnitude (rel to steady state)")
+        ylabel="Current Magnitude (reltive to steady state)")
 
     ## Full simulation time range
-    ts = range(sol.t[begin], sol.t[end], length=1000)
+    ts = range(sol.t[begin], sol.t[end], length=3000)
 
-    ## Plot voltage magnitude for all buses
+    ## Plot current magnitude for but the failing line
     for i in 1:46
-        src_current = sol(ts, idxs=EIndex(i, :src₊i_mag)).u
-        dst_current = sol(ts, idxs=EIndex(i, :dst₊i_mag)).u
-        current = max.(src_current, dst_current)
+        i == AFFECTED_LINE && continue
+        current = 2*sol(ts, idxs=EIndex(i, :pibranchA₊I_mag)).u
         current = current ./ current[begin]
-
-        linewidth = i == 11 ? 5 : 2
-        lines!(ax, ts, current; linewidth)
+        lines!(ax, ts, current)
     end
-    hlines!(ax, [2])
-    # ylims!(ax, 0.85, 1.15)
+
+    A_current = sol(ts, idxs=EIndex(i, :pibranchA₊I_mag)).u
+    B_current = sol(ts, idxs=EIndex(i, :pibranchB₊I_mag)).u
+    A_current = A_current ./ A_current[begin]
+    B_current = B_current ./ B_current[begin]
+
+    lines!(ax, ts, A_current; linewidth=2, color=:blue, label="Branch A")
+    lines!(ax, ts, B_current; linewidth=2, color=:red, label="Branch B")
+
+    hlines!(ax, [1.3]; color=:black, linestyle=:dot)
+    xlims!(ax, ts[begin], ts[end])
+    axislegend(ax; pos=:tr)
     fig
 end
 
-let fig = Figure(; size=(800, 600))
-    ax = Axis(fig[1, 1];
-        title="Current Magnitudes Across All Lines",
-        xlabel="Time [s]",
-        ylabel="Voltage Magnitude [pu]")
-
-    ## Full simulation time range
-    ts = range(sol.t[begin], sol.t[end], length=1000)
-
-    ## Plot voltage magnitude for all buses
-    i=11
-    src_current = sol(ts, idxs=EIndex(i, :src₊i_mag)).u
-    dst_current = sol(ts, idxs=EIndex(i, :dst₊i_mag)).u
-    current = max.(src_current, dst_current)
-    # current = current ./ current[begin]
-
-    lines!(ax, ts, current; linewidth=2)
-    hlines!(ax, [3.56])
-    # ylims!(ax, 0.85, 1.15)
-    fig
-end
+#-
+xlims!(0, 2)
+ylims!(0.8, 1.5)
+fig
