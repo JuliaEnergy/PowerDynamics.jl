@@ -23,15 +23,16 @@ It is also highly recommend to out check the docs on
 as those explain lots of the underlying functionality and concepts
 
 ## Tutorials
-- **[Custom Components](@ref custom-bus)** - Creating your own bus models
-- **[Custom Transmission Lines](@ref custom-line)** - Implementing advanced line models with protection
+- **[Custom Components](@ref custom-bus)** - Shows how to implement Milano's classical synchronous machine model with a power system stabilizer (PSS)
+- **[Custom Transmission Lines](@ref custom-line)** - Demonstrates creating a PI-branch transmission line model with overcurrent protection that can trip during faults
 
 ## Examples
-- **[IEEE 9-Bus System](@ref ieee9bus)** - Basic power system simulation
-- **[IEEE 39-Bus System Part 1](@ref ieee39-part1)** - Modeling of a larger System
-- **[IEEE 39-Bus System Part 2](@ref ieee39-part2)** - Advanced Initialization Tutorial
-- **[IEEE 39-Bus System Part 3](@ref ieee39-part3)** - Dynamic Simulation
-- **[IEEE 39-Bus System Part 4](@ref ieee39-part4)** - Advanced Modeling & Parameter Optimization
+- **[IEEE 9-Bus System](@ref ieee9bus)** - Simulates the complete 9-bus IEEE test system with synchronous generators and dynamic load changes
+- **[IEEE 39-Bus System Part 1](@ref ieee39-part1)** - Shows how to build the 39-bus New England test system from custom CSV data files with proper component modeling
+- **[IEEE 39-Bus System Part 2](@ref ieee39-part2)** - Demonstrates the detailed initialization process for the 39-bus system including power flow and initialization of dynamic models
+- **[IEEE 39-Bus System Part 3](@ref ieee39-part3)** - Runs dynamic simulation of the 39-bus system with a short circuit disturbance and fault clearing
+- **[IEEE 39-Bus System Part 4](@ref ieee39-part4)** - Implements a custom droop-controlled inverter model and performs parameter optimization using sensitivity analysis
+- **[EMT Toy Model Example](@ref emt-toymodel)** - Demonstrates very basic EMT modeling using dynamic shunt capacitor and RL transmission line components in rotating dq coordinates
 
 ## Reproducibility
 
