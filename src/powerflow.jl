@@ -77,12 +77,16 @@ function ispfmodel(cf::NetworkDynamics.ComponentModel)
 end
 
 """
-    powerflow_model(cf::NetworkDynamics.ComponentModel)
+    powerflow_model(cf::NetworkDynamics.ComponentModel; check=:error)
 
 Extract or create a power flow component model from a dynamic component model.
 
 1. If the component has `:pfmodel` metadata, use that model (after validation)
 2. If the component is already a valid power flow model (i.e. no ODE, just constraints), return it as-is
+
+## Parameters
+- `cf`: The component model to extract/create a power flow model from
+- `check`: Validation behavior (`:error`, `:warn`, or `:none`) when model validation fails
 
 ## Returns
 - A component model suitable for power flow analysis (no dynamics)
@@ -93,38 +97,45 @@ The returned model must satisfy [`ispfmodel`](@ref) criteria:
 
 See also: [`ispfmodel`](@ref), [`pfSlack`](@ref), [`pfPV`](@ref), [`pfPQ`](@ref)
 """
-function powerflow_model(cf::NetworkDynamics.ComponentModel)
+function powerflow_model(cf::NetworkDynamics.ComponentModel; check=:error)
     if has_pfmodel(cf)
         pfm = get_pfmodel(cf)
         if !ispfmodel(pfm)
-            error("Provided :pfmodel for :$(cf.name) is no valid powerflow model!")
+            str = "Provided :pfmodel for :$(cf.name) is no valid powerflow model! You may overwrite this check by passing `check=:warn/:none`."
+            check == :error && error(str)
+            check == :warn && @warn str
         end
         return pfm
-    elseif ispfmodel(cf)
-        return cf
-    elseif cf isa VertexModel && has_default(cf, :busbar₊u_r) && has_default(cf, :busbar₊u_i)
-        @warn "No powerflow model given for :$(cf.name), using slack with default voltage!"
-        return pfSlack(u_r=get_default(cf, :busbar₊u_r), u_i=get_default(cf, :busbar₊u_i))
     end
-    error("Cannot create PF component model from :$(cf.name)! Please proved :pfmodel metadata!")
+    if !ispfmodel(cf)
+        str ="Cannot create PF component model from :$(cf.name)! Please proved :pfmodel metadata! You may overwrite this check by passing `check=:warn/:none`."
+        check == :error && error(str)
+        check == :warn && @warn str
+    end
+    return cf
 end
 
 """
-    powerflow_model(nw::Network)
+    powerflow_model(nw::Network; check=:error)
 
 Create a power flow network model from a dynamic network model.
 
 This method applies [`powerflow_model`](@ref) to all vertex and edge components
 in the network, creating a new network suitable for steady-state power flow analysis.
 
-Returns a new `Network` with the same graph structure but power flow component models
+## Parameters
+- `nw`: The network to create a power flow model from
+- `check`: Validation behavior (`:error`, `:warn`, or `:none`) passed to component-level `powerflow_model` calls
+
+## Returns
+- A new `Network` with the same graph structure but power flow component models
 
 See also: [`solve_powerflow`](@ref)
 """
-function powerflow_model(nw::Network)
+function powerflow_model(nw::Network; check=:error)
     g = nw.im.g
-    vfs = powerflow_model.(nw.im.vertexm);
-    efs = powerflow_model.(nw.im.edgem);
+    vfs = powerflow_model.(nw.im.vertexm; check);
+    efs = powerflow_model.(nw.im.edgem; check);
     Network(g, vfs, efs)
 end
 
@@ -213,7 +224,8 @@ function solve_powerflow(
     pfs0 = NWState(nw),
     verbose=true
 )
-    pfnw.mass_matrix == LinearAlgebra.UniformScaling(0) || error("Powerflow model must have a mass matrix of 0!")
+    # don't enforce this, check happes in `powerflow_model`
+    # pfnw.mass_matrix == LinearAlgebra.UniformScaling(0) || error("Powerflow model must have a mass matrix of 0!")
 
     uf = uflat(pfs0)
     pf = pflat(pfs0)
