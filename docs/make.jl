@@ -52,7 +52,8 @@ kwargs = (;
         "Initialization" => "initialization.md",
         "Component Library" => "Library.md",
         "Tutorials" => [
-            "generated/custom_bus.md",
+            "Custom Generator Bus" => "generated/custom_bus.md",
+            "Custom Transmission Line" => "generated/custom_line.md",
         ],
         "Examples" => [
             "generated/ieee9bus.md",
