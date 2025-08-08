@@ -20,30 +20,7 @@ Cline_pu = Cline / Ybase(Sbase, Vbase)
 Pload_pu = Pload / Sbase
 
 
-@mtkmodel DynamicRLBranch begin
-    @components begin
-        src = Terminal()
-        dst = Terminal()
-    end
-    @variables begin
-        i_r(t)=0, [description="Current in real part"]
-        i_i(t)=0, [description="Current in imaginary part"]
-    end
-    @parameters begin
-        R, [description="Resistance"]
-        L, [description="Inductance"]
-        ω0, [description="Angular frequency of dq Frame"]
-    end
-    @equations begin
-        Dt(i_r) ~  ω0 * i_i  - R/L * i_r + 1/L*(dst.u_r - src.u_r)
-        Dt(i_i) ~ -ω0 * i_r  - R/L * i_i + 1/L*(dst.u_i - src.u_i)
-        ## connection to terminal
-        src.i_r ~ -i_r
-        src.i_i ~ -i_i
-        dst.i_r ~ i_r
-        dst.i_i ~ i_i
-    end
-end
+slackbus = Bus(pfSlack(; V=1), vidx=1)
 
 @mtkmodel DynamicShunt begin
     @components begin
@@ -77,7 +54,57 @@ end
     end
 end
 
-@mtkmodel DynamicPQLoad begin
+
+@named load = PQLoad(Pset=-Pload_pu, Qset=0)
+@named shunt = DynamicShunt(C=Cline_pu, ω0=ω0)
+loadbus = Bus(
+    MTKBus(load, shunt);
+    vidx=2
+)
+
+@mtkmodel DynamicRLBranch begin
+    @components begin
+        src = Terminal()
+        dst = Terminal()
+    end
+    @variables begin
+        i_r(t)=0, [description="Current in real part"]
+        i_i(t)=-1, [description="Current in imaginary part"]
+    end
+    @parameters begin
+        R, [description="Resistance"]
+        L, [description="Inductance"]
+        ω0, [description="Angular frequency of dq Frame"]
+    end
+    @equations begin
+        Dt(i_r) ~  ω0 * i_i  - R/L * i_r + 1/L*(dst.u_r - src.u_r)
+        Dt(i_i) ~ -ω0 * i_r  - R/L * i_i + 1/L*(dst.u_i - src.u_i)
+        ## connection to terminal
+        src.i_r ~ -i_r
+        src.i_i ~ -i_i
+        dst.i_r ~ i_r
+        dst.i_i ~ i_i
+    end
+end
+@named branch = DynamicRLBranch(; R=Rline_pu, L=Lline_pu, ω0=ω0)
+line_model = Line(
+    MTKLine(branch);
+    src=1, dst=2
+)
+
+nw = Network([slackbus, loadbus], line_model)
+try #hide #md
+s0 = find_fixpoint(nw; alg=DynamicSS(Rodas5P()))
+catch e #hide #md
+    @error e #hide #md
+end #hide #md
+
+#=
+well thats a pity, initialiation of those systems is not os easy.
+This time we have to reach reach deep to finde a model suitable for initialization
+=#
+
+@mtkmodel LessStiffPQLoad begin
     @components begin
         terminal = Terminal()
     end
@@ -95,20 +122,31 @@ end
         terminal.i_i ~ i_i
     end
 end
-
-@named branch = DynamicRLBranch(; R=Rline_pu, L=Lline_pu, ω0=ω0)
-line_model = Line(
-    MTKLine(branch);
-    src=1, dst=2
-)
-
-# @named load = DynamicPQLoad(Pset=-Pload_pu)
-@named load = PQLoad(Pset=-Pload_pu, Qset=0)
-@named shunt = DynamicShunt(C=Cline_pu, ω0=ω0)
-loadbus = Bus(
-    MTKBus(load, shunt);
+@named less_stiff_load = LessStiffPQLoad(Pset=-Pload_pu)
+less_stiff_loadbus = Bus(
+    MTKBus(less_stiff_load, shunt);
     vidx=2
 )
+less_stiff_nw = Network([slackbus, less_stiff_loadbus], line_model)
+less_stiff_s0 = find_fixpoint(less_stiff_nw; alg=DynamicSS(Rodas5P()))
+
+#=
+perfect the trick with the less stiff load worked!
+No lets us this a a starting point for the system we actually want to solve
+=#
+
+s0guess = NWState(nw)
+s0guess[VIndex(2, :busbar₊u_i)] = less_stiff_s0[VIndex(2, :busbar₊u_i)]
+s0guess[VIndex(2, :busbar₊u_r)] = less_stiff_s0[VIndex(2, :busbar₊u_r)]
+s0guess[EIndex(1, :branch₊i_i)] = less_stiff_s0[EIndex(1, :branch₊i_i)]
+s0guess[EIndex(1, :branch₊i_r)] = less_stiff_s0[EIndex(1, :branch₊i_r)]
+s0 = find_fixpoint(nw, s0guess; alg=DynamicSS(Rodas5P()))
+
+#=
+yay, workd
+
+no for the perturbation, diable load at 0.1s
+=#
 disable_load_affect = ComponentAffect([], [:load₊Pset]) do u, p, ctx
     println("Disabling load affect at time $(ctx.t)")
     p[:load₊Pset] = 0
@@ -116,35 +154,22 @@ end
 set_callback!(loadbus, PresetTimeComponentCallback(0.1, disable_load_affect))
 loadbus #hide #md
 
-
-slackbus = Bus(pfSlack(; V=1), vidx=1)
-
-nw = Network([slackbus, loadbus], line_model)
-s0guess = NWState(nw)
-# for +P
-# s0guess[VIndex(2, :busbar₊u_i)] = 0.02413382124823399
-# s0guess[VIndex(2, :busbar₊u_r)] = 1.0242809498380367
-# s0guess[EIndex(1, :branch₊i_i)] = -0.002967095041392488
-# s0guess[EIndex(1, :branch₊i_r)] = 0.9763645487283649
-
-  s0guess[VIndex(2, :busbar₊u_i)] = -0.025390487676966115
-  s0guess[VIndex(2, :busbar₊u_r)] = 0.9745092559815217
-  s0guess[EIndex(1, :branch₊i_i)] = 0.00202183746961876
-  s0guess[EIndex(1, :branch₊i_r)] = -1.026104840439586
-
-s0 = find_fixpoint(nw, s0guess; alg=DynamicSS(Rodas5P()))
-
-
+#=
+now we can simualte
+=#
 prob = ODEProblem(nw, uflat(s0), (0.0, 0.124), copy(pflat(s0)); callback=get_callbacks(nw))
 sol = solve(prob, Rodas5P());
 
-df = CSV.read(joinpath(pkgdir(PowerDynamics),"docs","examples","emt_data", "Test_EMT.csv"), DataFrame, skipto=3,
-              header=[:t, :u_1_a, :u_1_b, :u_1_c, :u_2_a, :u_2_b, :u_2_c])
 
-let
+fig = let
     fig = Figure()
     ax = Axis(fig[1,1])
     ts = range(0.09, 0.124; length=2000)
+
+    df = CSV.read(
+        joinpath(pkgdir(PowerDynamics),"docs","examples", "emt_data_minimal.csv.gz"),
+        DataFrame
+    )
     lines!(df.t, df.u_2_a; label="PowerFactory A", color=:lightgray,  linewidth=5)
     lines!(df.t, df.u_2_b; label="PowerFactory B", color=:lightgray,  linewidth=5)
     lines!(df.t, df.u_2_c; label="PowerFactory C", color=:lightgray,  linewidth=5)
@@ -157,4 +182,11 @@ let
     lines!(ts, c, label="a phase")
     xlims!(ax, ts[begin], ts[end])
     fig
-end |> display
+end
+
+#=
+Lets zoom in for comparison
+=#
+
+xlims!(0.0995,0.105)
+fig
