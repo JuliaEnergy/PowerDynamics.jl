@@ -363,12 +363,12 @@ callbacks might miss.
 #### Overcurrent Detection Callbacks
 
 For [`ComponentCondition`](@extref NetworkDynamics.ComponentCondition), we need to specify
-which symbols to monitor. By checking the available "observed" symbols (i.e. derive symbols that are not directly part of the states or parameters):
-=#
-obssym(protected_template)
-#=
-We see current magnitudes `:src₊i_mag` and `:dst₊i_mag` are available.
-We'll monitor both ends and compare the maximum to the `I_max` parameter.
+which symbols to monitor. We've explicitly added `I_mag` as an observed state to our `ProtectedPiBranch` model, 
+which contains the maximum current magnitude between the src and dst terminals for each branch.
+
+Since our dual-branch transmission line has two independent branches (`:pibranchA` and `:pibranchB`), we define 
+callback functions that take the branch name as a parameter. This allows us to automatically create identical 
+callbacks for both branches without code duplication.
 
 **Condition Definitions:**
 
@@ -379,9 +379,9 @@ function continuous_overcurrent_condition(branchname)
     I_mag = Symbol(branchname, "₊", :I_mag) # pilineX₊I_mag
     I_max = Symbol(branchname, "₊", :I_max) # pilineX₊I_max
     t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
+
     ComponentCondition([I_mag], [I_max, t_cutoff]) do u, p, t
-        ## return max if already scheduled
-        p[t_cutoff] != Inf && return Inf
+        p[t_cutoff] != Inf && return Inf # return Inf if cutoff already scheduled
         p[I_max] - u[I_mag]
     end
 end
@@ -395,9 +395,9 @@ function discrete_overcurrent_condition(branchname)
     I_mag = Symbol(branchname, "₊", :I_mag) # pilineX₊I_mag
     I_max = Symbol(branchname, "₊", :I_max) # pilineX₊I_max
     t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
+
     ComponentCondition([I_mag], [I_max, t_cutoff]) do u, p, t
-        ## return false if already scheduled
-        p[t_cutoff] != Inf && return false
+        p[t_cutoff] != Inf && return false # return fals if cuttoff already scheduled
         u[I_mag] ≥ p[I_max]
     end
 end
@@ -412,10 +412,12 @@ the line cutoff by setting `t_cutoff` and tells the integrator to step to that t
 function overcurrent_affect(branchname)
     t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
     t_delay = Symbol(branchname, "₊", :t_delay)   # pilineX₊t_delay
+
     ComponentAffect([], [t_cutoff, t_delay]) do u, p, ctx
         p[t_cutoff] != Inf && return # return early if already scheduled for cutoff
         tcutoff = ctx.t + p[t_delay]
         println("$branchname of line $(ctx.src)→$(ctx.dst) overcurrent at t=$(ctx.t), scheduling cutoff at t=$tcutoff")
+        ## update the paramter of the edge to store the cutoff time
         p[t_cutoff] = tcutoff
         ## tell the integrator to explicitly step to the cutoff time
         add_tstop!(ctx.integrator, tcutoff)
