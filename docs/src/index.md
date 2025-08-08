@@ -24,6 +24,7 @@ as those explain lots of the underlying functionality and concepts
 
 ## Tutorials
 - **[Custom Components](@ref custom-bus)** - Creating your own bus models
+- **[Custom Transmission Lines](@ref custom-line)** - Implementing advanced line models with protection
 
 ## Examples
 - **[IEEE 9-Bus System](@ref ieee9bus)** - Basic power system simulation

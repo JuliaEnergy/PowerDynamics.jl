@@ -1,5 +1,5 @@
 #=
-# Tutorial on custom Line Models
+# [Tutorial on custom Transmission Line Models](@id custom-line)
 
 In this tutorial we'll implement a custom transmission line model:
 - we start by defining a PI-branch component with optional fault admittance,
@@ -40,7 +40,7 @@ We have:
     - voltages $V_\mathrm{src}$ and $V_\mathrm{dst}$,
     - currents $i_\mathrm{src}$ and $i_\mathrm{dst}$,
 - two shunt admittances $Y_\mathrm{src}$ and $Y_\mathrm{dst}$,
-- an impedance $Z$, which is split into two parts $Z_a$ and $Z_b$ by the fault position $p_\mathrm{fault}$.
+- an impedance $Z$, which is split into two parts $Z_a$ and $Z_b$ by the fault position $\mathrm{pos}$.
 
 ```
               i_src  V₁   i_a   Vₘ   i_b   V₂  i_dst
@@ -55,7 +55,7 @@ Y_src = G_src+jB_src ┬          ┬ Y_f      ┬  Y_dst = G_dst+jB_dst
 ```
 The fault admittance $Y_f = G_f + jB_f$ can represent any fault impedance.
 
-To model this, we we introduce the internal voltages $V_1$, $V_2$ and $V_\mathrm{m}$.
+To model this, we introduce the internal voltages $V_1$, $V_2$ and $V_\mathrm{m}$.
 We consider the equations of the PI-branch in quasi-static-state. Therefore,
 we can use complex variables to describe the voltages and the currents.
 What we need in the end are equations for the currents at the terminals, i.e. $i_\mathrm{src}$ and $i_\mathrm{dst}$
@@ -64,8 +64,8 @@ as a function of all the parameters and the given node voltages. Lets start writ
 First, we "split" the impedance $Z$ into two parts $Z_a$ and $Z_b$:
 ```math
 \begin{aligned}
-Z_\mathrm{a} &= Z \, p_\mathrm{fault}\\
-Z_\mathrm{b} &= Z \, (1-p_\mathrm{fault})
+Z_\mathrm{a} &= Z \, \mathrm{pos}\\
+Z_\mathrm{b} &= Z \, (1-\mathrm{pos})
 \end{aligned}
 ```
 Next, we can define the internal voltages $V_1$ and $V_2$ in terms of the terminal
@@ -76,7 +76,7 @@ V_1 &= r_\mathrm{src} \, V_\mathrm{src}\\
 V_2 &= r_\mathrm{dst} \, V_\mathrm{dst}
 \end{aligned}
 ```
-Once we have the shunt voltages, we can directly calculate the shut currents
+Once we have the shunt voltages, we can directly calculate the shunt currents
 ```math
 \begin{aligned}
 i_1 &= Y_\mathrm{src} \, V_1\\
@@ -96,7 +96,7 @@ Y_{f,\text{eff}} = \mathrm{shortcircuit} \cdot Y_f
 When the fault is active, we apply Kirchhoff's current law at the middle node:
 $i_\mathrm{a} = i_\mathrm{b} + i_f$, which leads to the middle voltage:
 ```math
-V_\mathrm{m} = \frac{V_1 \, (1-p_\mathrm{fault}) + V_2 \, p_\mathrm{fault}}{1 + Y_{f,\text{eff}} \, Z \, p_\mathrm{fault} \, (1-p_\mathrm{fault})}
+V_\mathrm{m} = \frac{V_1 \, (1-\mathrm{pos}) + V_2 \, \mathrm{pos}}{1 + Y_{f,\text{eff}} \, Z \, \mathrm{pos} \, (1-\mathrm{pos})}
 ```
 
 Once we have the middle voltage defined, we can calculate the currents $i_\mathrm{a}$, $i_\mathrm{b}$, and $i_f$:
@@ -114,13 +114,22 @@ i_\mathrm{src} &= (-i_\mathrm{a} - i_1) \, r_\mathrm{src}\\
 i_\mathrm{dst} &= (i_\mathrm{b} - i_2) \, r_\mathrm{dst}
 \end{aligned}
 ```
+=#
 
-## Excursion: Complex variables in MTK Models
+#=
+## Implement the CustomPiBranch MTKModel
+
+```@raw html
+<details class="admonition is-details">
+<summary class="admonition-header">Excursion: Complex Variables in MTK Models</summary>
+<div class="admonition-body">
+```
+
 !!! warning "Complex variables are not supported in MTK Models (at least not in PowerDynamics.jl)"
-    In the end, all parameters and variables of NetworkDynamic models are real-valued, therfore, we cannot
+    In the end, all parameters and variables of NetworkDynamic models are real-valued, therefore, we cannot
     use complex parameters or states in our MTK Models.
 
-However, there is a "hack" to prevent this issue. Lets say we want to model the compelx equation
+However, there is a "hack" to prevent this issue. Lets say we want to model the complex equation
 ```math
 U = Z \cdot I
 ```
@@ -142,20 +151,21 @@ Uc = Z * Ic
 By applying `real` and `imag` to the complex term, we can extract the real and imaginary parts
 to form separate equations for real and imaginary part:
 =#
-[
+eqs = [
     u_r ~ real(Uc),
     u_i ~ imag(Uc)
 ]
 
 #=
-This trick can be used inside `@mtkmodel` as well, by just defining thos complex terms in an `begin...end` block.
-=#
+This trick can be used inside `@mtkmodel` as well, by just defining those complex terms in a `begin...end` block.
 
-#=
-## Implement the CustomPiBranch MTKModel
+```@raw html
+</div>
+</details>
+```
 
-With the equations and the knowlege on how to use complex terms within MTK
-Models the definition is relatively straigh forward:
+With the equations and the knowledge on how to use complex terms within MTK
+Models the definition is relatively straight forward:
 =#
 @mtkmodel CustomPiBranch begin
     @parameters begin
@@ -166,13 +176,13 @@ Models the definition is relatively straigh forward:
         G_dst, [description="Conductance of dst shunt"]
         B_dst, [description="Susceptance of dst shunt"]
         r_src=1, [description="src end transformation ratio"]
-        r_dst=1, [description="src end transformation ratio"]
+        r_dst=1, [description="dst end transformation ratio"]
         ## fault parameters
         pos=0.5, [description="Fault Position (from src, percent of the line)"]
         G_f=1, [description="Fault conductance in pu"]
         B_f=0, [description="Fault susceptance in pu"]
         shortcircuit=0, [description="shortcircuit on line"]
-        ## parameter to "switch of" the line
+        ## parameter to "switch off" the line
         active=1, [description="Line active or switched off"]
     end
     @components begin
@@ -218,7 +228,7 @@ Models the definition is relatively straigh forward:
 end
 nothing #hide #md
 #=
-Additionaly to the equations defined above, we multiply the currents by `active`.
+Additionally to the equations defined above, we multiply the currents by `active`.
 This is equivalent of opening two ideal breakers on both ends of the branch when `active=false`.
 
 Lastly lets ensure that our model satisfies the [Branch Interface](@ref):
@@ -229,10 +239,12 @@ isbranchmodel(pibranch)
 #=
 ## Extending the model for dynamic over-current Protection
 
+Now that we have a working basic PI-branch model, let's extend it with dynamic protection capabilities.
+
 In order to implement the overcurrent protection, we need to make a plan in terms of callbacks.
 Callbacks are a neat [feature of DifferentialEquations.jl](https://docs.sciml.ai/DiffEqDocs/stable/features/callback_functions/),
 which allow you to stop the solver under certain conditions and trigger a user-defined affect function to change the state of the system.
-Their general capability is [extended in NetworkDynamics](@extref NetworkDynamics.Callbacks).
+Their general capability is [extended in NetworkDynamics](@extref NetworkDynamics Callbacks).
 
 We want to implement the following behavior:
 1. Continuously monitor the current magnitude and compare to the maximal current threshold.
@@ -264,7 +276,7 @@ Let's add the new parameters to the `CustomPiBranch` model by *extending* the mo
 Extend means that we essentially copy-paste the whole model definitions and are able to add
 new parameters, equations, variables and so on.
 
-We add an additional "observed" state `I_mag`, which allways contains the current magnitude at the src or dst terminal (whatever is higher).
+We add an additional "observed" state `I_mag`, which always contains the current magnitude at the src or dst terminal (whatever is higher).
 =#
 @mtkmodel ProtectedPiBranch begin
     @extend CustomPiBranch()
@@ -368,7 +380,7 @@ function continuous_overcurrent_condition(branchname)
     I_max = Symbol(branchname, "₊", :I_max) # pilineX₊I_max
     t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
     ComponentCondition([I_mag], [I_max, t_cutoff]) do u, p, t
-        ## return max if allready sheduled
+        ## return max if already scheduled
         p[t_cutoff] != Inf && return Inf
         p[I_max] - u[I_mag]
     end
@@ -384,7 +396,7 @@ function discrete_overcurrent_condition(branchname)
     I_max = Symbol(branchname, "₊", :I_max) # pilineX₊I_max
     t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
     ComponentCondition([I_mag], [I_max, t_cutoff]) do u, p, t
-        ## return false if allready sheduled
+        ## return false if already scheduled
         p[t_cutoff] != Inf && return false
         u[I_mag] ≥ p[I_max]
     end
@@ -401,7 +413,7 @@ function overcurrent_affect(branchname)
     t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
     t_delay = Symbol(branchname, "₊", :t_delay)   # pilineX₊t_delay
     ComponentAffect([], [t_cutoff, t_delay]) do u, p, ctx
-        p[t_cutoff] != Inf && return # return early if allready schedule for cutoff
+        p[t_cutoff] != Inf && return # return early if already scheduled for cutoff
         tcutoff = ctx.t + p[t_delay]
         println("$branchname of line $(ctx.src)→$(ctx.dst) overcurrent at t=$(ctx.t), scheduling cutoff at t=$tcutoff")
         p[t_cutoff] = tcutoff
@@ -473,15 +485,23 @@ Lets load the first part of that tutorial to get the IEEE39 Grid model.
 Also, we initialize the model (the quintessence of [part II](@ref ieee39-part2)).
 =#
 EXAMPLEDIR = joinpath(pkgdir(PowerDynamics), "docs", "examples")
-# include(joinpath(EXAMPLEDIR, "ieee39_part1.jl"))
-# formula = @initformula :ZIPLoad₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
-# set_initformula!(nw[VIndex(31)], formula)
-# set_initformula!(nw[VIndex(39)], formula)
-# s0 = initialize_from_pf!(nw; verbose=false)
+include(joinpath(EXAMPLEDIR, "ieee39_part1.jl"))
+formula = @initformula :ZIPLoad₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
+set_initformula!(nw[VIndex(31)], formula)
+set_initformula!(nw[VIndex(39)], formula)
+s0 = initialize_from_pf!(nw; verbose=false)
 nothing #hide #md
 
 #=
+Now, we should have a fully initialized network available as `nw`:
+=#
+nw
+
+#=
 ### Derive Network with Protected Line Models
+
+Now we'll demonstrate the protected line model in action by applying it to the IEEE39 test system.
+
 We need to build our own network model by replacing the transmission line models with our `ProtectedPiBranch`.
 For that, we create a helper function that takes an edge model from the old network and creates
 a protected transmission line model with equivalent electrical parameters.
@@ -502,13 +522,11 @@ function protected_line_from_line(e::EdgeModel)
         ## Impedances: double them (2× original)
         set_default!(new, Symbol(branch, "₊", :R), 2 * get_default(e, :piline₊R))
         set_default!(new, Symbol(branch, "₊", :X), 2 * get_default(e, :piline₊X))
-
         ## Shunt admittances: halve them (0.5× original)
         set_default!(new, Symbol(branch, "₊", :G_src), 0.5 * get_default(e, :piline₊G_src))
         set_default!(new, Symbol(branch, "₊", :B_src), 0.5 * get_default(e, :piline₊B_src))
         set_default!(new, Symbol(branch, "₊", :G_dst), 0.5 * get_default(e, :piline₊G_dst))
         set_default!(new, Symbol(branch, "₊", :B_dst), 0.5 * get_default(e, :piline₊B_dst))
-
         ## Transformation ratios: keep same
         set_default!(new, Symbol(branch, "₊", :r_src), get_default(e, :piline₊r_src))
         set_default!(new, Symbol(branch, "₊", :r_dst), get_default(e, :piline₊r_dst))
@@ -533,12 +551,13 @@ s0_protected = initialize_from_pf!(nw_protected; verbose=false)
 As a short sanity check, lets compare the initialized values of both networks:
 we do so by extracting the [`interface_values`](@extref NetworkDynamics.interface_values)
 for both solutions (a dictionary of all currents and voltages (inputs and outputs of the models)))
-Then we compair their values.
+Then we compare their values.
 =#
 @assert collect(values(interface_values(s0))) ≈ collect(values(interface_values(s0_protected))) #hide #md
 collect(values(interface_values(s0))) ≈ collect(values(interface_values(s0_protected)))
 #=
-They are identical! If we would have made an error in our transmission line model, the steady state would be most certainly different.
+They are identical! If we would have made an error in our transmission line
+model, the steady state would be most certainly different.
 
 ### Simulate with the Protected Line Models
 Now that we have our protected transmission line models ready, we need to configure them for the simulation.
@@ -554,6 +573,7 @@ for i in 1:46
     i_at_steadys = s0_protected[EIndex(i, :pibranchB₊I_mag)]
     s0_protected[EIndex(i, :pibranchB₊I_max)] = 1.3*i_at_steadys
 end
+nothing #hide #md
 
 #=
 Next, we need to introduce a perturbation to test our protection system. We'll
@@ -605,6 +625,8 @@ fig = let fig = Figure()
     ## Plot current magnitude for but the failing line
     for i in 1:46
         i == AFFECTED_LINE && continue
+        ## Factor of 2: total transmission line current is double the branch current
+        ## since we have two identical parallel branches (A and B)
         current = 2*sol(ts, idxs=EIndex(i, :pibranchA₊I_mag)).u
         current = current ./ current[begin]
         lines!(ax, ts, current)
