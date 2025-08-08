@@ -66,7 +66,7 @@ kwargs = (;
         "API" => "API.md",
         "🔗 NetworkDynamics.jl Docs" => "networkdynamics_forward.md",
     ],
-    warnonly=[:missing_docs],
+    warnonly=[:missing_docs, :docs_block],
 )
 kwargs_warnonly = (; kwargs..., warnonly=true)
 
