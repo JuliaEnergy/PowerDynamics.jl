@@ -1,18 +1,27 @@
 name: CompatHelper
-
 on:
   schedule:
-    - cron: '00 00 * * *'
+    - cron: 0 0 * * *
   workflow_dispatch:
-
 jobs:
   CompatHelper:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
     steps:
       - name: Pkg.add("CompatHelper")
         run: julia -e 'using Pkg; Pkg.add("CompatHelper")'
-      - name: CompatHelper.main()
+      - name: "Run CompatHelper"
+        run: |
+          import CompatHelper
+          CompatHelper.main(; subdirs=[
+            "",
+            "docs",
+            "test",
+            "PowerDynamicsTesting",
+          ])
+        shell: julia --color=yes {0}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMPATHELPER_PRIV: ${{ secrets.DOCUMENTER_KEY }}
-        run: julia -e 'using CompatHelper; CompatHelper.main()'

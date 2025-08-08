@@ -1,86 +1,83 @@
-
-[![Build Status](https://travis-ci.org/JuliaEnergy/PowerDynamics.jl.svg?branch=main)](https://travis-ci.org/JuliaEnergy/PowerDynamics.jl)
-[![Chat on Slack.](https://img.shields.io/badge/chat%20on-slack-yellow.svg)](https://julialang.slack.com/messages/CDAGL4T09/)
-[![Get your Slack invitation.](https://img.shields.io/badge/get%20invitation-slack-yellow.svg)](https://slackinvite.julialang.org/)
-[![Code on Github.](https://img.shields.io/badge/code%20on-github-blue.svg)](https://github.com/JuliaEnergy/PowerDynamics.jl)
-
-# PowerDynamics.jl - Dynamic Power System Analysis in Julia
-
-This package provides all the tools you need to create a dynamic power grid model
-and analyze it.
-
-The source code is licensed under [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html) and [published on github](https://github.com/JuliaEnergy/PowerDynamics.jl).
-
-These Docs have been built
-
-```@setup documentationbuildtime
-using Dates
-function printBuiltTime()
-  println(Dates.format(now(), "on YYYY-mm-dd at HH:MM"))
-end
+```@meta
+CurrentModule = PowerDynamics
 ```
 
-```@example documentationbuildtime
-printBuiltTime() # hide
+# PowerDynamics
+
+PowerDynamics.jl is a Julia package for modeling and simulating power grid dynamics. It provides a comprehensive framework for analyzing electrical power systems, including synchronous machines, loads, lines, and various control elements. The package is built on top of [NetworkDynamics.jl](https://github.com/JuliaDynamics/NetworkDynamics.jl) and offers both predefined component models and the flexibility to create custom power system components.
+
+!!! warning "PowerDynamics.Library Under Active Development"
+    **The PowerDynamics.Library component library is currently excluded from semantic versioning and is under heavy development.**
+
+    While PowerDynamics itself follows semantic versioning, the Library submodule's API is highly unstable and variable names, function signatures, and model interfaces may change frequently without notice. If you are using specific models from PowerDynamics.Library in their current state, we strongly recommend copying them to your own source code to avoid breaking changes in future updates.
+
+## Getting Started
+
+- **[Modeling Concepts](@ref)** - Learn the fundamental concepts behind PowerDynamics modeling
+- **[Component Library](@ref)** - Explore the available power system component models
+- **[Powergrid Initialization](@ref)** - Understand how to properly initialize power system simulations
+- **[API Reference](@ref API)** - Complete function and type documentation
+
+It is also highly recommend to out check the docs on
+[NetworkDynamics.jl](https://github.com/JuliaDynamics/NetworkDynamics.jl)
+as those explain lots of the underlying functionality and concepts
+
+## Tutorials
+- **[Custom Components](@ref custom-bus)** - Shows how to implement Milano's classical synchronous machine model with a power system stabilizer (PSS)
+- **[Custom Transmission Lines](@ref custom-line)** - Demonstrates creating a PI-branch transmission line model with overcurrent protection that can trip during faults
+
+## Examples
+- **[IEEE 9-Bus System](@ref ieee9bus)** - Simulates the complete 9-bus IEEE test system with synchronous generators and dynamic load changes
+- **[IEEE 39-Bus System Part 1](@ref ieee39-part1)** - Shows how to build the 39-bus New England test system from custom CSV data files with proper component modeling
+- **[IEEE 39-Bus System Part 2](@ref ieee39-part2)** - Demonstrates the detailed initialization process for the 39-bus system including power flow and initialization of dynamic models
+- **[IEEE 39-Bus System Part 3](@ref ieee39-part3)** - Runs dynamic simulation of the 39-bus system with a short circuit disturbance and fault clearing
+- **[IEEE 39-Bus System Part 4](@ref ieee39-part4)** - Implements a custom droop-controlled inverter model and performs parameter optimization using sensitivity analysis
+- **[EMT Toy Model Example](@ref emt-toymodel)** - Demonstrates very basic EMT modeling using dynamic shunt capacitor and RL transmission line components in rotating dq coordinates
+
+## Reproducibility
+
+```@raw html
+<details><summary>Direct dependencies used for this documentation:</summary>
 ```
 
-## Installation
-
-The installation can be done via the new package manager. Either use
-
-```
-]add PowerDynamics
+```@example
+using Pkg #hide
+Pkg.status() #hide
 ```
 
-or copy
-
-```Julia
-using Pkg; Pkg.add("PowerDynamics")
+```@raw html
+</details>
 ```
 
-Please note that `PowerDynamics.jl` is a fast developing library whose API is not settled yet.
-In order to ensure that your old code will still work in the future while using the latest version of
-`PowerDynamics.jl` for your new code, **we strongly recommend the usage of environments**. [Please check out
-this video from the introduction of Pkg3, where environments are introduced, too.](https://www.youtube.com/watch?v=HgFmiT5p0zU)
+```@raw html
+<details><summary>Julia Version:</summary>
+```
 
-### Compatibility
+```@example
+using InteractiveUtils #hide
+versioninfo() #hide
+```
 
-`PowerDynamics.jl` is written for Julia 1.6 and above.
-We will quickly switch to new Julia version as they come out, but support older versions and enable long transition periods for users.
-Julia versions 0.x are not supported.
+```@raw html
+</details>
+```
 
-## Usage
+```@raw html
+<details><summary>Full Manifest:</summary>
+```
 
-Generally, we distinguish three types of user for `PowerDynamics.jl`:
+```@example
+using Pkg #hide
+Pkg.status(; mode = PKGMODE_MANIFEST) #hide
+```
 
-- [Grid Modeler](@ref)
-- [Grid Component Developer](@ref)
-- [`PowerDynamics.jl` Developer](@ref)
+```@raw html
+</details>
+```
 
-### Grid Modeler
+## Funding
+Development of this project was in part funded by the *German Federal Ministry for Economic Affairs and Climate Action* as part of the *OpPoDyn*-Project (Project ID 01258425/1, 2024-2027).
 
-**Your Goal** is to use `PowerDynamics.jl` to model your grid of preference. You don't
-want to implement new types of nodes.
-
-We recommend you to choose your favorite example from [`PowerDynamicsExamples`](https://github.com/JuliaEnergy/PowerDynamicsExamples),
-read [Node Types](@ref) and try to understand it. That should give you the kickstart you need. If you
-have any questions, [contact us](@ref Contact).
-
-### Grid Component Developer
-
-**Your Goal** is to use `PowerDynamics.jl` to develop types of nodes, e.g. new control schemes for inverters or
-new descriptions of synchronous machines.
-
-After going through the introduction for a [Grid Modeler](@ref), we recommend that you read
-through [PowerGrid model](@ref) and [Custom Node Types](@ref) and try to implement
-a new node type for an example grid. With that, you should have all the tools you need.
-If you have any questions, [contact us](@ref Contact).
-
-### `PowerDynamics.jl` Developer
-
-**Your Goal** is to extend `PowerDynamics.jl` with new fundamental functionalities.
-
-After going throught the introduction for a [Grid Modeler](@ref) and a [Grid Component Developer](@ref),
-read through the code where hopefully all of this documentation will helpful for you.
-Afterwards, it's probably best to open an issue explaining the idea you want to implement
-and we can discuss how you can transform your idea into a pull request.
+```@raw html
+<img src="assets/bmwk_logo_en.svg" width="300"/>
+```

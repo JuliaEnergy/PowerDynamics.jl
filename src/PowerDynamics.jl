@@ -1,104 +1,65 @@
-# (C) 2018 Potsdam Institute for Climate Impact Research, authors and contributors (see AUTHORS file)
-# Licensed under GNU GPL v3 (see LICENSE file)
-
 module PowerDynamics
 
-using Markdown # for the @doc
+using Reexport: Reexport, @reexport
+@reexport using NetworkDynamics
+using NetworkDynamics: SymbolicView
 
-include("common/Errors.jl")
-include("common/Helpers.jl")
-include("common/PowerGrid.jl")
-include("common/States.jl")
-include("common/PowerGridSolutions.jl")
+using SciMLBase: SciMLBase, solve
+using NonlinearSolve: NonlinearSolve, NonlinearProblem
+using ForwardDiff: ForwardDiff
+using LinearAlgebra: LinearAlgebra, Diagonal, diag, pinv, eigvals
+using Graphs: SimpleGraph, add_edge!, nv, ne
+using ArgCheck: @argcheck
+using Setfield: @set, @set!
+using SymbolicIndexingInterface: SymbolicIndexingInterface as SII
+using MacroTools: postwalk, @capture
 
-include("parsers/Format.jl")
-include("parsers/JsonParser.jl")
+using ModelingToolkit: ModelingToolkit, @connector, @mtkmodel, @variables, @named,
+                       ODESystem, connect, getname, unknowns, get_name, get_iv, get_systems,
+                       get_gui_metadata, t_nounits as t, Equation,
+                       defaults, parameters, iscomplete, rename, simplify, unwrap,
+                       get_eqs, get_observed, get_ctrls, get_defaults, get_schedule,
+                       get_connector_type, get_preface, get_initializesystem,
+                       get_continuous_events, get_discrete_events, get_parameter_dependencies,
+                       get_discrete_subsystems, get_solved_unknowns, get_tspan, get_guesses,
+                       structural_simplify
+using ModelingToolkit: @unpack, Num, System # needed for @mtkmodel?
+using Symbolics: Symbolics, Symbolic, iscall, fixpoint_sub
+using NonlinearSolve: NonlinearProblem
+using SciMLBase: SciMLBase, solve
 
-# all possible node dynamics
-include("nodes/controller/PIControl.jl")
-include("nodes/AbstractNode.jl")
-include("nodes/NodeMacro.jl")
-include("nodes/PQAlgebraic.jl")
-include("nodes/VoltageDependentLoad.jl")
-include("nodes/PVAlgebraic.jl")
-include("nodes/SlackAlgebraic.jl")
-include("nodes/SwingEquation.jl")
-include("nodes/FourthOrderEq.jl")
-include("nodes/FourthOrderEqGovernorExciterAVR.jl")
-include("nodes/VoltageSourceInverterMinimal.jl")
-include("nodes/VoltageSourceInverterVoltagePT1.jl")
-include("nodes/CurrentSourceInverterMinimal.jl")
-include("nodes/ExponentialRecoveryLoad.jl")
-include("nodes/FourthOrderEqExciterIEEEDC1A.jl")
-include("nodes/FourthOrderEqGovernorIEEEG1.jl")
-include("nodes/ExciterSaturtionEq.jl")
-include("nodes/experimental/RLCLoad.jl")
-include("nodes/experimental/PVInverterWithFrequencyControl.jl")
-include("nodes/experimental/WindTurbineGenType4.jl")
-include("nodes/experimental/WindTurbineGenType4_RotorControl.jl")
-include("nodes/experimental/CurtailedPowerPlantWithInertia.jl")
-include("nodes/experimental/CompositeNode.jl")
-include("nodes/experimental/FluctuationNode.jl")
-include("nodes/experimental/NormalForm.jl")
+export Terminal, BusBar, LineEnd
+export MTKBus, MTKLine, CompositeInjector, Ibase, Zbase, Ybase
+include("modeling_tools.jl")
 
-# requirements for the IONodes
-include("IONodes/utils.jl")
-include("IONodes/IONode.jl")
-include("IONodes/BusNode.jl")
-include("IONodes/IOComponents.jl")
-include("IONodes/GFI_MTK.jl")
-include("IONodes/MTK_Load.jl")
+export isinjectormodel, isbusmodel, isbranchmodel, islinemodel
+include("interfaces.jl")
 
-module ModularInverter
-include("IONodes/MIComponents.jl")
-include("IONodes/ModularInverter.jl")
-include("IONodes/LTI.jl")
-end
+export @attach_metadata!, set_voltage!, set_current!
+include("utils.jl")
+include("Library/Library.jl")
+using .Library
 
-# all line types
+export Line, Bus
+export simplify_mtkline, simplify_mtkbus
+include("network_components.jl")
 
-include("lines/AbstractLine.jl")
-include("lines/PiModel.jl")
-include("lines/LineMacro.jl")
-include("lines/StaticLine.jl")
-include("lines/PiModelLine.jl")
-include("lines/Transformer.jl")
-include("lines/RLLine.jl")
+using DataFrames: DataFrame
+using OrderedCollections: OrderedDict
+export pfSlack, pfPV, pfPQ
+export solve_powerflow, initialize_from_pf!, initialize_from_pf, show_powerflow
+export powerflow_model, ispfmodel
+export has_pfmodel, get_pfmodel, set_pfmodel!, delete_pfmodel!
+include("powerflow.jl")
 
-include("operationpoint/operationpoint.jl")
-include("operationpoint/find_valid_initial_condition.jl")
-include("operationpoint/power_flow.jl")
+export PFInitConstraint, @pfinitconstraint, PFInitFormula, @pfinitformula, copy_pf_parameters
+export add_pfinitconstraint!, add_pfinitformula!
+export set_pfinitconstraint!, set_pfinitformula!
+export has_pfinitconstraint, has_pfinitformula
+export get_pfinitconstraints, get_pfinitformulas
+export delete_pfinitconstraints!, delete_pfinitformulas!
+include("pfinitconstraint.jl")
 
-include("faults/ChangeInitialConditions.jl")
-include("faults/AbstractPerturbation.jl")
-include("faults/LineFailure.jl")
-include("faults/NodeParameterChange.jl")
-include("faults/PowerPerturbation.jl")
-include("faults/NodeShortCircuit.jl")
-
-export AbstractNode
-
-# export of the main types and functions
-export PowerDynamicsError,NodeDynamicsError,StateError,GridSolutionError,OperationPointError
-export no_internal_masses
-export @DynamicNode, showdefinition
-export construct_vertex
-
-export State
-
-export @Line, StaticLine
-export construct_edge
-
-export convert, promote_rule # only so the autodocs work properly
-
-export find_operationpoint
-
-export PowerGrid
-export PowerGridSolution
-export rhs
-export systemsize
-export symbolsof
-export total_current
-
+include("pin_parameters.jl")
 
 end
