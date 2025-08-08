@@ -230,7 +230,7 @@ initialize_from_pf_docstring = raw"""
         subverbose = false,
         pfnw = powerflow_model(nw),
         pfs0 = NWState(pfnw),
-        pfs = solve_powerflow(pfnw; pfs0, verbose),
+        pfs = solve_powerflow(nw; pfnw, pfs0, verbose),
         kwargs...
     )
 
@@ -269,7 +269,7 @@ function _init_from_pf(
     subverbose = false,
     pfnw = powerflow_model(nw),
     pfs0 = NWState(pfnw),
-    pfs = solve_powerflow(pfnw; pfs0, verbose),
+    pfs = solve_powerflow(nw; pfnw, pfs0, verbose),
     kwargs...
 )
     interface_vals = interface_values(pfs)
