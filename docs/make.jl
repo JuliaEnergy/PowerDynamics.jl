@@ -61,6 +61,7 @@ kwargs = (;
             "IEEE39 Part II: Initialization" => "generated/ieee39_part2.md",
             "IEEE39 Part III: Simulation" => "generated/ieee39_part3.md",
             "IEEE39 Part IV: Parameter Tuning" => "generated/ieee39_part4.md",
+            "EMT Toymodel" => "generated/emt_toymodel.md",
         ],
         "API" => "API.md",
         "🔗 NetworkDynamics.jl Docs" => "networkdynamics_forward.md",
