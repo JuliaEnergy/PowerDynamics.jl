@@ -1,7 +1,7 @@
 #=
 # Tutorial on custom Line Models
 
-In this tutoral we'll implement a custom line model: a line with over power protection.
+In this tutorial we'll implement a custom line model: a line with over power protection.
 To make it more interesting, this kind of line will monitor the current magnitude continuously.
 The safty protection is triggered whenever the current magnitude exceeds a threshold,
 however, to make the model more realistic, the protection is not triggered immediately but instead
@@ -34,7 +34,7 @@ MTKModel. This model should fulfil the [Branch Interface](@ref), i.e. it needs t
       └───────────┘
 ```
 
-The PiLine we want to describe looks lie this.
+The PiLine we want to describe looks like this.
 We have:
 - two terminals `:src` and `:dst` with their
     - voltages $V_\mathrm{src}$ and $V_\mathrm{dst}$,
@@ -120,7 +120,7 @@ i_\mathrm{dst} &= (i_\mathrm{b} - i_2) \, r_\mathrm{dst}
     In the end, all parameters and variables of NetworkDynamic models are real-valued, therfore, we cannot
     use complex parameters or states in our MTK Models.
 
-However, there is a "hack" to provent this issue. Lets say we want to model the compelx equation
+However, there is a "hack" to prevent this issue. Lets say we want to model the compelx equation
 ```math
 U = Z \cdot I
 ```
@@ -229,37 +229,39 @@ isbranchmodel(pibranch)
 #=
 ## Extending the model for dynamic over-current Protection
 
-In order to implement the overcurrent proection, we need to make a plan in terms of callbacks.
+In order to implement the overcurrent protection, we need to make a plan in terms of callbacks.
 Callbacks are a neat [feature of DifferentialEquations.jl](https://docs.sciml.ai/DiffEqDocs/stable/features/callback_functions/),
 which allow you to stop the solver under certain conditions and trigger a user-defined affect function to change the state of the system.
 Their general capability is [extended in NetworkDynamics](@extref NetworkDynamics.Callbacks).
 
 We want to implement the following behavior:
-1. Continuously monitor the current magnitude and compare to the maximal current threashhold.
+1. Continuously monitor the current magnitude and compare to the maximal current threshold.
 2. If the maximum current is reached at time $t$, mark the line as to be switched off at time $t_\mathrm{cutoff} = t + \Delta t$.
 3. Continuously monitor time of the simulation and switch off the line at $t_\mathrm{cutoff}$.
 
 The way to implement this is by introducing 3 new parameters:
 - `I_max`, the maximum current magnitude,
-- `t_cutoff=Inf`, the time when the line should be switched off, *which defaults to infitiny* and
+- `t_cutoff=Inf`, the time when the line should be switched off, *which defaults to infinity* and
 - `t_delay`, the delay time after which the line should be switched off.
 
-Additional, we need to define 2 callbacks:
-- A [ContinuousComponentCallback](@extref
-  NetworkDynamics.ContinuousComponentCallback) to monitor the current
-  magnitude, if the current magnitude exceeds the threshold, we set the
-  `t_cutoff` to the current time plus the delay time. It also tells the solver to explicitly step to this cutoff time.
-- A [DiscreteComponentCallback](@extref NetworkDynamics.DiscreteComponentCallback) which compares the current time to the cutoff time
-  and switches off the line by setting the `active` parameter to `false`.
+For robust overcurrent protection, we need to implement **multiple complementary callbacks**:
+- A **continuous callback** that detects smooth threshold crossings using root-finding
+- A **discrete callback** that catches instantaneous jumps above the threshold
+- A **cutoff callback** that switches off the line at the scheduled time
+
+This dual detection approach is necessary because discrete events (like short circuits) can cause
+the current to jump above the threshold without crossing it smoothly, which continuous
+callbacks might miss. Both overcurrent callbacks share the same affect function that schedules
+the line cutoff, while the cutoff callback actually switches off the line.
 
 !!! note
     NetworkDynamics currently does not support Events defined in MTK models. So we need to split the implementation:
     The new parameters need to be introduced to the `MTKModel` (extending CustomPiBranch), the callbacks need to be defined
-    for the *compield VertexModel*.
+    for the *compiled VertexModel*.
 
 ### Extension of the CustomPiBranch MTKModel
-Lets add the new parameters to the `CustomPiBranch` model by *extending* the model.
-Extend means, that we essentially copy-past the whole model definitions and are able to add
+Let's add the new parameters to the `CustomPiBranch` model by *extending* the model.
+Extend means that we essentially copy-paste the whole model definitions and are able to add
 new parameters, equations, variables and so on.
 
 We add an additional "observed" state `I_mag`, which allways contains the current magnitude at the src or dst terminal (whatever is higher).
@@ -330,7 +332,7 @@ This dual approach is necessary because discrete events (like short circuits) ca
 the current to jump above the threshold without crossing it smoothly, which continuous
 callbacks might miss.
 
-#### Overcurrent Callbacks
+#### Overcurrent Detection Callbacks
 
 For [`ComponentCondition`](@extref NetworkDynamics.ComponentCondition), we need to specify
 which symbols to monitor. By checking the available "observed" symbols (i.e. derive symbols that are not directly part of the states or parameters):
@@ -394,7 +396,7 @@ end
 nothing #hide #md
 
 #=
-#### Cutoff Callback
+#### Line Cutoff Callback
 
 The cutoff callback switches off the line when the scheduled cutoff time is reached.
 Since we expect the solver to explicitly hit the cutoff time (via `add_tstop!`),
@@ -427,11 +429,11 @@ function branch_callbacks(branchname)
     oc_affect = overcurrent_affect(branchname)
     oc1 = ContinuousComponentCallback(
         continuous_overcurrent_condition(branchname),
-        overcurrent_affect(branchname, "cont")
+        oc_affect
     )
     oc2 = DiscreteComponentCallback(
         discrete_overcurrent_condition(branchname),
-        overcurrent_affect(branchname, "disc")
+        oc_affect
     )
     cut = DiscreteComponentCallback(
         cutoff_condition(branchname),
@@ -464,12 +466,11 @@ nothing #hide #md
 
 #=
 ### Derive Network with new line models
-We need to build our own model by replacing the line model with our `ProtectedPiBranch`.
-For that, we need to create a small helper function, which taks the edge model
-from the olde network, and creates a protected line model with similar
-parameters.
+We need to build our own network model by replacing the line models with our `ProtectedPiBranch`.
+For that, we create a helper function that takes an edge model from the old network and creates
+a protected line model with equivalent electrical parameters.
 
-
+Our protected line model uses two parallel branches (A and B), so we need to adjust the parameters.
 For two parallel branches to behave like the original single branch:
 - Impedances (R, X): 2× original (parallel combination gives original)
 - Shunt admittances (G, B): 0.5× original (parallel combination gives original)
@@ -523,10 +524,11 @@ collect(values(interface_values(s0))) ≈ collect(values(interface_values(s0_pro
 #=
 They are identical! If we would have made an error in our line model, the steady state would be most certainly different.
 
-### Simualate with the line models
-There are two things left to do: firstoff, we need to set the `I_max` parameter for the lines we want to protec.
+### Simulate with the Protected Line Models
+Now that we have our protected line models ready, we need to configure them for the simulation.
+First, we set the current threshold `I_max` for overcurrent protection.
 
-We set the threashold to 130% of the powerflow solution:
+We set the threshold to 130% of the power flow solution:
 =#
 AFFECTED_LINE = 24
 
@@ -538,8 +540,11 @@ for i in 1:46
 end
 
 #=
-Secondly, we neet to introduce some perturbation, for that we'll recreate the short circuit scenario from the IEEE39 example.
-Notably, this time we only need to start the short circuit, as the protection is now "baked into" the line model.
+Next, we need to introduce a perturbation to test our protection system. We'll
+introduce a shortcircuit with $Y_\mathrm{fault}=1\,\mathrm{pu}$ on branch A of
+line 24.
+Notably, we only need to start the short circuit, as the protection is
+now "baked into" the line model.
 =#
 _enable_short = ComponentAffect([], [:pibranchA₊shortcircuit]) do u, p, ctx
     @info "Short circuit activated on branch A of line $(ctx.src)→$(ctx.dst) at t = $(ctx.t)s"
@@ -564,12 +569,12 @@ prob = ODEProblem(
 sol = solve(prob, Rodas5P());
 
 #=
-From the printout we see, that the short circuit on Branch A activated at 0.1 and lead to
-a line shutdown at 0.2, which cleared the fault..
-However, due to the introduce dynamics in the system, the branch B of the affected line failed to, much later at
-around 1.5 seconds after the short circuit.
+When we run this simulation, the console output will show that the short circuit on Branch A activates at t=0.1s
+and leads to a line shutdown at t=0.2s (after the 0.1s delay), which clears the fault.
+However, due to the introduced dynamics in the system, branch B of the affected line also experiences
+a current magnitude exceeding the threshold, which leads to a shutdown of the line at around 1.5 seconds.
 
-Lets look at the
+Let's look at the current magnitude evolution during the simulation:
 =#
 
 fig = let fig = Figure()
@@ -589,8 +594,8 @@ fig = let fig = Figure()
         lines!(ax, ts, current)
     end
 
-    A_current = sol(ts, idxs=EIndex(i, :pibranchA₊I_mag)).u
-    B_current = sol(ts, idxs=EIndex(i, :pibranchB₊I_mag)).u
+    A_current = sol(ts, idxs=EIndex(AFFECTED_LINE, :pibranchA₊I_mag)).u
+    B_current = sol(ts, idxs=EIndex(AFFECTED_LINE, :pibranchB₊I_mag)).u
     A_current = A_current ./ A_current[begin]
     B_current = B_current ./ B_current[begin]
 
@@ -603,7 +608,10 @@ fig = let fig = Figure()
     fig
 end
 
-#-
+#=
+We can also zooom into the time range around the short circuit to see how the current of branch B
+crosses the threashold and the branch is disabled shortly after.
+=#
 xlims!(0, 2)
 ylims!(0.8, 1.5)
 fig
