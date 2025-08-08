@@ -1,12 +1,12 @@
 #=
 # Tutorial on custom Line Models
 
-In this tutorial we'll implement a custom line model:
-- we start by defining a PI branch with optional fault admittance,
-- we combine two pi branches to one MTKLine, to essentialy model a two-branch transmission line.
+In this tutorial we'll implement a custom transmission line model:
+- we start by defining a PI-branch component with optional fault admittance,
+- we combine two PI-branch components into one MTKLine, to essentially model a dual-branch transmission line.
 
 To make it more interesting, we add protection logic to the branches:
-- each branch continously checks the current magnituged against a limit,
+- each branch continuously checks the current magnitude against a limit,
 - if the current exceeds the limit, the branch is switched off after a delay time.
 
 This script can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
@@ -20,10 +20,10 @@ using OrdinaryDiffEqNonlinearSolve
 using CairoMakie
 using Graphs
 #=
-## Basic PI-Line Model
+## Basic PI-Branch Model
 
-We start with defining a basic PI-Line model, which is similar to the one in `PiLine_fault.jl` as an
-MTKModel. This model should fulfil the [Branch Interface](@ref), i.e. it needs to have two [`Terminal`](@ref), one called
+We start by defining a basic PI-branch model, which is similar to the one in `PiLine_fault.jl` as an
+MTKModel. This model should fulfill the [Branch Interface](@ref), i.e. it needs to have two [`Terminal`](@ref), one called
 `:src` the other called `:dst`:
 
 ```
@@ -34,7 +34,7 @@ MTKModel. This model should fulfil the [Branch Interface](@ref), i.e. it needs t
       └───────────┘
 ```
 
-The PiLine we want to describe looks like this.
+The PI-branch we want to describe looks like this.
 We have:
 - two terminals `:src` and `:dst` with their
     - voltages $V_\mathrm{src}$ and $V_\mathrm{dst}$,
@@ -56,7 +56,7 @@ Y_src = G_src+jB_src ┬          ┬ Y_f      ┬  Y_dst = G_dst+jB_dst
 The fault admittance $Y_f = G_f + jB_f$ can represent any fault impedance.
 
 To model this, we we introduce the internal voltages $V_1$, $V_2$ and $V_\mathrm{m}$.
-We consider the equations of the PI line in quasi-static-state. Therefore,
+We consider the equations of the PI-branch in quasi-static-state. Therefore,
 we can use complex variables to describe the voltages and the currents.
 What we need in the end are equations for the currents at the terminals, i.e. $i_\mathrm{src}$ and $i_\mathrm{dst}$
 as a function of all the parameters and the given node voltages. Lets start writing down the equations:
@@ -219,7 +219,7 @@ end
 nothing #hide #md
 #=
 Additionaly to the equations defined above, we multiply the currents by `active`.
-This is equivalent of opening two ideal breakers on both ends of the line when `active=false`.
+This is equivalent of opening two ideal breakers on both ends of the branch when `active=false`.
 
 Lastly lets ensure that our model satisfies the [Branch Interface](@ref):
 =#
@@ -288,7 +288,7 @@ First, we need to form something satisfying the [MTKLine Interface](@ref).
 
 ## Creating the Dual-Branch MTKLine
 
-Here we implement our dual-branch architecture by creating two separate `ProtectedPiBranch` instances and combining them into a single `MTKLine`. This creates a line model with two parallel branches:
+Here we implement our dual-branch architecture by creating two separate `ProtectedPiBranch` instances and combining them into a single `MTKLine`. This creates a transmission line model with two parallel branches:
 
 ```
  ┌───────────────────────────────────────────┐
@@ -302,7 +302,7 @@ Here we implement our dual-branch architecture by creating two separate `Protect
  └───────────────────────────────────────────┘
 ```
 
-The end terminals of both branches are connecte to the same physical line end. However, the branches
+The end terminals of both branches are connected to the same physical line end. However, the branches
 operate independently:
 - Each branch monitors its own current magnitude (`pibranchA₊I_mag`, `pibranchB₊I_mag`)
 - Each has independent protection parameters (`I_max`, `t_delay`, `t_cutoff`)
@@ -464,7 +464,7 @@ protected_template #hide #md
 #=
 ## Simulate the IEEE39 Grid with the ProtectedLine
 
-In the last part of this tutorial, we want to see our protected line in action.
+In the last part of this tutorial, we want to see our protected transmission line in action.
 The third part of the [IEEE39 Grid Tutorial](@ref ieee39-part3) simulates a short circuit on a line.
 To do so, it uses two callbacks: one to enable the short circuit and one to disable the line. We can do this
 much more elegantly now by just using the `ProtectedPiBranch` model.
@@ -481,12 +481,12 @@ EXAMPLEDIR = joinpath(pkgdir(PowerDynamics), "docs", "examples")
 nothing #hide #md
 
 #=
-### Derive Network with new line models
-We need to build our own network model by replacing the line models with our `ProtectedPiBranch`.
+### Derive Network with Protected Line Models
+We need to build our own network model by replacing the transmission line models with our `ProtectedPiBranch`.
 For that, we create a helper function that takes an edge model from the old network and creates
-a protected line model with equivalent electrical parameters.
+a protected transmission line model with equivalent electrical parameters.
 
-Our protected line model uses two parallel branches (A and B), so we need to adjust the parameters.
+Our protected transmission line model uses two parallel branches (A and B), so we need to adjust the parameters.
 For two parallel branches to behave like the original single branch:
 - Impedances (R, X): 2× original (parallel combination gives original)
 - Shunt admittances (G, B): 0.5× original (parallel combination gives original)
@@ -538,10 +538,10 @@ Then we compair their values.
 @assert collect(values(interface_values(s0))) ≈ collect(values(interface_values(s0_protected))) #hide #md
 collect(values(interface_values(s0))) ≈ collect(values(interface_values(s0_protected)))
 #=
-They are identical! If we would have made an error in our line model, the steady state would be most certainly different.
+They are identical! If we would have made an error in our transmission line model, the steady state would be most certainly different.
 
 ### Simulate with the Protected Line Models
-Now that we have our protected line models ready, we need to configure them for the simulation.
+Now that we have our protected transmission line models ready, we need to configure them for the simulation.
 First, we set the current threshold `I_max` for overcurrent protection.
 
 We set the threshold to 130% of the power flow solution:
@@ -560,7 +560,7 @@ Next, we need to introduce a perturbation to test our protection system. We'll
 introduce a shortcircuit with $Y_\mathrm{fault}=1\,\mathrm{pu}$ on branch A of
 line 24.
 Notably, we only need to start the short circuit, as the protection is
-now "baked into" the line model.
+now "baked into" the transmission line model.
 =#
 _enable_short = ComponentAffect([], [:pibranchA₊shortcircuit]) do u, p, ctx
     @info "Short circuit activated on branch A of line $(ctx.src)→$(ctx.dst) at t = $(ctx.t)s"
