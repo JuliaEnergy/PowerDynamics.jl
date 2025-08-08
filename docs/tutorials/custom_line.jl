@@ -1,16 +1,15 @@
 #=
 # Tutorial on custom Line Models
 
-In this tutorial we'll implement a custom line model: a line with over power protection.
-To make it more interesting, this kind of line will monitor the current magnitude continuously.
-The safty protection is triggered whenever the current magnitude exceeds a threshold,
-however, to make the model more realistic, the protection is not triggered immediately but instead
-after a delay.
+In this tutorial we'll implement a custom line model:
+- we start by defining a PI branch with optional fault admittance,
+- we combine two pi branches to one MTKLine, to essentialy model a two-branch transmission line.
+
+To make it more interesting, we add protection logic to the branches:
+- each branch continously checks the current magnituged against a limit,
+- if the current exceeds the limit, the branch is switched off after a delay time.
 
 This script can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
-
-To use it for some initial parturbations too, we'll also implement a basic short circuit model.
-
 =#
 using PowerDynamics
 using ModelingToolkit
@@ -22,6 +21,7 @@ using CairoMakie
 using Graphs
 #=
 ## Basic PI-Line Model
+
 We start with defining a basic PI-Line model, which is similar to the one in `PiLine_fault.jl` as an
 MTKModel. This model should fulfil the [Branch Interface](@ref), i.e. it needs to have two [`Terminal`](@ref), one called
 `:src` the other called `:dst`:
@@ -284,18 +284,31 @@ nothing #hide
 
 #=
 Once the model is defined, we can go through the building hierarchy outlined in [Modeling Concepts](@ref).
-First, we need to form something satisfying the [MTKLine Interface](@ref)
+First, we need to form something satisfying the [MTKLine Interface](@ref).
+
+## Creating the Dual-Branch MTKLine
+
+Here we implement our dual-branch architecture by creating two separate `ProtectedPiBranch` instances and combining them into a single `MTKLine`. This creates a line model with two parallel branches:
 
 ```
- ┌───────────────────────────────────────────────┐
- │ MTKLine                                       │
- │┌─────────┐                         ┌─────────┐│
- ││ LineEnd │   ┌─────────────────┐   │ LineEnd ││
- ││  :src   ├─o─┤ ProtectedPiBranch ├─o─┤  :dst   ││
- ││         │   └─────────────────┘   │         ││
- │└─────────┘                         └─────────┘│
- └───────────────────────────────────────────────┘
+ ┌───────────────────────────────────────────┐
+ │MTKLine   ┌─────────────────────┐          │
+ │         ┌┤ ProtectedPiBranch A ├┐         │
+ │┌───────┐│└─────────────────────┘│┌───────┐│
+ ││LineEnd├o                       o┤LineEnd││
+ │└───────┘│┌─────────────────────┐│└───────┘│
+ │  :src   └┤ ProtectedPiBranch B ├┘  :dst   │
+ │          └─────────────────────┘          │
+ └───────────────────────────────────────────┘
 ```
+
+The end terminals of both branches are connecte to the same physical line end. However, the branches
+operate independently:
+- Each branch monitors its own current magnitude (`pibranchA₊I_mag`, `pibranchB₊I_mag`)
+- Each has independent protection parameters (`I_max`, `t_delay`, `t_cutoff`)
+- Each can be individually switched off (`pibranchA₊active`, `pibranchB₊active`)
+- Electrical parameters are adjusted so that parallel combination matches the original single-branch behavior
+
 =#
 branchA = ProtectedPiBranch(; name=:pibranchA)
 branchB = ProtectedPiBranch(; name=:pibranchB)
@@ -306,15 +319,18 @@ Then, we take the mtkline and put it into a compiled [`EdgeModel`](@extref Netwo
 calling the [`Line`](@ref) constructor
 ```
 
-       ╔═════════════════════════════════════════╗
-       ║ EdgeModel (compiled)                    ║
-   src ║ ┌─────────────────────────────────────┐ ║ dst
-vertex ║ │MTKLine                              │ ║ vertex
-   u ───→│┌───────┐ ┌───────────────┐ ┌───────┐│←─── u
-       ║ ││LineEnd├o┤ProtectedPiBranch├o┤LineEnd││ ║
-   i ←───│└───────┘ └───────────────┘ └───────┘│───→ i
-       ║ └─────────────────────────────────────┘ ║
-       ╚═════════════════════════════════════════╝
+       ╔═══════════════════════════════════════════════╗
+       ║ EdgeModel (compiled)                          ║
+       ║ ┌───────────────────────────────────────────┐ ║
+   src ║ │MTKLine   ┌─────────────────────┐          │ ║ dst
+vertex ║ │         ┌┤ ProtectedPiBranch A ├┐         │ ║ vertex
+   u ───→│┌───────┐│└─────────────────────┘│┌───────┐│←─── u
+       ║ ││LineEnd├o                       o┤LineEnd││ ║
+   i ←───│└───────┘│┌─────────────────────┐│└───────┘│───→ i
+       ║ │  :src   └┤ ProtectedPiBranch B ├┘  :dst   │ ║
+       ║ │          └─────────────────────┘          │ ║
+       ║ └───────────────────────────────────────────┘ ║
+       ╚═══════════════════════════════════════════════╝
 ```
 =#
 protected_template = Line(mtkline; name=:protected_piline)
@@ -609,8 +625,8 @@ fig = let fig = Figure()
 end
 
 #=
-We can also zooom into the time range around the short circuit to see how the current of branch B
-crosses the threashold and the branch is disabled shortly after.
+We can also zoom into the time range around the short circuit to see how the current of branch B
+crosses the threshold and the branch is disabled shortly after.
 =#
 xlims!(0, 2)
 ylims!(0.8, 1.5)
