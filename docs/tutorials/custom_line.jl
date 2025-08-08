@@ -45,12 +45,14 @@ We have:
               i_src  V₁   i_a   Vₘ   i_b   V₂  i_dst
      V_src o────←────o───Z_a─→──o───Z_b─→──o────→────o V_dst
               r_src  │          │          │   r_dst
-                     ↓ i₁       │       i₂ ↓
-                     ┴      (breaker)      ┴
-Y_src = G_src+jB_src ┬          │          ┬  Y_dst = G_dst+jB_dst
+                     ↓ i₁       ↓ i_f   i₂ ↓
+                     ┴          ┴          ┴
+Y_src = G_src+jB_src ┬          ┬ Y_f      ┬  Y_dst = G_dst+jB_dst
                      │          │          │
                      ⏚          ⏚          ⏚
+                   (fault enabled by breaker)
 ```
+The fault admittance $Y_f = G_f + jB_f$ can represent any fault impedance.
 
 To model this, we we introduce the internal voltages $V_1$, $V_2$ and $V_\mathrm{m}$.
 We consider the equations of the PI line in quasi-static-state. Therefore,
@@ -81,23 +83,30 @@ i_2 &= Y_\mathrm{dst} \, V_2
 \end{aligned}
 ```
 
-To calculate the middle voltage $V_\mathrm{m}$, we need to consider two cases:
-- without shortcut, we have a simple voltage divider while
-- during shortcut, the voltage is set to zero.
+To calculate the middle voltage $V_\mathrm{m}$, we need to consider the fault admittance $Y_f$.
+The fault admittance is defined as:
 ```math
-\begin{aligned}
-\bar{V}_\mathrm{m} &= \frac{V_1 \, Z_b + V_2 \, Z_a}{Z_a + Z_b} = V_1 \, (1-p_\mathrm{fault}) + V_2 \, p_\mathrm{fault}\\
-V_\mathrm{m} &= \bar{V}_\mathrm{m} \cdot (1-\mathrm{shortcircuit}) + \mathrm{shortcircuit} \cdot (0 + 0 \cdot j)
-\end{aligned}
+Y_f = G_f + jB_f
+```
+The effective fault admittance is controlled by the shortcircuit parameter:
+```math
+Y_{f,\text{eff}} = \mathrm{shortcircuit} \cdot Y_f
+```
+When the fault is active, we apply Kirchhoff's current law at the middle node:
+$i_\mathrm{a} = i_\mathrm{b} + i_f$, which leads to the middle voltage:
+```math
+V_\mathrm{m} = \frac{V_1 \, (1-p_\mathrm{fault}) + V_2 \, p_\mathrm{fault}}{1 + Y_{f,\text{eff}} \, Z \, p_\mathrm{fault} \, (1-p_\mathrm{fault})}
 ```
 
-Once we have the middle voltage definde, we can calculate the currents $i_\mathrm{a}$ and $i_\mathrm{b}$:
+Once we have the middle voltage defined, we can calculate the currents $i_\mathrm{a}$, $i_\mathrm{b}$, and $i_f$:
 ```math
 \begin{aligned}
 i_\mathrm{a} &= \frac{V_1 - V_\mathrm{m}}{Z_a}\\
-i_\mathrm{b} ^= \frac{V_\mathrm{m} - V_2}{Z_b}
+i_\mathrm{b} &= \frac{V_\mathrm{m} - V_2}{Z_b}\\
+i_f &= Y_{f,\text{eff}} \, V_\mathrm{m}
+\end{aligned}
 ```
-Finally, we can calculate the terminal currents using circhhoff law and the transformation ratios:
+Finally, we can calculate the terminal currents using Kirchhoff law and the transformation ratios:
 ```math
 \begin{aligned}
 i_\mathrm{src} &= (-i_\mathrm{a} - i_1) \, r_\mathrm{src}\\
@@ -159,6 +168,8 @@ Models the definition is relatively straigh forward:
         r_dst=1, [description="src end transformation ratio"]
         ## fault parameters
         pos=0.5, [description="Fault Position (from src, percent of the line)"]
+        G_f=0.2, [description="Fault conductance in pu"]
+        B_f=0, [description="Fault susceptance in pu"]
         shortcircuit=0, [description="shortcircuit on line"]
         ## parameter to "switch of" the line
         active=1, [description="Line active or switched off"]
@@ -172,6 +183,7 @@ Models the definition is relatively straigh forward:
         Z = R + im*X
         Ysrc = G_src + im*B_src
         Ydst = G_dst + im*B_dst
+        Yf = G_f + im*B_f
         Vsrc = src.u_r + im*src.u_i
         Vdst = dst.u_r + im*dst.u_i
         ## define Z_a and Z_b in terms of Z
@@ -183,10 +195,12 @@ Models the definition is relatively straigh forward:
         ## currents through the shunt admittances
         i₁ = Ysrc * V₁
         i₂ = Ydst * V₂
-        ## nominal volage in the middle of the line
-        V_mnormal = V₁*(1-pos) + V₂*pos #(V₁*Z_b + V₂*Z_a)/(Z_a+Z_b)
-        ## if shortcircuit is active, set the middle voltage to zero
-        V_m = V_mnormal * (1-shortcircuit) + shortcircuit * (0+0*im) #ifelse(shortcircuit>0, 0.0, V_mnormal)
+        ## effective fault admittance (controlled by shortcircuit)
+        Yf_eff = shortcircuit * Yf
+        ## middle voltage with fault admittance effect
+        V_m = (V₁*(1-pos) + V₂*pos) / (1 + Yf_eff * Z * pos * (1-pos))
+        ## fault current to ground
+        i_f = Yf_eff * V_m
         ## current through the two Z parts
         i_a = (V₁ - V_m) / Z_a
         i_b = (V_m - V₂) / Z_b
@@ -195,10 +209,10 @@ Models the definition is relatively straigh forward:
         idst = (i_b - i₂)*r_dst
     end
     @equations begin
-        src.i_r ~ active * simplify(real(isrc))
-        src.i_i ~ active * simplify(imag(isrc))
-        dst.i_r ~ active * simplify(real(idst))
-        dst.i_i ~ active * simplify(imag(idst))
+        src.i_r ~ active * real(isrc)
+        src.i_i ~ active * imag(isrc)
+        dst.i_r ~ active * real(idst)
+        dst.i_i ~ active * imag(idst)
     end
 end
 nothing #hide #md
@@ -365,7 +379,7 @@ nothing #hide #md
 #### Cutoff Callback
 
 The cutoff callback switches off the line when the scheduled cutoff time is reached.
-Since we expect the solver to explicitly hit the cutoff time (via `add_tstop!`), 
+Since we expect the solver to explicitly hit the cutoff time (via `add_tstop!`),
 we only need a discrete callback:
 =#
 cutoff_condition = ComponentCondition([], [:piline₊t_cutoff]) do u, p, t
@@ -398,12 +412,12 @@ much more elegantly now by just using the `ProtectedPiLine` model.
 Lets load the first part of that tutorial to get the IEEE39 Grid model.
 Also, we initialize the model (the quintessence of [part II](@ref ieee39-part2)).
 =#
-# EXAMPLEDIR = joinpath(pkgdir(PowerDynamics), "docs", "examples")
-# include(joinpath(EXAMPLEDIR, "ieee39_part1.jl"))
-# formula = @initformula :ZIPLoad₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
-# set_initformula!(nw[VIndex(31)], formula)
-# set_initformula!(nw[VIndex(39)], formula)
-# s0 = initialize_from_pf!(nw; verbose=false)
+EXAMPLEDIR = joinpath(pkgdir(PowerDynamics), "docs", "examples")
+include(joinpath(EXAMPLEDIR, "ieee39_part1.jl"))
+formula = @initformula :ZIPLoad₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
+set_initformula!(nw[VIndex(31)], formula)
+set_initformula!(nw[VIndex(39)], formula)
+s0 = initialize_from_pf!(nw; verbose=false)
 nothing #hide #md
 
 #=
@@ -420,8 +434,11 @@ function protected_line_from_line(e::EdgeModel)
     ## copy src and destination information
     src_dst = get_graphelement(e)
     set_graphelement!(new, src_dst)
-    ## copy parameter values
-    for p in setdiff(psym(new), [:piline₊I_max, :piline₊t_cutoff, :piline₊t_delay])
+    ## copy all electrical parameter values
+    for p in [:piline₊R, :piline₊X,
+              :piline₊G_src, :piline₊B_src,
+              :piline₊G_dst, :piline₊B_dst,
+              :piline₊r_src, :piline₊r_dst]
         set_default!(new, p, get_default(e, p))
     end
     new
@@ -458,12 +475,12 @@ We set the threashold to 120% of the powerflow solution:
 =#
 AFFECTED_LINE = 11
 i_at_steadys = max(s0[EIndex(AFFECTED_LINE, :src₊i_mag)], s0[EIndex(AFFECTED_LINE, :dst₊i_mag)])
-s0_protected[EIndex(AFFECTED_LINE, :piline₊I_max)] = 1.1 * i_at_steadys
+s0_protected[EIndex(AFFECTED_LINE, :piline₊I_max)] = 2 * i_at_steadys
 
-# for i in 1:46
-#     local i_at_steadys = max(s0[EIndex(i, :src₊i_mag)], s0[EIndex(i, :dst₊i_mag)])
-#     s0_protected[EIndex(i, :piline₊I_max)] = 2.5 * i_at_steadys
-# end
+for i in 1:46
+    local i_at_steadys = max(s0[EIndex(i, :src₊i_mag)], s0[EIndex(i, :dst₊i_mag)])
+    s0_protected[EIndex(i, :piline₊I_max)] = 2 * i_at_steadys
+end
 
 #=
 Secondly, we neet to introduce some perturbation, for that we'll recreate the short circuit scenario from the IEEE39 example.
@@ -479,6 +496,7 @@ known_cbs = filter(!Base.Fix2(isa, PresetTimeComponentCallback), get_callbacks(n
 set_callback!(nw_protected, EIndex(AFFECTED_LINE), (shortcircuit_cb, known_cbs...))
 nw_protected[EIndex(AFFECTED_LINE)] #hide #md
 
+s0_protected[EPIndex(:,:piline₊G_f)] .= 6
 prob = ODEProblem(
     nw_protected,
     uflat(s0_protected),
@@ -486,15 +504,14 @@ prob = ODEProblem(
     copy(pflat(s0_protected));
     callback=get_callbacks(nw_protected)
 )
-break
 @time sol = solve(prob, Rodas5P());
-~45 seconds?
+break
 
 let fig = Figure(; size=(800, 600))
     ax = Axis(fig[1, 1];
-        title="Current Magnitudes Across All Lines",
+        title="Current Magnitude Across All Lines",
         xlabel="Time [s]",
-        ylabel="Voltage Magnitude [pu]")
+        ylabel="Current Magnitude (rel to steady state)")
 
     ## Full simulation time range
     ts = range(sol.t[begin], sol.t[end], length=1000)
@@ -506,9 +523,10 @@ let fig = Figure(; size=(800, 600))
         current = max.(src_current, dst_current)
         current = current ./ current[begin]
 
-        lines!(ax, ts, current; linewidth=2)
+        linewidth = i == 11 ? 5 : 2
+        lines!(ax, ts, current; linewidth)
     end
-    # hlines!(ax, [2.5])
+    hlines!(ax, [2])
     # ylims!(ax, 0.85, 1.15)
     fig
 end
