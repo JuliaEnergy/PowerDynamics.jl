@@ -1,5 +1,10 @@
-# PowerDynBase.jl Changelog
+# PowerDynamices.jl Changelog
+## Version 4.0.0
+In Q2/2024 we started a complete rewrite of PowerDynamics.jl, which is much closer aligned to the modern SciML-Stack, heavily leaning on ModelingToolkit.jl for equation based models and a vastly modernized version of our backend, NetworkDynamics.jl The new PowerDynamics improved significantly in terms of modeling, initialization and solution analysis. However, some models and tools previously available are not yet avilable. If you've want to continue using the (unmaintained) old version, stick with PowerDynamics@v3.
 
+
+
+--------------------------
 ## Version 2.4.0
 
 * ![enhancement](https://img.shields.io/badge/PD-enhancement-%23a2eeef.svg) [added Architecture.md](https://github.com/JuliaEnergy/PowerDynamics.jl/issues/52)
