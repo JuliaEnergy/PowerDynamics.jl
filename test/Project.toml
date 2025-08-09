@@ -14,19 +14,21 @@ Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 ModelingToolkitStandardLibrary = "16a59e39-deab-5bd0-87e4-056b12336739"
 NetworkDynamics = "22e9dc34-2a0d-11e9-0de0-8588d035468b"
-PowerDynamics = "cc46b21f-1b17-51c2-b642-af74c3d3a8be"
-PowerDynamicsTesting = "97638210-66c4-447f-990e-d00c2b05d7ca"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 OrdinaryDiffEqNonlinearSolve = "127b3ac7-2247-4354-8eb6-78cf4e7c58e8"
 OrdinaryDiffEqRosenbrock = "43230ef6-c299-4910-a778-202eb28ce4ce"
 OrdinaryDiffEqTsit5 = "b1df2697-797e-41e3-8120-5422d3b24e4a"
+PowerDynamics = "cc46b21f-1b17-51c2-b642-af74c3d3a8be"
+PowerDynamicsTesting = "97638210-66c4-447f-990e-d00c2b05d7ca"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 SparseConnectivityTracer = "9f842d2f-2579-4b1d-911e-f412cf18a3f5"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
-[sources]
-PowerDynamics = {path = ".."}
-PowerDynamicsTesting = {path = "../PowerDynamicsTesting"}
+[sources.PowerDynamics]
+path = ".."
+
+[sources.PowerDynamicsTesting]
+path = "../PowerDynamicsTesting"
 
 [compat]
 Aqua = "0.8.12"
@@ -42,11 +44,12 @@ Makie = "0.24"
 ModelingToolkit = "≥0.0.1"
 ModelingToolkitStandardLibrary = "≥0.0.1"
 NetworkDynamics = "≥0.0.1"
-PowerDynamics = "≥0.0.1"
-PowerDynamicsTesting = "≥0.0.1"
 OrderedCollections = "≥0.0.1"
 OrdinaryDiffEqNonlinearSolve = "1.9.0"
 OrdinaryDiffEqRosenbrock = "1.10.0"
 OrdinaryDiffEqTsit5 = "1.1.0"
+PowerDynamics = "≥0.0.1"
+PowerDynamicsTesting = "≥0.0.1"
 SafeTestsets = "0.1.0"
+SparseConnectivityTracer = "1"
 Test = "1.10.0"
