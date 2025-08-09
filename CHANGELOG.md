@@ -1,8 +1,10 @@
 # PowerDynamices.jl Changelog
-## Version 4.0.0
-In Q2/2024 we started a complete rewrite of PowerDynamics.jl, which is much closer aligned to the modern SciML-Stack, heavily leaning on ModelingToolkit.jl for equation based models and a vastly modernized version of our backend, NetworkDynamics.jl The new PowerDynamics improved significantly in terms of modeling, initialization and solution analysis. However, some models and tools previously available are not yet avilable. If you've want to continue using the (unmaintained) old version, stick with PowerDynamics@v3.
+## Version 4.0.0 - Major Breaking Release
+In Q2 2024, we began a complete rewrite of PowerDynamics.jl, bringing it much closer in alignment with the modern SciML stack. This rewrite heavily leverages ModelingToolkit.jl for equation-based models and includes a vastly modernized version of our backend, NetworkDynamics.jl.
 
+The 4.0.0 update incorporates all of these changes. We consider the modeling concepts and simulation tools stable enough for release. The library, however, is marked as experimental for now and may change in upcoming minor versions — but you can copy the model definitions into your own code if you rely on an “old” model.
 
+The new version has improved significantly in terms of modeling, initialization, and solution analysis. However, some models and tools previously available are not yet available. If you want to continue using the (unmaintained) old version, stick with PowerDynamics@v3.
 
 --------------------------
 ## Version 2.4.0
