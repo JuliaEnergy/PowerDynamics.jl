@@ -26,9 +26,11 @@ SparseConnectivityTracer = "9f842d2f-2579-4b1d-911e-f412cf18a3f5"
 Sparspak = "e56a9233-b9d6-4f03-8d0f-1825330902ac"
 SteadyStateDiffEq = "9672c7b4-1e72-59bd-8a11-6ac3964bc41f"
 
-[sources]
-PowerDynamics = {path = ".."}
-PowerDynamicsTesting = {path = "../PowerDynamicsTesting"}
+[sources.PowerDynamics]
+path = ".."
+
+[sources.PowerDynamicsTesting]
+path = "../PowerDynamicsTesting"
 
 [compat]
 CSV = "0.10.15"
@@ -52,4 +54,4 @@ OrdinaryDiffEqTsit5 = "1.1.0"
 PowerDynamics = "≥0.0.1"
 PowerDynamicsTesting = "≥0.0.1"
 SciMLSensitivity = "7.88"
-SparseConnectivityTracer = "0.6"
+SparseConnectivityTracer = "0.6, 1"
