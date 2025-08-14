@@ -213,16 +213,13 @@ end
 # this is a hack to convice MTK that i_r and i_i do depend on u_r and u_i
 # we tell MTK to not further resolve, which makes it accept
 # the curent constraint as a valid constraint for ur/ui
-_to_zero(x) = 0.0
-ModelingToolkit.@register_symbolic _to_zero(x)::Float64
-
 @mtkmodel KirchoffBus begin
     @components begin
         busbar = BusBase()
     end
     @equations begin
-        busbar.i_r ~ _to_zero(busbar.u_r)
-        busbar.i_i ~ _to_zero(busbar.u_i)
+        busbar.i_r ~ implicit_output(busbar.u_r)
+        busbar.i_i ~ implicit_output(busbar.u_i)
     end
 end
 
