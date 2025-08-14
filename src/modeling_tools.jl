@@ -269,7 +269,7 @@ function CompositeInjector(systems, eqs=autoconnections(systems); name=Symbol(jo
     ivs = ModelingToolkit.get_iv.(systems)
     @assert allequal(ivs) "Systems have different independent variables! $ivs"
     iv = first(ivs)
-    termeqs = [connect(sys.terminal, terminal) for sys in systems if isinjectormodel(sys)]
+    termeqs = Equation[connect(sys.terminal, terminal) for sys in systems if isinjectormodel(sys)]
     System(vcat(termeqs, eqs), iv; systems=vcat(terminal, systems), name)
 end
 
@@ -295,9 +295,8 @@ function autoconnections(systems)
     out_dict = Dict(outputs...)
     in_dict = Dict(inputs...)
 
-    # FIXME: hard coded for now
     outnames = collect(keys(out_dict))
-    eqs = []
+    eqs = Equation[]
     for (iname, isys) in in_dict
         out = _findmatch(iname, outnames)
         push!(eqs, connect(out_dict[out], isys))
