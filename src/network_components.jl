@@ -85,7 +85,7 @@ the simplifications rather than compiling it into a `VertexModel`.
 function simplify_mtkbus(sys::System; busbar=:busbar)
     @argcheck isbusmodel(sys) "The system must satisfy the bus model interface!"
     io = _busio(sys, busbar)
-    mtkcompile(_sys; inputs=io.in, outputs=io.out, simplify=false)
+    mtkcompile(sys; inputs=io.in, outputs=io.out, simplify=false)
 end
 
 function _busio(sys::System, busbar)
@@ -175,7 +175,7 @@ function simplify_mtkline(sys::System; src=:src, dst=:dst)
     io = _lineio(sys, src, dst)
     in = vcat(io.srcin, io.dstin)
     out = vcat(io.srcout, io.dstout)
-    mtkcompile(_sys; inputs=io.in, outputs=io.out, simplify=false)
+    mtkcompile(sys; inputs=io.in, outputs=io.out, simplify=false)
 end
 function _lineio(sys::System, src, dst)
     (;srcin=[getproperty(sys, src; namespace=false).u_r,
