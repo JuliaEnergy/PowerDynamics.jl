@@ -118,12 +118,12 @@ using ModelingToolkitStandardLibrary.Blocks
 
         composite = CompositeInjector([machine, avr, gov])
 
-        @test composite isa ODESystem
+        @test composite isa System
         @test isinjectormodel(composite)
 
         # Test that it can be used in MTKBus
         mtkbus = MTKBus(composite)
-        @test mtkbus isa ODESystem
+        @test mtkbus isa System
         Bus(mtkbus) # can compile?
     end
 end

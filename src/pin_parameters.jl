@@ -1,8 +1,8 @@
-pin_parameters(sys::ODESystem) = pin_parameters(sys, defaults(sys))
-function pin_parameters(sys::ODESystem, sub::Pair)
+pin_parameters(sys::System) = pin_parameters(sys, defaults(sys))
+function pin_parameters(sys::System, sub::Pair)
     pin_parameters(sys, Dict(sub.first => sub.second))
 end
-function pin_parameters(sys::ODESystem, subs::Dict)
+function pin_parameters(sys::System, subs::Dict)
     _dict = Dict(_resolve_to_namespaced_symbolic(sys, k) => v for (k,v) in subs)
 
     if any(iscall, values(_dict))
@@ -25,7 +25,7 @@ function pin_parameters(sys::ODESystem, subs::Dict)
     _pinparameters(sys, _dict)
 end
 
-function _pinparameters(sys::ODESystem, _subs::Dict)
+function _pinparameters(sys::System, _subs::Dict)
     isempty(_subs) && return sys
     iscomplete(sys) && ArgumentError("pin_parameters does not handle complete/simplified systems")
 
@@ -70,7 +70,7 @@ function _pinparameters(sys::ODESystem, _subs::Dict)
 
     _systems = [_pinparameters(s, subs) for s in get_systems(sys)]
 
-    newsys = ODESystem(_eqs, get_iv(sys);
+    newsys = System(_eqs, get_iv(sys);
             # controls = Num[],
             observed = _observed,
             systems = _systems,

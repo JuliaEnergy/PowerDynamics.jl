@@ -122,7 +122,7 @@ There are two ways of doing so: manually and using the `MTKBus` constructor.
 
 **Manual Construction**
 
-We need to define a new ODESystem, which has 2 components: a busbar and the machine.
+We need to define a new MTK model, which has 2 components: a busbar and the machine.
 Both components have a `terminal` as a subcomponent, we can use the `connect` function
 to hook the machine on the busbar.
 =#

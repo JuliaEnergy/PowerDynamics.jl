@@ -3,7 +3,7 @@ module Library
 using ArgCheck: @argcheck
 using ..PowerDynamics: Terminal, BusBase, Ibase
 using ModelingToolkit: ModelingToolkit, @named, @mtkmodel, @variables, @parameters, simplify,
-                       t_nounits as t, D_nounits as Dt, ODESystem
+                       t_nounits as t, D_nounits as Dt, System
 using ModelingToolkit: @unpack, Equation, Num, System # needed for @mtkmodel?
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using NonlinearSolve: NonlinearProblem

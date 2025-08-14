@@ -51,7 +51,7 @@ Allows you to attach additonal metadata to a `Model` which was previously define
 The metadata needs to be in the form of a named tuple `(; name=..., field1=..., field2=...)`.
 
 If `name` is present in the metadata, it will be used as the default name of the system and stripped from the metadata.
-The rest of the named tuple will be attachde to the `ODESystem`s metadata.
+The rest of the named tuple will be attachde to the `System`s metadata.
 """
 macro attach_metadata!(model, metadata)
      quote
@@ -64,7 +64,7 @@ function _attach_metadata(model::ModelingToolkit.Model, metadata::NamedTuple)
 end
 
 
-function freep(sys::ODESystem)
+function freep(sys::System)
     return filter(p -> !haskey(ModelingToolkit.defaults(sys), p), ModelingToolkit.parameters(sys))
 end
 function freep(cf::NetworkDynamics.ComponentModel)

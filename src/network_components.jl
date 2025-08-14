@@ -3,12 +3,12 @@
 ####
 
 """
-    Bus(sys::ODESystem; verbose=false, name=getname(sys), kwargs...)
+    Bus(sys::System; verbose=false, name=getname(sys), kwargs...)
 
-Create a VertexModel from an ODESystem that satisfies the bus model interface.
+Create a VertexModel from an `System` that satisfies the bus model interface.
 
 # Arguments
-- `sys::ODESystem`: The system must satisfy the bus model interface (see [`isbusmodel`](@ref))
+- `sys::System`: The system must satisfy the bus model interface (see [`isbusmodel`](@ref))
 - `verbose::Bool=false`: Enable verbose output during creation
 - `name`: Name for the bus (defaults to system name)
 - `kwargs...`: Additional keyword arguments passed to the Bus constructor
@@ -34,7 +34,7 @@ Bus(││BusBar├o           │) =>            ║  ││BusBar├o         
 
 See also: [`MTKBus`](@ref)
 """
-function Bus(sys::ODESystem; verbose=false, name=getname(sys), kwargs...)
+function Bus(sys::System; verbose=false, name=getname(sys), kwargs...)
     if !isbusmodel(sys)
         msg = "The system must satisfy the bus model interface!"
         if isinjectormodel(sys)
@@ -75,20 +75,20 @@ function Bus(template::VertexModel; copy=true, vidx=nothing, pf=nothing, name=te
 end
 
 """
-    simplify_mtkbus(sys::ODESystem; busbar=:busbar)
+    simplify_mtkbus(sys::System; busbar=:busbar)
 
-Structurally simplify a bus model ODESystem by eliminating equations.
+Structurally simplify a bus model `System` by eliminating equations.
 
-Closely matches what `VertexModel` does, but returns the `ODESystem` after
+Closely matches what `VertexModel` does, but returns the `System` after
 the simplifications rather than compiling it into a `VertexModel`.
 """
-function simplify_mtkbus(sys::ODESystem; busbar=:busbar)
+function simplify_mtkbus(sys::System; busbar=:busbar)
     @argcheck isbusmodel(sys) "The system must satisfy the bus model interface!"
     io = _busio(sys, busbar)
-    structural_simplify(sys, (io.in, io.out))[1]
+    mtkcompile(_sys; inputs=io.in, outputs=io.out, simplify=false)
 end
 
-function _busio(sys::ODESystem, busbar)
+function _busio(sys::System, busbar)
     (;in=[getproperty(sys, busbar; namespace=false).i_r,
           getproperty(sys, busbar; namespace=false).i_i],
      out=[getproperty(sys, busbar; namespace=false).u_r,
@@ -100,12 +100,12 @@ end
 #### Network level Line representation
 ####
 """
-    Line(sys::ODESystem; verbose=false, name=getname(sys), kwargs...)
+    Line(sys::System; verbose=false, name=getname(sys), kwargs...)
 
-Create an EdgeModel from an ODESystem that satisfies the line model interface.
+Create an EdgeModel from a `System` that satisfies the line model interface.
 
 # Arguments
-- `sys::ODESystem`: The system must satisfy the line model interface (see [`islinemodel`](@ref))
+- `sys::System`: The system must satisfy the line model interface (see [`islinemodel`](@ref))
 - `verbose::Bool=false`: Enable verbose output during creation
 - `name`: Name for the line (defaults to system name)
 - `kwargs...`: Additional keyword arguments passed to the Line constructor
@@ -133,7 +133,7 @@ Line(││LineEnd├o         o┤LineEnd││) =>     ║ ││LineEnd├o  
 
 See also: [`MTKLine`](@ref)
 """
-function Line(sys::ODESystem; verbose=false, name=getname(sys), kwargs...)
+function Line(sys::System; verbose=false, name=getname(sys), kwargs...)
     if !islinemodel(sys)
         msg = "The system must satisfy the ine model interface!"
         if isbranchmodel(sys)
@@ -163,21 +163,21 @@ function Line(edgef::EdgeModel; copy=true, src=nothing, dst=nothing, name=edgef.
 end
 
 """
-    simplify_mtkline(sys::ODESystem; src=:src, dst=:dst)
+    simplify_mtkline(sys::System; src=:src, dst=:dst)
 
-Structurally simplify a line model ODESystem by eliminating equations.
+Structurally simplify a line model `System` by eliminating equations.
 
-Closely matches what `EdgeModel` does, but returns the `ODESystem` after
+Closely matches what `EdgeModel` does, but returns the `System` after
 the simplifications rather than compiling it into an `EdgeModel`.
 """
-function simplify_mtkline(sys::ODESystem; src=:src, dst=:dst)
+function simplify_mtkline(sys::System; src=:src, dst=:dst)
     @argcheck islinemodel(sys) "The system must satisfy the lie model interface!"
     io = _lineio(sys, src, dst)
     in = vcat(io.srcin, io.dstin)
     out = vcat(io.srcout, io.dstout)
-    structural_simplify(sys, (in, out))[1]
+    mtkcompile(_sys; inputs=io.in, outputs=io.out, simplify=false)
 end
-function _lineio(sys::ODESystem, src, dst)
+function _lineio(sys::System, src, dst)
     (;srcin=[getproperty(sys, src; namespace=false).u_r,
              getproperty(sys, src; namespace=false).u_i],
      dstin=[getproperty(sys, dst; namespace=false).u_r,

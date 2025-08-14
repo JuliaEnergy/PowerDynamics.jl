@@ -130,7 +130,7 @@ end
 
 Create a ModelingToolkit bus system by connecting multiple injector components.
 
-Constructs a bus ODESystem by connecting all provided injector components to a
+Constructs a bus `System` by connecting all provided injector components to a
 central [`BusBar`](@ref). Each injector component must satisfy the injector
 model interface (see [`isinjectormodel`](@ref)).
 
@@ -139,7 +139,7 @@ model interface (see [`isinjectormodel`](@ref)).
 - `name=:bus`: Name for the resulting bus system
 
 # Returns
-- An `ODESystem` representing the complete bus with all connected injectors
+- An `System` representing the complete bus with all connected injectors
 
 ```
                                  ┌────────────────────┐
@@ -161,7 +161,7 @@ function MTKBus(injectors...; name=:bus)
     end
     @named busbar = BusBar()
     eqs = [connect(busbar.terminal, inj.terminal) for inj in injectors]
-    ODESystem(eqs, t; systems=[busbar, injectors...], name)
+    System(eqs, t; systems=[busbar, injectors...], name)
 end
 
 """
@@ -169,7 +169,7 @@ end
 
 Create a ModelingToolkit line system by connecting multiple branch components.
 
-Constructs a line ODESystem by connecting all provided branch components between
+Constructs a line `System` by connecting all provided branch components between
 source and destination line ends in parallel. Each branch component must satisfy
 the branch model interface.
 
@@ -178,7 +178,7 @@ the branch model interface.
 - `name=:line`: Name for the resulting line system
 
 # Returns
-- An `ODESystem` representing the complete line with all connected branches
+- An `System` representing the complete line with all connected branches
 
 ```
                                      ┌─────────────────────────────┐
@@ -206,7 +206,7 @@ function MTKLine(branches...; name=:line)
     eqs = [[connect(src.terminal, branch.src) for branch in branches]...,
            [connect(dst.terminal, branch.dst) for branch in branches]...]
 
-    ODESystem(eqs, t; systems=[ systems..., branches...], name)
+    System(eqs, t; systems=[ systems..., branches...], name)
 end
 
 
@@ -270,7 +270,7 @@ function CompositeInjector(systems, eqs=autoconnections(systems); name=Symbol(jo
     @assert allequal(ivs) "Systems have different independent variables! $ivs"
     iv = first(ivs)
     termeqs = [connect(sys.terminal, terminal) for sys in systems if isinjectormodel(sys)]
-    ODESystem(vcat(termeqs, eqs), iv; systems=vcat(terminal, systems), name)
+    System(vcat(termeqs, eqs), iv; systems=vcat(terminal, systems), name)
 end
 
 function autoconnections(systems)
