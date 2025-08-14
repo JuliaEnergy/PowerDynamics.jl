@@ -18,10 +18,10 @@ using ModelingToolkit: ModelingToolkit, @connector, @mtkmodel, @variables, @name
                        System, connect, getname, unknowns, get_name, get_iv, get_systems,
                        get_gui_metadata, t_nounits as t, Equation,
                        defaults, parameters, iscomplete, rename, simplify, unwrap,
-                       get_eqs, get_observed, get_ctrls, get_defaults, get_schedule,
+                       get_eqs, get_observed, get_defaults, get_schedule,
                        get_connector_type, get_preface, get_initializesystem,
-                       get_continuous_events, get_discrete_events, get_parameter_dependencies,
-                       get_discrete_subsystems, get_solved_unknowns, get_tspan, get_guesses,
+                       get_continuous_events, get_parameter_dependencies,
+                       get_solved_unknowns, get_tspan, get_guesses,
                        mtkcompile
 using ModelingToolkit: @unpack, Num, System # needed for @mtkmodel?
 using Symbolics: Symbolics, Symbolic, iscall, fixpoint_sub
@@ -59,7 +59,5 @@ export has_pfinitconstraint, has_pfinitformula
 export get_pfinitconstraints, get_pfinitformulas
 export delete_pfinitconstraints!, delete_pfinitformulas!
 include("pfinitconstraint.jl")
-
-include("pin_parameters.jl")
 
 end
