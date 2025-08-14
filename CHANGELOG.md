@@ -1,4 +1,15 @@
 # PowerDynamices.jl Changelog
+
+## Version 4.1.0 Changelog
+- [#221](https://github.com/JuliaDynamics/PowerDynamics.jl/pull/221) update for ModelingToolkit.jl v10 compatibility:
+  - Update minimum ModelingToolkit.jl requirement from to v10
+  - Update minimum NetworkDynamics.jl requirement from v0.10.3 to v0.10.4
+  - Remove internal `pin_parameters` function - was never part of public API
+  - Rename all `ODESystem` → `System` throughout codebase (follows MTK v10 API)
+  - Replace `structural_simplify` with `mtkcompile` for model compilation
+  - Replace custom `_to_zero()` hack with `implicit_output()` from NetworkDynamics
+  - Update custom metadata system to use `CustomMetadata` wrapper for safer metadata handling
+
 ## Version 4.0.0 - Major Breaking Release
 In Q2 2024, we began a complete rewrite of PowerDynamics.jl, bringing it much closer in alignment with the modern SciML stack. This rewrite heavily leverages ModelingToolkit.jl for equation-based models and includes a vastly modernized version of our backend, NetworkDynamics.jl.
 

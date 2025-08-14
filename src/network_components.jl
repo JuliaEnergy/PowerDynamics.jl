@@ -135,7 +135,7 @@ See also: [`MTKLine`](@ref)
 """
 function Line(sys::System; verbose=false, name=getname(sys), kwargs...)
     if !islinemodel(sys)
-        msg = "The system must satisfy the ine model interface!"
+        msg = "The system must satisfy the line model interface!"
         if isbranchmodel(sys)
             msg *= " $(get_name(sys)) satisfies the branch interface, did you mean to use `MTKLine`?"
         end
@@ -171,11 +171,11 @@ Closely matches what `EdgeModel` does, but returns the `System` after
 the simplifications rather than compiling it into an `EdgeModel`.
 """
 function simplify_mtkline(sys::System; src=:src, dst=:dst)
-    @argcheck islinemodel(sys) "The system must satisfy the lie model interface!"
+    @argcheck islinemodel(sys) "The system must satisfy the line model interface!"
     io = _lineio(sys, src, dst)
     in = vcat(io.srcin, io.dstin)
     out = vcat(io.srcout, io.dstout)
-    mtkcompile(sys; inputs=io.in, outputs=io.out, simplify=false)
+    mtkcompile(sys; inputs=in, outputs=out, simplify=false)
 end
 function _lineio(sys::System, src, dst)
     (;srcin=[getproperty(sys, src; namespace=false).u_r,
