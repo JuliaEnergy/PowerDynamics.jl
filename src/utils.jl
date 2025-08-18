@@ -1,3 +1,5 @@
+struct CustomMetadata end
+
 """
 This type wraps the default constructor of a ModelingToolkit.Model and allows to attach metadata to it.
 Two types of metadata is possible:
@@ -38,11 +40,19 @@ function (mc::ModelMetadataConstructor)(args...; kwargs...)
     else
         mc.original_constructor(args...; name=mc.name, kwargs...)
     end
-    if !isnothing(sys.metadata)
-        @warn "Overwriting metadata for $(sys.name): $(sys.metadata). This should not happen, please report issue!"
-    end
-    @set sys.metadata = mc.metadata
+    sys = ModelingToolkit.setmetadata(sys, CustomMetadata, mc.metadata)
+    sys
 end
+
+function get_custom_metadata(sys::System)
+    md = ModelingToolkit.getmetadata(sys, CustomMetadata, nothing)
+    if isnothing(md)
+        error("No custom metadata attached to the system. Use `@attach_metadata!` to attach metadata to the @mtkmodel")
+    end
+    md
+end
+
+get_custom_metadata(sys::System, key) = get_custom_metadata(sys)[key]
 
 """
     @attach_metadata! Model metadata
@@ -51,7 +61,7 @@ Allows you to attach additonal metadata to a `Model` which was previously define
 The metadata needs to be in the form of a named tuple `(; name=..., field1=..., field2=...)`.
 
 If `name` is present in the metadata, it will be used as the default name of the system and stripped from the metadata.
-The rest of the named tuple will be attachde to the `ODESystem`s metadata.
+The rest of the named tuple will be attachde to the `System`s metadata.
 """
 macro attach_metadata!(model, metadata)
      quote
@@ -64,7 +74,7 @@ function _attach_metadata(model::ModelingToolkit.Model, metadata::NamedTuple)
 end
 
 
-function freep(sys::ODESystem)
+function freep(sys::System)
     return filter(p -> !haskey(ModelingToolkit.defaults(sys), p), ModelingToolkit.parameters(sys))
 end
 function freep(cf::NetworkDynamics.ComponentModel)

@@ -130,7 +130,7 @@ end
 
 Create a ModelingToolkit bus system by connecting multiple injector components.
 
-Constructs a bus ODESystem by connecting all provided injector components to a
+Constructs a bus `System` by connecting all provided injector components to a
 central [`BusBar`](@ref). Each injector component must satisfy the injector
 model interface (see [`isinjectormodel`](@ref)).
 
@@ -139,7 +139,7 @@ model interface (see [`isinjectormodel`](@ref)).
 - `name=:bus`: Name for the resulting bus system
 
 # Returns
-- An `ODESystem` representing the complete bus with all connected injectors
+- An `System` representing the complete bus with all connected injectors
 
 ```
                                  ┌────────────────────┐
@@ -161,7 +161,7 @@ function MTKBus(injectors...; name=:bus)
     end
     @named busbar = BusBar()
     eqs = [connect(busbar.terminal, inj.terminal) for inj in injectors]
-    ODESystem(eqs, t; systems=[busbar, injectors...], name)
+    System(eqs, t; systems=[busbar, injectors...], name)
 end
 
 """
@@ -169,7 +169,7 @@ end
 
 Create a ModelingToolkit line system by connecting multiple branch components.
 
-Constructs a line ODESystem by connecting all provided branch components between
+Constructs a line `System` by connecting all provided branch components between
 source and destination line ends in parallel. Each branch component must satisfy
 the branch model interface.
 
@@ -178,7 +178,7 @@ the branch model interface.
 - `name=:line`: Name for the resulting line system
 
 # Returns
-- An `ODESystem` representing the complete line with all connected branches
+- An `System` representing the complete line with all connected branches
 
 ```
                                      ┌─────────────────────────────┐
@@ -206,23 +206,20 @@ function MTKLine(branches...; name=:line)
     eqs = [[connect(src.terminal, branch.src) for branch in branches]...,
            [connect(dst.terminal, branch.dst) for branch in branches]...]
 
-    ODESystem(eqs, t; systems=[ systems..., branches...], name)
+    System(eqs, t; systems=[ systems..., branches...], name)
 end
 
 
 # this is a hack to convice MTK that i_r and i_i do depend on u_r and u_i
 # we tell MTK to not further resolve, which makes it accept
 # the curent constraint as a valid constraint for ur/ui
-_to_zero(x) = 0.0
-ModelingToolkit.@register_symbolic _to_zero(x)::Float64
-
 @mtkmodel KirchoffBus begin
     @components begin
         busbar = BusBase()
     end
     @equations begin
-        busbar.i_r ~ _to_zero(busbar.u_r)
-        busbar.i_i ~ _to_zero(busbar.u_i)
+        busbar.i_r ~ implicit_output(busbar.u_r)
+        busbar.i_i ~ implicit_output(busbar.u_i)
     end
 end
 
@@ -269,8 +266,8 @@ function CompositeInjector(systems, eqs=autoconnections(systems); name=Symbol(jo
     ivs = ModelingToolkit.get_iv.(systems)
     @assert allequal(ivs) "Systems have different independent variables! $ivs"
     iv = first(ivs)
-    termeqs = [connect(sys.terminal, terminal) for sys in systems if isinjectormodel(sys)]
-    ODESystem(vcat(termeqs, eqs), iv; systems=vcat(terminal, systems), name)
+    termeqs = Equation[connect(sys.terminal, terminal) for sys in systems if isinjectormodel(sys)]
+    System(vcat(termeqs, eqs), iv; systems=vcat(terminal, systems), name)
 end
 
 function autoconnections(systems)
@@ -295,9 +292,8 @@ function autoconnections(systems)
     out_dict = Dict(outputs...)
     in_dict = Dict(inputs...)
 
-    # FIXME: hard coded for now
     outnames = collect(keys(out_dict))
-    eqs = []
+    eqs = Equation[]
     for (iname, isys) in in_dict
         out = _findmatch(iname, outnames)
         push!(eqs, connect(out_dict[out], isys))

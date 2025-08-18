@@ -72,8 +72,8 @@ Examples for injectors might be Generators, Shunts, Loads.
 The current for injectors is always in injector convention, i.e. positive currents flow *out* of the injector *towards* the terminal.
 
 !!! note "Model classes"
-    Model "classes" are nothing formalized. In this document, a model class is just a description for some `ODESystem` from `ModelingToolkit.jl`, which satisfies certain requirements.
-    For example, any `ODESystem` is considered an "Injector" if it contains a connector `Terminal()` called `:terminal`.
+    Model "classes" are nothing formalized. In this document, a model class is just a description for some `System` from `ModelingToolkit.jl`, which satisfies certain requirements.
+    For example, any `System` is considered an "Injector" if it contains a connector `Terminal()` called `:terminal`.
 
 !!! details "Code example: definition of PQ load as injector"
     ```@example concepts

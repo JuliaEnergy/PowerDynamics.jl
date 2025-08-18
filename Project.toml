@@ -1,7 +1,7 @@
 name = "PowerDynamics"
 uuid = "cc46b21f-1b17-51c2-b642-af74c3d3a8be"
 authors = ["Hans Würfel", "Tim Kittel", "Jan Liße", "Sabine Auer", "Anton Plietzsch"]
-version = "4.0.0"
+version = "4.1.0"
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
@@ -31,9 +31,9 @@ ForwardDiff = "0.10.36, 1"
 Graphs = "1.9.0"
 LinearAlgebra = "1.10.0"
 MacroTools = "0.5.16"
-ModelingToolkit = "9.33.0"
+ModelingToolkit = "10"
 ModelingToolkitStandardLibrary = "2.11.0"
-NetworkDynamics = "0.10.3"
+NetworkDynamics = "0.10.4"
 NonlinearSolve = "4"
 OrderedCollections = "1.6.3"
 Reexport = "1.2.2"

@@ -22,14 +22,14 @@ using PowerDynamicsTesting
             persistent_tasks=false)
         @test_broken isempty(Docs.undocumented_names(PowerDynamics))
 
+        MTKMODEL_SYMS = (:Num, :System, :Equation, :connect, :@unpack)
+
         @test check_no_implicit_imports(PowerDynamics; skip=(Base, Core, NetworkDynamics)) === nothing
-        # mtkmodel macro depends on some symbols
-        @test_broken check_no_stale_explicit_imports(PowerDynamics) === nothing
+        @test check_no_stale_explicit_imports(PowerDynamics; ignore=MTKMODEL_SYMS) === nothing
 
         path = joinpath(pkgdir(PowerDynamics),"src","Library","Library.jl")
         @test check_no_implicit_imports(PowerDynamics.Library, path) === nothing
-        # mtkmodel macro depends on some symbols
-        @test_broken check_no_stale_explicit_imports(PowerDynamics.Library, path) === nothing
+        @test check_no_stale_explicit_imports(PowerDynamics.Library, path; ignore=MTKMODEL_SYMS) === nothing
 
         # check the testing subpackage
         Aqua.test_all(PowerDynamicsTesting;
@@ -38,7 +38,7 @@ using PowerDynamicsTesting
         @test_broken isempty(Docs.undocumented_names(PowerDynamicsTesting))
 
         @test check_no_implicit_imports(PowerDynamicsTesting) === nothing
-        @test_broken check_no_stale_explicit_imports(PowerDynamicsTesting) === nothing
+        @test check_no_stale_explicit_imports(PowerDynamicsTesting) === nothing
     end
 
     @safetestset "Library tests" begin include("Library_test.jl") end
