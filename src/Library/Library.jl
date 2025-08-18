@@ -2,9 +2,9 @@ module Library
 
 using ArgCheck: @argcheck
 using ..PowerDynamics: Terminal, BusBase, Ibase
-using ModelingToolkit: ModelingToolkit, @named, @mtkmodel, @variables, @parameters, simplify,
-                       t_nounits as t, D_nounits as Dt, System
-using ModelingToolkit: @unpack, Equation, Num, System # needed for @mtkmodel?
+using ModelingToolkit: ModelingToolkit, @named, simplify, t_nounits as t, D_nounits as Dt
+# needed for @mtkmodel
+using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System, Equation, connect
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using NonlinearSolve: NonlinearProblem
 using SciMLBase: SciMLBase, solve
@@ -115,7 +115,6 @@ include("Faults/Faults.jl")
 ####
 #### Powerflow models
 ####
-using NetworkDynamics: ComponentModel, has_metadata, get_metadata
 include("powerflow_models.jl")
 
 end

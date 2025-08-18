@@ -4,29 +4,23 @@ using Reexport: Reexport, @reexport
 @reexport using NetworkDynamics
 using NetworkDynamics: SymbolicView
 
-using SciMLBase: SciMLBase, solve
-using NonlinearSolve: NonlinearSolve, NonlinearProblem
+using SciMLBase: SciMLBase
+using NonlinearSolve: NonlinearSolve
 using ForwardDiff: ForwardDiff
-using LinearAlgebra: LinearAlgebra, Diagonal, diag, pinv, eigvals
-using Graphs: SimpleGraph, add_edge!, nv, ne
+using LinearAlgebra: LinearAlgebra
+using Graphs: nv, ne
 using ArgCheck: @argcheck
 using Setfield: @set, @set!
 using SymbolicIndexingInterface: SymbolicIndexingInterface as SII
 using MacroTools: postwalk, @capture
 
-using ModelingToolkit: ModelingToolkit, @connector, @mtkmodel, @variables, @named,
-                       System, connect, getname, unknowns, get_name, get_iv, get_systems,
-                       get_gui_metadata, t_nounits as t, Equation,
-                       defaults, parameters, iscomplete, rename, simplify, unwrap,
-                       get_eqs, get_observed, get_defaults, get_schedule,
-                       get_connector_type, get_preface, get_initializesystem,
-                       get_continuous_events, get_parameter_dependencies,
-                       get_solved_unknowns, get_tspan, get_guesses,
+using ModelingToolkit: ModelingToolkit, @connector, @named,
+                       System, getname, unknowns, get_name, t_nounits as t, Equation,
                        mtkcompile
-using ModelingToolkit: @unpack, Num, System # needed for @mtkmodel?
-using Symbolics: Symbolics, Symbolic, iscall, fixpoint_sub
-using NonlinearSolve: NonlinearProblem
-using SciMLBase: SciMLBase, solve
+# needed for @mtkmodel
+using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System, Equation, connect
+using Symbolics: Symbolics
+using SciMLBase: SciMLBase
 
 export Terminal, BusBar, LineEnd
 export MTKBus, MTKLine, CompositeInjector, Ibase, Zbase, Ybase

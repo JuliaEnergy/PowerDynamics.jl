@@ -1,15 +1,14 @@
 module PowerDynamicsTesting
 
-using Graphs: SimpleGraph, add_edge!, path_graph
+using Graphs: path_graph
 using NetworkDynamics: Network, NWState, uflat, pflat
-using NetworkDynamics: SymbolicIndex, VIndex, EIndex, vidxs, eidxs, SII
+using NetworkDynamics: VIndex, EIndex, SII
 using SciMLBase: SciMLBase, ODEProblem, solve, auto_dt_reset!
-using OrdinaryDiffEqRosenbrock: Rodas5P, Rosenbrock23
-using OrdinaryDiffEqTsit5: Tsit5
+using OrdinaryDiffEqRosenbrock: Rodas5P
 using OrdinaryDiffEqNonlinearSolve: OrdinaryDiffEqNonlinearSolve
 using DiffEqCallbacks: PresetTimeCallback
 using ModelingToolkit: @named
-using Makie: Makie, lines, Figure, Axis, axislegend, lines!, Cycled
+using Makie: Makie, Figure, Axis, axislegend, lines!, Cycled
 using OrderedCollections: OrderedDict
 
 using PowerDynamics: PowerDynamics, Bus, Line, MTKLine
