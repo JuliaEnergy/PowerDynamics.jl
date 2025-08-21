@@ -4,7 +4,7 @@ using DataFrames
 using Interpolations
 @doc doc"""
 ```Julia
-LinearPTO(;τ_P,τ_Q,K_P,K_Q,V_r,Q,K_pto, C_pto, η, base_power)
+LinearPTO(; τ_P, τ_Q, K_P, K_Q, V_r, Q, K_pto, C_pto, η, base_power, scaling_factor, wec_sim_path)
 ```
 A node type that applies frequency and voltage droop control to regulate the dynamics of a wave energy converter's (WEC) linear Power Take-Off (PTO) system.
 
@@ -23,6 +23,8 @@ Keyword Arguments
 - C_pto: Damping of the PTO
 - η: Efficiency of the PTO system
 - base_power: Base power for per-unit conversion
+- scaling_factor: Scaling factor applied to the electrical power
+- wec_sim_path: Path to the WEC simulation data used for interpolation
 
 """
 @DynamicNode LinearPTO(
