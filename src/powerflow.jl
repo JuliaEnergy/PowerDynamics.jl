@@ -252,6 +252,14 @@ This function performs a two-step initialization process:
 1. Solve the power flow equations for the network
 2. Use the power flow solution to initialize the dynamic model
 
+Per default, the powerflow solution is computed as
+```julia
+    pfnw = powerflow_model(nw)                     # get powerflow network model
+    pfs0 = NWState(pfnw)                           # initial condition for network model
+    pfs = solve_powerflow(nw; pfnw, pfs0, verbose) # solve powerflow
+```
+You can override any of these steps by providing `pfnw`, `pfs0`, or `pfs` directly as a keyword argument.
+
 There are two versions of this function: a mutating one (!-at the end of name) and a non-mutating version.
 The mutating version uses `initialize_componentwise!` internally, the non-mutating one `initialize_componentwise`.
 When the mutating version is used, `NWState(nw)` after initialization will return the same initialized
@@ -279,11 +287,17 @@ function _init_from_pf(
     initf, nw;
     verbose = true,
     subverbose = false,
-    pfnw = powerflow_model(nw),
-    pfs0 = NWState(pfnw),
-    pfs = solve_powerflow(nw; pfnw, pfs0, verbose),
+    pfnw = nothing,
+    pfs0 = nothing,
+    pfs = nothing,
     kwargs...
 )
+    if isnothing(pfs)
+        pfnw = isnothing(pfnw) ? powerflow_model(nw) : pfnw
+        pfs0 = isnothing(pfs0) ? NWState(pfnw) : pfnw
+        pfs = solve_powerflow(nw; pfnw, pfs0, verbose)
+    end
+
     interface_vals = interface_values(pfs)
     pfinitconstraints = specialize_pfinitconstraints(nw, pfs)
     pfinitformulas = specialize_pfinitformulas(nw, pfs)
