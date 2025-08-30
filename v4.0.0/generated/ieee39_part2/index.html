@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>IEEE39 Part II: Initialization · PowerDynamics.jl</title><meta name="title" content="IEEE39 Part II: Initialization · PowerDynamics.jl"/><meta property="og:title" content="IEEE39 Part II: Initialization · PowerDynamics.jl"/><meta property="twitter:title" content="IEEE39 Part II: Initialization · PowerDynamics.jl"/><meta name="description" content="Documentation for PowerDynamics.jl."/><meta property="og:description" content="Documentation for PowerDynamics.jl."/><meta property="twitter:description" content="Documentation for PowerDynamics.jl."/><meta property="og:url" content="https://juliaenergy.github.io/PowerDynamics.jl/generated/ieee39_part2/"/><meta property="twitter:url" content="https://juliaenergy.github.io/PowerDynamics.jl/generated/ieee39_part2/"/><link rel="canonical" href="https://juliaenergy.github.io/PowerDynamics.jl/generated/ieee39_part2/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PowerDynamics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../ModelingConcepts/">Modeling Concepts</a></li><li><a class="tocitem" href="../../initialization/">Initialization</a></li><li><a class="tocitem" href="../../Library/">Component Library</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../custom_bus/">Custom Generator Bus</a></li><li><a class="tocitem" href="../custom_line/">Custom Transmission Line</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../ieee9bus/">IEEE 9Bus Example</a></li><li><a class="tocitem" href="../ieee39_part1/">IEEE39 Part I: Modeling</a></li><li class="is-active"><a class="tocitem" href>IEEE39 Part II: Initialization</a><ul class="internal"><li><a class="tocitem" href="#Power-Flow"><span>Power Flow</span></a></li><li><a class="tocitem" href="#Initialization-of-Dynamic-Components"><span>Initialization of Dynamic Components</span></a></li><li><a class="tocitem" href="#Handling-Structurally-Underconstrained-Components"><span>Handling Structurally Underconstrained Components</span></a></li><li><a class="tocitem" href="#initialize-all-components"><span>Automatic Initialization of Full Network</span></a></li></ul></li><li><a class="tocitem" href="../ieee39_part3/">IEEE39 Part III: Simulation</a></li><li><a class="tocitem" href="../ieee39_part4/">IEEE39 Part IV: Parameter Tuning</a></li><li><a class="tocitem" href="../emt_toymodel/">EMT Toymodel</a></li></ul></li><li><a class="tocitem" href="../../API/">API</a></li><li><a class="tocitem" href="../../networkdynamics_forward/">🔗 NetworkDynamics.jl Docs</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>IEEE39 Part II: Initialization</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>IEEE39 Part II: Initialization</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl/blob/main/docs/examples/ieee39_part2.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="ieee39-part2"><a class="docs-heading-anchor" href="#ieee39-part2">IEEE39 Bus Tutorial - Part II: Initialization</a><a id="ieee39-part2-1"></a><a class="docs-heading-anchor-permalink" href="#ieee39-part2" title="Permalink"></a></h1><p>This is the second part of a four-part tutorial series for the IEEE 39-bus test system:</p><ul><li><strong>Part I: Model Creation</strong> - Build the network structure with buses, lines, and components</li><li><strong>Part II: Initialization</strong> (this tutorial) - Perform power flow calculations and dynamic initialization</li><li><strong>Part III: Dynamic Simulation</strong> - Run time-domain simulations and analyze system behavior</li><li><strong>Part IV: Advanced Modeling &amp; Parameter Optimization</strong> - Create custom components and optimize system parameters</li></ul><p>The goal of this tutorial is to get an understanding of the initialization process in PowerDynamics.jl.</p><p>For comprehensive documentation on initialization, see:</p><ul><li><a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/initialization/#initialization-guide">NetworkDynamics.jl initialization docs</a></li><li><a href="../../initialization/#Advanced-Component-Initialization">PowerDynamics.jl initialization docs</a></li></ul><div class="admonition is-success" id="Quick-Start-9bef60e1f9dcdf77"><header class="admonition-header">Quick Start<a class="admonition-anchor" href="#Quick-Start-9bef60e1f9dcdf77" title="Permalink"></a></header><div class="admonition-body"><p>If you&#39;re looking for the practical initialization approach without diving into implementation details, jump directly to the <a href="#initialize-all-components">Initialize all Components</a> section at the end.</p></div></div><p>This tutorial goes deep into the initialization internals for educational purposes. In practice, you&#39;ll typically use the high-level functions shown at the end rather than the detailed step-by-step process demonstrated here.</p><p>As a prerequisite, we load part I of the tutorial, which contains the network model:</p><pre><code class="language-julia hljs">using PowerDynamics
+EXAMPLEDIR = joinpath(pkgdir(PowerDynamics), &quot;docs&quot;, &quot;examples&quot;)
+include(joinpath(EXAMPLEDIR, &quot;ieee39_part1.jl&quot;))
+nw # nw object now available</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Network with 201 states and 1306 parameters
+ ├─ 39 vertices (5 unique types)
+ └─ 46 edges (1 unique type)
+Edge-Aggregation using SequentialAggregator(+)</code></pre><p>The initialization process in PowerDynamics.jl is a two-step process: first we solve the power flow, then we use the power flow results to initialize the individual network components.</p><p>There are shortcut functions to do this (as shown <a href="#initialize-all-components">later</a>), but we will go through the steps in detail for educational purposes.</p><h2 id="Power-Flow"><a class="docs-heading-anchor" href="#Power-Flow">Power Flow</a><a id="Power-Flow-1"></a><a class="docs-heading-anchor-permalink" href="#Power-Flow" title="Permalink"></a></h2><p>To solve the power flow, we first need to get the power flow model. We can use the function <a href="../../API/#PowerDynamics.powerflow_model"><code>powerflow_model</code></a>.</p><pre><code class="language-julia hljs">pfnw = powerflow_model(nw)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Network with 76 states and 814 parameters
+ ├─ 39 vertices (3 unique types)
+ └─ 46 edges (1 unique type)
+Edge-Aggregation using SequentialAggregator(+)</code></pre><p>The power flow model is a <code>Network</code> object like the original network. It is built from the original network, by calling <code>powerflow_model</code> on the individual components. For example, we have this rather complex dynamic model at bus 30:</p><pre><code class="language-julia hljs">nw[VIndex(30)]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:bus30</span> <span class="sgr94">PureStateMap()</span> @ Vertex 30
+ ├─  2 inputs:  [busbar₊i_r, busbar₊i_i]
+ ├─ 15 states:  [ctrld_gen₊machine₊ω<span class="sgr90">≈1</span>, ctrld_gen₊machine₊δ<span class="sgr90">≈0</span>, ctrld_gen₊avr₊vr<span class="sgr90">≈0</span>, ctrld_gen₊avr₊vfout<span class="sgr90">≈1</span>, ctrld_gen₊avr₊v_fb<span class="sgr90">≈0</span>, ctrld_gen₊avr₊vm<span class="sgr90">≈1</span>, ctrld_gen₊gov₊xg1<span class="sgr90">≈1</span>, ctrld_gen₊gov₊xg2<span class="sgr90">≈0</span>, ctrld_gen₊machine₊E′_q<span class="sgr90">≈0</span>, ctrld_gen₊machine₊E′_d<span class="sgr90">≈1</span>, ctrld_gen₊machine₊ψ″_d<span class="sgr90">≈1</span>, ctrld_gen₊machine₊ψ″_q<span class="sgr90">≈0</span>, ctrld_gen₊gov₊τ_m₊u<span class="sgr90">≈0</span>, busbar₊u_r, busbar₊u_i]
+ |     with diagonal mass matrix [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0]
+ ├─  2 outputs: [busbar₊u_r, busbar₊u_i]
+ └─ 42 params:  [ctrld_gen₊machine₊X″_d=0.25, ctrld_gen₊machine₊S_b=100, ctrld_gen₊machine₊X′_q=0.5, ctrld_gen₊avr₊Se1=0.08, ctrld_gen₊gov₊p_ref<span class="sgr90">≈1</span>, ctrld_gen₊gov₊T2=2.1, ctrld_gen₊avr₊Tr=0.01, ctrld_gen₊machine₊V_b=16.5, ctrld_gen₊gov₊V_max=1, ctrld_gen₊gov₊T3=7.2, ctrld_gen₊avr₊E2=4.7281, ctrld_gen₊gov₊DT=0, ctrld_gen₊machine₊X′_d=0.31, ctrld_gen₊machine₊X_d=1, ctrld_gen₊machine₊X_ls=0.125, ctrld_gen₊machine₊T″_d0=0.05, ctrld_gen₊machine₊T″_q0=0.035, ctrld_gen₊avr₊Tf=1, ctrld_gen₊avr₊vr_min=-1, ctrld_gen₊machine₊Vn=16.5, ctrld_gen₊avr₊Kf=0.04, ctrld_gen₊machine₊ω_b=376.99, ctrld_gen₊avr₊E1=3.5461, ctrld_gen₊machine₊X_q=0.69, ctrld_gen₊gov₊V_min=0, ctrld_gen₊avr₊Ke=-0.0485, ctrld_gen₊machine₊T′_q0=2, ctrld_gen₊avr₊Te=0.25, ctrld_gen₊avr₊Se2=0.26, ctrld_gen₊machine₊T′_d0=10.2, ctrld_gen₊gov₊R=0.05, ctrld_gen₊avr₊vr_max=1, ctrld_gen₊machine₊X″_q=0.25, ctrld_gen₊gov₊ω_ref=1, ctrld_gen₊avr₊Ta=0.06, ctrld_gen₊machine₊Sn=1000, ctrld_gen₊avr₊Ka=5, ctrld_gen₊gov₊T1=0.5, ctrld_gen₊machine₊H=4.2, ctrld_gen₊machine₊R_s=0, ctrld_gen₊machine₊D=0, ctrld_gen₊avr₊vref<span class="sgr90">≈1</span>]
+<span class="sgr34"><span class="sgr1">Powerflow model </span></span>:pvbus with [pv₊P=2.5, pv₊V=1.0475]</code></pre><p>From the printout, we can see that a power flow model <code>:pvbus</code> is attached to the generator model.</p><p>We can extract the attached PV power flow model by calling <code>powerflow_model</code></p><pre><code class="language-julia hljs">powerflow_model(nw[VIndex(30)])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:pvbus</span> <span class="sgr94">PureStateMap()</span>
+ ├─ 2 inputs:  [busbar₊i_r, busbar₊i_i]
+ ├─ 2 states:  [busbar₊u_r=1.0475, busbar₊u_i=0]
+ |    with diagonal mass matrix [0, 0]
+ ├─ 2 outputs: [busbar₊u_r=1.0475, busbar₊u_i=0]
+ └─ 2 params:  [pv₊P=2.5, pv₊V=1.0475]</code></pre><p>The function <code>powerflow_model</code> checks if there is a power flow model attached (it checks the <code>:pfmodel</code> <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/metadata/#Metadata">metadata</a>).</p><p>Per component, the <code>powerflow_model</code> function will do the following:</p><ol><li>If the model has the <code>:pfmodel</code> metadata set (see <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/metadata/#Metadata">Metadata</a>), it will return the <code>VertexModel</code> stored in the metadata. In <a href="../ieee39_part1/#ieee39-part1">Part I</a> we set the <code>:pfmodel</code> metadata using the <code>pf</code> keyword to the [<code>Bus</code>].</li><li>If the model <strong>does not have</strong> the <code>:pfmodel</code> metadata set, PowerDynamics will check if the model itself is a valid power flow model. If so, it&#39;ll just use the dynamic model as the power flow model.</li></ol><p><strong>What is a valid power flow model?</strong>: A valid power flow model is a model that has no internal dynamics, i.e. it either has <code>dim(model) == 0</code> OR it has a zero mass matrix (i.e. only constraints).</p><p>For example, the PiLine models are completely static:</p><pre><code class="language-julia hljs">nw[EIndex(1)]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">EdgeModel <span class="sgr1">:piline_template</span> <span class="sgr94">PureFeedForward()</span> @ Edge 1=&gt;2
+ ├─ 2/2 inputs:  src=[src₊u_r, src₊u_i] dst=[dst₊u_r, dst₊u_i]
+ ├─   0 states:  []  
+ ├─ 2/2 outputs: src=[src₊i_r, src₊i_i] dst=[dst₊i_r, dst₊i_i]
+ └─  16 params:  [piline₊G_src=0, piline₊B_src=0.34935, piline₊X_fault=0, piline₊G_fault=0, piline₊X=0.0411, piline₊shortcircuit=0, piline₊B_dst=0.34935, piline₊G_dst=0, piline₊B_fault=0, piline₊pos=0.5, piline₊R_fault=0, piline₊R=0.0035, piline₊r_dst=1, piline₊r_src=1, piline₊faultimp=0, piline₊active=1]</code></pre><p>This model has no internal states and no <code>:pfmodel</code> metadata.</p><pre><code class="language-julia hljs">@assert ispfmodel(nw[EIndex(1)]) # is pf model itself
+powerflow_model(nw[EIndex(1)]) === nw[EIndex(1)]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><p>As a result, when we call <code>powerflow_model(nw)</code>, we get a <strong>completely static</strong> network, i.e. only constraints, no dynamics.</p><pre><code class="language-julia hljs">all(iszero, pfnw.mass_matrix)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><p>The fully static network has the form</p><p class="math-container">\[\dot{x} = 0 = f_{\mathrm{nw}}(x, p, t)\]</p><p>Where <code>x</code> are the network states (mainly voltages <span>$u_r$</span> and <span>$u_i$</span> at the buses) and <code>p</code> are all the parameters such as <span>$P$</span>, <span>$V$</span> and <span>$Q$</span> values for bus models and line parameters for branch models.</p><p>To solve this root-finding problem, we first need to find an initial guess. The initial guess is prefilled with all the default values from the components. In our case, all parameters and states have default values attached, so the initial state is fully determined.</p><pre><code class="language-julia hljs">pfs0 = NWState(pfnw)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NWState{Vector{Float64}} of Network (39 vertices, 46 edges)
+  ├─ VIndex(1, :busbar₊u_i)  =&gt; 0.0
+  ├─ VIndex(1, :busbar₊u_r)  =&gt; 1.0
+  ├─ VIndex(2, :busbar₊u_i)  =&gt; 0.0
+  ├─ VIndex(2, :busbar₊u_r)  =&gt; 1.0
+  ├─ VIndex(3, :busbar₊u_i)  =&gt; 0.0
+  ├─ VIndex(3, :busbar₊u_r)  =&gt; 1.0
+  ├─ VIndex(4, :busbar₊u_i)  =&gt; 0.0
+  ├─ VIndex(4, :busbar₊u_r)  =&gt; 1.0
+  ⋮
+  ├─ VIndex(36, :busbar₊u_r) =&gt; 1.0635000467300415
+  ├─ VIndex(36, :busbar₊u_i) =&gt; 0.0
+  ├─ VIndex(37, :busbar₊u_r) =&gt; 1.0277999639511108
+  ├─ VIndex(37, :busbar₊u_i) =&gt; 0.0
+  ├─ VIndex(38, :busbar₊u_r) =&gt; 1.0264999866485596
+  ├─ VIndex(38, :busbar₊u_i) =&gt; 0.0
+  ├─ VIndex(39, :busbar₊u_r) =&gt; 1.0299999713897705
+  └─ VIndex(39, :busbar₊u_i) =&gt; 0.0
+ p = NWParameter([0.0, 0.0, 0.0, 0.0, -3.22, -0.024, -5.0, -1.84, 0.0, 0.0  …  0.0, 0.0, 0.0, 0.5, 0.0, 0.0008, 1.0, 0.97561, 0.0, 1.0])
+ t = nothing</code></pre><p>With the default state, we can call <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.find_fixpoint"><code>find_fixpoint</code></a>, which keeps <span>$p$</span> constant and tries to find an <span>$x$</span> such that the root-finding problem stated above is fulfilled:</p><pre><code class="language-julia hljs">pfs = find_fixpoint(pfnw, pfs0)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NWState{Vector{Float64}} of Network (39 vertices, 46 edges)
+  ├─ VIndex(1, :busbar₊u_i)  =&gt; -0.1537005168018229
+  ├─ VIndex(1, :busbar₊u_r)  =&gt; 1.0360171229045203
+  ├─ VIndex(2, :busbar₊u_i)  =&gt; -0.10513936683885863
+  ├─ VIndex(2, :busbar₊u_r)  =&gt; 1.0434526576051297
+  ├─ VIndex(3, :busbar₊u_i)  =&gt; -0.15402146042175108
+  ├─ VIndex(3, :busbar₊u_r)  =&gt; 1.0185938884459298
+  ├─ VIndex(4, :busbar₊u_i)  =&gt; -0.16752811347984345
+  ├─ VIndex(4, :busbar₊u_r)  =&gt; 0.989785207542011
+  ⋮
+  ├─ VIndex(36, :busbar₊u_r) =&gt; 1.0522992315769326
+  ├─ VIndex(36, :busbar₊u_i) =&gt; 0.15394374497652633
+  ├─ VIndex(37, :busbar₊u_r) =&gt; 1.0268824837830115
+  ├─ VIndex(37, :busbar₊u_i) =&gt; 0.043418088368074
+  ├─ VIndex(38, :busbar₊u_r) =&gt; 1.0169838480457412
+  ├─ VIndex(38, :busbar₊u_i) =&gt; 0.13944918574007406
+  ├─ VIndex(39, :busbar₊u_r) =&gt; 1.01418619676775
+  └─ VIndex(39, :busbar₊u_i) =&gt; -0.17979515941397015
+ p = NWParameter([0.0, 0.0, 0.0, 0.0, -3.22, -0.024, -5.0, -1.84, 0.0, 0.0  …  0.0, 0.0, 0.0, 0.5, 0.0, 0.0008, 1.0, 0.97561, 0.0, 1.0])
+ t = nothing</code></pre><p>As a result, we get a <code>NWState</code> object which contains the <strong>full state</strong> for the power flow model.</p><p>Since power flow model and dynamic model share the same topology and the same <em>network interface</em> (i.e. nodes create voltages, edges create currents), we can extract the interface values from the power flow model state and apply them to the dynamic model:</p><pre><code class="language-julia hljs">interf = interface_values(pfs)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">OrderedCollections.OrderedDict{NetworkDynamics.SymbolicStateIndex{Int64, Symbol}, Float64} with 524 entries:
+  VIndex(1, :busbar₊i_r) =&gt; 2.22045e-15
+  VIndex(1, :busbar₊i_i) =&gt; -1.58762e-14
+  VIndex(1, :busbar₊u_r) =&gt; 1.03602
+  VIndex(1, :busbar₊u_i) =&gt; -0.153701
+  VIndex(2, :busbar₊i_r) =&gt; -2.22045e-15
+  VIndex(2, :busbar₊i_i) =&gt; -9.54792e-15
+  VIndex(2, :busbar₊u_r) =&gt; 1.04345
+  VIndex(2, :busbar₊u_i) =&gt; -0.105139
+  VIndex(3, :busbar₊i_r) =&gt; 3.08707
+  VIndex(3, :busbar₊i_i) =&gt; -0.490358
+  VIndex(3, :busbar₊u_r) =&gt; 1.01859
+  VIndex(3, :busbar₊u_i) =&gt; -0.154021
+  VIndex(4, :busbar₊i_r) =&gt; 4.60503
+  VIndex(4, :busbar₊i_i) =&gt; -2.63842
+  VIndex(4, :busbar₊u_r) =&gt; 0.989785
+  VIndex(4, :busbar₊u_i) =&gt; -0.167528
+  VIndex(5, :busbar₊i_r) =&gt; 0.0
+  VIndex(5, :busbar₊i_i) =&gt; -2.22045e-14
+  VIndex(5, :busbar₊u_r) =&gt; 0.993976
+  ⋮                      =&gt; ⋮</code></pre><p>The interface values give us the <strong>inputs</strong> and <strong>outputs</strong> for every component in the network, i.e. for all buses we get values for</p><ul><li><code>busbar₊i_r</code> and <code>busbar₊i_i</code>: current input</li><li><code>busbar₊u_r</code> and <code>busbar₊u_i</code>: voltage output</li></ul><p>For all branches we get:</p><ul><li><code>src₊u_r</code> and <code>src₊u_i</code>: source side voltage input</li><li><code>dst₊u_r</code> and <code>dst₊u_i</code>: destination side voltage input</li><li><code>src₊i_r</code> and <code>src₊i_i</code>: source side current output</li><li><code>dst₊i_r</code> and <code>dst₊i_i</code>: destination side current output</li></ul><p>With those interface values fixed, we can go over to the second step of the initialization process: the initialization of the dynamic component.</p><h2 id="Initialization-of-Dynamic-Components"><a class="docs-heading-anchor" href="#Initialization-of-Dynamic-Components">Initialization of Dynamic Components</a><a id="Initialization-of-Dynamic-Components-1"></a><a class="docs-heading-anchor-permalink" href="#Initialization-of-Dynamic-Components" title="Permalink"></a></h2><p>Initialization of a bus model means, we want to find a <strong>steady state</strong> of the dynamics given the interface values from the power flow model.</p><p>Therefore, the equations for the bus models (recall from <a href="../../ModelingConcepts/#Modeling-Concepts">Modeling Concepts</a>) become</p><p class="math-container">\[\begin{aligned}
+M_{\mathrm v}\,\frac{\mathrm{d}}{\mathrm{d}t}x_{\mathrm v} = \color{red}{0} &amp;= f^{\mathrm v}\left(x^{\mathrm v}, \color{red}{\sum_k\begin{bmatrix}i^k_r\\ i^k_i\end{bmatrix}}, p_{\mathrm v}, t\right)\\
+\color{red}{\begin{bmatrix}u_r\\ u_i\end{bmatrix}} &amp;= g^{\mathrm v}(x^\mathrm{v},p_{\mathrm v}, t)
+\end{aligned}\]</p><p>where red symbols are fixed by either the power flow solution or our steady state condition (i.e. <span>$\dot{x}=0$</span>). This leaves us with a system of <span>$N=\mathrm{dim}(x) + \mathrm{dim}(u)$</span> equations – we can solve for <span>$N$</span> unknowns.</p><details class="admonition is-details" id="Edge-Initialization-Equations-7f0ffd0fcb0ce55f"><summary class="admonition-header">Edge Initialization Equations<a class="admonition-anchor" href="#Edge-Initialization-Equations-7f0ffd0fcb0ce55f" title="Permalink"></a></summary><div class="admonition-body"><p class="math-container">\[\begin{aligned}
+M_{\mathrm e}\,\frac{\mathrm{d}}{\mathrm{d}t}x_{\mathrm e} = \color{red}{0} &amp;= f_{\mathrm e}\left(x_{\mathrm e}, \color{red}{\begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}},p_\mathrm{e}, t\right)\\
+\color{red}{\begin{bmatrix}i_r^\mathrm{src}\\i_i^\mathrm{src}\end{bmatrix}} &amp;= g^\mathrm{src}_{\mathrm e}\left(x_{\mathrm e},\color{red}{ \begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}}, p_\mathrm{e}, t\right)\\
+\color{red}{\begin{bmatrix}i_r^\mathrm{dst}\\i_i^\mathrm{dst}\end{bmatrix}} &amp;= g^\mathrm{dst}_{\mathrm e}\left(x_{\mathrm e}, \color{red}{\begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}}, \color{red}{\begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}}, p_\mathrm{e}, t\right)\\
+\end{aligned}\]</p></div></details><p>Notably, the unknowns can come from either the set of states or the set of parameters. We divide the set of symbols into two sets:</p><ul><li><strong>fixed</strong> symbols have a <code>default</code> metadata set. They are considered fixed in the solution of the nonlinear system.</li><li><strong>free</strong> symbols only have a <code>guess</code> metadata set. They are considered free in the solution of the nonlinear system.</li></ul><p>Let&#39;s take a look at the bus model at bus 30:</p><pre><code class="language-julia hljs">gen = nw[VIndex(30)]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:bus30</span> <span class="sgr94">PureStateMap()</span> @ Vertex 30
+ ├─  2 inputs:  [busbar₊i_r, busbar₊i_i]
+ ├─ 15 states:  [ctrld_gen₊machine₊ω<span class="sgr90">≈1</span>, ctrld_gen₊machine₊δ<span class="sgr90">≈0</span>, ctrld_gen₊avr₊vr<span class="sgr90">≈0</span>, ctrld_gen₊avr₊vfout<span class="sgr90">≈1</span>, ctrld_gen₊avr₊v_fb<span class="sgr90">≈0</span>, ctrld_gen₊avr₊vm<span class="sgr90">≈1</span>, ctrld_gen₊gov₊xg1<span class="sgr90">≈1</span>, ctrld_gen₊gov₊xg2<span class="sgr90">≈0</span>, ctrld_gen₊machine₊E′_q<span class="sgr90">≈0</span>, ctrld_gen₊machine₊E′_d<span class="sgr90">≈1</span>, ctrld_gen₊machine₊ψ″_d<span class="sgr90">≈1</span>, ctrld_gen₊machine₊ψ″_q<span class="sgr90">≈0</span>, ctrld_gen₊gov₊τ_m₊u<span class="sgr90">≈0</span>, busbar₊u_r, busbar₊u_i]
+ |     with diagonal mass matrix [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0]
+ ├─  2 outputs: [busbar₊u_r, busbar₊u_i]
+ └─ 42 params:  [ctrld_gen₊machine₊X″_d=0.25, ctrld_gen₊machine₊S_b=100, ctrld_gen₊machine₊X′_q=0.5, ctrld_gen₊avr₊Se1=0.08, ctrld_gen₊gov₊p_ref<span class="sgr90">≈1</span>, ctrld_gen₊gov₊T2=2.1, ctrld_gen₊avr₊Tr=0.01, ctrld_gen₊machine₊V_b=16.5, ctrld_gen₊gov₊V_max=1, ctrld_gen₊gov₊T3=7.2, ctrld_gen₊avr₊E2=4.7281, ctrld_gen₊gov₊DT=0, ctrld_gen₊machine₊X′_d=0.31, ctrld_gen₊machine₊X_d=1, ctrld_gen₊machine₊X_ls=0.125, ctrld_gen₊machine₊T″_d0=0.05, ctrld_gen₊machine₊T″_q0=0.035, ctrld_gen₊avr₊Tf=1, ctrld_gen₊avr₊vr_min=-1, ctrld_gen₊machine₊Vn=16.5, ctrld_gen₊avr₊Kf=0.04, ctrld_gen₊machine₊ω_b=376.99, ctrld_gen₊avr₊E1=3.5461, ctrld_gen₊machine₊X_q=0.69, ctrld_gen₊gov₊V_min=0, ctrld_gen₊avr₊Ke=-0.0485, ctrld_gen₊machine₊T′_q0=2, ctrld_gen₊avr₊Te=0.25, ctrld_gen₊avr₊Se2=0.26, ctrld_gen₊machine₊T′_d0=10.2, ctrld_gen₊gov₊R=0.05, ctrld_gen₊avr₊vr_max=1, ctrld_gen₊machine₊X″_q=0.25, ctrld_gen₊gov₊ω_ref=1, ctrld_gen₊avr₊Ta=0.06, ctrld_gen₊machine₊Sn=1000, ctrld_gen₊avr₊Ka=5, ctrld_gen₊gov₊T1=0.5, ctrld_gen₊machine₊H=4.2, ctrld_gen₊machine₊R_s=0, ctrld_gen₊machine₊D=0, ctrld_gen₊avr₊vref<span class="sgr90">≈1</span>]
+<span class="sgr34"><span class="sgr1">Powerflow model </span></span>:pvbus with [pv₊P=2.5, pv₊V=1.0475]</code></pre><p>We have a system with 15 States and 42 parameters. Of those, most are fixed, i.e. have a <code>default</code> metadata set. In the VertexModel printout, defaults are shown with <code>=</code> while guesses are shown with <code>≈</code>. We can use <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.dump_initial_state"><code>dump_initial_state</code></a> to get an overview of the free and set states:</p><pre><code class="language-julia hljs">dump_initial_state(gen; obs=false)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Inputs:</span>
+  busbar₊i_i              = <span class="sgr31"> uninitialized</span>
+  busbar₊i_r              = <span class="sgr31"> uninitialized</span>
+<span class="sgr1">States:</span>
+  busbar₊u_i              = <span class="sgr31"> uninitialized</span>
+  busbar₊u_r              = <span class="sgr31"> uninitialized</span>
+  ctrld_gen₊avr₊v_fb      = <span class="sgr31"> uninitialized</span> (guess  0)
+  ctrld_gen₊avr₊vfout     = <span class="sgr31"> uninitialized</span> (guess  1) (bounds 0.0..Inf)
+  ctrld_gen₊avr₊vm        = <span class="sgr31"> uninitialized</span> (guess  1)
+  ctrld_gen₊avr₊vr        = <span class="sgr31"> uninitialized</span> (guess  0)
+  ctrld_gen₊gov₊xg1       = <span class="sgr31"> uninitialized</span> (guess  1)
+  ctrld_gen₊gov₊xg2       = <span class="sgr31"> uninitialized</span> (guess  0)
+  ctrld_gen₊gov₊τ_m₊u     = <span class="sgr31"> uninitialized</span> (guess  0)
+  ctrld_gen₊machine₊E′_d  = <span class="sgr31"> uninitialized</span> (guess  1)
+  ctrld_gen₊machine₊E′_q  = <span class="sgr31"> uninitialized</span> (guess  0)
+  ctrld_gen₊machine₊δ     = <span class="sgr31"> uninitialized</span> (guess  0)
+  ctrld_gen₊machine₊ψ″_d  = <span class="sgr31"> uninitialized</span> (guess  1)
+  ctrld_gen₊machine₊ψ″_q  = <span class="sgr31"> uninitialized</span> (guess  0)
+  ctrld_gen₊machine₊ω     = <span class="sgr31"> uninitialized</span> (guess  1)
+<span class="sgr1">Outputs:</span>
+  busbar₊u_i              = <span class="sgr31"> uninitialized</span>
+  busbar₊u_r              = <span class="sgr31"> uninitialized</span>
+<span class="sgr1">Parameters:</span>
+  ctrld_gen₊avr₊E1        = <span class="sgr34"> 3.5461</span>
+  ctrld_gen₊avr₊E2        = <span class="sgr34"> 4.7281</span>
+  ctrld_gen₊avr₊Ka        = <span class="sgr34"> 5</span>
+  ctrld_gen₊avr₊Ke        = <span class="sgr34">-0.0485</span>
+  ctrld_gen₊avr₊Kf        = <span class="sgr34"> 0.04</span>
+  ctrld_gen₊avr₊Se1       = <span class="sgr34"> 0.08</span>
+  ctrld_gen₊avr₊Se2       = <span class="sgr34"> 0.26</span>
+  ctrld_gen₊avr₊Ta        = <span class="sgr34"> 0.06</span>
+  ctrld_gen₊avr₊Te        = <span class="sgr34"> 0.25</span>
+  ctrld_gen₊avr₊Tf        = <span class="sgr34"> 1</span>
+  ctrld_gen₊avr₊Tr        = <span class="sgr34"> 0.01</span>
+  ctrld_gen₊avr₊vr_max    = <span class="sgr34"> 1</span>
+  ctrld_gen₊avr₊vr_min    = <span class="sgr34">-1</span>
+  ctrld_gen₊avr₊vref      = <span class="sgr31"> uninitialized</span> (guess  1)
+  ctrld_gen₊gov₊DT        = <span class="sgr34"> 0</span>
+  ctrld_gen₊gov₊R         = <span class="sgr34"> 0.05</span>
+  ctrld_gen₊gov₊T1        = <span class="sgr34"> 0.5</span>
+  ctrld_gen₊gov₊T2        = <span class="sgr34"> 2.1</span>
+  ctrld_gen₊gov₊T3        = <span class="sgr34"> 7.2</span>
+  ctrld_gen₊gov₊V_max     = <span class="sgr34"> 1</span>
+  ctrld_gen₊gov₊V_min     = <span class="sgr34"> 0</span>
+  ctrld_gen₊gov₊p_ref     = <span class="sgr31"> uninitialized</span> (guess  1)
+  ctrld_gen₊gov₊ω_ref     = <span class="sgr34"> 1</span>
+  ctrld_gen₊machine₊D     = <span class="sgr34"> 0</span>
+  ctrld_gen₊machine₊H     = <span class="sgr34"> 4.2</span>
+  ctrld_gen₊machine₊R_s   = <span class="sgr34"> 0</span>
+  ctrld_gen₊machine₊S_b   = <span class="sgr34"> 100</span>
+  ctrld_gen₊machine₊Sn    = <span class="sgr34"> 1000</span>
+  ctrld_gen₊machine₊T′_d0 = <span class="sgr34"> 10.2</span>
+  ctrld_gen₊machine₊T′_q0 = <span class="sgr34"> 2</span>
+  ctrld_gen₊machine₊T″_d0 = <span class="sgr34"> 0.05</span>
+  ctrld_gen₊machine₊T″_q0 = <span class="sgr34"> 0.035</span>
+  ctrld_gen₊machine₊V_b   = <span class="sgr34"> 16.5</span>
+  ctrld_gen₊machine₊Vn    = <span class="sgr34"> 16.5</span>
+  ctrld_gen₊machine₊X_d   = <span class="sgr34"> 1</span>
+  ctrld_gen₊machine₊X_ls  = <span class="sgr34"> 0.125</span>
+  ctrld_gen₊machine₊X_q   = <span class="sgr34"> 0.69</span>
+  ctrld_gen₊machine₊X′_d  = <span class="sgr34"> 0.31</span>
+  ctrld_gen₊machine₊X′_q  = <span class="sgr34"> 0.5</span>
+  ctrld_gen₊machine₊X″_d  = <span class="sgr34"> 0.25</span>
+  ctrld_gen₊machine₊X″_q  = <span class="sgr34"> 0.25</span>
+  ctrld_gen₊machine₊ω_b   = <span class="sgr34"> 376.99</span></code></pre><p>Right now, we have 2 free parameters, 2 free inputs, 2 free outputs and 15 free states. We can use <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.initialize_component"><code>initialize_component</code></a> to find values for the free symbols:</p><pre><code class="language-julia hljs">initialize_component(gen)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr91"><span class="sgr1">┌ Error: </span></span>Initialization problem underconstraint. 17 Equations for 21 free variables: [:busbar₊u_r, :busbar₊u_i, :ctrld_gen₊machine₊ω, :ctrld_gen₊machine₊δ, :ctrld_gen₊avr₊vr, :ctrld_gen₊avr₊vfout, :ctrld_gen₊avr₊v_fb, :ctrld_gen₊avr₊vm, :ctrld_gen₊gov₊xg1, :ctrld_gen₊gov₊xg2, :ctrld_gen₊machine₊E′_q, :ctrld_gen₊machine₊E′_d, :ctrld_gen₊machine₊ψ″_d, :ctrld_gen₊machine₊ψ″_q, :ctrld_gen₊gov₊τ_m₊u, :busbar₊u_r, :busbar₊u_i, :busbar₊i_r, :busbar₊i_i, :ctrld_gen₊gov₊p_ref, :ctrld_gen₊avr₊vref]. Consider passing additional constraints using `InitConstraint`.
+<span class="sgr91"><span class="sgr1">└ </span></span><span class="sgr90">@ Main ieee39_part2.md:188</span></code></pre><p>Wait! The initialization failed! Why? Well, we need to apply additional defaults, so called <code>default_overwrites</code> for the inputs/outputs to make the system solvable.</p><pre><code class="language-julia hljs">interf_v30 = Dict( # manually define interface values for demonstration
+    :busbar₊u_r =&gt; 1.04573,
+    :busbar₊u_i =&gt; -0.0609188,
+    :busbar₊i_i =&gt; 1.53174,
+    :busbar₊i_r =&gt; -2.30145,
+)
+initialize_component(gen; default_overrides=interf_v30)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr36"><span class="sgr1">[ Info: </span></span>Apply positivity/negativity conserving variable transformation on [:ctrld_gen₊avr₊vfout] to satisfy bounds.
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Initialization problem is overconstrained (15 vars for 17 equations). Create NonlinearLeastSquaresProblem for [:ctrld_gen₊machine₊ω, :ctrld_gen₊machine₊δ, :ctrld_gen₊avr₊vr, :ctrld_gen₊avr₊vfout, :ctrld_gen₊avr₊v_fb, :ctrld_gen₊avr₊vm, :ctrld_gen₊gov₊xg1, :ctrld_gen₊gov₊xg2, :ctrld_gen₊machine₊E′_q, :ctrld_gen₊machine₊E′_d, :ctrld_gen₊machine₊ψ″_d, :ctrld_gen₊machine₊ψ″_q, :ctrld_gen₊gov₊τ_m₊u, :ctrld_gen₊gov₊p_ref, :ctrld_gen₊avr₊vref].
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Initialization successful with residual 2.236171034710129e-14</code></pre><div class="admonition is-info" id="Mutating-vs-non-mutating-Initialization-7856ff491816911"><header class="admonition-header">Mutating vs non-mutating Initialization<a class="admonition-anchor" href="#Mutating-vs-non-mutating-Initialization-7856ff491816911" title="Permalink"></a></header><div class="admonition-body"><p>The non mutating <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.initialize_component"><code>initialize_component</code></a> returns a dictionary containing a full initialized component state. That can be useful for certain purposes, often it is easier to work with the <em>mutating</em> version of initialization function, which will write the initialized values back to the component metadata (i.e setting the <code>:init</code> property for the symbols).</p></div></div><p>Let&#39;s call the mutating <code>initialize_component!</code> function to write the initialized values back to the component and inspect the initial state using <code>dump_initial_state</code>:</p><pre><code class="language-julia hljs">initialize_component!(gen; default_overrides=interf_v30)
+dump_initial_state(gen; obs=false)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Set additional default for busbar₊u_r: 1.04573
+Set additional default for busbar₊u_i: -0.0609188
+Set additional default for busbar₊i_i: 1.53174
+Set additional default for busbar₊i_r: -2.30145
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Apply positivity/negativity conserving variable transformation on [:ctrld_gen₊avr₊vfout] to satisfy bounds.
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Initialization problem is overconstrained (15 vars for 17 equations). Create NonlinearLeastSquaresProblem for [:ctrld_gen₊machine₊ω, :ctrld_gen₊machine₊δ, :ctrld_gen₊avr₊vr, :ctrld_gen₊avr₊vfout, :ctrld_gen₊avr₊v_fb, :ctrld_gen₊avr₊vm, :ctrld_gen₊gov₊xg1, :ctrld_gen₊gov₊xg2, :ctrld_gen₊machine₊E′_q, :ctrld_gen₊machine₊E′_d, :ctrld_gen₊machine₊ψ″_d, :ctrld_gen₊machine₊ψ″_q, :ctrld_gen₊gov₊τ_m₊u, :ctrld_gen₊gov₊p_ref, :ctrld_gen₊avr₊vref].
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Initialization successful with residual 2.236171034710129e-14
+<span class="sgr1">Inputs:</span>
+  busbar₊i_i                     = <span class="sgr34"> 1.5317</span>
+  busbar₊i_r                     = <span class="sgr34">-2.3014</span>
+<span class="sgr1">States:</span>
+  busbar₊u_i                     = <span class="sgr34">-0.060919</span>
+  busbar₊u_r                     = <span class="sgr34"> 1.0457</span>
+  ctrld_gen₊avr₊v_fb             = <span class="sgr33">-7.5214e-24</span> (guess  0)
+  ctrld_gen₊avr₊vfout            = <span class="sgr33"> 1.2089</span>     (guess  1) (bounds 0.0..Inf)
+  ctrld_gen₊avr₊vm               = <span class="sgr33"> 1.0475</span>     (guess  1)
+  ctrld_gen₊avr₊vr               = <span class="sgr33">-0.058633</span>   (guess  0)
+  ctrld_gen₊gov₊xg1              = <span class="sgr33"> 0.25</span>       (guess  1)
+  ctrld_gen₊gov₊xg2              = <span class="sgr33"> 0.25</span>       (guess  0)
+  ctrld_gen₊gov₊τ_m₊u            = <span class="sgr33"> 0.25</span>       (guess  0)
+  ctrld_gen₊machine₊E′_d         = <span class="sgr33"> 0.041105</span>   (guess  1)
+  ctrld_gen₊machine₊E′_q         = <span class="sgr33"> 1.0902</span>     (guess  0)
+  ctrld_gen₊machine₊δ            = <span class="sgr33"> 0.084805</span>   (guess  0)
+  ctrld_gen₊machine₊ψ″_d         = <span class="sgr33"> 1.0583</span>     (guess  1)
+  ctrld_gen₊machine₊ψ″_q         = <span class="sgr33">-0.12223</span>    (guess  0)
+  ctrld_gen₊machine₊ω            = <span class="sgr33"> 1</span>          (guess  1)
+<span class="sgr1">Outputs:</span>
+  busbar₊u_i                     = <span class="sgr34">-0.060919</span>
+  busbar₊u_r                     = <span class="sgr34"> 1.0457</span>
+<span class="sgr1">Parameters:</span>
+  ctrld_gen₊avr₊E1               = <span class="sgr34"> 3.5461</span>
+  ctrld_gen₊avr₊E2               = <span class="sgr34"> 4.7281</span>
+  ctrld_gen₊avr₊Ka               = <span class="sgr34"> 5</span>
+  ctrld_gen₊avr₊Ke               = <span class="sgr34">-0.0485</span>
+  ctrld_gen₊avr₊Kf               = <span class="sgr34"> 0.04</span>
+  ctrld_gen₊avr₊Se1              = <span class="sgr34"> 0.08</span>
+  ctrld_gen₊avr₊Se2              = <span class="sgr34"> 0.26</span>
+  ctrld_gen₊avr₊Ta               = <span class="sgr34"> 0.06</span>
+  ctrld_gen₊avr₊Te               = <span class="sgr34"> 0.25</span>
+  ctrld_gen₊avr₊Tf               = <span class="sgr34"> 1</span>
+  ctrld_gen₊avr₊Tr               = <span class="sgr34"> 0.01</span>
+  ctrld_gen₊avr₊vr_max           = <span class="sgr34"> 1</span>
+  ctrld_gen₊avr₊vr_min           = <span class="sgr34">-1</span>
+  ctrld_gen₊avr₊vref             = <span class="sgr33"> 1.0358</span>     (guess  1)
+  ctrld_gen₊gov₊DT               = <span class="sgr34"> 0</span>
+  ctrld_gen₊gov₊R                = <span class="sgr34"> 0.05</span>
+  ctrld_gen₊gov₊T1               = <span class="sgr34"> 0.5</span>
+  ctrld_gen₊gov₊T2               = <span class="sgr34"> 2.1</span>
+  ctrld_gen₊gov₊T3               = <span class="sgr34"> 7.2</span>
+  ctrld_gen₊gov₊V_max            = <span class="sgr34"> 1</span>
+  ctrld_gen₊gov₊V_min            = <span class="sgr34"> 0</span>
+  ctrld_gen₊gov₊p_ref            = <span class="sgr33"> 0.0125</span>     (guess  1)
+  ctrld_gen₊gov₊ω_ref            = <span class="sgr34"> 1</span>
+  ctrld_gen₊machine₊D            = <span class="sgr34"> 0</span>
+  ctrld_gen₊machine₊H            = <span class="sgr34"> 4.2</span>
+  ctrld_gen₊machine₊R_s          = <span class="sgr34"> 0</span>
+  ctrld_gen₊machine₊S_b          = <span class="sgr34"> 100</span>
+  ctrld_gen₊machine₊Sn           = <span class="sgr34"> 1000</span>
+  ctrld_gen₊machine₊T′_d0        = <span class="sgr34"> 10.2</span>
+  ctrld_gen₊machine₊T′_q0        = <span class="sgr34"> 2</span>
+  ctrld_gen₊machine₊T″_d0        = <span class="sgr34"> 0.05</span>
+  ctrld_gen₊machine₊T″_q0        = <span class="sgr34"> 0.035</span>
+  ctrld_gen₊machine₊V_b          = <span class="sgr34"> 16.5</span>
+  ctrld_gen₊machine₊Vn           = <span class="sgr34"> 16.5</span>
+  ctrld_gen₊machine₊X_d          = <span class="sgr34"> 1</span>
+  ctrld_gen₊machine₊X_ls         = <span class="sgr34"> 0.125</span>
+  ctrld_gen₊machine₊X_q          = <span class="sgr34"> 0.69</span>
+  ctrld_gen₊machine₊X′_d         = <span class="sgr34"> 0.31</span>
+  ctrld_gen₊machine₊X′_q         = <span class="sgr34"> 0.5</span>
+  ctrld_gen₊machine₊X″_d         = <span class="sgr34"> 0.25</span>
+  ctrld_gen₊machine₊X″_q         = <span class="sgr34"> 0.25</span>
+  ctrld_gen₊machine₊ω_b          = <span class="sgr34"> 376.99</span></code></pre><p>In the state dump we see how the initialization successfully set all the previously unknown values, including the control parameters <code>avr₊vref</code> and <code>gov₊p_ref</code>. We have our first initialized component!</p><p>However, in practice it&#39;s not always so easy.</p><h2 id="Handling-Structurally-Underconstrained-Components"><a class="docs-heading-anchor" href="#Handling-Structurally-Underconstrained-Components">Handling Structurally Underconstrained Components</a><a id="Handling-Structurally-Underconstrained-Components-1"></a><a class="docs-heading-anchor-permalink" href="#Handling-Structurally-Underconstrained-Components" title="Permalink"></a></h2><p>Recalling from <a href="../ieee39_part1/#ieee39-part1">Part 1</a>, we have an uncontrolled machine together with a load on bus 39.</p><pre><code class="nohighlight hljs">            ╔════════════════════════════════╗
+            ║ Unctr. Ma. Load Bus (compiled) ║
+            ║  ┌────────────────────────┐    ║
+  Network   ║  │MTKBus      ┌─────────┐ │    ║
+ interface  ║  │          ┌─┤ Machine │ │    ║
+  current ────→│ ┌──────┐ │ └─────────┘ │    ║
+            ║  │ │BusBar├─o             │    ║
+  voltage ←────│ └──────┘ │ ┌──────┐    │    ║
+            ║  │          └─┤ Load │    │    ║
+            ║  │            └──────┘    │    ║
+            ║  └────────────────────────┘    ║
+            ╚════════════════════════════════╝</code></pre><p>If we try to initialize this component as before, we run into a problem:</p><pre><code class="language-julia hljs">interf_v39 = Dict(
+  :busbar₊u_r =&gt; 1.01419,
+  :busbar₊u_i =&gt; -0.179795,
+  :busbar₊i_i =&gt; -1.72223,
+  :busbar₊i_r =&gt; 0.720135,
+)
+initialize_component!(nw[VIndex(39)]; default_overrides=interf_v39)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Set additional default for busbar₊u_r: 1.01419
+Set additional default for busbar₊u_i: -0.179795
+Set additional default for busbar₊i_i: -1.72223
+Set additional default for busbar₊i_r: 0.720135
+<span class="sgr91"><span class="sgr1">┌ Error: </span></span>Initialization problem underconstraint. 10 Equations for 11 free variables: [:machine₊ω, :machine₊δ, :machine₊E′_q, :machine₊E′_d, :machine₊ψ″_d, :machine₊ψ″_q, :machine₊terminal₊i_r, :machine₊terminal₊i_i, :machine₊τ_m_set, :ZIPLoad₊Vset, :machine₊vf_set]. Consider passing additional constraints using `InitConstraint`.
+<span class="sgr91"><span class="sgr1">└ </span></span><span class="sgr90">@ Main ieee39_part2.md:251</span></code></pre><p>Even though we set the interface values, the problem is still underconstrained! Let&#39;s check the free symbols:</p><pre><code class="language-julia hljs">println(&quot;free u: &quot;, free_u(nw[VIndex(39)]))
+println(&quot;free p: &quot;, free_p(nw[VIndex(39)]))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">free u: [:machine₊ω, :machine₊δ, :machine₊E′_q, :machine₊E′_d, :machine₊ψ″_d, :machine₊ψ″_q, :machine₊terminal₊i_r, :machine₊terminal₊i_i]
+free p: [:machine₊τ_m_set, :ZIPLoad₊Vset, :machine₊vf_set]</code></pre><p>We see 8 free states and 3 free parameters, however we only have 8 state + 2 output equations:</p><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:bus39</span> <span class="sgr94">NoFeedForward()</span> @ Vertex 39
+ ├─  2 inputs:  [busbar₊i_r=0.72013, busbar₊i_i=-1.7222]
+ ├─  8 states:  [machine₊ω<span class="sgr90">≈1</span>, machine₊δ<span class="sgr90">≈0</span>, machine₊E′_q<span class="sgr90">≈0</span>, machine₊E′_d<span class="sgr90">≈1</span>, machine₊ψ″_d<span class="sgr90">≈1</span>, machine₊ψ″_q<span class="sgr90">≈0</span>, machine₊terminal₊i_r<span class="sgr90">≈0</span>, machine₊terminal₊i_i<span class="sgr90">≈0</span>]
+ |     with diagonal mass matrix [1, 1, 1, 1, 1, 1, 0, 0]
+ ├─  2 outputs: [busbar₊u_r=1.0142, busbar₊u_i=-0.1798]
+ └─ 30 params:  [ZIPLoad₊KqZ=1, ZIPLoad₊KpC=0, machine₊Vn=345, machine₊T″_d0=0.05, machine₊ω_b=376.99, ZIPLoad₊Pset=-11.04, machine₊D=0, ZIPLoad₊KqI=0, machine₊X′_q=0.8, machine₊X_ls=0.3, machine₊τ_m_set<span class="sgr90">≈1</span>, ZIPLoad₊Vset<span class="sgr90">≈1</span>, ZIPLoad₊KpI=0, machine₊H=5, machine₊X′_d=0.6, machine₊R_s=0, machine₊X″_q=0.4, machine₊T′_q0=0.7, machine₊S_b=100, machine₊V_b=345, ZIPLoad₊Qset=-2.5, ZIPLoad₊KqC=0, ZIPLoad₊KpZ=1, machine₊X_d=2, machine₊T′_d0=7, machine₊Sn=10000, machine₊X″_d=0.4, machine₊T″_q0=0.035, machine₊vf_set<span class="sgr90">≈1</span>, machine₊X_q=1.9]
+<span class="sgr34"><span class="sgr1">Powerflow model </span></span>:pvbus with [pv₊P=-1.04, pv₊V=1.03]</code></pre><p>Even though we have enough set parameters to initialize machine and load on its own, we cannot do it simultaneously. Intuitively speaking, it&#39;s just not clear for the solver which of the two components provides how much power.</p><p>To solve this, we have essentially 3 methods:</p><h3 id="Method-1:-Manual-setting-of-defaults"><a class="docs-heading-anchor" href="#Method-1:-Manual-setting-of-defaults">Method 1: Manual setting of defaults</a><a id="Method-1:-Manual-setting-of-defaults-1"></a><a class="docs-heading-anchor-permalink" href="#Method-1:-Manual-setting-of-defaults" title="Permalink"></a></h3><p>The simplest solution is to manually set more defaults. For example, we know that we want to initialize the ZIP load around the initialization point, i.e. <span>$V_\mathrm{set}$</span> should be the same as the bus voltage magnitude.</p><pre><code class="language-julia hljs">vm_manual = copy(nw[VIndex(39)])
+u_r = get_initial_state(vm_manual, :busbar₊u_r)
+u_i = get_initial_state(vm_manual, :busbar₊u_i)
+set_default!(vm_manual, :ZIPLoad₊Vset, sqrt(u_r^2 + u_i^2))
+initialize_component!(vm_manual)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr36"><span class="sgr1">[ Info: </span></span>Apply positivity/negativity conserving variable transformation on [:machine₊τ_m_set, :machine₊vf_set] to satisfy bounds.
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Initialization problem is fully constrained. Created NonlinearLeastSquaresProblem for [:machine₊ω, :machine₊δ, :machine₊E′_q, :machine₊E′_d, :machine₊ψ″_d, :machine₊ψ″_q, :machine₊terminal₊i_r, :machine₊terminal₊i_i, :machine₊τ_m_set, :machine₊vf_set]
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Initialization successful with residual 1.861758884942007e-15</code></pre><p>The initialization succeeded now!</p><div class="admonition is-info" id="No-more-default_overrides-2acc9b91718652b9"><header class="admonition-header">No more default_overrides<a class="admonition-anchor" href="#No-more-default_overrides-2acc9b91718652b9" title="Permalink"></a></header><div class="admonition-body"><p>Note how we can skip the <code>default_overrides</code> keyword argument, since the first (failing) call of <code>initialize_component!</code> already &quot;burned in&quot; the default overrides! Mutating state is a powerful tool, but it needs care!</p></div></div><h3 id="Method-2:-Adding-an-init_formula"><a class="docs-heading-anchor" href="#Method-2:-Adding-an-init_formula">Method 2: Adding an <code>init_formula</code></a><a id="Method-2:-Adding-an-init_formula-1"></a><a class="docs-heading-anchor-permalink" href="#Method-2:-Adding-an-init_formula" title="Permalink"></a></h3><p>The problem with the previous method is that it is quite manual. In reality, we would never go through this very manual initialization process. The fact that the model is structurally underconstrained is a property of the model and should therefore be handled by the model. To do so, NetworkDynamics.jl provides the <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.InitFormula"><code>InitFormula</code></a> mechanism.</p><p>An <code>InitFormula</code> is a symbolic formula that is evaluated during the initialization process. It is attached to the VertexModel so it can be evaluated automatically during the initialization process. The &quot;formula&quot; we want to apply is simply the equation</p><p class="math-container">\[V_\mathrm{set} = \sqrt{u_r^2 + u_i^2}\]</p><pre><code class="language-julia hljs">vm_formula = copy(nw[VIndex(39)])
+formula = @initformula :ZIPLoad₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
+set_initformula!(vm_formula, formula)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:bus39</span> <span class="sgr94">NoFeedForward()</span> @ Vertex 39
+ ├─  2 inputs:  [busbar₊i_r=0.72013, busbar₊i_i=-1.7222]
+ ├─  8 states:  [machine₊ω<span class="sgr90">≈1</span>, machine₊δ<span class="sgr90">≈0</span>, machine₊E′_q<span class="sgr90">≈0</span>, machine₊E′_d<span class="sgr90">≈1</span>, machine₊ψ″_d<span class="sgr90">≈1</span>, machine₊ψ″_q<span class="sgr90">≈0</span>, machine₊terminal₊i_r<span class="sgr90">≈0</span>, machine₊terminal₊i_i<span class="sgr90">≈0</span>]
+ |     with diagonal mass matrix [1, 1, 1, 1, 1, 1, 0, 0]
+ ├─  2 outputs: [busbar₊u_r=1.0142, busbar₊u_i=-0.1798]
+ ├─ 30 params:  [ZIPLoad₊KqZ=1, ZIPLoad₊KpC=0, machine₊Vn=345, machine₊T″_d0=0.05, machine₊ω_b=376.99, ZIPLoad₊Pset=-11.04, machine₊D=0, ZIPLoad₊KqI=0, machine₊X′_q=0.8, machine₊X_ls=0.3, machine₊τ_m_set<span class="sgr90">≈1</span>, ZIPLoad₊Vset<span class="sgr90">≈1</span>, ZIPLoad₊KpI=0, machine₊H=5, machine₊X′_d=0.6, machine₊R_s=0, machine₊X″_q=0.4, machine₊T′_q0=0.7, machine₊S_b=100, machine₊V_b=345, ZIPLoad₊Qset=-2.5, ZIPLoad₊KqC=0, ZIPLoad₊KpZ=1, machine₊X_d=2, machine₊T′_d0=7, machine₊Sn=10000, machine₊X″_d=0.4, machine₊T″_q0=0.035, machine₊vf_set<span class="sgr90">≈1</span>, machine₊X_q=1.9]
+ └─  1 add. init eq. from 1 formula setting [:ZIPLoad₊Vset]
+<span class="sgr34"><span class="sgr1">Powerflow model </span></span>:pvbus with [pv₊P=-1.04, pv₊V=1.03]</code></pre><p>The printout shows 1 additional initialization equation was attached to the model.</p><p>The initialization works now:</p><pre><code class="language-julia hljs">initialize_component!(vm_formula)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">InitFomula: setting default for :ZIPLoad₊Vset to 1.0300036884035901
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Apply positivity/negativity conserving variable transformation on [:machine₊τ_m_set, :machine₊vf_set] to satisfy bounds.
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Initialization problem is fully constrained. Created NonlinearLeastSquaresProblem for [:machine₊ω, :machine₊δ, :machine₊E′_q, :machine₊E′_d, :machine₊ψ″_d, :machine₊ψ″_q, :machine₊terminal₊i_r, :machine₊terminal₊i_i, :machine₊τ_m_set, :machine₊vf_set]
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Initialization successful with residual 1.861758884942007e-15</code></pre><p>The init formula is applied early in the initialization process, essentially writing a new <code>default</code> for <code>ZIPLoad₊Vset</code> based on the other defaults.</p><p>This reduced the number of free variables to 10, thus the system was solvable.</p><h3 id="Method-3:-Using-an-InitConstraint"><a class="docs-heading-anchor" href="#Method-3:-Using-an-InitConstraint">Method 3: Using an <code>InitConstraint</code></a><a id="Method-3:-Using-an-InitConstraint-1"></a><a class="docs-heading-anchor-permalink" href="#Method-3:-Using-an-InitConstraint" title="Permalink"></a></h3><p>Sometimes, your additional initialization needs are more complicated. Similar to defining a <em>formula</em>, which is evaluated <em>before</em> the actual initialization, NetworkDynamics provides a mechanism for injecting additional constraints into the initialization process.</p><p>In contrast to the formula, the constraint does not need to be explicitly solvable, as it defines a residual equation</p><p class="math-container">\[0 = c(x) = V_\mathrm{set} - \sqrt{u_r^2 + u_i^2}\]</p><pre><code class="language-julia hljs">vm_constraint = copy(nw[VIndex(39)])
+constraint = @initconstraint begin
+  :ZIPLoad₊Vset - sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
+end
+set_initconstraint!(vm_constraint, constraint)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:bus39</span> <span class="sgr94">NoFeedForward()</span> @ Vertex 39
+ ├─  2 inputs:  [busbar₊i_r=0.72013, busbar₊i_i=-1.7222]
+ ├─  8 states:  [machine₊ω<span class="sgr90">≈1</span>, machine₊δ<span class="sgr90">≈0</span>, machine₊E′_q<span class="sgr90">≈0</span>, machine₊E′_d<span class="sgr90">≈1</span>, machine₊ψ″_d<span class="sgr90">≈1</span>, machine₊ψ″_q<span class="sgr90">≈0</span>, machine₊terminal₊i_r<span class="sgr90">≈0</span>, machine₊terminal₊i_i<span class="sgr90">≈0</span>]
+ |     with diagonal mass matrix [1, 1, 1, 1, 1, 1, 0, 0]
+ ├─  2 outputs: [busbar₊u_r=1.0142, busbar₊u_i=-0.1798]
+ ├─ 30 params:  [ZIPLoad₊KqZ=1, ZIPLoad₊KpC=0, machine₊Vn=345, machine₊T″_d0=0.05, machine₊ω_b=376.99, ZIPLoad₊Pset=-11.04, machine₊D=0, ZIPLoad₊KqI=0, machine₊X′_q=0.8, machine₊X_ls=0.3, machine₊τ_m_set<span class="sgr90">≈1</span>, ZIPLoad₊Vset<span class="sgr90">≈1</span>, ZIPLoad₊KpI=0, machine₊H=5, machine₊X′_d=0.6, machine₊R_s=0, machine₊X″_q=0.4, machine₊T′_q0=0.7, machine₊S_b=100, machine₊V_b=345, ZIPLoad₊Qset=-2.5, ZIPLoad₊KqC=0, ZIPLoad₊KpZ=1, machine₊X_d=2, machine₊T′_d0=7, machine₊Sn=10000, machine₊X″_d=0.4, machine₊T″_q0=0.035, machine₊vf_set<span class="sgr90">≈1</span>, machine₊X_q=1.9]
+ └─  1 add. init eq. from 1 constraint for [:ZIPLoad₊Vset, :busbar₊u_r, :busbar₊u_i]
+<span class="sgr34"><span class="sgr1">Powerflow model </span></span>:pvbus with [pv₊P=-1.04, pv₊V=1.03]</code></pre><p>With this added constraint, the initialization process is solvable again, since we now have 11 equations for the 11 free variables.</p><pre><code class="language-julia hljs">initialize_component!(vm_constraint)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr36"><span class="sgr1">[ Info: </span></span>Apply positivity/negativity conserving variable transformation on [:machine₊τ_m_set, :machine₊vf_set] to satisfy bounds.
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Initialization problem is fully constrained. Created NonlinearLeastSquaresProblem for [:machine₊ω, :machine₊δ, :machine₊E′_q, :machine₊E′_d, :machine₊ψ″_d, :machine₊ψ″_q, :machine₊terminal₊i_r, :machine₊terminal₊i_i, :machine₊τ_m_set, :ZIPLoad₊Vset, :machine₊vf_set]
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Initialization successful with residual 1.3730492481779295e-15</code></pre><p>For this particular case, method (2) is the way to go. However there are cases where the constraint is more complex and cannot be expressed as a formula.</p><p>See NetworkDynamics docs on <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/initialization/#Advanced-Component-Initialization%3A-Formulas-and-Constraints">Advanced Component Initialization: Formulas and Constraints</a> and the PowerDynamics specific extension <a href="../../initialization/#Advanced-Component-Initialization">Advanced Component Initialization</a> for more information on method 2 and 3.</p><h2 id="initialize-all-components"><a class="docs-heading-anchor" href="#initialize-all-components">Automatic Initialization of Full Network</a><a id="initialize-all-components-1"></a><a class="docs-heading-anchor-permalink" href="#initialize-all-components" title="Permalink"></a></h2><p>Let&#39;s return from our excursion into individual component initialization and focus on the whole network again. As we&#39;ve just seen, we have structurally underconstrained components in the network. Let&#39;s define the init formulas for the two buses which have loads and machines:</p><pre><code class="language-julia hljs">formula = @initformula :ZIPLoad₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
+set_initformula!(nw[VIndex(31)], formula)
+set_initformula!(nw[VIndex(39)], formula)</code></pre><p>With that, the componentwise initialization of the whole network is possible:</p><pre><code class="language-julia hljs">initialize_componentwise!(nw; default_overrides=interf)</code></pre><p>Even shorter, we can just use <a href="../../API/#PowerDynamics.initialize_from_pf!"><code>initialize_from_pf!</code></a> to do everything from exporting the power flow model, finding the fixpoint and initializing all components:</p><pre><code class="language-julia hljs">s0 = initialize_from_pf!(nw)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NWState{Vector{Float64}} of Network (39 vertices, 46 edges)
+  ├─ VIndex(1, :busbar₊u_i)                      =&gt; -0.1537005168018229
+  ├─ VIndex(1, :busbar₊u_r)                      =&gt; 1.0360171229045203
+  ├─ VIndex(2, :busbar₊u_i)                      =&gt; -0.10513936683885863
+  ├─ VIndex(2, :busbar₊u_r)                      =&gt; 1.0434526576051297
+  ├─ VIndex(5, :busbar₊u_i)                      =&gt; -0.15053530762365022
+  ├─ VIndex(5, :busbar₊u_r)                      =&gt; 0.993976368877831
+  ├─ VIndex(6, :busbar₊u_i)                      =&gt; -0.1393645217247641
+  ├─ VIndex(6, :busbar₊u_r)                      =&gt; 0.9979886162106123
+  ⋮
+  ├─ VIndex(39, :machine₊ω)                      =&gt; 1.0
+  ├─ VIndex(39, :machine₊δ)                      =&gt; -0.0009449613162717036
+  ├─ VIndex(39, :machine₊E′_q)                   =&gt; 1.029534387321863
+  ├─ VIndex(39, :machine₊E′_d)                   =&gt; 0.10353704204613715
+  ├─ VIndex(39, :machine₊ψ″_d)                   =&gt; 1.0219450150609855
+  ├─ VIndex(39, :machine₊ψ″_q)                   =&gt; -0.1505993365374145
+  ├─ VIndex(39, :machine₊terminal₊i_r)           =&gt; 9.410063917554226
+  └─ VIndex(39, :machine₊terminal₊i_i)           =&gt; -2.5386838310996986
+ p = NWParameter([-3.22, 0.0, 1.03017, 0.0, -0.024, 0.0, 1.0, 0.0, 1.0, -5.0  …  0.0, 0.0, 0.0, 0.5, 0.0, 0.0008, 1.0, 0.97561, 0.0, 1.0])
+ t = nothing</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ieee39_part1/">« IEEE39 Part I: Modeling</a><a class="docs-footer-nextpage" href="../ieee39_part3/">IEEE39 Part III: Simulation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Saturday 9 August 2025 10:13">Saturday 9 August 2025</span>. Using Julia version 1.11.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
