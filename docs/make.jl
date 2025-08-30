@@ -66,6 +66,7 @@ kwargs = (;
         "API" => "API.md",
         "🔗 NetworkDynamics.jl Docs" => "networkdynamics_forward.md",
     ],
+    draft=haskey(ENV, "DOCUMENTER_DRAFT"),
     warnonly=[:missing_docs, :docs_block],
 )
 kwargs_warnonly = (; kwargs..., warnonly=true)
