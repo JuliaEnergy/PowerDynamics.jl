@@ -99,10 +99,11 @@ end
 
     @testset "test add of identical formula/constraint" begin
         nw = TestSystems.load_ieee9bus()
-        em = nw[EIndex(4)]
+        eidx = EIndex(4)
+        em = nw[eidx]
 
         pfif = @pfinitformula :pibranch₊active = @pf(:pbranch₊active)
-        @test add_pfinitformula!(em, pfif)
+        @test add_pfinitformula!(nw, eidx, pfif)
         @test !add_pfinitformula!(em, pfif)
 
         pfic = @pfinitconstraint :pibranch₊active - @pf(:pbranch₊active)
