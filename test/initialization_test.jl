@@ -169,4 +169,17 @@ end
         pfs0.p.v[3, :pv₊P] = 0.85
         solve_powerflow(nw; pfs0) # runs now
     end
+
+    @testset "Test handling of keyword overrides in initialize_from_pf" begin
+        nw = TestSystems.load_ieee9bus()
+        delete_default!(nw, VIndex(1, :generator₊gov₊T1))
+
+        @test_throws ArgumentError initialize_from_pf(nw) # missing guess
+        initialize_from_pf(nw; default_overrides=Dict(VIndex(1,:generator₊gov₊T1)=>0.05))
+        s0 = initialize_from_pf(nw; guess_overrides=Dict(VIndex(1,:generator₊gov₊T1)=>0.04))
+        @test s0[VIndex(1,:generator₊gov₊T1)] ≈ 0.05 atol=1e-2
+
+        @test_throws ArgumentError initialize_from_pf(nw; additional_initconstraint=:foo)
+        @test_throws ArgumentError initialize_from_pf(nw; additional_initformula=:foo)
+    end
 end
