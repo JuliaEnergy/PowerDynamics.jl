@@ -301,9 +301,27 @@ function _init_from_pf(
     interface_vals = interface_values(pfs)
     pfinitconstraints = specialize_pfinitconstraints(nw, pfs)
     pfinitformulas = specialize_pfinitformulas(nw, pfs)
+
+    if haskey(kwargs, :additional_initconstraint)
+        throw(ArgumentError("Cannot pass `additional_initconstraint` keyword down to \
+            `initialize_componentwise[!]`! It is used internally to pass powerflow initconstraints. \
+            If you need this functionality, please use `initialize_componentwise[!]` directly!"))
+    end
+    if haskey(kwargs, :additional_initformula)
+        throw(ArgumentError("Cannot pass `additional_initformula` keyword down to \
+            `initialize_componentwise[!]`! It is used internally to pass powerflow initformula. \
+            If you need this functionality, please use `initialize_componentwise[!]` directly!"))
+    end
+    if haskey(kwargs, :default_overrides)
+        default_overrides = merge(interface_vals, kwargs[:default_overrides])
+        kwargs = filter(p -> p.first != :default_overrides, kwargs)
+    else
+        default_overrides = interface_vals
+    end
+
     initf(
         nw;
-        default_overrides=interface_vals,
+        default_overrides,
         additional_initconstraint = pfinitconstraints,
         additional_initformula = pfinitformulas,
         verbose, subverbose, kwargs...

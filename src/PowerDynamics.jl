@@ -2,7 +2,7 @@ module PowerDynamics
 
 using Reexport: Reexport, @reexport
 @reexport using NetworkDynamics
-using NetworkDynamics: SymbolicView
+using NetworkDynamics: SymbolicView, getcomp
 
 using SciMLBase: SciMLBase
 using NonlinearSolve: NonlinearSolve
