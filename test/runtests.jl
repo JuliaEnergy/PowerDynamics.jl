@@ -49,4 +49,24 @@ using PowerDynamicsTesting
     @testset "validation tests" begin
         @safetestset "ieee39 RMSPowerSims.jl" begin include(joinpath("validation", "ieee39_RMSPowerSims.jl", "ieee39_validation.jl")) end
     end
+
+    @testset "Test Doc Tutorials" begin
+        examples = joinpath(pkgdir(PowerDynamics), "docs", "tutorials")
+        for file in readdir(examples; join=true)
+            endswith(file, ".jl") || continue
+            name = basename(file)
+            @info "Test Tutorial $name"
+            eval(:(@safetestset $name begin include($file) end))
+        end
+    end
+
+    @testset "Test Doc Examples" begin
+        examples = joinpath(pkgdir(PowerDynamics), "docs", "examples")
+        for file in readdir(examples; join=true)
+            endswith(file, ".jl") || continue
+            name = basename(file)
+            @info "Test Example $name"
+            eval(:(@safetestset $name begin include($file) end))
+        end
+    end
 end
