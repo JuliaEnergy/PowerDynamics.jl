@@ -236,7 +236,7 @@ the required power flow variables from `pfstate` and embedding them in the const
 Called by [`specialize_pfinitconstraints`](@ref) for each component with a PFInitConstraint.
 """
 function specialize_pfinitconstraint(pfic::PFInitConstraint, pfstate::NWState, cidx)
-    VEIndex = NetworkDynamics._baseT(cidx)
+    VEIndex = NetworkDynamics.idxtype(cidx)
     @assert cidx isa VEIndex{<:Any, Nothing}
     pfvec = pfstate[collect(VEIndex(cidx.compidx, pfic.pfsym))]
 
@@ -282,7 +282,7 @@ the required power flow variables from `pfstate` and embedding them in the formu
 Called by [`specialize_pfinitformulas`](@ref) for each component with a PFInitFormula.
 """
 function specialize_pfinitformula(pfif::PFInitFormula, pfstate::NWState, cidx)
-    VEIndex = NetworkDynamics._baseT(cidx)
+    VEIndex = NetworkDynamics.idxtype(cidx)
     @assert cidx isa VEIndex{<:Any, Nothing}
     pfvec = pfstate[collect(VEIndex(cidx.compidx, pfif.pfsym))]
 
