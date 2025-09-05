@@ -124,7 +124,7 @@ end
         @test pfs.p.e[9, :pibranch₊active] == 0
 
         # cannot initialize because not steadystate
-        @test_throws ErrorException initialize_from_pf(nw; pfs=pfs)
+        @test_throws ComponentInitError initialize_from_pf(nw; pfs=pfs)
 
         s0 = initialize_from_pf(nw; pfs=pfs, nwtol=5, tol=5)
         # without formula/constraint, the parameter is not initialized
@@ -163,7 +163,7 @@ end
         delete_default!(pfnw[VIndex(3)], :pv₊P)
         delete_default!(pfnw[VIndex(3)], :busbar₊u_i)
 
-        @test_throws ArgumentError solve_powerflow(pfnw)
+        @test_throws NetworkInitError solve_powerflow(pfnw)
         pfs0 = NWState(pfnw)
         pfs0.v[3, :busbar₊u_i] = 0
         pfs0.p.v[3, :pv₊P] = 0.85
@@ -174,7 +174,7 @@ end
         nw = TestSystems.load_ieee9bus()
         delete_default!(nw, VIndex(1, :generator₊gov₊T1))
 
-        @test_throws ArgumentError initialize_from_pf(nw) # missing guess
+        @test_throws ComponentInitError initialize_from_pf(nw) # missing guess
         initialize_from_pf(nw; default_overrides=Dict(VIndex(1,:generator₊gov₊T1)=>0.05))
         s0 = initialize_from_pf(nw; guess_overrides=Dict(VIndex(1,:generator₊gov₊T1)=>0.04))
         @test s0[VIndex(1,:generator₊gov₊T1)] ≈ 0.05 atol=1e-2
