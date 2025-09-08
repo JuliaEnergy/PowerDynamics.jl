@@ -19,7 +19,7 @@ function pfSlack(; V=missing, δ=missing, u_r=missing, u_i=missing, name=:slackb
     end
 
     mtkbus = MTKBus(slack; name)
-    b = Bus(mtkbus)
+    b = compile_bus(mtkbus)
     set_voltage!(b, u_r + im * u_i)
     b
 end
@@ -35,7 +35,7 @@ The reactive power and voltage phase angle are determined by the power flow solu
 function pfPV(; P, V, name=:pvbus)
     @named pv = Library.PVConstraint(; P, V)
     mtkbus = MTKBus(pv; name)
-    b = Bus(mtkbus)
+    b = compile_bus(mtkbus)
     set_voltage!(b; mag=V, arg=0)
     b
 end
@@ -51,7 +51,7 @@ The voltage magnitude and phase angle are determined by the power flow solution.
 function pfPQ(; P=0, Q=0, name=:pqbus)
     @named pq = Library.PQConstraint(; P, Q)
     mtkbus = MTKBus(pq; name)
-    b = Bus(mtkbus)
+    b = compile_bus(mtkbus)
     set_voltage!(b; mag=1, arg=0)
     b
 end

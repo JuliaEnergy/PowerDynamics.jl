@@ -72,7 +72,7 @@ The slack bus maintains constant voltage magnitude and angle,
 representing an infinite bus or strong grid connection.
 =#
 
-slackbus = Bus(pfSlack(; V=1), vidx=1)
+slackbus = compile_bus(pfSlack(; V=1), vidx=1)
 
 #=
 ### Dynamic Shunt Capacitor Model
@@ -137,7 +137,7 @@ The load bus combines two components:
 
 @named load = PQLoad(Pset=-Pload_pu, Qset=0)
 @named shunt = DynamicShunt(C=Cline_pu, ω0=ω0)
-loadbus = Bus(
+loadbus = compile_bus(
     MTKBus(load, shunt);
     vidx=2
 )
@@ -185,7 +185,7 @@ where the voltage difference drives the current through the line impedance.
 end
 
 @named branch = DynamicRLBranch(; R=Rline_pu, L=Lline_pu, ω0=ω0)
-line_model = Line(
+line_model = compile_line(
     MTKLine(branch);
     src=1, dst=2
 )
@@ -248,7 +248,7 @@ This approaches the algebraic PQ load behavior but avoids initialization issues.
 end
 
 @named less_stiff_load = LessStiffPQLoad(Pset=-Pload_pu)
-less_stiff_loadbus = Bus(
+less_stiff_loadbus = compile_bus(
     MTKBus(less_stiff_load, shunt);
     vidx=2
 )

@@ -328,7 +328,7 @@ mtkline = MTKLine(branchA, branchB)
 nothing #hide #md
 #=
 Then, we take the mtkline and put it into a compiled [`EdgeModel`](@extref NetworkDynamics.EdgeModel-Tuple{}) by
-calling the [`Line`](@ref) constructor
+calling the [`compile_line`](@ref) constructor
 ```
 
        ╔═══════════════════════════════════════════════╗
@@ -345,7 +345,7 @@ vertex ║ │         ┌┤ ProtectedPiBranch A ├┐         │ ║ vertex
        ╚═══════════════════════════════════════════════╝
 ```
 =#
-protected_template = Line(mtkline; name=:protected_piline)
+protected_template = compile_line(mtkline; name=:protected_piline)
 #=
 !!! tip "Reduced complexity of compiled Model"
     Note, that the compiled model still has **no states**, i.e. it directly calculates
@@ -373,11 +373,11 @@ callbacks might miss.
 #### Overcurrent Detection Callbacks
 
 For [`ComponentCondition`](@extref NetworkDynamics.ComponentCondition), we need to specify
-which symbols to monitor. We've explicitly added `I_mag` as an observed state to our `ProtectedPiBranch` model, 
+which symbols to monitor. We've explicitly added `I_mag` as an observed state to our `ProtectedPiBranch` model,
 which contains the maximum current magnitude between the src and dst terminals for each branch.
 
-Since our dual-branch transmission line has two independent branches (`:pibranchA` and `:pibranchB`), we define 
-callback functions that take the branch name as a parameter. This allows us to automatically create identical 
+Since our dual-branch transmission line has two independent branches (`:pibranchA` and `:pibranchB`), we define
+callback functions that take the branch name as a parameter. This allows us to automatically create identical
 callbacks for both branches without code duplication.
 
 **Condition Definitions:**

@@ -188,7 +188,7 @@ interface  ║  │ MTKBus             │ ║
 
 @named inverter = DroopInverter()
 mtkbus = MTKBus(inverter)
-droop_bus_template = Bus(mtkbus; name=:DroopInverter)
+droop_bus_template = compile_bus(mtkbus; name=:DroopInverter)
 
 #=
 We see that the droop inverter has 3 free parameters (you can check `free_p(droop_bus_template)` or `dump_initial_state(droop_bus_template)`).
@@ -235,7 +235,7 @@ We can then use the `Bus` constructor to essentially copy the droop_bus_template
 and adjust some properties, like the powerflow model and the vertex index.
 =#
 
-droop_bus = Bus(droop_bus_template; pf=original_pfmodel, vidx=DROOP_BUS_IDX)
+droop_bus = compile_bus(droop_bus_template; pf=original_pfmodel, vidx=DROOP_BUS_IDX)
 
 #=
 We then replace the original bus model in the array with our droop bus and build a network again:
