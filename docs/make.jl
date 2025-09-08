@@ -55,7 +55,7 @@ kwargs = (;
             "Custom Generator Bus" => "generated/custom_bus.md",
             "Custom Transmission Line" => "generated/custom_line.md",
         ],
-        "Examples" => [
+        "Advanced Examples" => [
             "generated/ieee9bus.md",
             "IEEE39 Part I: Modeling" => "generated/ieee39_part1.md",
             "IEEE39 Part II: Initialization" => "generated/ieee39_part2.md",

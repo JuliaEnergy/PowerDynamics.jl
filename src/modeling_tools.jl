@@ -62,9 +62,9 @@ Within PowerDynamics.jl, it serves as an interface between the MTK world and the
 NetworkDynamics world: A MTK model containing a `BusBar` the highest level is
 consdered a busmodel (see [`isbusmodel`](@ref)) and describes the dynamics of an
 entire bus. It can be transformed in a [`VertexModel`](@extref
-NetworkDynamics.VertexModel-Tuple{}) by calling [`Bus`](@ref).
+NetworkDynamics.VertexModel-Tuple{}) by calling [`compile_bus`](@ref).
 
-See also: [`Terminal`](@ref), [`MTKBus`](@ref), [`Bus`](@ref)
+See also: [`Terminal`](@ref), [`MTKBus`](@ref), [`compile_bus`](@ref)
 """
 @mtkmodel BusBar begin
     @extend BusBase()
@@ -90,9 +90,9 @@ NetworkDynamics world: A MTK model containing two `LineEnd`s (named `:src` and
 `:dst`) at the highest level is considered a linemodel (see
 [`islinemodel`](@ref)) and describes the dynamics of an entire line. It can be
 transformed in an [`EdgeModel`](@extref NetworkDynamics.EdgeModel-Tuple{}) by
-calling [`Line`](@ref).
+calling [`compile_line`](@ref).
 
-See also: [`Terminal`](@ref), [`MTKLine`](@ref), [`Line`](@ref)
+See also: [`Terminal`](@ref), [`MTKLine`](@ref), [`compile_line`](@ref)
 """
 @mtkmodel LineEnd begin
     @components begin
@@ -153,7 +153,7 @@ MTKBus(o┤Generator│, o┤Load│) => ││BusBar├o           │
                                  └────────────────────┘
 ```
 
-See also: [`Bus`](@ref), [`BusBar`](@ref), [`isinjectormodel`](@ref)
+See also: [`compile_bus`](@ref), [`BusBar`](@ref), [`isinjectormodel`](@ref)
 """
 function MTKBus(injectors...; name=:bus)
     if !all(isinjectormodel.(injectors))
@@ -192,7 +192,7 @@ MTKLine(o┤BranchA├o, o┤BranchB├o) => ││LineEnd├o         o┤LineE
                                      └─────────────────────────────┘
 ```
 
-See also: [`Line`](@ref), [`LineEnd`](@ref), [`isbranchmodel`](@ref)
+See also: [`compile_line`](@ref), [`LineEnd`](@ref), [`isbranchmodel`](@ref)
 """
 function MTKLine(branches...; name=:line)
     if !all(isbranchmodel.(branches))

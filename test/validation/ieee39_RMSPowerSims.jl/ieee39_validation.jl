@@ -251,7 +251,7 @@ CSV.write(joinpath(pkgdir(PowerDynamics), "docs", "examples", "ieee39data", "gov
             G_src = p.g_fr, G_dst = p.g_to,
             tapkw...
         )
-        line = Line(MTKLine(pibranch); src=p.f_bus, dst=p.t_bus)
+        line = compile_line(MTKLine(pibranch); src=p.f_bus, dst=p.t_bus)
         push!(branches, line)
     end
     branches
@@ -341,7 +341,7 @@ end;
             pfSlack(;V=p.vg, δ=0)
         end
 
-        bus = Bus(MTKBus(components...); vidx=i, pf=pfmodel, name=Symbol("bus$i"))
+        bus = compile_bus(MTKBus(components...); vidx=i, pf=pfmodel, name=Symbol("bus$i"))
 
         # to thelp the init of loads, we can add a init formula
         if has_load(i)

@@ -48,7 +48,7 @@ A crucial part of using this Library is understanding the relationship between M
 In a nutshell, ModelingToolkit models are **symbolic models**, i.e. they consist of symbolic equations which are not yet "compiled" for use as a numeric model.
 The modeling in MTK is very flexible and similar to the Modelica language.
 What we need in the end is models in the structure defined in the equations above.
-For that, we need the MTK Models to have a specific structure. Then we can use the [`Bus`](@ref) and [`Line`](@ref) function to compile the MTK models and create [`EdgeModel`](@extref NetworkDynamics Component-Models-with-MTK) and [`VertexModel`](@extref NetworkDynamics Component-Models-with-MTK) objects from them.
+For that, we need the MTK Models to have a specific structure. Then we can use the [`compile_bus`](@ref) and [`compile_line`](@ref) function to compile the MTK models and create [`EdgeModel`](@extref NetworkDynamics Component-Models-with-MTK) and [`VertexModel`](@extref NetworkDynamics Component-Models-with-MTK) objects from them.
 Those objects are not symbolic anymore but compiled numeric versions of the symbolically created systems.
 
 ## ModelingToolkit Models
@@ -245,7 +245,7 @@ Both `MTKLine` and `MTKBus` are still purely symbolic ModelingToolkit models.
 However they have an important property: they possess the correct input-output-structure
 and variable names to be compiled into [`VertexModel`](@extref NetworkDynamics Component-Models-with-MTK) and [`EdgeModel`](@extref NetworkDynamics Component-Models-with-MTK)
 models.
-To do so, PowerDynamics.jl provides the [`Line`](@ref) and [`Bus`](@ref) constructors.
+To do so, PowerDynamics.jl provides the [`compile_line`](@ref) and [`compile_bus`](@ref) constructors.
 
 Putting the knowledge from this document together, we can start a short simulation of an example network:
 ```@example concepts
@@ -268,14 +268,14 @@ show(stdout, MIME"text/plain"(), bus1mtk) #hide
 This results in an MTK model, which fulfills the `MTKBus` interface and thus can be compiled into an actual `VertexModel` for simulation:
 
 ```@example concepts
-vertex1f = Bus(bus1mtk) # extract component function
+vertex1f = compile_bus(bus1mtk) # extract component function
 ```
 
 As a second bus in this example, we use a [`SlackDifferential`]() from the Library.
 This model is not an Injector but an MTKBus directly, as it does not make sense to connect anything else to a slack bus.
 ```@example concepts
 bus2mtk = SlackDifferential(; name=:slackbus)
-vertex2f = Bus(bus2mtk) # extract component function
+vertex2f = compile_bus(bus2mtk) # extract component function
 ```
 
 For the connecting line, we instantiate two [`PiLine`]() from the library.
@@ -287,9 +287,9 @@ by putting both Branches in parallel:
 linemtk = MTKLine(branch1, branch2; name=:powerline)
 show(stdout, MIME"text/plain"(), bus1mtk) #hide
 ```
-Similar to before, we need to compile the MTKModel by calling [`Line`](@ref).
+Similar to before, we need to compile the MTKModel by calling [`compile_line`](@ref).
 ```@example concepts
-edgef = Line(linemtk) # extract component function
+edgef = compile_line(linemtk) # extract component function
 ```
 
 To simulate the system, we place both components on a graph and connect them.

@@ -18,13 +18,13 @@ using Test
 @testset "PiLine" begin
     @named branchA = PiLine(X=0.022522, R=0.01)
     @named branchB = PiLine(X=0.04189, R=0.02)
-    line = Line(MTKLine(branchA, branchB));
+    line = compile_line(MTKLine(branchA, branchB));
     toi = line_between_slacks(line)
     # isinteractive() && plottoi(toi)
     @reftest "PiLine_1" toi
 
     @named branchA = PiLine(X=0.022522, R=0.01)
-    line = Line(MTKLine(branchA));
+    line = compile_line(MTKLine(branchA));
     toi = line_between_slacks(line)
     # isinteractive() && plottoi(toi)
     @reftest "PiLine_2" toi
@@ -32,7 +32,7 @@ end
 
 @testset "Swing bus" begin
     @named swing = Swing(Pm=1, D=0.1, M=0.005, θ=0, ω=1, V=1)
-    bus = Bus(MTKBus(swing));
+    bus = compile_bus(MTKBus(swing));
     toi = bus_on_slack(bus)
     # isinteractive() && plottoi(toi)
     @reftest "SwingBus_1" toi
@@ -42,7 +42,7 @@ end
     @named pqload = PQLoad(Pset=-0.5, Qset=-0.2)
     bm = MTKBus(swing, pqload)
     @test length(full_equations(simplify_mtkbus(bm))) == 2
-    bus = Bus(bm)
+    bus = compile_bus(bm)
     toi = bus_on_slack(bus)
     toi["active power"]["electric power of swing"] = VIndex(2,:swing₊Pel)
     toi["active power"]["electric power of load"] = VIndex(2,:pqload₊P)
@@ -77,7 +77,7 @@ end
         end
     end
     @named mtkbus = GenBus()
-    bus = Bus(mtkbus)
+    bus = compile_bus(mtkbus)
 
     set_voltage!(bus; mag=1.017, arg=0.0295)
     set_current!(bus; P=0.716, Q=0.3025)
@@ -141,7 +141,7 @@ end
     end
     @named mtkbus = GenBus()
 
-    bus = Bus(mtkbus)
+    bus = compile_bus(mtkbus)
     set_voltage!(bus; mag=1.017, arg=0.0295)
     set_current!(bus; P=0.716, Q=0.3025)
     initialize_component!(bus)
@@ -154,19 +154,19 @@ end
 
 @testset "test loads" begin
     @named load = PQLoad(Pset=-0.5, Qset=-0.5)
-    bus = Bus(MTKBus(load));
+    bus = compile_bus(MTKBus(load));
     toi = bus_on_slack(bus)
     # isinteractive() && plottoi(toi)
     @reftest "PQLoad_1" toi
 
     @named load = VoltageDependentLoad(Pset=-0.5, Qset=-0.5, Vn=1, αP=1, αQ=1)
-    bus = Bus(MTKBus(load));
+    bus = compile_bus(MTKBus(load));
     toi = bus_on_slack(bus)
     # isinteractive() && plottoi(toi)
     @reftest "VoltageDependentLoad_1" toi
 
     @named load = ConstantYLoad(Pset=-0.5, Qset=-0.5, Vset=1)
-    bus = Bus(MTKBus(load));
+    bus = compile_bus(MTKBus(load));
     toi = bus_on_slack(bus)
     # isinteractive() && plottoi(toi)
     @reftest "ConstantYLoad" toi
@@ -177,7 +177,7 @@ end
     @named load = ZIPLoad(Pset=-1, Qset=-1, Vset=1,
                           KpZ=0, KpI=0, KpC=1,
                           KqZ=0, KqI=0, KqC=1)
-    bus = Bus(MTKBus(load))
+    bus = compile_bus(MTKBus(load))
     toi = bus_on_slack(bus)
     # isinteractive() && plottoi(toi)
     @reftest "ZIPLoad_constant_power" toi
@@ -186,7 +186,7 @@ end
     @named load = ZIPLoad(Pset=-1, Qset=-1, Vset=1,
                           KpZ=0, KpI=1, KpC=0,
                           KqZ=0, KqI=1, KqC=0)
-    bus = Bus(MTKBus(load))
+    bus = compile_bus(MTKBus(load))
     toi = bus_on_slack(bus)
     toi["current"] = OrderedDict(
         "current magnitude at bus" => VIndex(2,:busbar₊i_mag),
@@ -200,7 +200,7 @@ end
     @named load = ZIPLoad(Pset=-1, Qset=-1, Vset=1,
                           KpZ=1, KpI=0, KpC=0,
                           KqZ=1, KqI=0, KqC=0)
-    bus = Bus(MTKBus(load))
+    bus = compile_bus(MTKBus(load))
     toi = bus_on_slack(bus)
     toi["current"] = OrderedDict(
         "current magnitude at bus" => VIndex(2,:busbar₊i_mag),
@@ -231,7 +231,7 @@ end
     end
     @named mtkbus = GenBus()
 
-    bus = Bus(mtkbus)
+    bus = compile_bus(mtkbus)
     set_voltage!(bus; mag=1.017, arg=0.0295)
     set_current!(bus; P=0.716, Q=0.3025)
     initialize_component!(bus)

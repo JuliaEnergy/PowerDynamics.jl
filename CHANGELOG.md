@@ -1,5 +1,8 @@
 # PowerDynamices.jl Changelog
 
+## Version 4.2.0 Changelog
+- [#229](https://github.com/JuliaDynamics/PowerDynamics.jl/pull/229) deprecate `Bus(...)` → `compile_bus(...)` and `Line(...)` → `compile_line(...)`
+
 ## Version 4.1.0 Changelog
 - [#221](https://github.com/JuliaDynamics/PowerDynamics.jl/pull/221) update for ModelingToolkit.jl v10 compatibility:
   - Update minimum ModelingToolkit.jl requirement from to v10

@@ -124,7 +124,7 @@ using ModelingToolkitStandardLibrary.Blocks
         # Test that it can be used in MTKBus
         mtkbus = MTKBus(composite)
         @test mtkbus isa System
-        Bus(mtkbus) # can compile?
+        compile_bus(mtkbus) # can compile?
     end
 end
 
