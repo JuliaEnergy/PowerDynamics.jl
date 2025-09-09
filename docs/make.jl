@@ -52,6 +52,7 @@ kwargs = (;
         "Initialization" => "initialization.md",
         "Component Library" => "Library.md",
         "Tutorials" => [
+            "Getting Started" => "generated/getting_started.md",
             "Custom Generator Bus" => "generated/custom_bus.md",
             "Custom Transmission Line" => "generated/custom_line.md",
         ],

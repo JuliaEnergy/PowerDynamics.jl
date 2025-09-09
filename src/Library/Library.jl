@@ -111,6 +111,11 @@ include("Branches/PiLine_fault.jl")
 export RXGroundFault
 include("Faults/Faults.jl")
 
+####
+#### Renewables
+####
+export IdealDroopInverter
+include("Renewables/IdealDroopInverter.jl")
 
 ####
 #### Powerflow models
