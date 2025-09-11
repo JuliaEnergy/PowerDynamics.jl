@@ -1,15 +1,16 @@
 #=
 # Getting Started
 
-The goal of this tutorial is to get you started with PowerDynamics.jl. Its main goal is to show you the different
-"stages" of a typical simulation workflow and introducing some jargon along the way.
+The goal of this tutorial is to get you started with PowerDynamics.jl. We'll walk you through the different
+"stages" of a typical simulation workflow while introducing key terminology along the way.
 
 The system to model is a simple 3 bus system:
 - Bus 1: ideal droop inverter
 - Bus 2: a constant Y load
 - Bus 3: a second constant Y load
 
-```
+All buses are connected with standard pi-model power lines.
+```asciiart
     ╭───────╮
 2 ┯━┿       ┿━┯ 3
   ↓ │   ╭───╯ ↓
@@ -36,11 +37,17 @@ or can be defined by the user.
 In this case, we want the first bus to be an ideal droop inverter.
 
 Often, model definition will be a multi step process:
+
 **First** we define an ["injector model"](@ref Injector Interface), in this case our
 inverter:
+```asciiart
+(t) ┌────────────────┐
+ o──┤ Droop Inverter │
+    └────────────────┘
+```
 =#
 inverter_model = Library.IdealDroopInverter(; name=:droop, Vset=1)
-show(stdout, MIME"text/plain"(), inverter_model) # hide
+nothing #hide
 #=
 This model is an equation-based/symbolic model representing the dynamics.
 It is based on the great [ModelingToolkit.jl Library](https://mtk.sciml.ai/stable/).
@@ -48,23 +55,43 @@ It is based on the great [ModelingToolkit.jl Library](https://mtk.sciml.ai/stabl
 **Second**: we build a ["Bus Model"](@ref MTKBus Interface), which connects
 the injector to a Busbar.
 This model still lives in the equation-based/symbolic domain.
+
+```asciiart
+┌───────────────────────────────┐
+│BusModel                       │
+│┌────────┐   ┌────────────────┐│
+││ BusBar ├─o─┤ Droop inverter ││
+│└────────┘   └────────────────┘│
+└───────────────────────────────┘
+```
 =#
 bus_model = MTKBus(inverter_model; name=:invbus)
-show(stdout, MIME"text/plain"(), bus_model) # hide
+nothing #hide
 #=
 **Third** we compile the symbolic model into a julia function for numeric simulation.
 Doing so, we get a [`VertexModel`](@extref NetworkDynamics.VertexModel-Tuple{}), which is an
 object from our backend [NetworkDynamics.jl](https://juliadynamics.github.io/NetworkDynamics.jl/stable/)
+```asciiart
+           ╔════════════════════════════════╗
+ Network   ║ VertexModel (compiled)         ║
+interface  ║  ┌───────────────────────────┐ ║
+           ║  │BusModel                   │ ║
+ current ────→│┌──────┐ ┌────────────────┐│ ║
+           ║  ││BusBar├o┤ Droop inverter ││ ║
+ voltage ←────│└──────┘ └────────────────┘│ ║
+           ║  └───────────────────────────┘ ║
+           ╚════════════════════════════════╝
+```
 =#
 bus1 = compile_bus(MTKBus(inverter_model); vidx=1)
 #=
-Notably, this model **not** a symbolic model anymore. The equations have been reduced
-and transformed into an nonlinear discriptor model.
-For more information on the different modle types see the [Modeling Concepts](@ref) docs.
+Notably, this model is **not** a symbolic model anymore. The equations have been reduced
+and transformed into a nonlinear descriptor model.
+For more information on the different model types, see the [Modeling Concepts](@ref) docs.
 You can check out the NetworkDynamics.jl doc on the underlying [mathematical model](@extref Mathematical-Model).
 
-In the printout above you can see that we consider different types of varaibles in our models:
-- the **input** is allways the current comming flowing from the attatched powerlines into the bus,
+In the printout above, you can see that we consider different types of variables in our models:
+- the **input** is always the current flowing from the attached power lines into the bus,
 - the **output** is always the voltage at the busbar,
 - the **states** are dynamical or algebraic states in the sense of a Differential-Algebraic-Equation (DAE) model,
 - and **parameters** are static values that stay mostly constant during simulation and define the system behavior.
@@ -74,14 +101,14 @@ states in the sense of a DAE but can be reconstructed from the states, inputs, o
 Thus, they don't need to be "solved" for numerically, but they can be reconstructed in post-processing.
 
 ### Load Models
-For the two loads we use the predfined `ConstantYLoad` model from the Library, and compile them:
+For the two loads, we use the predefined `ConstantYLoad` model from the Library and compile them:
 =#
 load_model = Library.ConstantYLoad(; name=:load)
 bus2 = compile_bus(MTKBus(load_model); name=:loadbus, vidx=2)
 bus3 = compile_bus(MTKBus(load_model); name=:loadbus, vidx=3)
 #=
-### Powerline Models
-Lastly, we need to define three powerlines.
+### Power Line Models
+Lastly, we need to define three power lines.
 The workflow is similar to the bus models:
 =#
 l = MTKLine(Library.PiLine(; name=:piline))
@@ -96,17 +123,17 @@ Now we're all set for the next stage.
 When simulating power systems (or any large dynamical system for that matter),
 it is quite typical to start from a steady state/equilibrium point.
 In general, it is not trivial to find such a point for a large nonlinear system.
-In power systems specificially, it is common to solve a simpler system first -- the so called
-"powerflow" problem.
+In power systems specifically, it is common to solve a simpler system first -- the so-called
+"power flow" problem.
 
-In the powerflor problem, we neglect all the node dynamics and consider only 4 variables at
+In the power flow problem, we neglect all the node dynamics and consider only 4 variables at
 each bus:
 - the active power $P$,
 - the reactive power $Q$,
 - the voltage magnitude $V$ and
 - the voltage angle $\theta$.
 
-In the simple-most powerflow, each bus can then be classified into one of three types:
+In the simplest power flow, each bus can then be classified into one of three types:
 - **Slack Bus**: The voltage magnitude and angle are fixed (typically used for one bus in the system), $P$ and $Q$ is considered free.
 - **PV Bus** $P$ and $V$ are fixed, $Q$ and $\theta$ are free. Often used for generator buses or any buses with active voltage control.
 - **PQ Bus** $P$ and $Q$ are fixed, $V$ and $\theta$ are free. Typically used for load buses.
@@ -114,8 +141,8 @@ In the simple-most powerflow, each bus can then be classified into one of three 
 So each component essentially introduces two algebraic equations and two free variables -- the system is
 then solved for the free variables such that all equations are satisfied.
 
-### Attaching Powerflow Models
-In PowerDynamics.jl we can attach the powerflow models to the dynamic bus models using the [`set_pfmodel!`](@ref) function.
+### Attaching Power Flow Models
+In PowerDynamics.jl, we can attach the power flow models to the dynamic bus models using the [`set_pfmodel!`](@ref) function.
 =#
 set_pfmodel!(bus1, pfSlack(V=1))
 set_pfmodel!(bus2, pfPQ(P=-0.4, Q=-0.3))
@@ -132,17 +159,17 @@ we told each component at the compile step where it is placed in the network (se
 =#
 nw = Network([bus1, bus2, bus3], [line12, line13, line23])
 #=
-The Network object tells us, that we've just define a system with 7 States and 39 parameters. We have 3 vertices of 2 unique types
-(the inverter bus and the load bus) and 3 edges of a single unique type (all powerlines are the same piline type).
+The Network object tells us that we've just defined a system with 7 States and 39 parameters. We have 3 vertices of 2 unique types
+(the inverter bus and the load bus) and 3 edges of a single unique type (all power lines are the same pi-line type).
 
-The "states" and "parameters" allready hint at a very important property of PowerDynamics/NetworkDynamics:
+The "states" and "parameters" already hint at a very important property of PowerDynamics/NetworkDynamics:
 in the end, the whole network is just a big DAE system of the form
 ```math
 \mathbf{M}\,\dot{\mathbf{x}} = f(\mathbf{x}, \mathbf{p}, t)
 ```
 where $\mathbf{x}$ are the states and $\mathbf{p}$ the parameters.
-This is very important to keep in mind, because it allows us to integreate seamlessly with the whole SciMLEcosystem and
-most importantly [DifferentailEquations.jl](https://diffeq.sciml.ai/stable/).
+This is very important to keep in mind, because it allows us to integrate seamlessly with the whole SciML ecosystem and,
+most importantly, [DifferentialEquations.jl](https://diffeq.sciml.ai/stable/).
 
 =#
 @assert dim(nw) == 7 #hide
@@ -157,7 +184,7 @@ most importantly [DifferentailEquations.jl](https://diffeq.sciml.ai/stable/).
 The 7 states are essentially just the states of our models stacked on top of eachother.
 Look at the representation of our Vertex and EdgeModels above to see their contribution:
 - Bus 1: 3 states, 8 parameters
-- Bus 2&3: 2 states, 2 parameters each
+- Bus 2 & 3: 2 states, 2 parameters each
 - Lines 1,2 and 3: 0 states, 9 parameters each
 In sum, we get the 7 states and 39 parameters.
 
@@ -166,8 +193,8 @@ In sum, we get the 7 states and 39 parameters.
     trivial due to performance reasons. Never rely on the ordering of states or parameters in the full system!
     PowerDynamics and NetworkDynamics provides lots of helper functions for so-called "SymbolicIndexing" to circumvent this.
 
-### Initializing the System via Powerflow
-With the network constructed we can finally find our equilibrium point.
+### Initializing the System via Power Flow
+With the network constructed, we can finally find our equilibrium point.
 We do so using [`initialize_from_pf`](@ref):
 =#
 s0 = initialize_from_pf(nw; verbose=true, subverbose=true)
@@ -182,20 +209,18 @@ This function actually does quite a lot.
    the component model is in equilibrium. This is done using a nonlinear solver.
 =#
 
-using Test #hide #src
-@test_logs (:info, "Initialization problem is fully constrained. Created NonlinearLeastSquaresProblem for \
-                    [:droop₊δ, :droop₊Qfilt, :droop₊Pfilt, :droop₊Pset, :droop₊Qset]") match_mode=:any initialize_from_pf(nw; verbose=false, subverbose=true); #hide #src
-nothing #hide #src
+@assert Set(free_p(nw[VIndex(1)])) == Set([:droop₊Pset, :droop₊Qset]) # hide
+@assert Set(free_u(nw[VIndex(1)])) == Set([:droop₊δ, :droop₊Qfilt, :droop₊Pfilt]) # hide
 #=
-In the log statments we see, which variables/parameters where considered free during the initialization of each component.
+In the log statements, we see which variables/parameters were considered free during the initialization of each component.
 This behavior can be finetuned in a lot of ways, which are beyond the scope of this tutorial.
-However, here we see that, for example, the complex parameter $Y = B + j\,G$ ofthe constant Y-load was initialy left free but
-was initialized from the powerflow solution. This means, that your $Y$ is no set in a way, that it draws the correct
+However, here we see that, for example, the complex parameter $Y = B + j\,G$ of the constant Y-load was initially left free but
+was initialized from the powerflow solution. This means that your $Y$ is now set in a way that it draws the correct
 amount of power at the given voltage.
 
-Similarily, we see that the inverter bus had the parameters $P_{set}$ and $Q_{set}$ free, which were also initialized from the powerflow solution.
-This is important, becaus we need to achive powerbalance in the system, and due to the losses in the lines its not possible to
-known the exact power injections a priori.
+Similarly, we see that the inverter bus had the parameters $P_{set}$ and $Q_{set}$ free, which were also initialized from the powerflow solution.
+This is important, because we need to achieve power balance in the system, and due to the losses in the lines it's not possible to
+know the exact power injections a priori.
 
 The return value of the `initialize_from_pf` function is a so-called [`NWState`](@extref NetworkDynamics.NWState) object,
 which wraps flat $x$ and $p$ vectors and provides a lot of helper functions to access and modify states (including observables) and parameters.
@@ -204,76 +229,146 @@ Lets inspect this object further:
 =#
 s0
 #=
-On the highes level, we see the values of the 7 states in the network and their symbolic indices.
-Those indices, can be used to acces values direclty:
+At the highest level, we see the values of the 7 states in the network and their symbolic indices.
+Those indices can be used to access values directly:
 =#
-s0[VIndex(1, :droop₊P_filt)]
+s0[VIndex(1, :droop₊Pfilt)]
 #=
 !!! tip
-    In most julia dev environments you can use "\_+<TAB>" to autocomplete the MTK namespace separator "₊".
+    In most julia dev environments you can type `\_+<TAB>` to autocomplete the MTK namespace separator `₊`.
 
 Often, you want to access observables or parameters instead of states. There is a whole
-filtering and accessing mechanis you can use for that. For example, in PD.jl each bus has the states `:busbar₊P` and `:busbar₊Q`.
+filtering and accessing mechanism you can use for that. For example, in PD.jl each bus has the states `:busbar₊P` and `:busbar₊Q`.
 We can inspect them on all vertices using:
 =#
-s0.v(:, ["busbar₊P", "busbar₊Q"])
+s0.v(:, [:busbar₊P, :busbar₊Q])
+
 #=
-In the output we clearly see, how the load busses draw exactly the amout of power we sepcified in the powerflow models.
-On the inverter bus however, we inject slighly more power then then loads demand to compensate for the line losses.
+In the output, we clearly see how the load buses draw exactly the amount of power we specified in the power flow models.
+On the inverter bus however, we inject slightly more power than the loads demand to compensate for the line losses.
 
 Similarily, we can access all node parameters at initial state using
 =#
 s0.v.p
 #=
-Here we see, how $P_{set}$ and $Q_{set}$ of the inverter where initialized in a way, that they match the powerflow solution.
+Here we see how $P_{set}$ and $Q_{set}$ of the inverter were initialized in a way, that they match the powerflow solution.
 
 There is a lot more functionality in the `NWState` objects, see the [Symbolic
 Indexing docs of ND.jl](@extref Symbolic-Indexing) and especially the
-[`FilteringProxy`](@extref) for more details.
+[`FilteringProxy`](@extref NetworkDynamics.FilteringProxy) for more details.
 
-## Time Domain Simulation
+## Stage III: Time Domain Simulation
+With the initialized state, we can finally simulate the system in time domain.
 
+### Perturbing the System
+Since we start from an equilibrium point, we expect the system to stay there if we don't
+perturb it.
+Therefore, to get interesting results, we need to perturb the system.
 
+The easiest form of a perturbation is a parameter change. For example, let's
+increase the admittance at bus 2 by 10% after 0.1 seconds.
+
+For that, we define a so-called "callback function", more specifically a preset time callback,
+which is triggered at a specific simulation time and modifies the parameters. The simulation then
+continues.
+General information on callbacks in Differential Equations can be found in the
+[DiffEq.jl docs](@extref DiffEq callbacks). Specific extensions for NetworkDynamics.jl can be found in the
+[NetworkDynamics.jl callback docs](@extref NetworkDynamics Callbacks).
+
+We define the callback and attach it to one of our loads like this:
 =#
-
-prob = ODEProblem(nw, uflat(s0), (0.0, 1.0), copy(pflat(s0)))
-sol = solve(prob, Rodas5P())
-
-affect = ComponentAffect([], [:load₊B]) do u, p, ctx
-    @info "Increasing load B by 10%"
+affect = ComponentAffect([], [:load₊G, :load₊B]) do u, p, ctx
+    @info "Increase load admittance Y by 10% at t=$(ctx.t)"
+    p[:load₊G] = p[:load₊G] * 1.1
     p[:load₊B] = p[:load₊B] * 1.1
 end
-cb = PresetTimeComponentCallback(1.0, affect)
+cb = PresetTimeComponentCallback(0.1, affect)
 set_callback!(bus2, cb)
+bus2 #hide
 
-prob = ODEProblem(nw, uflat(s0), (0.0, 20.0), copy(pflat(s0)), callback=get_callbacks(nw))
-sol = solve(prob, Rodas5P())
 
+#=
+With the callback defined, we can finally create and solve the [`ODEProblem`](@extref SciMLBase.ODEProblem):
+=#
+prob = ODEProblem(nw, uflat(s0), (0.0, 5.0), copy(pflat(s0)), callback=get_callbacks(nw))
+sol = solve(prob, Rodas5P());
+nothing #hide
+
+#=
+## Stage IV: Postprocessing and Visualization
+
+Once we have the solution object, we can use it like any other solution from DifferentialEquations.jl.
+Most importantly, we can use symbolic indices to access states, parameters and observables.
+
+### Plotting Results
+For example, we can quickly plot the frequency response of the droop using
+=#
+lines(sol, idxs=VIndex(1, :droop₊ω); axis=(;xlabel="Time [s]", ylabel="Frequency ω [pu]"))
+#=
+We clearly see how the increased active power leads to a drop in frequency, which is
+then compensated by the droop control (i.e., we stabilize at a lower frequency)
+
+Of course we can also create more complex plots, like this one showing the active and reactive power at each bus:
+=#
+let
+    fig = Figure(size=(1000,600))
+    ax = Axis(fig[1, 1]; xlabel="Time [s]", ylabel="Active Power Load [pu]")
+    for i in 2:3
+        lines!(ax, sol, idxs=VIndex(i, :busbar₊P), color=Cycled(i))
+    end
+    axislegend(ax)
+    ax = Axis(fig[1,2]; xlabel="Time [s]", ylabel="Reactive Power Load [pu]")
+    for i in 2:3
+        lines!(ax, sol, idxs=VIndex(i, :busbar₊Q), color=Cycled(i))
+    end
+    axislegend(ax)
+    ax = Axis(fig[2,1]; xlabel="Time [s]", ylabel="Active Power Injection [pu]")
+    lines!(ax, sol, idxs=VIndex(1, :busbar₊P))
+    axislegend(ax)
+    ax = Axis(fig[2,2]; xlabel="Time [s]", ylabel="Reactive Power Injection [pu]")
+    lines!(ax, sol, idxs=VIndex(1, :busbar₊Q))
+    axislegend(ax)
+    fig
+end
+#=
+Here we see that the active and reactive power demand shoot up in the beginning
+after we increase Y.
+The power demand then slowly decreases again.
+This is probably due to a drop of voltage, which leads to lower power demand
+on constant Y loads.
+
+Lets plot the voltage to verify this:
+=#
 let
     fig = Figure()
-    ts = range(sol.t[begin], sol.t[end]; length=1000)
     ax = Axis(fig[1, 1]; xlabel="Time [s]", ylabel="Voltage [pu]")
     for i in 1:3
         lines!(ax, sol, idxs=VIndex(i, :busbar₊u_mag), color=Cycled(i))
     end
-    ax = Axis(fig[2,1]; xlabel="Time [s]", ylabel="Active Power Injection [rad]")
-    lines!(ax, sol, idxs=VIndex(1, :busbar₊P))
-    ax = Axis(fig[3,1]; xlabel="Time [s]", ylabel="Active Power Load [rad]")
-    for i in 2:3
-        lines!(ax, sol, idxs=VIndex(i, :busbar₊P), color=Cycled(i))
-    end
+    axislegend(ax; position=:rc)
     fig
 end
+#=
 
+### Programmatic Access to Variables
+Instead of plotting, we can also always use the solution interpolation to access values programmatically.
+For example
+=#
+sol(1.0, idxs=VIndex(1,:droop₊ω))
+#=
+gives us the frequency of the droop inverter at time t=1.0s.
 
-nw[VIndex(2)]
+Similarly, we can extract time series by passing a vector of time points rather than a single point:
+=#
+sol([0.1,0.2,0.3], idxs=VIndex(1:3, :busbar₊u_mag))
+#=
+This code gives us the voltage magnitude at all three buses at the time points 0.1s, 0.2s, and 0.3s.
 
-bus2
-
-uflat(s0)
-
-
-
-dump_initial_state(bus1; obs=false)
-dump_initial_state(bus2; obs=true)
-dump_initial_state(bus3; obs=true)
+To deeply inspect a single point, we can also construct a `NWState` object from the solution for a specific time:
+=#
+s095 = NWState(sol, 0.95)
+#=
+gives us the state at t=0.95s. We can use the state object for inspection as we did before.
+For example, we can inspect the power at the destination end of all lines at this point in time:
+=#
+s095.e(:, :dst₊P)

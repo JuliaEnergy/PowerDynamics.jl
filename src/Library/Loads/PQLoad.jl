@@ -67,7 +67,7 @@ end
     end
     begin
         Y = G + im*B
-        iload = Y * (terminal.u_r + im*terminal.u_i)
+        iload = -Y * (terminal.u_r + im*terminal.u_i)
     end
     @equations begin
         terminal.i_r ~ simplify(real(iload))

@@ -11,6 +11,7 @@ using CairoMakie
 
 links = InterLinks(
     "NetworkDynamics" => "https://juliadynamics.github.io/NetworkDynamics.jl/stable/",
+    "DiffEq" => "https://docs.sciml.ai/DiffEqDocs/stable/",
 )
 #=
 # manually look for interlinks for debuggin purposes
@@ -44,7 +45,7 @@ kwargs = (;
     format=Documenter.HTML(;
         canonical="https://juliaenergy.github.io/PowerDynamics.jl",
         edit_link="main",
-        assets=String[],
+        assets=String["assets/custom.css"],
     ),
     pages=[
         "Home" => "index.md",
