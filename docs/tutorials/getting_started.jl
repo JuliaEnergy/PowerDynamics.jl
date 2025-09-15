@@ -96,9 +96,10 @@ In the printout above, you can see that we consider different types of variables
 - the **states** are dynamical or algebraic states in the sense of a Differential-Algebraic-Equation (DAE) model,
 - and **parameters** are static values that stay mostly constant during simulation and define the system behavior.
 
-There is a 5th class of states not shown above: **observables**. Observables are time values, which are not
+There is a 5th class of states not shown above: **observables**. Observables are time dependent values, which are not
 states in the sense of a DAE but can be reconstructed from the states, inputs, outputs and parameters.
 Thus, they don't need to be "solved" for numerically, but they can be reconstructed in post-processing.
+A simple example of an "observed" state would be a voltage angle or the active and reactive power at some bus.
 
 ### Load Models
 For the two loads, we use the predefined `ConstantYLoad` model from the Library and compile them:

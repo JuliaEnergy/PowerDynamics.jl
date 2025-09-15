@@ -489,7 +489,7 @@ end
 #=
 In practice, it doesn't really matter which approach you choose, as both will work.
 However this highlights the flexibility of the MTK modeling framework **before**
-you go to the compiled-model domain by calling `Bus` on the model fulfilling the `MTKBus` interface.
+you go to the compiled-model domain by calling `compile_bus` on the model fulfilling the `MTKBus` interface.
 =#
 
 #=
