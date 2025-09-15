@@ -63,17 +63,17 @@ It represents a connection point with constant voltage in dq─coordinates `u_r`
 An injector is a class of components with a single `Terminal()` (called `:terminal`).
 Examples for injectors might be Generators, Shunts, Loads.
 ```asciiart
-      ┌───────────┐
-(t)   │           │
- o←───┤  Injector │
-      │           │
-      └───────────┘
+(t)   ┌──────────┐
+ o←───┤ Injector │
+      └──────────┘
 ```
 The current for injectors is always in injector convention, i.e. positive currents flow *out* of the injector *towards* the terminal.
 
 !!! note "Model classes"
     Model "classes" are nothing formalized. In this document, a model class is just a description for some `System` from `ModelingToolkit.jl`, which satisfies certain requirements.
     For example, any `System` is considered an "Injector" if it contains a connector `Terminal()` called `:terminal`.
+
+You can check if a model satisfies the injector interface using the [`isinjectormodel`](@ref) function.
 
 !!! details "Code example: definition of PQ load as injector"
     ```@example concepts
@@ -126,6 +126,8 @@ As long as the `:busbar` is present at the toplevel, there are few limitations o
 
 For simple models (direct connections of a few injectors) it is possible to use the convenience method `MTKBus(injectors...)` to create the composite model based on provided injector models.
 
+You can check if a model satisfies the bus interface using the [`isbusmodel`](@ref) function.
+
 !!! details "Code example: definition of a Bus containing a swing equation and a load"
     ```@example concepts
     using PowerDynamics, PowerDynamics.Library, ModelingToolkit
@@ -157,13 +159,13 @@ It needs to have two `Terminal()`s, one is called `:src`, the other `:dst`.
 
 Examples for branches are: PI─Model branches, dynamic RL branches or transformers.
 ```asciiart
-      ┌───────────┐
-(src) │           │ (dst)
-  o←──┤  Branch   ├──→o
-      │           │
-      └───────────┘
+(src) ┌──────────┐ (dst)
+  o←──┤  Branch  ├──→o
+      └──────────┘
 ```
 *Both* ends follow the injector interface, i.e. current leaving the device towards the terminals is always positive.
+
+You can check if a model satisfies the branch interface using the [`isbranchmodel`](@ref) function.
 
 !!! details "Code example: algebraic R-line"
     ```@example concepts
@@ -207,11 +209,22 @@ It must contain two `LineEnd()` instances, one called `:src`, one called `:dst`.
 Simple line models, which consist only of valid `Branch` models can be instantiated using the `MTKLine(branches...)` constructor.
 
 More complex models can be created manually.
-For example if you want to chain multiple branches between the `LineEnds`, for example something like
-
+For example, you could define a dynamic multi-branch DC line model by chaining
+(possibly very complex and nested) source and destination inverter/rectifier models 
+with one or many dc branches.
 ```asciiart
-LineEnd(:src) ──o── Transformer ──o── Pi─Line ──o── LineEnd(:dst)
+┌───────────────────────────────────────────────────────────┐ 
+│ MTKLine                ┌──────────┐                       │ 
+│                       ┌┤ DC Br. A ├┐                      │
+│┌─────────┐ ┌─────────┐│└──────────┘│┌─────────┐┌─────────┐│
+││ LineEnd ├─┤ src inv ├o            o┤ dst inv ├┤ LineEnd ││
+│└─────────┘ └─────────┘│┌──────────┐│└─────────┘└─────────┘│
+│   :src                └┤ DC Br. B ├┘              :dst    │
+│                        └──────────┘                       │
+└───────────────────────────────────────────────────────────┘
 ```
+
+You can check if a model satisfies the line interface using the [`islinemodel`](@ref) function.
 
 !!! details "Code example: Transmission line with two pi-branches"
     ```@example concepts
@@ -247,6 +260,40 @@ and variable names to be compiled into [`VertexModel`](@extref NetworkDynamics C
 models.
 To do so, PowerDynamics.jl provides the [`compile_line`](@ref) and [`compile_bus`](@ref) constructors.
 
+### (MTK) Bus Model to VertexModel: `compile_bus`
+```asciiart
+                                      ╔═════════════════════════╗
+                                      ║ VertexModel (compiled)  ║
+┌────────────────────┐      Network   ║  ┌────────────────────┐ ║
+│MTKBus   ┌─────────┐│     interface  ║  │MTKBus   ┌─────────┐│ ║
+│        ┌┤Generator││                ║  │        ┌┤Generator││ ║
+│┌──────┐│└─────────┘│      current ────→│┌──────┐│└─────────┘│ ║
+││BusBar├o           │  =>            ║  ││BusBar├o           │ ║
+│└──────┘│┌────┐     │      voltage ←────│└──────┘│┌────┐     │ ║
+│        └┤Load│     │                ║  │        └┤Load│     │ ║
+│         └────┘     │                ║  │         └────┘     │ ║
+└────────────────────┘                ║  └────────────────────┘ ║
+                                      ╚═════════════════════════╝
+```
+
+### (MTK) Line Model to EdgeModel: `compile_line`
+```asciiart
+
+                                        ╔══════════════════════════════╗
+                                        ║ EdgeModel (compiled)         ║
+┌─────────────────────────────┐     src ║ ┌──────────────────────────┐ ║ dst
+│MTKLine   ┌───────┐          │  vertex ║ │MTKLine   ┌────┐          │ ║ vertex
+│         ┌┤BranchA├┐         │         ║ │         ┌┤    ├┐         │ ║
+│┌───────┐│└───────┘│┌───────┐│     u ───→│┌───────┐│└────┘│┌───────┐│←─── u
+││LineEnd├o         o┤LineEnd││  =>     ║ ││LineEnd├o      o┤LineEnd││ ║
+│└───────┘│┌───────┐│└───────┘│     i ←───│└───────┘│┌────┐│└───────┘│───→ i
+│  :src   └┤BranchB├┘  :dst   │         ║ │         └┤    ├┘         │ ║
+│          └───────┘          │         ║ │          └────┘          │ ║
+└─────────────────────────────┘         ║ └──────────────────────────┘ ║
+                                        ╚══════════════════════════════╝
+```
+
+### End to End Example
 Putting the knowledge from this document together, we can start a short simulation of an example network:
 ```@example concepts
 using PowerDynamics, PowerDynamics.Library, ModelingToolkit
