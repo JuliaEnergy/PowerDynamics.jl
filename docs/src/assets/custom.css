@@ -1,6 +1,6 @@
 pre:has(.language-asciiart) {
-  border: none;
-  background: none;
+  border: none !important;
+  background: none !important;
   line-height: 1.2;
 }
 
