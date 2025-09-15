@@ -15,7 +15,7 @@ using OrdinaryDiffEqNonlinearSolve
 using CairoMakie
 
 #=
-## Generator Busses
+## Generator Buses
 
 The 3 generator buses are modeled using a SauerPai 6th order machine model with
 variable field voltage and mechanical torque input.
@@ -54,7 +54,7 @@ nothing #hide #md
 
 
 #=
-## Load Busses
+## Load Buses
 
 The dynamic loads are modeled as static Y-loads. Those have 2 parameters: `G` and `B` which form the
 complex admittance

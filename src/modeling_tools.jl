@@ -315,7 +315,7 @@ function _findmatch(in_symbol, outs_symbol)
     end
 
     if isempty(idx)
-        error("Could not find a matchin output for input :$in in $(Symbol.(outs))")
+        error("Could not find a matching output for input :$in in $(Symbol.(outs))")
     elseif length(idx) == 1
         return outs_symbol[only(idx)]
     else
