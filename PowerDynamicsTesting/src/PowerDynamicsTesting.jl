@@ -11,7 +11,7 @@ using ModelingToolkit: @named
 using Makie: Makie, Figure, Axis, axislegend, lines!, Cycled
 using OrderedCollections: OrderedDict
 
-using PowerDynamics: PowerDynamics, Bus, Line, MTKLine
+using PowerDynamics: PowerDynamics, compile_bus, compile_line, MTKLine
 using PowerDynamics.Library: PiLine, SlackDifferential
 
 using JLD2: JLD2

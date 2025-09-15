@@ -165,7 +165,10 @@ end
     # isinteractive() && plottoi(toi)
     @reftest "VoltageDependentLoad_1" toi
 
-    @named load = ConstantYLoad(Pset=-0.5, Qset=-0.5, Vset=1)
+    Sload = -0.5-im*0.5
+    Vset = 1.0
+    Y = -conj(Sload)/Vset^2
+    @named load = ConstantYLoad(B=imag(Y), G=real(Y))
     bus = compile_bus(MTKBus(load));
     toi = bus_on_slack(bus)
     # isinteractive() && plottoi(toi)
