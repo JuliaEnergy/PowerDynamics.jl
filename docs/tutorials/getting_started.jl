@@ -30,15 +30,15 @@ using CairoMakie
 ## Stage I: Defining Dynamical Models
 
 The first phase of the workflow is typically to define your dynamical models.
-Models may either come from a library (like the `IdealDroopInverter` and `ConstantYLoad` below
-or can be defined by the user.
+Models may either come from a library (like the `IdealDroopInverter` and `ConstantYLoad` below)
+or they can be defined by the user.
 
 ### Inverter Model
 In this case, we want the first bus to be an ideal droop inverter.
 
 Often, model definition will be a multi step process:
 
-**First** we define an ["injector model"](@ref Injector Interface), in this case our
+**First**: we define an ["injector model"](@ref Injector-Interface), in this case our
 inverter:
 ```asciiart
 (t) ┌────────────────┐
@@ -68,7 +68,7 @@ This model still lives in the equation-based/symbolic domain.
 bus_model = MTKBus(inverter_model; name=:invbus)
 nothing #hide
 #=
-**Third** we compile the symbolic model into a julia function for numeric simulation.
+**Third**: we compile the symbolic model into a julia function for numeric simulation.
 Doing so, we get a [`VertexModel`](@extref NetworkDynamics.VertexModel-Tuple{}), which is an
 object from our backend [NetworkDynamics.jl](https://juliadynamics.github.io/NetworkDynamics.jl/stable/)
 ```asciiart
@@ -85,7 +85,7 @@ interface  ║  ┌────────────────────�
 =#
 bus1 = compile_bus(MTKBus(inverter_model); vidx=1)
 #=
-Notably, this model is **not** a symbolic model anymore. The equations have been reduced
+Note that this model is **no longer symbolic**. The equations have been reduced
 and transformed into a nonlinear descriptor model.
 For more information on the different model types, see the [Modeling Concepts](@ref) docs.
 You can check out the NetworkDynamics.jl doc on the underlying [mathematical model](@extref Mathematical-Model).
@@ -213,9 +213,9 @@ This function actually does quite a lot.
 @assert Set(free_u(nw[VIndex(1)])) == Set([:droop₊δ, :droop₊Qfilt, :droop₊Pfilt]) # hide
 #=
 In the log statements, we see which variables/parameters were considered free during the initialization of each component.
-This behavior can be finetuned in a lot of ways, which are beyond the scope of this tutorial.
+This behavior can be fine-tuned in a lot of ways, which are beyond the scope of this tutorial.
 However, here we see that, for example, the complex parameter $Y = B + j\,G$ of the constant Y-load was initially left free but
-was initialized from the powerflow solution. This means that your $Y$ is now set in a way that it draws the correct
+then initialized from the powerflow solution. This means that $Y$ is now set in a way that it draws the correct
 amount of power at the given voltage.
 
 Similarly, we see that the inverter bus had the parameters $P_{set}$ and $Q_{set}$ free, which were also initialized from the powerflow solution.
@@ -238,16 +238,16 @@ s0[VIndex(1, :droop₊Pfilt)]
     In most julia dev environments you can type `\_+<TAB>` to autocomplete the MTK namespace separator `₊`.
 
 Often, you want to access observables or parameters instead of states. There is a whole
-filtering and accessing mechanism you can use for that. For example, in PD.jl each bus has the states `:busbar₊P` and `:busbar₊Q`.
+filtering and access mechanism you can use for that. For example, in PD.jl, each bus has the states `:busbar₊P` and `:busbar₊Q`.
 We can inspect them on all vertices using:
 =#
 s0.v(:, [:busbar₊P, :busbar₊Q])
 
 #=
 In the output, we clearly see how the load buses draw exactly the amount of power we specified in the power flow models.
-On the inverter bus however, we inject slightly more power than the loads demand to compensate for the line losses.
+On the inverter bus, however, we inject slightly more power than the loads demand to compensate for the line losses.
 
-Similarily, we can access all node parameters at initial state using
+Similarly, we can access all node parameters at initial state using
 =#
 s0.v.p
 #=
@@ -265,7 +265,7 @@ Since we start from an equilibrium point, we expect the system to stay there if 
 perturb it.
 Therefore, to get interesting results, we need to perturb the system.
 
-The easiest form of a perturbation is a parameter change. For example, let's
+The simplest way to perturb the system is to change a parameter. For example, let's
 increase the admittance at bus 2 by 10% after 0.1 seconds.
 
 For that, we define a so-called "callback function", more specifically a preset time callback,
@@ -275,7 +275,7 @@ General information on callbacks in Differential Equations can be found in the
 [DiffEq.jl docs](@extref DiffEq callbacks). Specific extensions for NetworkDynamics.jl can be found in the
 [NetworkDynamics.jl callback docs](@extref NetworkDynamics Callbacks).
 
-We define the callback and attach it to one of our loads like this:
+We define the callback and attach it to bus 2 (our first load) like this:
 =#
 affect = ComponentAffect([], [:load₊G, :load₊B]) do u, p, ctx
     @info "Increase load admittance Y by 10% at t=$(ctx.t)"
@@ -305,10 +305,10 @@ For example, we can quickly plot the frequency response of the droop using
 =#
 lines(sol, idxs=VIndex(1, :droop₊ω); axis=(;xlabel="Time [s]", ylabel="Frequency ω [pu]"))
 #=
-We clearly see how the increased active power leads to a drop in frequency, which is
-then compensated by the droop control (i.e., we stabilize at a lower frequency)
+We clearly see how the increased active power leads to a drop in frequency. This drop is
+then compensated by the droop control (i.e., we stabilize at a lower frequency).
 
-Of course we can also create more complex plots, like this one showing the active and reactive power at each bus:
+Of course, we can also create more complex plots, such as this one showing the active and reactive power at each bus:
 =#
 let
     fig = Figure(size=(1000,600))
@@ -331,13 +331,13 @@ let
     fig
 end
 #=
-Here we see that the active and reactive power demand shoot up in the beginning
+Here we see that the active and reactive power demand shoots up in the beginning
 after we increase Y.
 The power demand then slowly decreases again.
-This is probably due to a drop of voltage, which leads to lower power demand
+This is probably due to a drop in voltage, which leads to lower power demand
 on constant Y loads.
 
-Lets plot the voltage to verify this:
+Let's plot the voltage to verify this:
 =#
 let
     fig = Figure()
