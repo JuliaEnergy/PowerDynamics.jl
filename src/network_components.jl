@@ -49,7 +49,7 @@ end
     compile_bus(template::VertexModel; copy=true, pf=nothing, name=template.name, pairs...)
 
 Similar to the `Bus` constructor, but takes a pre-compiled `VertexModel`. It copies the VertexModel
-and applies the keyword arguments. This is usefull when you want to create new bus models based on a template.
+and applies the keyword arguments. This is useful when you want to create new bus models based on a template.
 """
 function compile_bus(template::VertexModel; copy=true, vidx=nothing, pf=nothing, name=template.name, pairs...)
     vertexf = copy ? Base.copy(template) : template
@@ -57,7 +57,7 @@ function compile_bus(template::VertexModel; copy=true, vidx=nothing, pf=nothing,
         vertexf = VertexModel(vertexf; name, allow_output_sym_clash=true)
     end
 
-    # is done in ND constructor too, but needs special handling becaus compile_line calls this
+    # is done in ND constructor too, but needs special handling because compile_line calls this
     if !isnothing(vidx)
         set_graphelement!(vertexf, vidx)
     end
@@ -163,7 +163,7 @@ function compile_line(edgef::EdgeModel; copy=true, src=nothing, dst=nothing, nam
         edgef = EdgeModel(edgef; name, allow_output_sym_clash=true)
     end
 
-    # is done in ND constructor too, but needs special handling becaus compile_line calls this
+    # is done in ND constructor too, but needs special handling because compile_line calls this
     if !isnothing(src) && !isnothing(dst)
         set_graphelement!(edgef, (;src, dst))
     end

@@ -108,7 +108,7 @@ function powerflow_model(cf::NetworkDynamics.ComponentModel; check=:error)
         return pfm
     end
     if !ispfmodel(cf)
-        str ="Cannot create PF component model from :$(cf.name)! Please proved :pfmodel metadata! You may overwrite this check by passing `check=:warn/:none`."
+        str = "Cannot create PF component model from :$(cf.name)! Please provide :pfmodel metadata! You may overwrite this check by passing `check=:warn/:none`."
         check == :error && error(str)
         check == :warn && @warn str
     end

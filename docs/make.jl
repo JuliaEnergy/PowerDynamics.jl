@@ -11,6 +11,8 @@ using CairoMakie
 
 links = InterLinks(
     "NetworkDynamics" => "https://juliadynamics.github.io/NetworkDynamics.jl/stable/",
+    "DiffEq" => "https://docs.sciml.ai/DiffEqDocs/stable/",
+    "ModelingToolkit" => "https://docs.sciml.ai/ModelingToolkit/stable/",
 )
 #=
 # manually look for interlinks for debuggin purposes
