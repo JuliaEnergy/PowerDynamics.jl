@@ -62,7 +62,7 @@ It represents a connection point with constant voltage in dq─coordinates `u_r`
 
 An injector is a class of components with a single `Terminal()` (called `:terminal`).
 Examples for injectors might be Generators, Shunts, Loads.
-```
+```asciiart
       ┌───────────┐
 (t)   │           │
  o←───┤  Injector │
@@ -110,7 +110,7 @@ This busbar represents the connection point to the grid.
 Optionally, it may contain various injectors.
 If there are no injectors, the model just describes a junction bus, i.e. a Bus that just satisfies the Kirchhoff constraint for the flows of connected lines.
 
-```
+```asciiart
  ┌───────────────────────────────────┐
  │ MTKBus             ┌───────────┐  │
  │  ┌──────────┐   ┌──┤ Generator │  │
@@ -156,7 +156,7 @@ A branch is the two-port equivalent to an injector.
 It needs to have two `Terminal()`s, one is called `:src`, the other `:dst`.
 
 Examples for branches are: PI─Model branches, dynamic RL branches or transformers.
-```
+```asciiart
       ┌───────────┐
 (src) │           │ (dst)
   o←──┤  Branch   ├──→o
@@ -192,7 +192,7 @@ Similar to the `MTKBus`, a `MTKLine` is a model class which represents a transmi
 
 It must contain two `LineEnd()` instances, one called `:src`, one called `:dst`.
 
-```
+```asciiart
  ┌────────────────────────────────────────────────┐
  │ MTKLine          ┌──────────┐                  │
  │  ┌─────────┐  ┌──┤ Branch A ├──┐  ┌─────────┐  │
@@ -209,7 +209,7 @@ Simple line models, which consist only of valid `Branch` models can be instantia
 More complex models can be created manually.
 For example if you want to chain multiple branches between the `LineEnds`, for example something like
 
-```
+```asciiart
 LineEnd(:src) ──o── Transformer ──o── Pi─Line ──o── LineEnd(:dst)
 ```
 
@@ -333,7 +333,7 @@ The predefined models `BusBar()` and `LineEnd()` are defined in the following wa
 ### Model: `BusBar()`
 A busbar is a concrete model used in bus modeling.
 It represents the physical connection within a bus, the thing where all injectors and lines attach.
-```
+```asciiart
            ┌──────────┐
 i_lines ──→│          │  (t)
            │  Busbar  ├───o
@@ -346,7 +346,7 @@ As an output, it forwards the terminal voltage to the backend.
 ### Model: `LineEnd()`
 A `LineEnd` model is very similar to the `BusBar` model.
 It represents one end of a transmission line.
-```
+```asciiart
           ┌───────────┐
  u_bus ──→│           │  (t)
           │  LineEnd  ├───o

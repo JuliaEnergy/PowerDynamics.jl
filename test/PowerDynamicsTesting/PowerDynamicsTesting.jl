@@ -13,7 +13,7 @@ using OrdinaryDiffEqRosenbrock: Rodas5P
 using OrdinaryDiffEqNonlinearSolve: OrdinaryDiffEqNonlinearSolve
 using Makie: Makie, Figure, Axis, axislegend, lines!, Cycled
 
-using PowerDynamics: PowerDynamics, Bus, Line, MTKLine
+using PowerDynamics: PowerDynamics, compile_bus, compile_line, MTKLine
 using PowerDynamics.Library: PiLine, SlackDifferential
 
 using JLD2: JLD2

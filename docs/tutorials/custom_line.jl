@@ -26,7 +26,7 @@ We start by defining a basic PI-branch model, which is similar to the one in `Pi
 MTKModel. This model should fulfill the [Branch Interface](@ref), i.e. it needs to have two [`Terminal`](@ref), one called
 `:src` the other called `:dst`:
 
-```
+```asciiart
       ┌───────────┐
 (src) │           │ (dst)
   o←──┤  Branch   ├──→o
@@ -42,7 +42,7 @@ We have:
 - two shunt admittances $Y_\mathrm{src}$ and $Y_\mathrm{dst}$,
 - an impedance $Z$, which is split into two parts $Z_a$ and $Z_b$ by the fault position $\mathrm{pos}$.
 
-```
+```asciiart
               i_src  V₁   i_a   Vₘ   i_b   V₂  i_dst
      V_src o────←────o───Z_a─→──o───Z_b─→──o────→────o V_dst
               r_src  │          │          │   r_dst
@@ -302,7 +302,7 @@ First, we need to form something satisfying the [MTKLine Interface](@ref).
 
 Here we implement our dual-branch architecture by creating two separate `ProtectedPiBranch` instances and combining them into a single `MTKLine`. This creates a transmission line model with two parallel branches:
 
-```
+```asciiart
  ┌───────────────────────────────────────────┐
  │MTKLine   ┌─────────────────────┐          │
  │         ┌┤ ProtectedPiBranch A ├┐         │
@@ -329,7 +329,7 @@ nothing #hide #md
 #=
 Then, we take the mtkline and put it into a compiled [`EdgeModel`](@extref NetworkDynamics.EdgeModel-Tuple{}) by
 calling the [`compile_line`](@ref) constructor
-```
+```asciiart
 
        ╔═══════════════════════════════════════════════╗
        ║ EdgeModel (compiled)                          ║

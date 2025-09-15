@@ -410,7 +410,7 @@ nothing #hide #md
 
 The PSS only adds an **offset** to the field voltage based on the frequency input.
 Therefore, our combined injector model needs to look something like this:
-```
+```asciiart
     ┌───────────────────────────┐
     │GeneratorWithPss           │
     │         ╭─────→─────╮     │
@@ -455,7 +455,7 @@ However, this leads to another level of namespacing, as the overall bus will hav
 `gen_with_pss₊machine₊δ` due to the encapsulation.
 
 Alternatively, we could define a model which directly implements the `MTKBus` interface:
-```
+```asciiart
 ┌─────────────────────────────────────┐
 │MyMTKBus                             │
 │                   ╭─────→─────╮     │

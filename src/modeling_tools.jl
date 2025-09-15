@@ -141,7 +141,7 @@ model interface (see [`isinjectormodel`](@ref)).
 # Returns
 - An `System` representing the complete bus with all connected injectors
 
-```
+```asciiart
                                  ┌────────────────────┐
                                  │MTKBus   ┌─────────┐│
                                  │        ┌┤Generator││
@@ -180,7 +180,7 @@ the branch model interface.
 # Returns
 - An `System` representing the complete line with all connected branches
 
-```
+```asciiart
                                      ┌─────────────────────────────┐
                                      │MTKLine   ┌───────┐          │
                                      │         ┌┤BranchA├┐         │
@@ -247,7 +247,7 @@ which is augmented with 2 connection equations
 The returned model contains a new terminal `:terminal` at the toplevel, thus
 satisfying the injector interface, see [`isinjectormodel`](@ref)). It can be used
 as such in the [`MTKBus`](@ref) constructor.
-```
+```asciiart
     ┌────────────────────────────────────┐
     │ CompositeInjector                  │
     │              ╭───→───╮ measurements│

@@ -16,7 +16,7 @@ Create a VertexModel from an `System` that satisfies the bus model interface.
 # Returns
 - A [`VertexModel`](@extref NetworkDynamics.VertexModel-Tuple{}) representing the bus
 
-```
+```asciiart
                                                   ╔═════════════════════════╗
                                                   ║ VertexModel (compiled)  ║
             ┌────────────────────┐      Network   ║  ┌────────────────────┐ ║
@@ -124,7 +124,7 @@ Create an EdgeModel from a `System` that satisfies the line model interface.
 - An [`EdgeModel`](@extref NetworkDynamics.EdgeModel-Tuple{}) representing the line
 
 
-```
+```asciiart
 
                                                      ╔══════════════════════════════╗
                                                      ║ EdgeModel (compiled)         ║
