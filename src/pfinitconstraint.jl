@@ -76,8 +76,21 @@ end
     end
 
 Create a [`PFInitConstraint`](@ref) using macro syntax. Component variables are accessed with
-`:symbol` and power flow state variables with `@pf :symbol`. Multiple constraints can be
+`:symbol` and power flow state variables with `@pf(:symbol)`. Multiple constraints can be
 defined in a begin...end block.
+
+For example, the following code creates constraints `Pset`/`Qset` of the dynamic model
+in reference to the variables `P` and `Q` of the powerflow model.
+
+```julia
+@pfinitconstraint :dynamic₊Pset - @pf(:static₊P)
+@pfinitconstraint begin
+    :dynamic₊Pset - @pf(:static₊P)
+    :dynamic₊Qset - @pf(:static₊Q)
+end
+```
+
+Note that this particiular example could have been a `PFInitFormula`, since we can solve it directly.
 
 See also: [`PFInitConstraint`](@ref), [`set_pfinitconstraint!`](@ref), [`add_pfinitconstraint!`](@ref)
 """
@@ -141,12 +154,23 @@ end
     end
 
 Create a [`PFInitFormula`](@ref) using macro syntax. Component variables are accessed with
-`:symbol` and power flow state variables with `@pf :symbol`. Multiple formulas can be
+`:symbol` and power flow state variables with `@pf(:symbol)`. Multiple formulas can be
 defined in a begin...end block.
 
 Unlike constraints, formulas use assignment syntax (`:var = expression`) to set variable values
 during initialization. The left-hand side specifies output variables, and the right-hand side
 can access both component variables and power flow state variables.
+
+For example, the following code creates formulas for `Pset`/`Qset` of the dynamic model
+in reference to the variables `P` and `Q` of the powerflow model.
+
+```julia
+@pfinitformula :dynamic₊Pset = @pf(:static₊P)
+@pfinitformula begin
+    :dynamic₊Pset = @pf(:static₊P)
+    :dynamic₊Qset = @pf(:static₊Q)
+end
+```
 
 See also: [`PFInitFormula`](@ref), [`set_pfinitformula!`](@ref), [`add_pfinitformula!`](@ref)
 """
