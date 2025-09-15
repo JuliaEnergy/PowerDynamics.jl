@@ -1,5 +1,5 @@
 #=
-# Getting Started
+# [Getting Started with PowerDynamics.jl](@id getting-started)
 
 The goal of this tutorial is to get you started with PowerDynamics.jl. We'll walk you through the different
 "stages" of a typical simulation workflow while introducing key terminology along the way.
@@ -52,7 +52,7 @@ nothing #hide
 This model is an equation-based/symbolic model representing the dynamics.
 It is based on the great [ModelingToolkit.jl Library](https://mtk.sciml.ai/stable/).
 
-**Second**: we build a ["Bus Model"](@ref MTKBus Interface), which connects
+**Second**: we build a ["Bus Model"](@ref MTKBus-Interface), which connects
 the injector to a Busbar.
 This model still lives in the equation-based/symbolic domain.
 

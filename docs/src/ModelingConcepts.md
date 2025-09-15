@@ -260,7 +260,7 @@ and variable names to be compiled into [`VertexModel`](@extref NetworkDynamics C
 models.
 To do so, PowerDynamics.jl provides the [`compile_line`](@ref) and [`compile_bus`](@ref) functions.
 
-At their core, both `compile_*` functions use ModelingToolkit's [`mtkcompile`](@extref) to perform **symbolic simplifications** on your models and reduce the number of states.
+At their core, both `compile_*` functions use ModelingToolkit's [`mtkcompile`](@extref ModelingToolkit.mtkcompile) to perform **symbolic simplifications** on your models and reduce the number of states.
 Most notably, this process can drastically reduce the number of equations, while all previously defined states remain "observable", i.e. inspectable after simulation.
 For example, in the above code example of the PQ load we defined equations for active and reactive powers $P$ and $Q$. Those equations don't add anything to the actual behavior of the system,
 however they will be kept around as so-called "observed" states, meaning we can reconstruct and plot them from dynamical simulations.
