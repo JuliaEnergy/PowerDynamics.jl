@@ -44,7 +44,7 @@ kwargs = (;
     format=Documenter.HTML(;
         canonical="https://juliaenergy.github.io/PowerDynamics.jl",
         edit_link="main",
-        assets=String[],
+        assets=String["assets/custom.css"],
     ),
     pages=[
         "Home" => "index.md",

@@ -14,7 +14,7 @@ models represent components like generators, loads, and other devices that
 connect to a single bus. They can have arbitrary internal complexity as long as they
 have exactly one terminal.
 
-```
+```asciiart
    (t)    ┌──────────┐
     o─────┤ Injector │
 :terminal └──────────┘
@@ -54,7 +54,7 @@ interface. Bus models represent the complete dynamics of a power system bus and
 can be transformed into a [`VertexModel`](@extref NetworkDynamics.VertexModel-Tuple{})
 using [`compile_bus`](@ref).
 
-```
+```asciiart
 ┌───────────────────────────┐
 │BusModel     ┌────────────┐│
 │           ┌─┤ Injector 1 ││
@@ -100,7 +100,7 @@ A line model must contain two components named `:src` and `:dst` that both
 satisfy the line end interface. Line models represent transmission lines and can
 be transformed into an [`EdgeModel`](@extref NetworkDynamics.EdgeModel-Tuple{}) using [`compile_line`](@ref).
 
-```
+```asciiart
 ┌──────────────────────────────────────┐
 │LineModel     ┌────────┐              │
 │            ┌─┤ Branch ├─┐            │
@@ -147,7 +147,7 @@ A branch model must contain two [`Terminal`](@ref) components named `:src` and
 `:dst`. Branch models represent two-port network elements like transmission
 lines, transformers, and other connecting devices.
 
-```
+```asciiart
  (t) ┌────────┐ (t)
   o──┤ Branch ├──o
 :src └────────┘ :dst
