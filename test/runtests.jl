@@ -12,7 +12,8 @@ using OrderedCollections
 
 using PowerDynamics
 using PowerDynamics.Library
-using PowerDynamicsTesting
+PowerDynamics.load_pdtesting()
+using Main.PowerDynamicsTesting
 
 @testset "PowerDynamics.jl Tests" begin
     @testset "Package Quality Tests" begin
@@ -23,22 +24,18 @@ using PowerDynamicsTesting
         @test_broken isempty(Docs.undocumented_names(PowerDynamics))
 
         MTKMODEL_SYMS = (:Num, :System, :Equation, :connect, :@unpack)
+        allow_unanalyzable = (PowerDynamics,)
 
-        @test check_no_implicit_imports(PowerDynamics; skip=(Base, Core, NetworkDynamics)) === nothing
-        @test check_no_stale_explicit_imports(PowerDynamics; ignore=MTKMODEL_SYMS) === nothing
+        @test check_no_implicit_imports(PowerDynamics; skip=(Base, Core, NetworkDynamics), allow_unanalyzable) === nothing
+        @test check_no_stale_explicit_imports(PowerDynamics; ignore=MTKMODEL_SYMS, allow_unanalyzable) === nothing
 
         path = joinpath(pkgdir(PowerDynamics),"src","Library","Library.jl")
         @test check_no_implicit_imports(PowerDynamics.Library, path) === nothing
         @test check_no_stale_explicit_imports(PowerDynamics.Library, path; ignore=MTKMODEL_SYMS) === nothing
 
-        # check the testing subpackage
-        Aqua.test_all(PowerDynamicsTesting;
-            ambiguities=false,
-            persistent_tasks=false)
-        @test_broken isempty(Docs.undocumented_names(PowerDynamicsTesting))
-
-        @test check_no_implicit_imports(PowerDynamicsTesting) === nothing
-        @test check_no_stale_explicit_imports(PowerDynamicsTesting) === nothing
+        pdt_path = PowerDynamics.pdtesting_path()
+        @test check_no_implicit_imports(PowerDynamicsTesting, pdt_path) === nothing
+        @test check_no_stale_explicit_imports(PowerDynamicsTesting, pdt_path) === nothing
     end
 
     @safetestset "Library tests" begin include("Library_test.jl") end

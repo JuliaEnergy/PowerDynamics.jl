@@ -19,7 +19,7 @@ function pfSlack(; V=missing, δ=missing, u_r=missing, u_i=missing, name=:slackb
     end
 
     mtkbus = MTKBus(slack; name)
-    b = Bus(mtkbus)
+    b = compile_bus(mtkbus)
     set_voltage!(b, u_r + im * u_i)
     b
 end
@@ -35,7 +35,7 @@ The reactive power and voltage phase angle are determined by the power flow solu
 function pfPV(; P, V, name=:pvbus)
     @named pv = Library.PVConstraint(; P, V)
     mtkbus = MTKBus(pv; name)
-    b = Bus(mtkbus)
+    b = compile_bus(mtkbus)
     set_voltage!(b; mag=V, arg=0)
     b
 end
@@ -51,7 +51,7 @@ The voltage magnitude and phase angle are determined by the power flow solution.
 function pfPQ(; P=0, Q=0, name=:pqbus)
     @named pq = Library.PQConstraint(; P, Q)
     mtkbus = MTKBus(pq; name)
-    b = Bus(mtkbus)
+    b = compile_bus(mtkbus)
     set_voltage!(b; mag=1, arg=0)
     b
 end
@@ -108,7 +108,7 @@ function powerflow_model(cf::NetworkDynamics.ComponentModel; check=:error)
         return pfm
     end
     if !ispfmodel(cf)
-        str ="Cannot create PF component model from :$(cf.name)! Please proved :pfmodel metadata! You may overwrite this check by passing `check=:warn/:none`."
+        str = "Cannot create PF component model from :$(cf.name)! Please provide :pfmodel metadata! You may overwrite this check by passing `check=:warn/:none`."
         check == :error && error(str)
         check == :warn && @warn str
     end
@@ -253,11 +253,13 @@ This function performs a two-step initialization process:
 2. Use the power flow solution to initialize the dynamic model
 
 Per default, the powerflow solution is computed as
+
 ```julia
-    pfnw = powerflow_model(nw)                     # get powerflow network model
-    pfs0 = NWState(pfnw)                           # initial condition for network model
-    pfs = solve_powerflow(nw; pfnw, pfs0, verbose) # solve powerflow
+pfnw = powerflow_model(nw)                     # get powerflow network model
+pfs0 = NWState(pfnw)                           # initial condition for network model
+pfs = solve_powerflow(nw; pfnw, pfs0, verbose) # solve powerflow
 ```
+
 You can override any of these steps by providing `pfnw`, `pfs0`, or `pfs` directly as a keyword argument.
 
 There are two versions of this function: a mutating one (!-at the end of name) and a non-mutating version.
@@ -341,10 +343,10 @@ function show_powerflow(s::NWState)
     dict = OrderedDict()
     dict["N"] = 1:NV
     dict["Bus Names"] = [cf.name for cf in extract_nw(s).im.vertexm]
-    dict["vm [pu]"] = s[vidxs(1:NV, :busbar₊u_mag)]
-    dict["varg [deg]"] = rad2deg.(s[vidxs(1:NV, :busbar₊u_arg)])
-    dict["P [pu]"] = s[vidxs(1:NV, :busbar₊P)]
-    dict["Q [pu]"] = s[vidxs(1:NV, :busbar₊Q)]
+    dict["vm [pu]"] = s[VIndex(1:NV, :busbar₊u_mag)]
+    dict["varg [deg]"] = rad2deg.(s[VIndex(1:NV, :busbar₊u_arg)])
+    dict["P [pu]"] = s[VIndex(1:NV, :busbar₊P)]
+    dict["Q [pu]"] = s[VIndex(1:NV, :busbar₊Q)]
 
     DataFrame(dict)
 end

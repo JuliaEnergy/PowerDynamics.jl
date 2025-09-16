@@ -271,7 +271,7 @@ interface  ║  │MTKBus           │ ║
 ```
 =#
 
-@named junction_bus_template = Bus(MTKBus())
+@named junction_bus_template = compile_bus(MTKBus())
 strip_defaults!(junction_bus_template)  ## Clear default parameters for manual setting
 junction_bus_template #hide #md
 
@@ -292,7 +292,7 @@ interface  ║  │MTKBus          │ ║
 ```
 =#
 
-@named load_bus_template = Bus(MTKBus(load))
+@named load_bus_template = compile_bus(MTKBus(load))
 strip_defaults!(load_bus_template)
 load_bus_template #hide #md
 
@@ -320,7 +320,7 @@ Buses with controlled generators (machine + AVR + governor)
 ```
 =#
 
-@named ctrld_machine_bus_template = Bus(
+@named ctrld_machine_bus_template = compile_bus(
     MTKBus(controlled_machine);
 )
 strip_defaults!(ctrld_machine_bus_template)
@@ -355,7 +355,7 @@ Buses with both controlled generators and loads
 ```
 =#
 
-@named ctrld_machine_load_bus_template = Bus(
+@named ctrld_machine_load_bus_template = compile_bus(
     MTKBus(controlled_machine, load);
 )
 strip_defaults!(ctrld_machine_load_bus_template)
@@ -383,7 +383,7 @@ Buses with uncontrolled generators and loads
 ```
 =#
 
-@named unctrld_machine_load_bus_template = Bus(
+@named unctrld_machine_load_bus_template = compile_bus(
     MTKBus(uncontrolled_machine, load);
 )
 strip_defaults!(unctrld_machine_load_bus_template)
@@ -426,15 +426,15 @@ for row in eachrow(bus_df)
 
     ## Select template based on bus category
     bus = if row.category == "junction"
-        Bus(junction_bus_template; vidx=i, name=Symbol("bus$i"))
+        compile_bus(junction_bus_template; vidx=i, name=Symbol("bus$i"))
     elseif row.category == "load"
-        Bus(load_bus_template; vidx=i, name=Symbol("bus$i"))
+        compile_bus(load_bus_template; vidx=i, name=Symbol("bus$i"))
     elseif row.category == "ctrld_machine"
-        Bus(ctrld_machine_bus_template; vidx=i, name=Symbol("bus$i"))
+        compile_bus(ctrld_machine_bus_template; vidx=i, name=Symbol("bus$i"))
     elseif row.category == "ctrld_machine_load"
-        Bus(ctrld_machine_load_bus_template; vidx=i, name=Symbol("bus$i"))
+        compile_bus(ctrld_machine_load_bus_template; vidx=i, name=Symbol("bus$i"))
     elseif row.category == "unctrld_machine_load"
-        Bus(unctrld_machine_load_bus_template; vidx=i, name=Symbol("bus$i"))
+        compile_bus(unctrld_machine_load_bus_template; vidx=i, name=Symbol("bus$i"))
     end
 
     ## Apply component parameters from CSV files
@@ -465,7 +465,7 @@ all modeled using the π-line equivalent circuit model.
 The model consists of several layers:
 1. The `PiModel`, which satisfies the [Branch Interface](@ref) as it has two terminals
 2. The [`MTKLine`](@ref) constructor, which creates a MTK model fulfilling the [MTKLine Interface](@ref)
-3. The compiled `EdgeModel` created by calling the [`Line`](@ref) constructor
+3. The compiled `EdgeModel` created by calling the [`compile_line`](@ref) constructor
 ```
        ╔══════════════════════════════════╗
        ║ EdgeModel (compiled)             ║
@@ -480,7 +480,7 @@ vertex ║ │MTKLine                       │ ║ vertex
 (We used the `PiLine_fault` model since we plan on simulating short circuits later.)
 =#
 
-@named piline_template = Line(MTKLine(PiLine_fault(;name=:piline)))
+@named piline_template = compile_line(MTKLine(PiLine_fault(;name=:piline)))
 
 #=
 Each transmission element is created by:
@@ -491,7 +491,7 @@ Each transmission element is created by:
 branches = []
 for row in eachrow(branch_df)
     ## Create line instance with topology
-    line = Line(piline_template; src=row.src_bus, dst=row.dst_bus)
+    line = compile_line(piline_template; src=row.src_bus, dst=row.dst_bus)
 
     ## Apply electrical parameters from CSV data
     for col_name in names(branch_df)

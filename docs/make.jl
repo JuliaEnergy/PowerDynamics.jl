@@ -11,6 +11,8 @@ using CairoMakie
 
 links = InterLinks(
     "NetworkDynamics" => "https://juliadynamics.github.io/NetworkDynamics.jl/stable/",
+    "DiffEq" => "https://docs.sciml.ai/DiffEqDocs/stable/",
+    "ModelingToolkit" => "https://docs.sciml.ai/ModelingToolkit/stable/",
 )
 #=
 # manually look for interlinks for debuggin purposes
@@ -44,7 +46,7 @@ kwargs = (;
     format=Documenter.HTML(;
         canonical="https://juliaenergy.github.io/PowerDynamics.jl",
         edit_link="main",
-        assets=String[],
+        assets=String["assets/custom.css"],
     ),
     pages=[
         "Home" => "index.md",
@@ -55,7 +57,7 @@ kwargs = (;
             "Custom Generator Bus" => "generated/custom_bus.md",
             "Custom Transmission Line" => "generated/custom_line.md",
         ],
-        "Examples" => [
+        "Advanced Examples" => [
             "generated/ieee9bus.md",
             "IEEE39 Part I: Modeling" => "generated/ieee39_part1.md",
             "IEEE39 Part II: Initialization" => "generated/ieee39_part2.md",

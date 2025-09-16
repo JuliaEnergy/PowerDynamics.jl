@@ -14,7 +14,7 @@ models represent components like generators, loads, and other devices that
 connect to a single bus. They can have arbitrary internal complexity as long as they
 have exactly one terminal.
 
-```
+```asciiart
    (t)    ┌──────────┐
     o─────┤ Injector │
 :terminal └──────────┘
@@ -52,9 +52,9 @@ Check if a `System` satisfies the bus model interface.
 A bus model must contain a component named `:busbar` that satisfies the busbar
 interface. Bus models represent the complete dynamics of a power system bus and
 can be transformed into a [`VertexModel`](@extref NetworkDynamics.VertexModel-Tuple{})
-using [`Bus`](@ref).
+using [`compile_bus`](@ref).
 
-```
+```asciiart
 ┌───────────────────────────┐
 │BusModel     ┌────────────┐│
 │           ┌─┤ Injector 1 ││
@@ -69,7 +69,7 @@ Note: The BusModel musst contain exaclty one `BusBar`, the rest of the structure
 For example, you could also put a Brach between an injector and a Busbar or have multiple
 injectors and controllers connected.
 
-See also: [`Bus`](@ref), [`BusBar`](@ref), [`MTKBus`](@ref)
+See also: [`compile_bus`](@ref), [`BusBar`](@ref), [`MTKBus`](@ref)
 """
 function isbusmodel(sys::System)
     # HACK: use try catch instead of hasproperty https://github.com/SciML/ModelingToolkit.jl/issues/3016
@@ -98,9 +98,9 @@ Check if a `System` satisfies the line model interface.
 
 A line model must contain two components named `:src` and `:dst` that both
 satisfy the line end interface. Line models represent transmission lines and can
-be transformed into an [`EdgeModel`](@extref NetworkDynamics.EdgeModel-Tuple{}) using [`Line`](@ref).
+be transformed into an [`EdgeModel`](@extref NetworkDynamics.EdgeModel-Tuple{}) using [`compile_line`](@ref).
 
-```
+```asciiart
 ┌──────────────────────────────────────┐
 │LineModel     ┌────────┐              │
 │            ┌─┤ Branch ├─┐            │
@@ -114,7 +114,7 @@ be transformed into an [`EdgeModel`](@extref NetworkDynamics.EdgeModel-Tuple{}) 
 Note: Between the `LineEnd`s there can be arbeitrary structures, for example branches in
 series or parallel.
 
-See also: [`Line`](@ref), [`LineEnd`](@ref), [`MTKBus`](@ref)
+See also: [`compile_line`](@ref), [`LineEnd`](@ref), [`MTKBus`](@ref)
 """
 function islinemodel(sys::System)
     # HACK: use try catch instead of hasproperty https://github.com/SciML/ModelingToolkit.jl/issues/3016
@@ -147,7 +147,7 @@ A branch model must contain two [`Terminal`](@ref) components named `:src` and
 `:dst`. Branch models represent two-port network elements like transmission
 lines, transformers, and other connecting devices.
 
-```
+```asciiart
  (t) ┌────────┐ (t)
   o──┤ Branch ├──o
 :src └────────┘ :dst

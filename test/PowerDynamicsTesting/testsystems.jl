@@ -1,25 +1,4 @@
 """
-Test systems module for PowerDynamics.jl
-
-This module provides pre-configured test systems for testing PowerDynamics functionality.
-Similar to NetworkDynamics' ComponentLibrary.jl, this provides reusable network models.
-
-Usage:
-    (isinteractive() && @__MODULE__()==Main ? includet : include)("testsystems.jl")
-    nw = TestSystems.load_ieee9bus()
-    # Now you can test initialization, powerflow, etc.
-"""
-module TestSystems
-
-using PowerDynamics
-using PowerDynamics.Library
-using ModelingToolkit
-using NetworkDynamics
-using Graphs
-
-export load_ieee9bus
-
-"""
     load_ieee9bus()
 
 Load the IEEE 9-bus test system.
@@ -87,21 +66,15 @@ function load_ieee9bus()
     mtkbus9 = MTKBus()
 
     # Build NetworkDynamics components with powerflow models
-    @named bus1 = Bus(mtkbus1; vidx=1, pf=pfSlack(V=1.04))
-    @named bus2 = Bus(mtkbus2; vidx=2, pf=pfPV(V=1.025, P=1.63))
-    @named bus3 = Bus(mtkbus3; vidx=3, pf=pfPV(V=1.025, P=0.85))
-    @named bus4 = Bus(mtkbus4; vidx=4)
-    @named bus5 = Bus(mtkbus5; vidx=5, pf=pfPQ(P=-1.25, Q=-0.5))
-    @named bus6 = Bus(mtkbus6; vidx=6, pf=pfPQ(P=-0.9, Q=-0.3))
-    @named bus7 = Bus(mtkbus7; vidx=7)
-    @named bus8 = Bus(mtkbus8; vidx=8, pf=pfPQ(P=-1.0, Q=-0.35))
-    @named bus9 = Bus(mtkbus9; vidx=9)
-
-    # Add initialization formulas for load buses
-    vset_formula = @initformula :load₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
-    add_initformula!(bus5, vset_formula)
-    add_initformula!(bus6, vset_formula)
-    add_initformula!(bus8, vset_formula)
+    @named bus1 = compile_bus(mtkbus1; vidx=1, pf=pfSlack(V=1.04))
+    @named bus2 = compile_bus(mtkbus2; vidx=2, pf=pfPV(V=1.025, P=1.63))
+    @named bus3 = compile_bus(mtkbus3; vidx=3, pf=pfPV(V=1.025, P=0.85))
+    @named bus4 = compile_bus(mtkbus4; vidx=4)
+    @named bus5 = compile_bus(mtkbus5; vidx=5, pf=pfPQ(P=-1.25, Q=-0.5))
+    @named bus6 = compile_bus(mtkbus6; vidx=6, pf=pfPQ(P=-0.9, Q=-0.3))
+    @named bus7 = compile_bus(mtkbus7; vidx=7)
+    @named bus8 = compile_bus(mtkbus8; vidx=8, pf=pfPQ(P=-1.0, Q=-0.35))
+    @named bus9 = compile_bus(mtkbus9; vidx=9)
 
     # Branch helper functions
     function piline(; R, X, B)
@@ -114,22 +87,20 @@ function load_ieee9bus()
     end
 
     # Define branches
-    @named l45 = Line(piline(; R=0.0100, X=0.0850, B=0.1760), src=4, dst=5)
-    @named l46 = Line(piline(; R=0.0170, X=0.0920, B=0.1580), src=4, dst=6)
-    @named l57 = Line(piline(; R=0.0320, X=0.1610, B=0.3060), src=5, dst=7)
-    @named l69 = Line(piline(; R=0.0390, X=0.1700, B=0.3580), src=6, dst=9)
-    @named l78 = Line(piline(; R=0.0085, X=0.0720, B=0.1490), src=7, dst=8)
-    @named l89 = Line(piline(; R=0.0119, X=0.1008, B=0.2090), src=8, dst=9)
-    @named t14 = Line(transformer(; R=0, X=0.0576), src=1, dst=4)
-    @named t27 = Line(transformer(; R=0, X=0.0625), src=2, dst=7)
-    @named t39 = Line(transformer(; R=0, X=0.0586), src=3, dst=9)
+    @named l45 = compile_line(piline(; R=0.0100, X=0.0850, B=0.1760), src=4, dst=5)
+    @named l46 = compile_line(piline(; R=0.0170, X=0.0920, B=0.1580), src=4, dst=6)
+    @named l57 = compile_line(piline(; R=0.0320, X=0.1610, B=0.3060), src=5, dst=7)
+    @named l69 = compile_line(piline(; R=0.0390, X=0.1700, B=0.3580), src=6, dst=9)
+    @named l78 = compile_line(piline(; R=0.0085, X=0.0720, B=0.1490), src=7, dst=8)
+    @named l89 = compile_line(piline(; R=0.0119, X=0.1008, B=0.2090), src=8, dst=9)
+    @named t14 = compile_line(transformer(; R=0, X=0.0576), src=1, dst=4)
+    @named t27 = compile_line(transformer(; R=0, X=0.0625), src=2, dst=7)
+    @named t39 = compile_line(transformer(; R=0, X=0.0586), src=3, dst=9)
 
     # Build the network
     vertexfs = [bus1, bus2, bus3, bus4, bus5, bus6, bus7, bus8, bus9]
     edgefs = [l45, l46, l57, l69, l78, l89, t14, t27, t39]
 
     # Return uninitialized network
-    return Network(vertexfs, edgefs)
+    return Network(vertexfs, edgefs; warn_order=false)
 end
-
-end # module TestSystems

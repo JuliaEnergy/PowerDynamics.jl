@@ -152,7 +152,7 @@ isbusmodel(mtkbus) # assert that the created model satisfies the interface
 To actually simulate the system, we need to *compile* the model, i.e. transforming it from a
 purely symbolic representation to a numerical one.
 =#
-Bus(mtkbus)
+compile_bus(mtkbus)
 
 #=
 ## Defining a Simulation Scenario
@@ -164,7 +164,7 @@ in response to a frequency disturbance.
 
 First, we create a slack bus that provides the voltage and frequency reference for the system.
 =#
-slackbus = Bus(
+slackbus = compile_bus(
     PowerDynamics.VariableFrequencySlack(name=:variable_slack),
     vidx=1,
     pf=pfSlack(V=1)
@@ -189,7 +189,7 @@ nothing #hide #md
 Next, we create the generator bus using our custom Milano machine model.
 We specify it as a PV bus for the power flow with 1 pu voltage and 1 pu active power.
 =#
-genbus = Bus(
+genbus = compile_bus(
     mtkbus,
     vidx=2,
     pf=pfPV(V=1, P=1)
@@ -198,7 +198,7 @@ genbus = Bus(
 #=
 We connect the two buses with a simple PI transmission line model.
 =#
-line = Line(MTKLine(PiLine(; name=:piline)); src=1,dst=2)
+line = compile_line(MTKLine(PiLine(; name=:piline)); src=1,dst=2)
 
 #=
 Now we can build the complete network with our two buses and the connecting line.
@@ -410,7 +410,7 @@ nothing #hide #md
 
 The PSS only adds an **offset** to the field voltage based on the frequency input.
 Therefore, our combined injector model needs to look something like this:
-```
+```asciiart
     ┌───────────────────────────┐
     │GeneratorWithPss           │
     │         ╭─────→─────╮     │
@@ -455,7 +455,7 @@ However, this leads to another level of namespacing, as the overall bus will hav
 `gen_with_pss₊machine₊δ` due to the encapsulation.
 
 Alternatively, we could define a model which directly implements the `MTKBus` interface:
-```
+```asciiart
 ┌─────────────────────────────────────┐
 │MyMTKBus                             │
 │                   ╭─────→─────╮     │
@@ -489,7 +489,7 @@ end
 #=
 In practice, it doesn't really matter which approach you choose, as both will work.
 However this highlights the flexibility of the MTK modeling framework **before**
-you go to the compiled-model domain by calling `Bus` on the model fulfilling the `MTKBus` interface.
+you go to the compiled-model domain by calling `compile_bus` on the model fulfilling the `MTKBus` interface.
 =#
 
 #=
@@ -500,7 +500,7 @@ to observe the damping improvement.
 =#
 
 # Create the improved generator bus with simple PSS
-genbus_pss = Bus(
+genbus_pss = compile_bus(
     MTKBus(gen_with_pss; name=:bus_pss),
     vidx=2,
     pf=pfPV(V=1, P=1)

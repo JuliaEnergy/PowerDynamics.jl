@@ -3,7 +3,7 @@
 ####
 
 """
-    Bus(sys::System; verbose=false, name=getname(sys), kwargs...)
+    compile_bus(sys::System; verbose=false, name=getname(sys), kwargs...)
 
 Create a VertexModel from an `System` that satisfies the bus model interface.
 
@@ -16,25 +16,24 @@ Create a VertexModel from an `System` that satisfies the bus model interface.
 # Returns
 - A [`VertexModel`](@extref NetworkDynamics.VertexModel-Tuple{}) representing the bus
 
-```
-
-                                          ╔═════════════════════════╗
-                                          ║ VertexModel (compiled)  ║
-    ┌────────────────────┐      Network   ║  ┌────────────────────┐ ║
-    │MTKBus   ┌─────────┐│     interface  ║  │MTKBus   ┌─────────┐│ ║
-    │        ┌┤Generator││                ║  │        ┌┤Generator││ ║
-    │┌──────┐│└─────────┘│      current ────→│┌──────┐│└─────────┘│ ║
-Bus(││BusBar├o           │) =>            ║  ││BusBar├o           │ ║
-    │└──────┘│┌────┐     │      voltage ←────│└──────┘│┌────┐     │ ║
-    │        └┤Load│     │                ║  │        └┤Load│     │ ║
-    │         └────┘     │                ║  │         └────┘     │ ║
-    └────────────────────┘                ║  └────────────────────┘ ║
-                                          ╚═════════════════════════╝
+```asciiart
+                                                  ╔═════════════════════════╗
+                                                  ║ VertexModel (compiled)  ║
+            ┌────────────────────┐      Network   ║  ┌────────────────────┐ ║
+            │MTKBus   ┌─────────┐│     interface  ║  │MTKBus   ┌─────────┐│ ║
+            │        ┌┤Generator││                ║  │        ┌┤Generator││ ║
+            │┌──────┐│└─────────┘│      current ────→│┌──────┐│└─────────┘│ ║
+compile_bus(││BusBar├o           │) =>            ║  ││BusBar├o           │ ║
+            │└──────┘│┌────┐     │      voltage ←────│└──────┘│┌────┐     │ ║
+            │        └┤Load│     │                ║  │        └┤Load│     │ ║
+            │         └────┘     │                ║  │         └────┘     │ ║
+            └────────────────────┘                ║  └────────────────────┘ ║
+                                                  ╚═════════════════════════╝
 ```
 
 See also: [`MTKBus`](@ref)
 """
-function Bus(sys::System; verbose=false, name=getname(sys), kwargs...)
+function compile_bus(sys::System; verbose=false, name=getname(sys), kwargs...)
     if !isbusmodel(sys)
         msg = "The system must satisfy the bus model interface!"
         if isinjectormodel(sys)
@@ -44,20 +43,21 @@ function Bus(sys::System; verbose=false, name=getname(sys), kwargs...)
     end
     io = _busio(sys, :busbar)
     vertexf = VertexModel(sys, io.in, io.out; verbose, name)
-    Bus(vertexf; copy=false, kwargs...)
+    compile_bus(vertexf; copy=false, kwargs...)
 end
 """
-    Bus(template::VertexModel; copy=true, vidx=nothing, pf=nothing, name=template.name, pairs...)
+    compile_bus(template::VertexModel; copy=true, pf=nothing, name=template.name, pairs...)
 
 Similar to the `Bus` constructor, but takes a pre-compiled `VertexModel`. It copies the VertexModel
-and applies the keyword arguments. This is usefull when you want to create new bus models based on a template.
+and applies the keyword arguments. This is useful when you want to create new bus models based on a template.
 """
-function Bus(template::VertexModel; copy=true, vidx=nothing, pf=nothing, name=template.name, pairs...)
+function compile_bus(template::VertexModel; copy=true, vidx=nothing, pf=nothing, name=template.name, pairs...)
     vertexf = copy ? Base.copy(template) : template
     if name != template.name
         vertexf = VertexModel(vertexf; name, allow_output_sym_clash=true)
     end
 
+    # is done in ND constructor too, but needs special handling because compile_line calls this
     if !isnothing(vidx)
         set_graphelement!(vertexf, vidx)
     end
@@ -72,6 +72,16 @@ function Bus(template::VertexModel; copy=true, vidx=nothing, pf=nothing, name=te
         set_default!(vertexf, v, d)
     end
     vertexf
+end
+
+"""
+    Bus(args...; kwargs...) => compile_bus(args...; kwargs...)
+
+DEPRECATED! Use [`compile_bus`](@ref) instead.
+"""
+function Bus(args...; kwargs...)
+    @warn "`Bus(...)` is deprecated in favor of `compile_bus(...)`" maxlog=1
+    compile_bus(args...; kwargs...)
 end
 
 """
@@ -100,7 +110,7 @@ end
 #### Network level Line representation
 ####
 """
-    Line(sys::System; verbose=false, name=getname(sys), kwargs...)
+    compile_line(sys::System; verbose=false, name=getname(sys), kwargs...)
 
 Create an EdgeModel from a `System` that satisfies the line model interface.
 
@@ -114,26 +124,26 @@ Create an EdgeModel from a `System` that satisfies the line model interface.
 - An [`EdgeModel`](@extref NetworkDynamics.EdgeModel-Tuple{}) representing the line
 
 
-```
+```asciiart
 
-                                             ╔══════════════════════════════╗
-                                             ║ EdgeModel (compiled)         ║
-     ┌─────────────────────────────┐     src ║ ┌──────────────────────────┐ ║ dst
-     │MTKLine   ┌───────┐          │  vertex ║ │MTKLine   ┌────┐          │ ║ vertex
-     │         ┌┤BranchA├┐         │         ║ │         ┌┤    ├┐         │ ║
-     │┌───────┐│└───────┘│┌───────┐│     u ───→│┌───────┐│└────┘│┌───────┐│←─── u
-Line(││LineEnd├o         o┤LineEnd││) =>     ║ ││LineEnd├o      o┤LineEnd││ ║
-     │└───────┘│┌───────┐│└───────┘│     i ←───│└───────┘│┌────┐│└───────┘│───→ i
-     │  :src   └┤BranchB├┘  :dst   │         ║ │         └┤    ├┘         │ ║
-     │          └───────┘          │         ║ │          └────┘          │ ║
-     └─────────────────────────────┘         ║ └──────────────────────────┘ ║
-                                             ╚══════════════════════════════╝
+                                                     ╔══════════════════════════════╗
+                                                     ║ EdgeModel (compiled)         ║
+             ┌─────────────────────────────┐     src ║ ┌──────────────────────────┐ ║ dst
+             │MTKLine   ┌───────┐          │  vertex ║ │MTKLine   ┌────┐          │ ║ vertex
+             │         ┌┤BranchA├┐         │         ║ │         ┌┤    ├┐         │ ║
+             │┌───────┐│└───────┘│┌───────┐│     u ───→│┌───────┐│└────┘│┌───────┐│←─── u
+compile_line(││LineEnd├o         o┤LineEnd││) =>     ║ ││LineEnd├o      o┤LineEnd││ ║
+             │└───────┘│┌───────┐│└───────┘│     i ←───│└───────┘│┌────┐│└───────┘│───→ i
+             │  :src   └┤BranchB├┘  :dst   │         ║ │         └┤    ├┘         │ ║
+             │          └───────┘          │         ║ │          └────┘          │ ║
+             └─────────────────────────────┘         ║ └──────────────────────────┘ ║
+                                                     ╚══════════════════════════════╝
 ```
 
 
 See also: [`MTKLine`](@ref)
 """
-function Line(sys::System; verbose=false, name=getname(sys), kwargs...)
+function compile_line(sys::System; verbose=false, name=getname(sys), kwargs...)
     if !islinemodel(sys)
         msg = "The system must satisfy the line model interface!"
         if isbranchmodel(sys)
@@ -143,9 +153,9 @@ function Line(sys::System; verbose=false, name=getname(sys), kwargs...)
     end
     io = _lineio(sys, :src, :dst)
     edgef = EdgeModel(sys, io.srcin, io.dstin, io.srcout, io.dstout; verbose, name)
-    Line(edgef; copy=false, kwargs...)
+    compile_line(edgef; copy=false, kwargs...)
 end
-function Line(edgef::EdgeModel; copy=true, src=nothing, dst=nothing, name=edgef.name, pairs...)
+function compile_line(edgef::EdgeModel; copy=true, src=nothing, dst=nothing, name=edgef.name, pairs...)
     if copy
         edgef = Base.copy(edgef)
     end
@@ -153,6 +163,7 @@ function Line(edgef::EdgeModel; copy=true, src=nothing, dst=nothing, name=edgef.
         edgef = EdgeModel(edgef; name, allow_output_sym_clash=true)
     end
 
+    # is done in ND constructor too, but needs special handling because compile_line calls this
     if !isnothing(src) && !isnothing(dst)
         set_graphelement!(edgef, (;src, dst))
     end
@@ -160,6 +171,16 @@ function Line(edgef::EdgeModel; copy=true, src=nothing, dst=nothing, name=edgef.
         set_default!(edgef, v, d)
     end
     edgef
+end
+
+"""
+    Line(args...; kwargs...) => compile_line(args...; kwargs...)
+
+DEPRECATED! Use [`compile_line`](@ref) instead.
+"""
+function Line(args...; kwargs...)
+    @warn "`Line(...)` is deprecated in favor of `compile_line(...)`" maxlog=1
+    compile_line(args...; kwargs...)
 end
 
 """

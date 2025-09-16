@@ -1,5 +1,5 @@
 #=
-# [IEEE 9Bus Example](@id ieee9bus)
+# [IEEE 9-Bus Example](@id ieee9bus)
 
 In this example, we're going to model the IEEE 9 bus system.
 
@@ -15,11 +15,11 @@ using OrdinaryDiffEqNonlinearSolve
 using CairoMakie
 
 #=
-## Generator Busses
+## Generator Buses
 
-The 3 generator buses are modeld using a SauerPai 6th order machine model with
+The 3 generator buses are modeled using a SauerPai 6th order machine model with
 variable field voltage and mechanical torque input.
-The field voltage is provided by an `AVRTypeI`, the torque is provide by a `TGOV1` model.
+The field voltage is provided by an `AVRTypeI`, the torque is provided by a `TGOV1` model.
 =#
 function GeneratorBus(; machine_p=(;), avr_p=(;), gov_p=(;))
     @named machine = SauerPaiMachine(;
@@ -54,13 +54,15 @@ nothing #hide #md
 
 
 #=
-## Load Busses
+## Load Buses
 
-The dynamic loads are modeld as static Y-loads. Those have 3 parameters: `Pset`, `Qset` and `Vset`.
+The dynamic loads are modeled as static Y-loads. Those have 2 parameters: `G` and `B` which form the
+complex admittance
+```math
+Y = G + j\,B
+```
 For now, those parameters will be left free. We'll initialize them later on from the powerflow results.
 
-The `Vset` parameter is left free for now. Later on it is automaticially determined to match the
-behavior of the static power flow load model.
 =#
 function ConstantYLoadBus()
     @named load = ConstantYLoad()
@@ -72,7 +74,7 @@ nothing #hide #md
 #=
 ## Generate Dynamical models
 
-The parameters of the machines are obtaind from the data table from the RTDS datasheet.
+The parameters of the machines are obtained from the data table from the RTDS datasheet.
 =#
 gen1p = (;X_ls=0.01460, X_d=0.1460, X′_d=0.0608, X″_d=0.06, X_q=0.1000, X′_q=0.0969, X″_q=0.06, T′_d0=8.96, T′_q0=0.310, H=23.64)
 gen2p = (;X_ls=0.08958, X_d=0.8958, X′_d=0.1198, X″_d=0.11, X_q=0.8645, X′_q=0.1969, X″_q=0.11, T′_d0=6.00, T′_q0=0.535, H= 6.40)
@@ -101,37 +103,24 @@ per default, adds some metadata. For example the `vidx` property which later on 
 "graph free" network dynamics instantiation.
 
 We use the `pf` keyword to specify the models which should be used in the powerflow calculation.
-Here, generator 1 is modeld as a slack bus while the other two generators are modeled as a PV bus.
+Here, generator 1 is modeled as a slack bus while the other two generators are modeled as PV buses.
 The loads are modeled as PQ buses.
 =#
-@named bus1 = Bus(mtkbus1; vidx=1, pf=pfSlack(V=1.04))
-@named bus2 = Bus(mtkbus2; vidx=2, pf=pfPV(V=1.025, P=1.63))
-@named bus3 = Bus(mtkbus3; vidx=3, pf=pfPV(V=1.025, P=0.85))
-@named bus4 = Bus(mtkbus4; vidx=4)
-@named bus5 = Bus(mtkbus5; vidx=5, pf=pfPQ(P=-1.25, Q=-0.5))
-@named bus6 = Bus(mtkbus6; vidx=6, pf=pfPQ(P=-0.9, Q=-0.3))
-@named bus7 = Bus(mtkbus7; vidx=7)
-@named bus8 = Bus(mtkbus8; vidx=8, pf=pfPQ(P=-1.0, Q=-0.35))
-@named bus9 = Bus(mtkbus9; vidx=9)
-nothing #hide #md
-
-#=
-Later on in initialization, we want to ensure that the internal parameters
-of the loads are initialized to match the powerflow results.
-We have 3 free parameters: `Vset`, `Pset` and `Qset`.
-To help the initialization, we can provide a [`InitFormula`](@extref NetworkDynamics.InitFormula)
-to set the `Vset` parameter to the voltage magnitude of the bus.
-=#
-vset_formula = @initformula :load₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
-add_initformula!(bus5, vset_formula)
-add_initformula!(bus6, vset_formula)
-add_initformula!(bus8, vset_formula)
+@named bus1 = compile_bus(mtkbus1; vidx=1, pf=pfSlack(V=1.04))
+@named bus2 = compile_bus(mtkbus2; vidx=2, pf=pfPV(V=1.025, P=1.63))
+@named bus3 = compile_bus(mtkbus3; vidx=3, pf=pfPV(V=1.025, P=0.85))
+@named bus4 = compile_bus(mtkbus4; vidx=4)
+@named bus5 = compile_bus(mtkbus5; vidx=5, pf=pfPQ(P=-1.25, Q=-0.5))
+@named bus6 = compile_bus(mtkbus6; vidx=6, pf=pfPQ(P=-0.9, Q=-0.3))
+@named bus7 = compile_bus(mtkbus7; vidx=7)
+@named bus8 = compile_bus(mtkbus8; vidx=8, pf=pfPQ(P=-1.0, Q=-0.35))
+@named bus9 = compile_bus(mtkbus9; vidx=9)
 nothing #hide #md
 
 #=
 ## Branches
 
-Branches and Transformers are build from the same `PILine` model with optional
+Branches and Transformers are built from the same `PILine` model with optional
 transformer on both ends. However, the data is provided in a way that the actual
 transformer values are 1.0. Apparently, the transforming action has been absorbed
 into the line parameters according to the base voltage on both ends.
@@ -148,15 +137,15 @@ function transformer(; R, X)
     MTKLine(transformer)
 end
 
-@named l45 = Line(piline(; R=0.0100, X=0.0850, B=0.1760), src=4, dst=5)
-@named l46 = Line(piline(; R=0.0170, X=0.0920, B=0.1580), src=4, dst=6)
-@named l57 = Line(piline(; R=0.0320, X=0.1610, B=0.3060), src=5, dst=7)
-@named l69 = Line(piline(; R=0.0390, X=0.1700, B=0.3580), src=6, dst=9)
-@named l78 = Line(piline(; R=0.0085, X=0.0720, B=0.1490), src=7, dst=8)
-@named l89 = Line(piline(; R=0.0119, X=0.1008, B=0.2090), src=8, dst=9)
-@named t14 = Line(transformer(; R=0, X=0.0576), src=1, dst=4)
-@named t27 = Line(transformer(; R=0, X=0.0625), src=2, dst=7)
-@named t39 = Line(transformer(; R=0, X=0.0586), src=3, dst=9)
+@named l45 = compile_line(piline(; R=0.0100, X=0.0850, B=0.1760), src=4, dst=5)
+@named l46 = compile_line(piline(; R=0.0170, X=0.0920, B=0.1580), src=4, dst=6)
+@named l57 = compile_line(piline(; R=0.0320, X=0.1610, B=0.3060), src=5, dst=7)
+@named l69 = compile_line(piline(; R=0.0390, X=0.1700, B=0.3580), src=6, dst=9)
+@named l78 = compile_line(piline(; R=0.0085, X=0.0720, B=0.1490), src=7, dst=8)
+@named l89 = compile_line(piline(; R=0.0119, X=0.1008, B=0.2090), src=8, dst=9)
+@named t14 = compile_line(transformer(; R=0, X=0.0576), src=1, dst=4)
+@named t27 = compile_line(transformer(; R=0, X=0.0625), src=2, dst=7)
+@named t39 = compile_line(transformer(; R=0, X=0.0586), src=3, dst=9)
 nothing #hide #md
 
 #=
@@ -171,29 +160,40 @@ nw = Network(vertexfs, edgefs; warn_order=false)
 #=
 ## System Initialization
 
-To initialize the system for dynamic simulation, we use `initialize_from_pf!` which 
+To initialize the system for dynamic simulation, we use `initialize_from_pf!` which
 performs a unified powerflow solving and component initialization process.
 
 Internally, this function:
 1. Builds an equivalent static powerflow network from the dynamic models
-2. Solves the static powerflow equations using the specified powerflow models (pfSlack, pfPV, pfPQ)
+2. Solves the static powerflow equations using the specified powerflow models (`pfSlack`, `pfPV`, `pfPQ`)
 3. Uses the powerflow solution to initialize all dynamic component states and parameters
 
 This ensures that the dynamic model starts from a steady-state condition that matches
 the powerflow solution. Specifically, it determines:
 - Bus voltages and currents from the powerflow solution
-- Unknown `Vset` parameters for load buses
+- Unknown `G` and `B` parameters for load buses
 - Internal machine states (flux linkages, rotor angles, etc.)
 - Controller states and references for AVRs and governors
+
+For example, we use constant Y-loads for the dynamic load models. Those have
+a fixed admittance
+```math
+Y = G+j\,B
+```
+which is not known a priori. However, from the powerflow (where the loads are modeled as PQ loads)
+we know both voltage and current at steady state. With this knowledge, we can
+determine the missing parameters `G` and `B` such that the dynamic load model matches the static load model
+in the initial state.
+
 =#
 u0 = initialize_from_pf(nw);
 nothing #hide #md
 
 #=
-We could check the initial state of some of the variables, we expect the model to be initialized in
-a way, that the setpoint of the constant Y-loads matches the powerfow constraints.
+To verify what we've just said, we can check the initial values of the active and reactive
+power of our constant Y load model at bus 5 to see if it matches the setpoints of our powerflow model:
 =#
-u0[VIndex(5, :load₊Pset)] ≈ -1.25 && u0[VIndex(5, :load₊Qset)] ≈ -0.5
+u0[VIndex(5, :load₊P)] ≈ -1.25 && u0[VIndex(5, :load₊Q)] ≈ -0.5
 
 #=
 ## Disturbance
@@ -224,7 +224,7 @@ nothing #hide #md
 #=
 ## Plotting the Solution
 
-Finally, we visualize the simulation results showing the system response to the 
+Finally, we visualize the simulation results showing the system response to the
 line outage at t=1.0 seconds. The plots show active power, voltage magnitudes,
 and generator frequencies across the simulation time.
 =#

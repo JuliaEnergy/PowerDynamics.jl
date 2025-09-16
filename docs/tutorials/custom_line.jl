@@ -26,7 +26,7 @@ We start by defining a basic PI-branch model, which is similar to the one in `Pi
 MTKModel. This model should fulfill the [Branch Interface](@ref), i.e. it needs to have two [`Terminal`](@ref), one called
 `:src` the other called `:dst`:
 
-```
+```asciiart
       ┌───────────┐
 (src) │           │ (dst)
   o←──┤  Branch   ├──→o
@@ -42,7 +42,7 @@ We have:
 - two shunt admittances $Y_\mathrm{src}$ and $Y_\mathrm{dst}$,
 - an impedance $Z$, which is split into two parts $Z_a$ and $Z_b$ by the fault position $\mathrm{pos}$.
 
-```
+```asciiart
               i_src  V₁   i_a   Vₘ   i_b   V₂  i_dst
      V_src o────←────o───Z_a─→──o───Z_b─→──o────→────o V_dst
               r_src  │          │          │   r_dst
@@ -302,7 +302,7 @@ First, we need to form something satisfying the [MTKLine Interface](@ref).
 
 Here we implement our dual-branch architecture by creating two separate `ProtectedPiBranch` instances and combining them into a single `MTKLine`. This creates a transmission line model with two parallel branches:
 
-```
+```asciiart
  ┌───────────────────────────────────────────┐
  │MTKLine   ┌─────────────────────┐          │
  │         ┌┤ ProtectedPiBranch A ├┐         │
@@ -328,8 +328,8 @@ mtkline = MTKLine(branchA, branchB)
 nothing #hide #md
 #=
 Then, we take the mtkline and put it into a compiled [`EdgeModel`](@extref NetworkDynamics.EdgeModel-Tuple{}) by
-calling the [`Line`](@ref) constructor
-```
+calling the [`compile_line`](@ref) constructor
+```asciiart
 
        ╔═══════════════════════════════════════════════╗
        ║ EdgeModel (compiled)                          ║
@@ -345,7 +345,7 @@ vertex ║ │         ┌┤ ProtectedPiBranch A ├┐         │ ║ vertex
        ╚═══════════════════════════════════════════════╝
 ```
 =#
-protected_template = Line(mtkline; name=:protected_piline)
+protected_template = compile_line(mtkline; name=:protected_piline)
 #=
 !!! tip "Reduced complexity of compiled Model"
     Note, that the compiled model still has **no states**, i.e. it directly calculates
@@ -373,11 +373,11 @@ callbacks might miss.
 #### Overcurrent Detection Callbacks
 
 For [`ComponentCondition`](@extref NetworkDynamics.ComponentCondition), we need to specify
-which symbols to monitor. We've explicitly added `I_mag` as an observed state to our `ProtectedPiBranch` model, 
+which symbols to monitor. We've explicitly added `I_mag` as an observed state to our `ProtectedPiBranch` model,
 which contains the maximum current magnitude between the src and dst terminals for each branch.
 
-Since our dual-branch transmission line has two independent branches (`:pibranchA` and `:pibranchB`), we define 
-callback functions that take the branch name as a parameter. This allows us to automatically create identical 
+Since our dual-branch transmission line has two independent branches (`:pibranchA` and `:pibranchB`), we define
+callback functions that take the branch name as a parameter. This allows us to automatically create identical
 callbacks for both branches without code duplication.
 
 **Condition Definitions:**

@@ -59,7 +59,7 @@ powerflow_model(nw[VIndex(30)])
 The function `powerflow_model` checks if there is a power flow model attached (it checks the `:pfmodel` [metadata](@extref NetworkDynamics Metadata)).
 
 Per component, the `powerflow_model` function will do the following:
-1. If the model has the `:pfmodel` metadata set (see [Metadata](@extref)), it will return the `VertexModel` stored in the metadata. In [Part I](@ref ieee39-part1) we set the `:pfmodel` metadata using the `pf` keyword to the [`Bus`].
+1. If the model has the `:pfmodel` metadata set (see [Metadata](@extref)), it will return the `VertexModel` stored in the metadata. In [Part I](@ref ieee39-part1) we set the `:pfmodel` metadata using the `pf` keyword to the [`compile_bus`].
 2. If the model **does not have** the `:pfmodel` metadata set, PowerDynamics will check if the model itself is a valid power flow model. If so, it'll just use the dynamic model as the power flow model.
 
 **What is a valid power flow model?**:

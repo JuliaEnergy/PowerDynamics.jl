@@ -119,3 +119,27 @@ function normalize_angle(θ)
     θ = mod2pi(θ)
     θ >= π ? θ - 2π : θ
 end
+
+"""
+    load_pdtesting()
+
+Internal function to dynamicially load the PowerDynamicsTesting code into Main.
+If called in an interactive context and Revise.jl is available, it will use Revise.includet to load the code.
+"""
+function load_pdtesting()
+    if isdefined(Main, :PowerDynamicsTesting)
+        println("PowerDynamicsTesting already loaded into Main")
+        return
+    end
+    path = pdtesting_path()
+    @eval Main begin
+        if isinteractive() && isdefined(Main, :Revise)
+            println("Loading PowerDynamicsTesting into Main with Revise")
+            Revise.includet($path)
+        else
+            println("Loading PowerDynamicsTesting into Main")
+            include($path)
+        end
+    end
+end
+pdtesting_path() = joinpath(pkgdir(@__MODULE__), "test", "PowerDynamicsTesting", "PowerDynamicsTesting.jl")
