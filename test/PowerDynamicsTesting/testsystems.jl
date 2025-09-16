@@ -76,12 +76,6 @@ function load_ieee9bus()
     @named bus8 = compile_bus(mtkbus8; vidx=8, pf=pfPQ(P=-1.0, Q=-0.35))
     @named bus9 = compile_bus(mtkbus9; vidx=9)
 
-    # Add initialization formulas for load buses
-    vset_formula = @initformula :load₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
-    add_initformula!(bus5, vset_formula)
-    add_initformula!(bus6, vset_formula)
-    add_initformula!(bus8, vset_formula)
-
     # Branch helper functions
     function piline(; R, X, B)
         @named pibranch = PiLine(;R, X, B_src=B/2, B_dst=B/2, G_src=0, G_dst=0)

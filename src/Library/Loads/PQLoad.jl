@@ -58,19 +58,16 @@ end
         terminal = Terminal()
     end
     @parameters begin
-        Pset, [description="Active Power demand [pu]", guess=-1]
-        Qset, [description="Reactive Power demand [pu]", guess=0]
-        Vset, [guess=1,description="Nominal voltage [pu]", guess=1]
+        B, [guess=1, description="Shunt susceptance [pu]"]
+        G, [guess=1, description="Shunt conductance [pu]"]
     end
     @variables begin
         P(t), [description="Active Power [pu]"]
         Q(t), [description="Reactive Power [pu]"]
     end
     begin
-        S = Pset + im*Qset #TODO: currently not working with Q=0
-        #S = Pset
-        Y = conj(S)/Vset^2
-        iload = Y * (terminal.u_r + im*terminal.u_i)
+        Y = G + im*B
+        iload = -Y * (terminal.u_r + im*terminal.u_i)
     end
     @equations begin
         terminal.i_r ~ simplify(real(iload))
