@@ -1,6 +1,7 @@
 using PowerDynamics
 using PowerDynamics.Library
-using PowerDynamicsTesting
+PowerDynamics.load_pdtesting()
+using Main.PowerDynamicsTesting
 using ModelingToolkit
 using NetworkDynamics
 using Graphs

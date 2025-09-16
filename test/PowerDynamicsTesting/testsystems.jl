@@ -1,25 +1,4 @@
 """
-Test systems module for PowerDynamics.jl
-
-This module provides pre-configured test systems for testing PowerDynamics functionality.
-Similar to NetworkDynamics' ComponentLibrary.jl, this provides reusable network models.
-
-Usage:
-    (isinteractive() && @__MODULE__()==Main ? includet : include)("testsystems.jl")
-    nw = TestSystems.load_ieee9bus()
-    # Now you can test initialization, powerflow, etc.
-"""
-module TestSystems
-
-using PowerDynamics
-using PowerDynamics.Library
-using ModelingToolkit
-using NetworkDynamics
-using Graphs
-
-export load_ieee9bus
-
-"""
     load_ieee9bus()
 
 Load the IEEE 9-bus test system.
@@ -129,7 +108,5 @@ function load_ieee9bus()
     edgefs = [l45, l46, l57, l69, l78, l89, t14, t27, t39]
 
     # Return uninitialized network
-    return Network(vertexfs, edgefs)
+    return Network(vertexfs, edgefs; warn_order=false)
 end
-
-end # module TestSystems

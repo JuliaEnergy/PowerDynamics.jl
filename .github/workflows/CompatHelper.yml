@@ -19,7 +19,6 @@ jobs:
             "",
             "docs",
             "test",
-            "PowerDynamicsTesting",
           ])
         shell: julia --color=yes {0}
         env:

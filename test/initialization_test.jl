@@ -2,6 +2,8 @@ using PowerDynamics
 using NetworkDynamics
 using PowerDynamics: @capture, postwalk
 using Graphs
+PowerDynamics.load_pdtesting()
+using Main.PowerDynamicsTesting
 
 @info "Start Initialization tests"
 
@@ -82,10 +84,9 @@ end
     @test out5[2] ≈ 16.0       # 1*3 + 2*4 + 5 = 16
 end
 
-(isinteractive() && @__MODULE__()==Main ? includet : include)("testsystems.jl")
 @testset "Test end to end initialziation" begin
     @testset "test happy path" begin
-        nw = TestSystems.load_ieee9bus()
+        nw = PowerDynamicsTesting.load_ieee9bus()
         s0_nonmut = initialize_from_pf(nw)
         s0_nonmut_meta = NWState(nw)
         s0_mut = initialize_from_pf!(nw)
@@ -98,7 +99,7 @@ end
     end
 
     @testset "test add of identical formula/constraint" begin
-        nw = TestSystems.load_ieee9bus()
+        nw = PowerDynamicsTesting.load_ieee9bus()
         eidx = EIndex(4)
         em = nw[eidx]
 
@@ -116,7 +117,7 @@ end
     end
 
     @testset "test pfinitformula" begin
-        nw = TestSystems.load_ieee9bus()
+        nw = PowerDynamicsTesting.load_ieee9bus()
         pfnw = powerflow_model(nw)
         pfs0 = NWState(pfnw)
         pfs0.p.e[9, :pibranch₊active] = 0 # deactivate a line
@@ -158,7 +159,7 @@ end
     end
 
     @testset "pf model with missing defaults" begin
-        nw = TestSystems.load_ieee9bus()
+        nw = PowerDynamicsTesting.load_ieee9bus()
         pfnw = powerflow_model(nw)
         delete_default!(pfnw[VIndex(3)], :pv₊P)
         delete_default!(pfnw[VIndex(3)], :busbar₊u_i)
@@ -171,7 +172,7 @@ end
     end
 
     @testset "Test handling of keyword overrides in initialize_from_pf" begin
-        nw = TestSystems.load_ieee9bus()
+        nw = PowerDynamicsTesting.load_ieee9bus()
         delete_default!(nw, VIndex(1, :generator₊gov₊T1))
 
         @test_throws ComponentInitError initialize_from_pf(nw) # missing guess
