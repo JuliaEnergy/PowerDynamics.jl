@@ -341,10 +341,10 @@ function show_powerflow(s::NWState)
     dict = OrderedDict()
     dict["N"] = 1:NV
     dict["Bus Names"] = [cf.name for cf in extract_nw(s).im.vertexm]
-    dict["vm [pu]"] = s[vidxs(1:NV, :busbar₊u_mag)]
-    dict["varg [deg]"] = rad2deg.(s[vidxs(1:NV, :busbar₊u_arg)])
-    dict["P [pu]"] = s[vidxs(1:NV, :busbar₊P)]
-    dict["Q [pu]"] = s[vidxs(1:NV, :busbar₊Q)]
+    dict["vm [pu]"] = s[VIndex(1:NV, :busbar₊u_mag)]
+    dict["varg [deg]"] = rad2deg.(s[VIndex(1:NV, :busbar₊u_arg)])
+    dict["P [pu]"] = s[VIndex(1:NV, :busbar₊P)]
+    dict["Q [pu]"] = s[VIndex(1:NV, :busbar₊Q)]
 
     DataFrame(dict)
 end
