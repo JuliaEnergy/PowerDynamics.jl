@@ -80,7 +80,7 @@ end
 DEPRECATED! Use [`compile_bus`](@ref) instead.
 """
 function Bus(args...; kwargs...)
-    @warn "`Bus(...)` is deprecated in favor for `compile_bus(...)`" maxlog=1
+    @warn "`Bus(...)` is deprecated in favor of `compile_bus(...)`" maxlog=1
     compile_bus(args...; kwargs...)
 end
 
@@ -179,7 +179,7 @@ end
 DEPRECATED! Use [`compile_line`](@ref) instead.
 """
 function Line(args...; kwargs...)
-    @warn "`Line(...)` is deprecated in favor for `compile_line(...)`" maxlog=1
+    @warn "`Line(...)` is deprecated in favor of `compile_line(...)`" maxlog=1
     compile_line(args...; kwargs...)
 end
 
