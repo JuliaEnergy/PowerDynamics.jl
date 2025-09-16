@@ -157,7 +157,7 @@ See also: [`compile_bus`](@ref), [`BusBar`](@ref), [`isinjectormodel`](@ref)
 """
 function MTKBus(injectors...; name=:bus)
     if !all(isinjectormodel.(injectors))
-        throw(ArgumentError("All components must satisfy the bus component model interface!"))
+        throw(ArgumentError("All components must satisfy the injector model interface!"))
     end
     @named busbar = BusBar()
     eqs = [connect(busbar.terminal, inj.terminal) for inj in injectors]
