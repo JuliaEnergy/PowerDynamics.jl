@@ -29,7 +29,7 @@ export @reftest, set_reference_dir, refup
 include("reftests.jl")
 
 using PowerDynamics.Library: SauerPaiMachine, ConstantYLoad, AVRTypeI, TGOV1
-using PowerDynamics: @initformula, CompositeInjector, MTKBus, pfSlack, pfPV, pfPQ, add_initformula!
+using PowerDynamics: CompositeInjector, MTKBus, pfSlack, pfPV, pfPQ
 include("testsystems.jl")
 
 
