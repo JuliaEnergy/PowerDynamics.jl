@@ -117,4 +117,11 @@ include("Faults/Faults.jl")
 ####
 include("powerflow_models.jl")
 
+
+####
+#### OpenIPSL Models
+####
+export PSSE_GENCLS
+include("OpenIPSL/Machines/PSSE_GENCLS.jl")
+
 end
