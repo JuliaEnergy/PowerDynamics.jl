@@ -1,0 +1,9 @@
+// Load OpenIPSL library
+loadFile(getEnvironmentVar("OPENIPSL_PATH") + "/package.mo");
+
+// Run GENCLS simulation with model's native experiment settings
+simulate(OpenIPSL.Tests.Machines.PSSE.GENCLS);
+
+// Extract key variables to CSV file
+filterSimulationResults("OpenIPSL.Tests.Machines.PSSE.GENCLS_res.mat", "modelica_results.csv",
+                       {"time", "gENCLS1.delta", "gENCLS1.omega", "gENCLS1.V", "gENCLS1.P", "gENCLS1.Q"});
