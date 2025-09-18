@@ -263,7 +263,7 @@ isbranchmodel(pibranch)
 # >
 # > NetworkDynamics currently does not support Events defined in MTK models. So we need to split the implementation:
 # > The new parameters need to be introduced to the `MTKModel` (extending CustomPiBranch), the callbacks need to be defined
-# > for the *compiled VertexModel*.
+# > for the *compiled EdgeModel*.
 #
 # ### Extension of the CustomPiBranch MTKModel
 # Let's add the new parameters to the `CustomPiBranch` model by *extending* the model.
