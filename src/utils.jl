@@ -126,8 +126,8 @@ end
 Internal function to dynamicially load the PowerDynamicsTesting code into Main.
 If called in an interactive context and Revise.jl is available, it will use Revise.includet to load the code.
 """
-function load_pdtesting()
-    if isdefined(Main, :PowerDynamicsTesting)
+function load_pdtesting(force=false)
+    if !force && isdefined(Main, :PowerDynamicsTesting)
         println("PowerDynamicsTesting already loaded into Main")
         return
     end
@@ -136,6 +136,14 @@ function load_pdtesting()
         if isinteractive() && isdefined(Main, :Revise)
             println("Loading PowerDynamicsTesting into Main with Revise")
             Revise.includet($path)
+            dir = dirname($path)
+            for file in readdir(joinpath(dir))
+                if endswith(file, ".jl") && file != "PowerDynamicsTesting.jl"
+                    path = PowerDynamics.pdtesting_path()
+                    println(" -> track $file")
+                    Revise.track(Main.PowerDynamicsTesting, joinpath(dir, file))
+                end
+            end
         else
             println("Loading PowerDynamicsTesting into Main")
             include($path)
