@@ -124,4 +124,7 @@ include("powerflow_models.jl")
 export PSSE_GENCLS
 include("OpenIPSL/Machines/PSSE_GENCLS.jl")
 
+export PSSE_baseLoad, PSSE_Load
+include("OpenIPSL/Loads/PSSE_Load.jl")
+
 end

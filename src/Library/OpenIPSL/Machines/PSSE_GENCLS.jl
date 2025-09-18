@@ -51,8 +51,8 @@
         # Algebraic variables
         vd(t), [description="d-axis voltage [pu]"]
         vq(t), [description="q-axis voltage [pu]"]
-        id(t), [description="d-axis current [pu]"]
-        iq(t), [description="q-axis current [pu]"]
+        id(t), [guess=0, description="d-axis current [pu]"]
+        iq(t), [guess=0, description="q-axis current [pu]"]
 
         # OpenIPSL-style variables for equation compatibility
         pir(t), [description="Real part of terminal current (OpenIPSL convention) [pu]"]
