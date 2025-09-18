@@ -136,7 +136,9 @@ function powerflow_model(nw::Network; check=:error)
     g = nw.im.g
     vfs = powerflow_model.(nw.im.vertexm; check);
     efs = powerflow_model.(nw.im.edgem; check);
-    Network(g, vfs, efs)
+    # graph elements like :bus1 => :bus2 might be wrong since the powerflow models
+    # might have different names
+    Network(g, vfs, efs; check_graphelement=false)
 end
 
 ####
@@ -201,6 +203,7 @@ delete_pfmodel!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfmodel!(get
     solve_powerflow(nw::Network;
                     pfnw = powerflow_model(nw),
                     pfs0 = NWState(nw),
+                    fill_busbar_defaults=true
                     verbose=true)
 
 Solve the power flow equations for a given network.
@@ -211,6 +214,7 @@ Uses [`find_fixpoint`](@extref NetworkDynamics.find_fixpoint) from NetworkDynami
 - `nw`: The dynamic network model
 - `pfnw`: The power flow network model (default: created from `nw`)
 - `pfs0`: Initial state for the power flow calculation
+- `fill_busbar_defaults`: Whether to fill missing default values for busbar states (i.e. u_r=1 u_i=0)
 - `verbose`: Whether to print the power flow solution
 
 ## Returns
@@ -222,13 +226,21 @@ function solve_powerflow(
     nw::Network;
     pfnw = powerflow_model(nw),
     pfs0 = NWState(nw),
+    fill_busbar_defaults=true,
     verbose=true
 )
     # don't enforce this, check happes in `powerflow_model`
     # pfnw.mass_matrix == LinearAlgebra.UniformScaling(0) || error("Powerflow model must have a mass matrix of 0!")
 
-    uf = uflat(pfs0)
-    pf = pflat(pfs0)
+    if fill_busbar_defaults && any(isnan, uflat(pfs0))
+        urinds = generate_indices(nw, VIndex(:), :busbar₊u_r, s=true, obs=false, out=false, in=false, p=false)
+        nanidx = findall(isnan, pfs0[urinds])
+        pfs0[urinds[nanidx]] .= 1.0
+        uiinds = generate_indices(nw, VIndex(:), :busbar₊u_i, s=true, obs=false, out=false, in=false, p=false)
+        nanidx = findall(isnan, pfs0[uiinds])
+        pfs0[uiinds[nanidx]] .= 1.0
+    end
+
     pfs = find_fixpoint(pfnw, pfs0)
     verbose && show_powerflow(pfs)
 
