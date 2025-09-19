@@ -151,8 +151,13 @@ include("powerflow_models.jl")
 ####
 #### OpenIPSL Models
 ####
+include("OpenIPSL/Machines/PSSE_BaseMachine.jl")
+
 export PSSE_GENCLS
 include("OpenIPSL/Machines/PSSE_GENCLS.jl")
+
+export PSSE_GENROU
+include("OpenIPSL/Machines/PSSE_GENROU.jl")
 
 export PSSE_Load
 include("OpenIPSL/Loads/PSSE_Load.jl")
