@@ -151,3 +151,27 @@ function load_pdtesting(force=false)
     end
 end
 pdtesting_path() = joinpath(pkgdir(@__MODULE__), "test", "PowerDynamicsTesting", "PowerDynamicsTesting.jl")
+
+"""
+    refine_timeseries(ts, factor=10)
+
+Refine a time series by interpolating additional time points between existing ones.
+Usefull for creating denser plots based on `refine_timeseries(sol.t)`.
+
+# Arguments
+- `ts`: Input time series vector
+- `factor`: Number of subdivisions between each pair of consecutive time points (default: 10)
+"""
+function refine_timeseries(ts, factor=10)
+    newts = Float64[]
+    for i in 1:length(ts)-1
+        t1 = ts[i]
+        t2 = ts[i+1]
+        push!(newts, t1)
+        t1 == t2 && continue
+        for j in 1:factor-1
+            push!(newts, t1 + j*(t2 - t1)/factor)
+        end
+    end
+    push!(newts, ts[end])
+end
