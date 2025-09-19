@@ -177,7 +177,7 @@ The following OpenIPSL models use the SMIB test harness and are candidates for P
   - *Dependencies: None (standalone model, connects PMECH0→PMECH and EFD0→EFD)*
 - [ ] **GENROE** - Round rotor generator with saturation
   - *Dependencies: None (standalone model, connects PMECH0→PMECH and EFD0→EFD)*
-- [ ] **GENROU** - Round rotor generator
+- [X] **GENROU** - Round rotor generator
   - *Dependencies: None (standalone model, connects PMECH0→PMECH and EFD0→EFD)*
 - [ ] **GEN** - Generic generator model
   - *Dependencies: Uses GENROE as machine, ConstantPower governor, ConstantExcitation exciter, DisabledPSS*
