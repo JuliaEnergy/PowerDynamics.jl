@@ -12,21 +12,34 @@ PowerDynamics.jl is a Julia package for modeling and simulating power grid dynam
     While PowerDynamics itself follows semantic versioning, the Library submodule's API is highly unstable and variable names, function signatures, and model interfaces may change frequently without notice. If you are using specific models from PowerDynamics.Library in their current state, we strongly recommend copying them to your own source code to avoid breaking changes in future updates.
 
 ## Getting Started
+The documentation is roughly split into 3 parts: we have the reference and concepts documentation,
+which contains technical descriptions of different aspects of PowerDynamics.jl.
+We have the Tutorials, which are pedagogical examples which aim to show a specific aspect
+of working with the package and we have the advanced examples, which are less focused
+than the tutorials but also consist of copy-pastable examples showing different aspects
+of modeling and simulation.
+Getting-Started
+
+As a first step, it is advised to read through the [getting started tutorial](@ref getting-started), ideally running the code locally and playing around with the example.
+Afterwards, it's a good idea to read on the [Modeling Concepts](@ref).
+
+It is also highly recommended to check out the docs on
+[NetworkDynamics.jl](https://juliadynamics.github.io/NetworkDynamics.jl/stable/)
+as those explain lots of the underlying functionality and concepts
+
+### Reference & Concepts
 
 - **[Modeling Concepts](@ref)** - Learn the fundamental concepts behind PowerDynamics modeling
 - **[Component Library](@ref)** - Explore the available power system component models
 - **[Powergrid Initialization](@ref)** - Understand how to properly initialize power system simulations
 - **[API Reference](@ref API)** - Complete function and type documentation
 
-It is also highly recommend to out check the docs on
-[NetworkDynamics.jl](https://github.com/JuliaDynamics/NetworkDynamics.jl)
-as those explain lots of the underlying functionality and concepts
-
-## Tutorials
+### Tutorials
+- **[Getting Started](@ref getting-started)** - Simulation of a small 3-bus example system, introduces the most important concepts and workflows.
 - **[Custom Components](@ref custom-bus)** - Shows how to implement Milano's classical synchronous machine model with a power system stabilizer (PSS)
 - **[Custom Transmission Lines](@ref custom-line)** - Demonstrates creating a PI-branch transmission line model with overcurrent protection that can trip during faults
 
-## Examples
+### Advanced Examples
 - **[IEEE 9-Bus System](@ref ieee9bus)** - Simulates the complete 9-bus IEEE test system with synchronous generators and dynamic load changes
 - **[IEEE 39-Bus System Part 1](@ref ieee39-part1)** - Shows how to build the 39-bus New England test system from custom CSV data files with proper component modeling
 - **[IEEE 39-Bus System Part 2](@ref ieee39-part2)** - Demonstrates the detailed initialization process for the 39-bus system including power flow and initialization of dynamic models
