@@ -9,47 +9,6 @@
 #
 # Description: Round rotor generator model with quadratic saturation
 
-"""
-    PSSE_QUAD_SE(u, SE1, SE2, E1, E2)
-
-Scaled Quadratic Saturation Function (PTI PSS/E).
-Port of OpenIPSL.NonElectrical.Functions.PSSE_QUAD_SE
-"""
-function PSSE_QUAD_SE(u, SE1, SE2, E1, E2)
-    if !(SE1 > 0.0 || SE1 < 0.0) || u <= 0.0
-        return 0.0
-    end
-
-    # XXX: This is weird! The original code uses
-    # parameter Real a=if not (SE2 > 0.0 or SE2 < 0.0) then sqrt(SE1*E1/(SE2*E2)) else 0;
-    # which has the not operator so it is differnet from this julia function
-    # maybe i missunderstand something about not or the or operator in modelica?
-    a = if (SE2 > 0.0 || SE2 < 0.0)
-        sqrt(SE1*E1/(SE2*E2))
-    else
-        0.0
-    end
-
-    A = E2 - (E1 - E2)/(a - 1)
-    B = if abs(E1 - E2) < eps()
-        0.0
-    else
-        SE2*E2*(a - 1)^2/(E1 - E2)^2
-    end
-
-    if u <= A
-        return 0.0
-    else
-        return B*(u - A)^2/u
-    end
-end
-
-#=
-PSSE_QUAD_SSE uses if/else statements. We need to register it as a symbolic function
-to block MTK from tracing the function and handle it as a black box.
-=#
-ModelingToolkit.@register_symbolic PSSE_QUAD_SE(u, SE1, SE2, E1, E2)
-
 #=
 On structural prameters:
 ideally we'd be able to define the input swicht base one pmech_input and efd_input
