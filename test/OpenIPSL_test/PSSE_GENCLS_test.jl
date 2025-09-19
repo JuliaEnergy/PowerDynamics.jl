@@ -49,7 +49,8 @@ sol = OpenIPSL_SMIB(GENCLS_BUS);
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :gencls₊P), "gENCLS1.P") < 1e-3
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :gencls₊Q), "gENCLS1.Q") < 1e-4
 
-
+# debug code blow
+#=
 # Load extended reference data for bus and power comparisons
 ref_extended = CSV.read(
     joinpath(pkgdir(PowerDynamics),"test","OpenIPSL_test","GENCLS","modelica_results_extended.csv.gz"),
@@ -168,3 +169,4 @@ fig_Q = let
     axislegend(ax; position=:rt)
     fig
 end
+=#

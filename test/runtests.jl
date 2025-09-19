@@ -43,6 +43,10 @@ using Main.PowerDynamicsTesting
     @safetestset "modeling_tools tests" begin include("modeling_tools_test.jl") end
     @safetestset "initialization tests" begin include("initialization_test.jl") end
 
+    @testset "OpenIPSL Model Tests" begin
+        @safetestset "PSSE_GENCLS" begin include(joinpath("OpenIPSL_test", "PSSE_GENCLS_test.jl")) end
+    end
+
     @testset "validation tests" begin
         @safetestset "ieee39 RMSPowerSims.jl" begin include(joinpath("validation", "ieee39_RMSPowerSims.jl", "ieee39_validation.jl")) end
     end
