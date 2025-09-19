@@ -9,19 +9,8 @@
 #
 
 @mtkmodel PSSE_BaseMachine begin
-    @structural_parameters begin
-        pmech_input = true
-        efd_input = true
-    end
     @components begin
         terminal = Terminal()
-        # Input interfaces
-        if pmech_input
-            PMECH_in = RealInput() # Turbine mechanical power
-        end
-        if efd_input
-            EFD_in = RealInput()   # Generator main field voltage
-        end
 
         # Output interfaces
         SPEED_out = RealOutput()  # Machine speed deviation from nominal [pu]
@@ -37,34 +26,28 @@
 
     @parameters begin
         # Machine parameters (free parameters - need guess values)
-        M_b, [guess=100, description="Machine base power [MVA]"]
-        Tpd0, [guess=8.0, description="d-axis transient open-circuit time constant [s]"]
-        Tppd0, [guess=0.03, description="d-axis sub-transient open-circuit time constant [s]"]
-        Tppq0, [guess=0.05, description="q-axis sub-transient open-circuit time constant [s]"]
-        H, [guess=6.5, description="Inertia constant [s]"]
-        D, [guess=0, description="Speed damping [pu]"]
-        Xd, [guess=1.8, description="d-axis reactance [pu]"]
-        Xq, [guess=1.7, description="q-axis reactance [pu]"]
-        Xpd, [guess=0.3, description="d-axis transient reactance [pu]"]
-        Xppd, [guess=0.25, description="d-axis sub-transient reactance [pu]"]
-        Xppq, [guess=0.25, description="q-axis sub-transient reactance [pu]"]
-        Xl, [guess=0.2, description="leakage reactance [pu]"]
-        S10, [guess=0.1, description="Saturation factor at 1.0 pu [pu]"]
-        S12, [guess=0.4, description="Saturation factor at 1.2 pu [pu]"]
+        M_b, [description="Machine base power [MVA]"]
+        Tpd0, [description="d-axis transient open-circuit time constant [s]"]
+        Tppd0, [description="d-axis sub-transient open-circuit time constant [s]"]
+        Tppq0, [description="q-axis sub-transient open-circuit time constant [s]"]
+        H, [description="Inertia constant [s]"]
+        D, [description="Speed damping [pu]"]
+        Xd, [description="d-axis reactance [pu]"]
+        Xq, [description="q-axis reactance [pu]"]
+        Xpd, [description="d-axis transient reactance [pu]"]
+        Xppd, [description="d-axis sub-transient reactance [pu]"]
+        Xppq, [description="q-axis sub-transient reactance [pu]"]
+        Xl, [description="leakage reactance [pu]"]
+        S10, [description="Saturation factor at 1.0 pu [pu]"]
+        S12, [description="Saturation factor at 1.2 pu [pu]"]
 
         # System parameters (free parameters from pfComponent)
-        S_b, [guess=100, description="System power basis [MVA]"]
+        S_b, [description="System power basis [MVA]"]
         fn=50, [description="System frequency [Hz]"]
 
         # Fixed parameters (with default values)
         R_a=0, [description="Armature resistance [pu]"]
-        w0=0, [description="Initial speed deviation from nominal [pu]"]
-        if !pmech_input
-            pmech_set, [guess=1, description="mechanical power setpoint [pu]"]
-        end
-        if !efd_input
-            efd_set, [guess=1, description="field voltage setpoint [pu]"]
-        end
+        # w0=0, [description="Initial speed deviation from nominal [pu]"]
     end
 
     @variables begin
@@ -127,10 +110,6 @@
         anglev ~ atan(pvi, pvr)
         I ~ sqrt(pii^2 + pir^2)
         anglei ~ atan(pii, pir)
-
-        # Input switching
-        pmech ~ pmech_input ? PMECH_in.u : pmech_set
-        efd ~ efd_input ? EFD_in.u : efd_set
 
         # Swing equations (from OpenIPSL line 122-123)
         Dt(w) ~ ((pmech - D*w)/(w + 1) - Te)/(2*H)

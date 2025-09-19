@@ -27,7 +27,7 @@ GENCLS_BUS = let
     M_b = 100e6
     X_d = 0.2
     D = 0
-    V_b = 400e3
+    # V_b = 400e3
     ω_b = 2π*50
 
     # powerflow results, used to set up pfmodel
@@ -36,7 +36,7 @@ GENCLS_BUS = let
     v_0 = 1.0
     angle_0 = 0.070492225331847
 
-    @named gencls = PSSE_GENCLS(; S_b, V_b, ω_b, H, M_b, #=P_0,=# X_d, D)
+    @named gencls = PSSE_GENCLS(; S_b, ω_b, H, M_b, #=P_0,=# X_d, D)
     busmodel = MTKBus(gencls; name=:GEN1)
     compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0))
 end

@@ -32,7 +32,7 @@
 
         # System base
         S_b, [description="System power basis [MVA]"]
-        V_b, [description="System voltage basis [kV]"]
+        # V_b, [description="System voltage basis [kV]"]
         ω_b, [description="System base frequency [rad/s]"]
 
         # Initial conditions and setpoints

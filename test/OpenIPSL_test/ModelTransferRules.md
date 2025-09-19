@@ -35,6 +35,7 @@ src/Library/OpenIPSL/
      - Loads the OpenIPSL library
      - Simulates the corresponding OpenIPSL test case
      - Extracts relevant variables to CSV format using `filterSimulationResults`
+     - for debuggin, it is sometimes usefull to alxo export a "extended" version, that one is ignored in gitignore and should not ever be added to git.
 
     **BOTH scripts can by copied from GENCLS tests and slighlty adapted!**
 
@@ -59,7 +60,11 @@ src/Library/OpenIPSL/
 
 The validation should ensure RMS errors are below appropriate thresholds (typically 1e-3 to 1e-5 depending on variable type).
 
+The OpenIPSL folder is available locally! No need to web searches, any questions about OpenIPSL are best answered in the defining Modelica files.
+
 ## Rules for transforming OpenIPSL models to PowerDynamics.jl
+
+**BEFORE ACTUALLY STARTING, LOOK AT EXISTING PORTS TO UNDERSTAND HOW TO DO IT**
 
 - variable and parameter names should stay consistent
 - always look at allready implemented files to get an idea of the style
@@ -78,6 +83,7 @@ end
 with the equations
 ```julia
 @equations begin
+
     # Conversion between PowerDynamics and OpenIPSL conventions
     pir ~ -terminal.i_r
     pii ~ -terminal.i_i
@@ -126,15 +132,14 @@ OpenIPSL is a term rather than an actual value, thos need to be considered free 
 #### Parameter Categorization
 All **public paramers** (also those lifted from the extended models) go to the @parameters blocks.
 All **protect parameters** should end up in a plain `begin...end` block before the equations.
+**Protected parameters**, which do not show up in equations but only in "start" values of others keep be ignored! We don't need to keep them around as the initialization works differently in PowerDynamics.
 
 The public parameters a categorized in "fixed" and "free" parameters. Fixed parameters have a default value, free parameters have a guess value.
 
 The protecte parameters fall in different categorations:
   - "derived" parameters: those are used in the equations but are essentialy just shorthands for some simple terms combining multiple other parameters. Those can be placed in plain `begin..end` blocks before the equations (there you essentially define terms `p_derived = p1+p2` will be treated as the term `p1 + p2` in the equation block).
   - "absolute values": sometimes, there are absolute values like heuristic values, those can be treated like "derived" parameters.
-  - "initialization parameters": those parameters are only used as intermediate results for initialization. they do not appear in the equations, instead they are only used as `start` properties for variables or in the default equations for "free" parameters. Those should be copied
-  to the `begin..end` block as well, but they should be commented out with a not that they are only used to initialize some other variables.
-  Intermediate results, which are just used in other commented out init equatiosn but not in the actual dynamic equation should be commented out as well.
+  - "initialization parameters": those parameters are only used as intermediate results for initialization. they do not appear in the equations, instead they are only used as `start` properties for variables or in the default equations for "free" parameters. Those can be ignored and don't need porting! 
 
 ### If/Else:
 In ModelingToolkit, you cannot use if / else statmenes in eqautions. Instead, we need the fucntional form:

@@ -21,7 +21,7 @@ function OpenIPSL_SMIB(_bus1)
         M_b = 100e6
         X_d = 0.2               # Internal impedance
         D = 0
-        V_b = 400e3
+        # V_b = 400e3
         ω_b = 2π*50
 
         # pf results, just used for pf modek
@@ -30,7 +30,7 @@ function OpenIPSL_SMIB(_bus1)
         v_0 = 1.0
         angle_0 = 0.0           # From OpenIPSL SMIB.mo
 
-        @named gencls_inf = PSSE_GENCLS(; S_b, V_b, ω_b, H, M_b, X_d, D)
+        @named gencls_inf = PSSE_GENCLS(; S_b, ω_b, H, M_b, X_d, D)
         busmodel = MTKBus(gencls_inf; name=:GEN2)
         compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0), vidx=3)
     end
