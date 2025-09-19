@@ -8,6 +8,36 @@ using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System,
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using NonlinearSolve: NonlinearProblem
 using SciMLBase: SciMLBase, solve
+using Symbolics: Symbolics
+
+"""
+    simplify_barrier(x) = x
+
+Symbolicially registers a function that acts as a barrier to simplification.
+It does nothing nummericially but is opaque to structural simplify / mtkcompile.
+Can be used to prevent unwanted simplifications which might lead to devision by zero.
+"""
+simplify_barrier(x) = x
+Symbolics.@register_symbolic simplify_barrier(x)
+
+"""
+    @no_simplify a ~ a + b
+
+Macro to prevent simplification of an equation during mtkcompile.
+Transforms the equation to an explicit constraint opaque to structural simplification:
+
+    0 ~ simplify_barrier(rhs - lhs)
+
+where `lhs ~ rhs` is the original equation.
+"""
+macro no_simplify(ex)
+    if ex isa Expr && ex.head == :call && ex.args[1] == :~
+        lhs, rhs = ex.args[2], ex.args[3]
+        return :(0 ~ $(simplify_barrier)($(esc(rhs)) - $(esc(lhs))))
+    else
+        throw(ArgumentError("@no_simplify can only be used on equations. Can't handle $ex"))
+    end
+end
 
 @mtkmodel SystemBase begin
     @parameters begin
