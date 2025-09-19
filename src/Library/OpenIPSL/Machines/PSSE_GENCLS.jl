@@ -36,10 +36,11 @@
         ω_b, [description="System base frequency [rad/s]"]
 
         # Initial conditions and setpoints
-        P_0, [description="Initial active power [MW]"]
-        Q_0, [description="Initial reactive power [Mvar]"]
-        v_0=1, [description="Initial voltage magnitude [pu]"]
-        angle_0=0, [description="Initial voltage angle [rad]"]
+        P_0, [guess=0, description="Initial active power [MW]"]
+        # Q_0, v_0 and angle_0 not actually used
+        # Q_0, [guess=0, description="Initial reactive power [Mvar]"]
+        # v_0, [guess=1, description="Initial voltage magnitude [pu]"]
+        # angle_0, [guess=1, description="Initial voltage angle [rad]"]
         fn=50, [description="System frequency [Hz]"]
     end
     @variables begin
@@ -113,9 +114,9 @@
         vq ~ eq - R_a*iq - X_d*id  # q-axis voltage equation
         vd ~ X_d*iq - R_a*id       # d-axis voltage equation
 
-        # Park's transformation (identical to OpenIPSL)
-        [pir, pii] .~ -CoB * [sin(δ); cos(δ);; -cos(δ); sin(δ)] * [id, iq]
-        [pvr, pvi] .~ [sin(δ); cos(δ);; -cos(δ); sin(δ)] * [vd, vq]
+        # Park's transformation (same as in OpenIPSL (and rest of PD for that matter))
+        [pir, pii] .~ -CoB * [sin(δ)  cos(δ); -cos(δ)  sin(δ)] * [id, iq]
+        [pvr, pvi] .~ [sin(δ)  cos(δ); -cos(δ)  sin(δ)] * [vd, vq]
 
         # Power injections (identical to OpenIPSL)
         -P ~ pvr * pir + pvi * pii

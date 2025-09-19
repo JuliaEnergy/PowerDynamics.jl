@@ -16,7 +16,9 @@ using OrdinaryDiffEqNonlinearSolve: OrdinaryDiffEqNonlinearSolve
 using Makie: Makie, Figure, Axis, axislegend, lines!, Cycled
 
 using PowerDynamics: PowerDynamics, compile_bus, compile_line, MTKLine, initialize_from_pf
-using PowerDynamics.Library: PiLine, SlackDifferential, PSSE_Load
+using PowerDynamics.Library: PiLine, SlackDifferential, PSSE_Load, PSSE_GENCLS
+using LinearAlgebra: norm
+using Statistics: mean
 
 using JLD2: JLD2
 using Test: Test, @test, @test_broken
@@ -24,7 +26,7 @@ using Test: Test, @test, @test_broken
 export TrajectoriesOfInterest, plottoi, compare
 include("TrajectoriesOfInterest.jl")
 
-export line_between_slacks, bus_on_slack, OpenIPSL_SMIB
+export line_between_slacks, bus_on_slack
 include("scenarios.jl")
 
 export @reftest, set_reference_dir, refup
@@ -33,5 +35,8 @@ include("reftests.jl")
 using PowerDynamics.Library: SauerPaiMachine, ConstantYLoad, AVRTypeI, TGOV1
 using PowerDynamics: CompositeInjector, MTKBus, pfSlack, pfPV, pfPQ
 include("testsystems.jl")
+
+export OpenIPSL_SMIB, ref_rms_error
+include("OpenIPSLUtils.jl")
 
 end # module PowerDynamicsTesting

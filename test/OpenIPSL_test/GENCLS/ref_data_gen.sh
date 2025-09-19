@@ -19,6 +19,17 @@ export OPENIPSL_PATH="$TMPDIR/OpenIPSL/OpenIPSL"
 omc "$SCRIPTDIR/gencls_simulation.mos"
 
 # Copy results back, compress, and cleanup
-cp modelica_results.csv "$SCRIPTDIR/"
+# Copy minimal generator data (for git repo)
+cp modelica_results.csv "$SCRIPTDIR/" || { echo "Error: Failed to copy minimal simulation results"; exit 1; }
+# Copy extended data with all bus variables (for debugging)
+cp modelica_results_extended.csv "$SCRIPTDIR/" || { echo "Error: Failed to copy extended simulation results"; exit 1; }
+
+# Remove existing compressed files if they exist to avoid conflicts
+rm -f "$SCRIPTDIR/modelica_results.csv.gz"
+rm -f "$SCRIPTDIR/modelica_results_extended.csv.gz"
+
+# Compress both files
 gzip "$SCRIPTDIR/modelica_results.csv"
+gzip "$SCRIPTDIR/modelica_results_extended.csv"
+
 rm -rf "$TMPDIR"

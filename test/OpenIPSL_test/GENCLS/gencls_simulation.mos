@@ -4,6 +4,41 @@ loadFile(getEnvironmentVar("OPENIPSL_PATH") + "/package.mo");
 // Run GENCLS simulation with model's native experiment settings
 simulate(OpenIPSL.Tests.Machines.PSSE.GENCLS);
 
-// Extract key variables to CSV file
-filterSimulationResults("OpenIPSL.Tests.Machines.PSSE.GENCLS_res.mat", "modelica_results.csv",
-                       {"time", "gENCLS1.delta", "gENCLS1.omega", "gENCLS1.V", "gENCLS1.P", "gENCLS1.Q"});
+// Extract minimal generator data for main testing
+filterSimulationResults(
+      "OpenIPSL.Tests.Machines.PSSE.GENCLS_res.mat",
+      "modelica_results.csv",
+      {
+            // GENCLS1 machine variables only
+            "gENCLS1.V",
+            "gENCLS1.omega",
+            "gENCLS1.P",
+            "gENCLS1.Q",
+            "gENCLS1.delta"
+      }
+      //addHeader=false   // disables "nrows=.." metadata line
+);
+
+// Extract extended data with all bus variables and injector powers for debugging
+filterSimulationResults(
+      "OpenIPSL.Tests.Machines.PSSE.GENCLS_res.mat",
+      "modelica_results_extended.csv",
+      {
+            // GENCLS1 machine variables
+            "gENCLS1.V",
+            "gENCLS1.omega",
+            "gENCLS1.P",
+            "gENCLS1.Q",
+            "gENCLS1.delta",
+            // Bus voltages and angles by bus name
+            "GEN1.v", "GEN1.angle",
+            "GEN2.v", "GEN2.angle",
+            "LOAD.v", "LOAD.angle",
+            "SHUNT.v", "SHUNT.angle",
+            "FAULT.v", "FAULT.angle",
+            // Injector power variables
+            "constantLoad.P", "constantLoad.Q",
+            "gENCLS.P", "gENCLS.Q"
+      }
+      //addHeader=false   // disables "nrows=.." metadata line
+);

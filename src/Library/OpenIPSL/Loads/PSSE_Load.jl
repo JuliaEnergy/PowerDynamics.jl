@@ -16,9 +16,9 @@
     end
     @parameters begin
         # Power flow initial conditions (from pfComponent)
-        P_0, [description="Initial active power [MW]"]
-        Q_0, [description="Initial reactive power [Mvar]"]
-        v_0, [description="Initial voltage magnitude [pu]"]
+        # P_0, [description="Initial active power [MW]"]
+        # Q_0, [description="Initial reactive power [Mvar]"]
+        v_0, [guess=1, description="Initial voltage magnitude [pu]"]
         # angle_0, [description="Initial voltage angle [rad]"]
         S_b, [description="System base power [MVA]"]
 
