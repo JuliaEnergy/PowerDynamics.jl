@@ -8,6 +8,36 @@ using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System,
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using NonlinearSolve: NonlinearProblem
 using SciMLBase: SciMLBase, solve
+using Symbolics: Symbolics
+
+"""
+    simplify_barrier(x) = x
+
+Symbolicially registers a function that acts as a barrier to simplification.
+It does nothing nummericially but is opaque to structural simplify / mtkcompile.
+Can be used to prevent unwanted simplifications which might lead to devision by zero.
+"""
+simplify_barrier(x) = x
+Symbolics.@register_symbolic simplify_barrier(x)
+
+"""
+    @no_simplify a ~ a + b
+
+Macro to prevent simplification of an equation during mtkcompile.
+Transforms the equation to an explicit constraint opaque to structural simplification:
+
+    0 ~ simplify_barrier(rhs - lhs)
+
+where `lhs ~ rhs` is the original equation.
+"""
+macro no_simplify(ex)
+    if ex isa Expr && ex.head == :call && ex.args[1] == :~
+        lhs, rhs = ex.args[2], ex.args[3]
+        return :(0 ~ $(simplify_barrier)($(esc(rhs)) - $(esc(lhs))))
+    else
+        throw(ArgumentError("@no_simplify can only be used on equations. Can't handle $ex"))
+    end
+end
 
 @mtkmodel SystemBase begin
     @parameters begin
@@ -116,5 +146,74 @@ include("Faults/Faults.jl")
 #### Powerflow models
 ####
 include("powerflow_models.jl")
+
+
+####
+#### OpenIPSL Models
+####
+"""
+    PSSE_QUAD_SE(u, SE1, SE2, E1, E2)
+
+Scaled Quadratic Saturation Function (PTI PSS/E).
+Port of OpenIPSL.NonElectrical.Functions.PSSE_QUAD_SE
+"""
+function PSSE_QUAD_SE(u, SE1, SE2, E1, E2)
+    if !(SE1 > 0.0 || SE1 < 0.0) || u <= 0.0
+        return 0.0
+    end
+
+    # XXX: This is weird! The original code uses
+    # parameter Real a=if not (SE2 > 0.0 or SE2 < 0.0) then sqrt(SE1*E1/(SE2*E2)) else 0;
+    # which has the not operator so it is differnet from this julia function
+    # maybe i missunderstand something about not or the or operator in modelica?
+    a = if (SE2 > 0.0 || SE2 < 0.0)
+        sqrt(SE1*E1/(SE2*E2))
+    else
+        0.0
+    end
+
+    A = E2 - (E1 - E2)/(a - 1)
+    B = if abs(E1 - E2) < eps()
+        0.0
+    else
+        SE2*E2*(a - 1)^2/(E1 - E2)^2
+    end
+
+    if u <= A
+        return 0.0
+    else
+        return B*(u - A)^2/u
+    end
+end
+#=
+PSSE_QUAD_SSE uses if/else statements. We need to register it as a symbolic function
+to block MTK from tracing the function and handle it as a black box.
+=#
+ModelingToolkit.@register_symbolic PSSE_QUAD_SE(u, SE1, SE2, E1, E2)
+
+"""
+    PSSE_EXP_SE(u, S_EE_1, S_EE_2, E_1, E_2)
+
+Exponential Saturation Function (PTI PSS/E).
+Port of OpenIPSL.NonElectrical.Functions.SE_exp
+"""
+function PSSE_EXP_SE(u, S_EE_1, S_EE_2, E_1, E_2)
+    X = log(S_EE_2/S_EE_1)/log(E_2)
+    return S_EE_1*u^X
+end
+
+include("OpenIPSL/Machines/PSSE_BaseMachine.jl")
+
+export PSSE_GENCLS
+include("OpenIPSL/Machines/PSSE_GENCLS.jl")
+
+export PSSE_GENROU, PSSE_GENROE
+include("OpenIPSL/Machines/PSSE_GENROUND.jl")
+
+export PSSE_GENSAL, PSSE_GENSAE
+include("OpenIPSL/Machines/PSSE_GENSALIENT.jl")
+
+export PSSE_Load
+include("OpenIPSL/Loads/PSSE_Load.jl")
 
 end
