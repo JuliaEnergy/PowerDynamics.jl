@@ -35,7 +35,10 @@ src/Library/OpenIPSL/
      - Loads the OpenIPSL library
      - Simulates the corresponding OpenIPSL test case
      - Extracts relevant variables to CSV format using `filterSimulationResults`
-     - for debuggin, it is sometimes usefull to alxo export a "extended" version, that one is ignored in gitignore and should not ever be added to git.
+     - We export two versions of the csv file: a
+       - **regular CSV**: this contains all variabls of interest of the model to test, this will be mostly all of its states
+       - **extended CSV**: this is a superset and also contains other variables, such as the active and reactive powers of injectors in the SMIB systema and voltag magnitudes and angles at all buses. Look
+       You can look at the GENCLS data gen file to understand the concept!
 
     **BOTH scripts can by copied from GENCLS tests and slighlty adapted!**
 
@@ -170,9 +173,9 @@ The following OpenIPSL models use the SMIB test harness and are candidates for P
 
 ### Machine Models (PSSE)
 - [X] **GENCLS** - Classical generator model
-- [ ] **GENSAL** - Salient pole generator
+- [X] **GENSAL** - Salient pole generator
   - *Dependencies: None (standalone model, connects PMECH0→PMECH and EFD0→EFD)*
-- [ ] **GENSAE** - Salient pole generator with saturation
+- [X] **GENSAE** - Salient pole generator with saturation
   - *Dependencies: None (standalone model, connects PMECH0→PMECH and EFD0→EFD)*
 - [X] **GENROE** - Round rotor generator with saturation
 - [X] **GENROU** - Round rotor generator

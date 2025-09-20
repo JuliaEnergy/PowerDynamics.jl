@@ -210,6 +210,9 @@ include("OpenIPSL/Machines/PSSE_GENCLS.jl")
 export PSSE_GENROU, PSSE_GENROE
 include("OpenIPSL/Machines/PSSE_GENROUND.jl")
 
+export PSSE_GENSAL, PSSE_GENSAE
+include("OpenIPSL/Machines/PSSE_GENSALIENT.jl")
+
 export PSSE_Load
 include("OpenIPSL/Loads/PSSE_Load.jl")
 
