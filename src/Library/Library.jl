@@ -185,20 +185,30 @@ function PSSE_QUAD_SE(u, SE1, SE2, E1, E2)
         return B*(u - A)^2/u
     end
 end
-
 #=
 PSSE_QUAD_SSE uses if/else statements. We need to register it as a symbolic function
 to block MTK from tracing the function and handle it as a black box.
 =#
 ModelingToolkit.@register_symbolic PSSE_QUAD_SE(u, SE1, SE2, E1, E2)
 
+"""
+    PSSE_EXP_SE(u, S_EE_1, S_EE_2, E_1, E_2)
+
+Exponential Saturation Function (PTI PSS/E).
+Port of OpenIPSL.NonElectrical.Functions.SE_exp
+"""
+function PSSE_EXP_SE(u, S_EE_1, S_EE_2, E_1, E_2)
+    X = log(S_EE_2/S_EE_1)/log(E_2)
+    return S_EE_1*u^X
+end
+
 include("OpenIPSL/Machines/PSSE_BaseMachine.jl")
 
 export PSSE_GENCLS
 include("OpenIPSL/Machines/PSSE_GENCLS.jl")
 
-export PSSE_GENROU
-include("OpenIPSL/Machines/PSSE_GENROU.jl")
+export PSSE_GENROU, PSSE_GENROE
+include("OpenIPSL/Machines/PSSE_GENROUND.jl")
 
 export PSSE_Load
 include("OpenIPSL/Loads/PSSE_Load.jl")

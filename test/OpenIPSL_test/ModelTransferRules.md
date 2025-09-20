@@ -170,15 +170,12 @@ The following OpenIPSL models use the SMIB test harness and are candidates for P
 
 ### Machine Models (PSSE)
 - [X] **GENCLS** - Classical generator model
-  - *Dependencies: None (standalone model)*
 - [ ] **GENSAL** - Salient pole generator
   - *Dependencies: None (standalone model, connects PMECH0→PMECH and EFD0→EFD)*
 - [ ] **GENSAE** - Salient pole generator with saturation
   - *Dependencies: None (standalone model, connects PMECH0→PMECH and EFD0→EFD)*
-- [ ] **GENROE** - Round rotor generator with saturation
-  - *Dependencies: None (standalone model, connects PMECH0→PMECH and EFD0→EFD)*
+- [X] **GENROE** - Round rotor generator with saturation
 - [X] **GENROU** - Round rotor generator
-  - *Dependencies: None (standalone model, connects PMECH0→PMECH and EFD0→EFD)*
 - [ ] **GEN** - Generic generator model
   - *Dependencies: Uses GENROE as machine, ConstantPower governor, ConstantExcitation exciter, DisabledPSS*
 

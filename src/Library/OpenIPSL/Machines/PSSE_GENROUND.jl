@@ -1,4 +1,4 @@
-# PSSE GENROU Model - Port of OpenIPSL.Electrical.Machines.PSSE.GENROU
+# PSSE GENROUND Model - Unified Round Rotor Generator (GENROU/GENROE)
 #
 # Original work Copyright (c) 2016-2022 Luigi Vanfretti, ALSETLab, and contributors
 # Original work licensed under BSD 3-Clause License
@@ -7,21 +7,24 @@
 # This Julia/PowerDynamics port maintains the same mathematical formulation
 # while adapting to PowerDynamics/ModelingToolkit framework conventions.
 #
-# Description: Round rotor generator model with quadratic saturation
+# Description: Unified round rotor generator model with configurable saturation
 
 #=
-On structural prameters:
-ideally we'd be able to define the input swicht base one pmech_input and efd_input
-as structrual parameters in PSSE_BaseMachine, but that's not possible (don't get properly
-forwarde on @extend)
-Instead, we define the intermediate varaibles "pmech(t)" and "efd(t)" in base machine
+On structural parameters:
+ideally we'd be able to define the input switch base one pmech_input and efd_input
+as structural parameters in PSSE_BaseMachine, but that's not possible (don't get properly
+forwarded on @extend)
+Instead, we define the intermediate variables "pmech(t)" and "efd(t)" in base machine
 but the parameters get created here and the equation switching also happens here
+
+SE is a structural parameter allowing different saturation functions to be passed in
 =#
 
-@mtkmodel PSSE_GENROU begin
+@mtkmodel PSSE_GENROUND begin
     @structural_parameters begin
         pmech_input = true
         efd_input = true
+        SE  # Saturation function - can be PSSE_QUAD_SE or PSSE_EXP_SE
     end
     @extend PSSE_BaseMachine()
 
@@ -35,20 +38,20 @@ but the parameters get created here and the equation switching also happens here
     end
 
     @parameters begin
-        # we cannot @extend a model with structural parameters, so we need to define it in concret mode
+        # we cannot @extend a model with structural parameters, so we need to define it in concrete mode
         if !pmech_input
             pmech_set, [guess=1, description="mechanical power setpoint [pu]"]
         end
         if !efd_input
             efd_set, [guess=1, description="field voltage setpoint [pu]"]
         end
-        # Additional machine parameters for GENROU
+        # Additional machine parameters for GENROUND
         Xpq, [guess=0.6, description="q-axis transient reactance [pu]"]
         Tpq0, [guess=0.9, description="q-axis transient open-circuit time constant [s]"]
     end
 
     @variables begin
-        # State variables (4 additional states for GENROU)
+        # State variables (4 additional states for GENROUND)
         Epd(t), [guess=0, description="d-axis voltage behind transient reactance [pu]"]
         Epq(t), [guess=1, description="q-axis voltage behind transient reactance [pu]"]
         PSIkd(t), [guess=1, description="d-axis rotor flux linkage [pu]"]
@@ -102,12 +105,12 @@ but the parameters get created here and the equation switching also happens here
         # Air-gap flux magnitude (from OpenIPSL line 139)
         PSIpp ~ sqrt(PSIppd*PSIppd + PSIppq*PSIppq)
 
-        # Field current equations with saturation (from OpenIPSL lines 140-151)
+        # Field current equations with configurable saturation (from OpenIPSL lines 140-151)
         XadIfd ~ K1d*(Epq - PSIkd - (Xpd - Xl)*id) + Epq + id*(Xd - Xpd) +
-                 PSSE_QUAD_SE(PSIpp, S10, S12, 1, 1.2)*PSIppd
+                 SE(PSIpp, S10, S12, 1, 1.2)*PSIppd
 
         XaqIlq ~ K1q*(Epd - PSIkq + (Xpq - Xl)*iq) + Epd - iq*(Xq - Xpq) -
-                 PSSE_QUAD_SE(PSIpp, S10, S12, 1, 1.2)*(-1)*PSIppq*(Xq - Xl)/(Xd - Xl)
+                 SE(PSIpp, S10, S12, 1, 1.2)*(-1)*PSIppq*(Xq - Xl)/(Xd - Xl)
 
         # Override voltage equations (from OpenIPSL lines 153-154)
         ud ~ (-PSIq) - R_a*id
@@ -118,3 +121,6 @@ but the parameters get created here and the equation switching also happens here
         ISORCE_out.u ~ XadIfd
     end
 end
+
+PSSE_GENROU(; kwargs...) = PSSE_GENROUND(; SE=PSSE_QUAD_SE, kwargs...)
+PSSE_GENROE(; kwargs...) = PSSE_GENROUND(; SE=PSSE_EXP_SE, kwargs...)
