@@ -183,18 +183,22 @@ The following OpenIPSL models use the SMIB test harness and are candidates for P
   - *Dependencies: Uses GENROE as machine, ConstantPower governor, ConstantExcitation exciter, DisabledPSS*
 
 ### Excitation Systems (PSSE)
-- [ ] **EXST1** - Static excitation system
+(rankend by complexity by claude)
+(all GENROE testsystem have the same parameters and could be combined in a new testharness)
+- [X] **IEEET1** - IEEE Type 1 exciter
   - *Dependencies: Requires GENROE machine model*
-- [ ] **ST5B** - IEEE Type ST5B exciter
-  - *Dependencies: Requires GENROE machine model*
-- [ ] **ESDC1A** - DC exciter
-  - *Dependencies: Requires GENROE machine model*
-- [ ] **URST5T** - Brushless exciter
-  - *Dependencies: Requires GENROU machine model*
 - [ ] **SEXS** - Simplified excitation system
   - *Dependencies: Requires GENROU machine model*
 - [ ] **SCRX** - Static exciter
   - *Dependencies: Requires GENROU machine model*
+- [ ] **EXST1** - Static excitation system
+  - *Dependencies: Requires GENROE machine model*
+- [ ] **URST5T** - Brushless exciter
+  - *Dependencies: Requires GENROU machine model*
+- [ ] **ESDC1A** - DC exciter
+  - *Dependencies: Requires GENROE machine model*
+- [ ] **ST5B** - IEEE Type ST5B exciter
+  - *Dependencies: Requires GENROE machine model*
 - [ ] **ESST1A** - Static exciter
   - *Dependencies: Requires GENROE machine model*
 - [ ] **ESST4B** - Static exciter
@@ -208,8 +212,6 @@ The following OpenIPSL models use the SMIB test harness and are candidates for P
 - [ ] **IEEET2** - IEEE Type 2 exciter
   - *Dependencies: Requires GENROE machine model*
 - [ ] **ESAC1A** - AC exciter
-  - *Dependencies: Requires GENROE machine model*
-- [ ] **IEEEX1** - IEEE Type 1 exciter
   - *Dependencies: Requires GENROE machine model*
 - [ ] **EXNI** - Exciter model
   - *Dependencies: Requires GENROE machine model*

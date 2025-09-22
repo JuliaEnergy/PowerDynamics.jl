@@ -216,4 +216,43 @@ include("OpenIPSL/Machines/PSSE_GENSALIENT.jl")
 export PSSE_Load
 include("OpenIPSL/Loads/PSSE_Load.jl")
 
+@mtkmodel SimpleLag begin
+    @structural_parameters begin
+        K # Gain
+        T # Time constant
+    end
+    @variables begin
+        in(t), [description="Input signal", input=true]
+        out(t), [guess=0, description="Output signal", output=true]
+    end
+    @equations begin
+        T * Dt(out) ~ K*in - out
+    end
+end
+@mtkmodel SimpleLagLim begin
+    @structural_parameters begin
+        K # Gain
+        T # Time constant
+        outMin # Lower limit
+        outMax # Upper limit
+    end
+    @variables begin
+        in(t), [description="Input signal", input=true]
+        out(t), [description="Output signal", output=true]
+        int(t), [guess=0, description="Internal integrator state"]
+    end
+    @equations begin
+        T*Dt(int) ~ ifelse(
+            ((int > outMax) & (K*in > int)) | ((int < outMin) & (K*in < int)),
+            0,
+            K*in - int
+        )
+
+        out ~ clamp(int, outMin, outMax)
+    end
+end
+
+export PSSE_IEEET1
+include("OpenIPSL/Controls/PSSE_Excitation.jl")
+
 end
