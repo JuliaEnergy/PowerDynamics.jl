@@ -19,72 +19,33 @@ ref = CSV.read(
     silencewarnings=true
 )
 
-# GENROE generator parameters from OpenIPSL IEEET1 test case
-GENROE = let
-    # Machine parameters from OpenIPSL IEEET1 test case (lines 5-25)
-    S_b = 100e6
-    M_b = 100e6
-    H = 4.28
-    D = 0
-    # V_b = 400e3
-    # ω_b = 2π*50
-
-    # GENROE machine parameters (matching OpenIPSL test exactly)
-    Tpd0 = 5
-    Tppd0 = 0.07
-    Tpq0 = 0.9
-    Tppq0 = 0.09
-    Xd = 1.84
-    Xq = 1.75
-    Xpd = 0.41
-    Xpq = 0.6
-    Xppd = 0.2
-    Xppq = 0.2
-    Xl = 0.12
-    S10 = 0.11
-    S12 = 0.39
-    R_a = 0
-    # angle_0 = 0.070492225331847
-    # P_0 = 40000000
-    # Q_0 = 5416582
-    # v_0 = 1
-
-    PSSE_GENROE(;
-        Tpd0, Tppd0, Tpq0, Tppq0, H, D,
-        Xd, Xq, Xpd, Xpq, Xppd, Xppq, Xl,
-        S10, S12, R_a,
-        M_b, S_b,
-        pmech_input=false,
-        efd_input=true,
-        name=:machine
-    )
-end
-
 # IEEET1 exciter parameters from OpenIPSL IEEET1 test case
-IEEET1_EXCITER = let
-    # IEEET1 exciter parameters (matching OpenIPSL test exactly, lines 27-39)
-    T_R = 0.02
-    K_A = 200
-    T_A = 0.001
-    T_E = 0.55
-    K_F = 0.06
-    E_1 = 2.85
-    S_EE_1 = 0.3
-    E_2 = 3.8
-    S_EE_2 = 0.6
-    V_RMAX = 2
-    V_RMIN = -2
-    K_E = 0.1
-
-    PSSE_IEEET1(;
-        T_R, K_A, T_A, V_RMAX, V_RMIN,
-        K_E, T_E, K_F, T_F=1,  # T_F default from implementation
-        E_1, S_EE_1, E_2, S_EE_2,
-        name=:ex
-    )
-end
-
 BUS = let
+    GENROE = PowerDynamicsTesting.default_controller_smib_genroe()
+
+    IEEET1_EXCITER = let
+        # IEEET1 exciter parameters (matching OpenIPSL test exactly, lines 27-39)
+        T_R = 0.02
+        K_A = 200
+        T_A = 0.001
+        T_E = 0.55
+        K_F = 0.06
+        E_1 = 2.85
+        S_EE_1 = 0.3
+        E_2 = 3.8
+        S_EE_2 = 0.6
+        V_RMAX = 2
+        V_RMIN = -2
+        K_E = 0.1
+
+        PSSE_IEEET1(;
+            T_R, K_A, T_A, V_RMAX, V_RMIN,
+            K_E, T_E, K_F, T_F=1,  # T_F default from implementation
+            E_1, S_EE_1, E_2, S_EE_2,
+            name=:ex
+        )
+    end
+
     angle_0 = 0.070492225331847
     v_0 = 1
     con = [
@@ -94,9 +55,10 @@ BUS = let
     busmodel = MTKBus([GENROE, IEEET1_EXCITER], con; name=:GEN1)
     compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0))
 end
+
 sol = OpenIPSL_SMIB(BUS);
 
-
+#=
 fig_ieeet1 = let
     fig = Figure(size=(1400, 1000))
     ts = refine_timeseries(sol.t)
@@ -155,3 +117,4 @@ fig_ieeet1 = let
 
     fig
 end
+=#

@@ -1,7 +1,9 @@
 module Library
 
 using ArgCheck: @argcheck
-using ..PowerDynamics: Terminal, BusBase, Ibase
+using ..PowerDynamics: PowerDynamics, Terminal, BusBase, Ibase
+using NetworkDynamics: NetworkDynamics, ComponentCondition, ComponentAffect,
+                       VectorContinuousComponentCallback, DiscreteComponentCallback
 using ModelingToolkit: ModelingToolkit, @named, simplify, t_nounits as t, D_nounits as Dt
 # needed for @mtkmodel
 using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System, Equation, connect
@@ -151,56 +153,7 @@ include("powerflow_models.jl")
 ####
 #### OpenIPSL Models
 ####
-"""
-    PSSE_QUAD_SE(u, SE1, SE2, E1, E2)
-
-Scaled Quadratic Saturation Function (PTI PSS/E).
-Port of OpenIPSL.NonElectrical.Functions.PSSE_QUAD_SE
-"""
-function PSSE_QUAD_SE(u, SE1, SE2, E1, E2)
-    if !(SE1 > 0.0 || SE1 < 0.0) || u <= 0.0
-        return 0.0
-    end
-
-    # XXX: This is weird! The original code uses
-    # parameter Real a=if not (SE2 > 0.0 or SE2 < 0.0) then sqrt(SE1*E1/(SE2*E2)) else 0;
-    # which has the not operator so it is differnet from this julia function
-    # maybe i missunderstand something about not or the or operator in modelica?
-    a = if (SE2 > 0.0 || SE2 < 0.0)
-        sqrt(SE1*E1/(SE2*E2))
-    else
-        0.0
-    end
-
-    A = E2 - (E1 - E2)/(a - 1)
-    B = if abs(E1 - E2) < eps()
-        0.0
-    else
-        SE2*E2*(a - 1)^2/(E1 - E2)^2
-    end
-
-    if u <= A
-        return 0.0
-    else
-        return B*(u - A)^2/u
-    end
-end
-#=
-PSSE_QUAD_SSE uses if/else statements. We need to register it as a symbolic function
-to block MTK from tracing the function and handle it as a black box.
-=#
-ModelingToolkit.@register_symbolic PSSE_QUAD_SE(u, SE1, SE2, E1, E2)
-
-"""
-    PSSE_EXP_SE(u, S_EE_1, S_EE_2, E_1, E_2)
-
-Exponential Saturation Function (PTI PSS/E).
-Port of OpenIPSL.NonElectrical.Functions.SE_exp
-"""
-function PSSE_EXP_SE(u, S_EE_1, S_EE_2, E_1, E_2)
-    X = log(S_EE_2/S_EE_1)/log(E_2)
-    return S_EE_1*u^X
-end
+include("building_blocks.jl")
 
 include("OpenIPSL/Machines/PSSE_BaseMachine.jl")
 
@@ -215,42 +168,6 @@ include("OpenIPSL/Machines/PSSE_GENSALIENT.jl")
 
 export PSSE_Load
 include("OpenIPSL/Loads/PSSE_Load.jl")
-
-@mtkmodel SimpleLag begin
-    @structural_parameters begin
-        K # Gain
-        T # Time constant
-    end
-    @variables begin
-        in(t), [description="Input signal", input=true]
-        out(t), [guess=0, description="Output signal", output=true]
-    end
-    @equations begin
-        T * Dt(out) ~ K*in - out
-    end
-end
-@mtkmodel SimpleLagLim begin
-    @structural_parameters begin
-        K # Gain
-        T # Time constant
-        outMin # Lower limit
-        outMax # Upper limit
-    end
-    @variables begin
-        in(t), [description="Input signal", input=true]
-        out(t), [description="Output signal", output=true]
-        int(t), [guess=0, description="Internal integrator state"]
-    end
-    @equations begin
-        T*Dt(int) ~ ifelse(
-            ((int > outMax) & (K*in > int)) | ((int < outMin) & (K*in < int)),
-            0,
-            K*in - int
-        )
-
-        out ~ clamp(int, outMin, outMax)
-    end
-end
 
 export PSSE_IEEET1
 include("OpenIPSL/Controls/PSSE_Excitation.jl")

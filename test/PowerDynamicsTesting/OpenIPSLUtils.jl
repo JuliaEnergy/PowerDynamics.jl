@@ -95,6 +95,47 @@ function OpenIPSL_SMIB(_bus1)
     sol
 end
 
+# Default GENROE machine for SMIB system for testing controllers
+function default_controller_smib_genroe()
+    # Machine parameters from OpenIPSL IEEET1 test case (lines 5-25)
+    S_b = 100e6
+    M_b = 100e6
+    H = 4.28
+    D = 0
+    # V_b = 400e3
+    # ω_b = 2π*50
+
+    # GENROE machine parameters (matching OpenIPSL test exactly)
+    Tpd0 = 5
+    Tppd0 = 0.07
+    Tpq0 = 0.9
+    Tppq0 = 0.09
+    Xd = 1.84
+    Xq = 1.75
+    Xpd = 0.41
+    Xpq = 0.6
+    Xppd = 0.2
+    Xppq = 0.2
+    Xl = 0.12
+    S10 = 0.11
+    S12 = 0.39
+    R_a = 0
+    # angle_0 = 0.070492225331847
+    # P_0 = 40000000
+    # Q_0 = 5416582
+    # v_0 = 1
+
+    PSSE_GENROE(;
+        Tpd0, Tppd0, Tpq0, Tppq0, H, D,
+        Xd, Xq, Xpd, Xpq, Xppd, Xppq, Xl,
+        S10, S12, R_a,
+        M_b, S_b,
+        pmech_input=false,
+        efd_input=true,
+        name=:machine
+    )
+end
+
 function ref_rms_error(sol, csv, idx, col)
     t = csv[:, "time"]
     _ref = csv[:, col]
