@@ -76,7 +76,7 @@ end
     end
     @variables begin
         in(t), [description="Input signal", input=true]
-        out(t), [guess=0, description="Internal integrator state"]
+        out(t), [guess=0, description="limited integrator output state"]
         min(t), [description="Lower limit"]
         max(t), [description="Upper limit"]
         forcing(t)
@@ -88,7 +88,6 @@ end
         T*Dt(out) ~ (1 - _callback_sat_max - _callback_sat_min) * forcing
     end
 end
-PowerDynamics.register_postprocessing_function!(attach_SimpleLagLim_callbacks!)
 
 function attach_SimpleLagLim_callbacks!(cf)
     laglim_components = String[]
@@ -214,3 +213,21 @@ function _SatLim_condition(_out, u, p, _)
             _out[3] = u[4]
         end
 end
+
+# after Modelica.Blocks.Continuous.Derivative
+@mtkmodel Derivative begin
+    @structural_parameters begin
+        K # Gain
+        T # Time constant
+    end
+    @variables begin
+        in(t), [description="Input signal", input=true]
+        out(t), [description="Output signal"]
+        internal(t), [guess=0, description="Internal integrator for derivative estimation"]
+    end
+    @equations begin
+        T*Dt(internal) ~ in - internal
+        out ~ K/T*(in - internal)
+    end
+end
+

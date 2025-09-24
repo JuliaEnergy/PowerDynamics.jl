@@ -1,4 +1,6 @@
-const POSTPROCESSING_FUNCTIONS = Any[]
+const POSTPROCESSING_FUNCTIONS = Any[
+    Library.attach_SimpleLagLim_callbacks!
+]
 
 """
     register_postprocessing_function!(f)

@@ -72,6 +72,24 @@ The OpenIPSL folder is available locally! No need to web searches, any questions
 - variable and parameter names should stay consistent
 - always look at allready implemented files to get an idea of the style
 
+### Building Blocks and Components
+
+PowerDynamics provides several pre-implemented building blocks in `src/Library/building_blocks.jl`:
+
+**Use these building blocks for complex dynamic behavior** that requires proper time constants and transfer function implementations.
+Modelics LimIntegrator from standard library can be modeled as SimpleLagLim with T=1.
+
+**For simple algebraic operations, implement directly in equations:**
+- `min(a, b)` → use `ifelse(a < b, a, b)` or MTK's `min(a, b)`
+- `max(a, b)` → use `ifelse(a > b, a, b)` or MTK's `max(a, b)`
+- `clamp(x, lo, hi)` → use MTK's `clamp(x, lo, hi)`
+- Sum operations → directly write `sum_signal ~ signal1 + signal2 + signal3`
+- Difference → directly write `diff_signal ~ signal1 - signal2`
+- Gain → directly write `output ~ K * input`
+- Dead zones, limiters without dynamics → implement directly in equations
+
+**Rationale:** Simple algebraic operations create unnecessary complexity when implemented as subcomponents. Reserve building blocks for operations that truly require internal states and dynamic behavior.
+
 ### Terminal conventions
 Both modeling systems use different terminal conventions. To make the equations comparable, introduce the variables
 ```julia

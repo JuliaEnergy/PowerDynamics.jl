@@ -60,19 +60,19 @@ sol = OpenIPSL_SMIB(BUS);
 
 ## perform tests for all variables of interest
 # Core generator variables
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊w), "gENROE.w") < 2e-5
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊delta), "gENROE.delta") < 1e-3
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊w), "gENROE.w") < 1.5e-5
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊delta), "gENROE.delta") < 8e-4
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊P), "gENROE.P") < 6e-4
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊Vt), "gENROE.Vt") < 8e-5
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊Epd), "gENROE.Epd") < 3e-4
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊Epd), "gENROE.Epd") < 2.5e-4
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊Epq), "gENROE.Epq") < 8e-5
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊XadIfd), "gENROE.XadIfd") < 7e-4
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊XadIfd), "gENROE.XadIfd") < 6.5e-4
 
 # IEEET1 exciter variables
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :ex₊exciter₊EFD), "iEEET1.EFD") < 1e-3
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :ex₊amplifier₊out), "iEEET1.simpleLagLim.y") < 2e-3
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :ex₊derivative_lag₊out), "iEEET1.derivativeLag.y") < 3e-5
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :ex₊transducer₊out), "iEEET1.TransducerDelay.y") < 6e-5
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :ex₊amplifier₊out), "iEEET1.simpleLagLim.y") < 1.5e-3
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :ex₊derivative_lag₊out), "iEEET1.derivativeLag.y") < 2.5e-5
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :ex₊transducer₊out), "iEEET1.TransducerDelay.y") < 5.5e-5
 
 #=
 fig_ieeet1 = let

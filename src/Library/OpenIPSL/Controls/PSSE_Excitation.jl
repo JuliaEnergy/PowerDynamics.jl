@@ -64,7 +64,7 @@ end
         # Building block components
         transducer = SimpleLag(K=1, T=T_R)
         amplifier = SimpleLagLim(K=K_A, T=T_A, outMin=V_RMIN, outMax=V_RMAX)
-        derivative_lag = SimpleLag(K=K_F, T=T_F)
+        derivative_lag = Derivative(K=K_F, T=T_F)
         exciter = RotatingExciter(T_E=T_E, K_E=K_E, E_1=E_1, E_2=E_2, S_EE_1=S_EE_1, S_EE_2=S_EE_2)
     end
 
@@ -92,8 +92,8 @@ end
         # Exciter
         exciter.I_C ~ amplifier.out
 
-        # Derivative feedback using suggested approach
-        derivative_lag.in ~ Dt(exciter.EFD)
+        # Derivative feedback
+        derivative_lag.in ~ exciter.EFD
         derivative_feedback ~ derivative_lag.out
 
         # Output connection
