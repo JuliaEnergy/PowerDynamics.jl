@@ -53,10 +53,11 @@ end
     @structural_parameters begin
         K # Gain
         T # Time constant
+        guess=0
     end
     @variables begin
         in(t), [description="Input signal", input=true]
-        out(t), [guess=0, description="Output signal", output=true]
+        out(t), [guess=guess, description="Output signal", output=true]
     end
     @equations begin
         T * Dt(out) ~ K*in - out
@@ -221,6 +222,19 @@ function _SatLim_condition(_out, u, p, _)
             # when not in saturation don't set out[3] at all
             _out[3] = u[4]
         end
+end
+
+@mtkmodel SimpleGain begin
+    @structural_parameters begin
+        K # Gain
+    end
+    @variables begin
+        in(t), [description="Input signal", input=true]
+        out(t), [description="Output signal", output=true]
+    end
+    @equations begin
+        out ~ K*in
+    end
 end
 
 # after Modelica.Blocks.Continuous.Derivative

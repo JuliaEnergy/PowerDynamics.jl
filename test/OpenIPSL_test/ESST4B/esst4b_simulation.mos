@@ -26,5 +26,4 @@ filterSimulationResults(
             "eSST4B.limiter.y",             // Voltage PI controller output
             "eSST4B.limiter1.y"             // Current PI controller output
       }
-      //addHeader=false   // disables "nrows=.." metadata line
 );

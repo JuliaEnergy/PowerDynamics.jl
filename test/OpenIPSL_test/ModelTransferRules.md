@@ -35,12 +35,9 @@ src/Library/OpenIPSL/
      - Loads the OpenIPSL library
      - Simulates the corresponding OpenIPSL test case
      - Extracts relevant variables to CSV format using `filterSimulationResults`
-     - We export two versions of the csv file: a
-       - **regular CSV**: this contains all variabls of interest of the model to test, this will be mostly all of its states
-       - **extended CSV**: this is a superset and also contains other variables, such as the active and reactive powers of injectors in the SMIB systema and voltag magnitudes and angles at all buses. Look
-       You can look at the GENCLS data gen file to understand the concept!
 
-    **BOTH scripts can by copied from GENCLS tests and slighlty adapted!**
+    **BOTH scripts can by copied from one of the other tests and slighlty adapted!**
+    **Controller tests should be similar to other controler tests**
 
 3. **Create Validation Test**
    - Implement `MODEL_NAME_test.jl` that:
@@ -215,7 +212,7 @@ The following OpenIPSL models use the SMIB test harness and are candidates for P
   - *Dependencies: Requires GENROU machine model*
 - [ ] **SCRX** - Static exciter
   - *Dependencies: Requires GENROU machine model*
-- [ ] **EXST1** - Static excitation system
+- [X] **EXST1** - Static excitation system
   - *Dependencies: Requires GENROE machine model*
 - [ ] **URST5T** - Brushless exciter
   - *Dependencies: Requires GENROU machine model*
