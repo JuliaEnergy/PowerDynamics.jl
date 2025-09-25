@@ -175,4 +175,7 @@ include("OpenIPSL/Controls/PSSE_Excitation.jl")
 export PSSE_IEEEG1
 include("OpenIPSL/Controls/PSSE_TurbineGovernors.jl")
 
+export PSSE_GGOV1
+include("OpenIPSL/Controls/PSSE_GGOV1.jl")
+
 end

@@ -261,11 +261,12 @@ end
         K # Gain
         T1 # Lead time constant
         T2 # Lag time constant
+        guess=0
     end
     @variables begin
         in(t), [description="Input signal", input=true]
-        out(t), [guess=0, description="Output signal", output=true]
-        internal(t), [guess=0, description="Internal state"]
+        out(t), [description="Output signal", output=true]
+        internal(t), [guess=guess, description="Internal state"]
         internal_dt(t), [description="derivative of internal state"]
     end
     @equations begin
@@ -334,5 +335,26 @@ to determine the voltage drop factor via the FEX function.
         FEX_out ~ FEX_function(IN)
         # Calculate final field voltage
         EFD ~ V_EX * FEX_out
+    end
+end
+
+# after modelica Modelica.Blocks.Nonlinear.DeadZone
+@mtkmodel DeadZone begin
+    @structural_parameters begin
+        uMax # Lower dead zone limit
+        uMin=-uMax # Upper dead zone limit
+    end
+    @variables begin
+        in(t), [description="Input signal", input=true]
+        out(t), [description="Output signal", output=true]
+    end
+    @equations begin
+        out ~ ifelse(in < uMin,
+            in - uMin,
+            ifelse(in > uMax,
+                in - uMax,
+                0.0
+            )
+        )
     end
 end
