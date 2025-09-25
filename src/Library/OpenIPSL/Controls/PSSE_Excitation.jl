@@ -100,3 +100,142 @@ end
         EFD_out.u ~ exciter.EFD
     end
 end
+
+@mtkmodel PSSE_ESST4B begin
+    @structural_parameters begin
+        vothsg_input = false  # Other signal input (rarely used)
+        vuel_input = false    # Under-excitation limiter input (rarely used)
+        voel_input = false    # Over-excitation limiter input (rarely used)
+    end
+
+    @parameters begin
+        # Fixed parameters with OpenIPSL defaults
+        T_R=0.3, [description="Regulator input filter time constant [s]"]
+        K_PR=2.97, [description="Voltage regulator proportional gain [pu]"]
+        K_IR=2.97, [description="Voltage regulator integral gain [pu]"]
+        V_RMAX=1, [description="Maximum regulator output [pu]"]
+        V_RMIN=-0.87, [description="Minimum regulator output [pu]"]
+        T_A=0.01, [description="Thyristor bridge time constant [s]"]
+        K_PM=1, [description="Current regulator proportional gain [pu]"]
+        K_IM=0.2, [description="Current regulator integral gain [pu]"]
+        V_MMAX=1, [description="Maximum current regulator output [pu]"]
+        V_MMIN=-0.87, [description="Minimum current regulator output [pu]"]
+        K_G=0.1, [description="Feedback gain [pu]"]
+        K_P=6.73, [description="Potential circuit gain [pu]"]
+        K_I=0.1, [description="Current circuit gain [pu]"]
+        V_BMAX=8.41, [description="Maximum exciter voltage [pu]"]
+        K_C=0.1, [description="Rectifier loading factor [pu]"]
+        X_L=0, [description="Reactance associated with potential source [pu]"]
+        THETAP=0, [description="Potential circuit phase angle [rad]"]
+
+        # Optional input default values (when inputs are disabled)
+        if !vothsg_input
+            VOTHSG_set=0.0, [description="Other signal setpoint [pu]"]
+        end
+        if !vuel_input
+            VUEL_set=0.0, [description="Under-excitation limiter setpoint [pu]"]
+        end
+        if !voel_input
+            VOEL_set=1e10, [description="Over-excitation limiter setpoint [pu]"]
+        end
+
+        # Free initialization parameter
+        V_REF, [guess=1, description="Voltage reference setpoint [pu]"]
+    end
+
+    @components begin
+        # Always required input/output interfaces
+        ECOMP_in = RealInput()     # Terminal voltage measurement
+        EFD_out = RealOutput()     # Field voltage output
+        XADIFD_in = RealInput()    # Machine field current
+
+        # Terminal inputs (from PSSE_BaseMachine outputs)
+        TERM_VR_in = RealInput()   # Terminal voltage real part
+        TERM_VI_in = RealInput()   # Terminal voltage imag part
+        TERM_IR_in = RealInput()   # Terminal current real part
+        TERM_II_in = RealInput()   # Terminal current imag part
+
+        # Optional auxiliary inputs (conditional on structural parameters)
+        if vothsg_input
+            VOTHSG_in = RealInput()    # Other signal input
+        end
+        if vuel_input
+            VUEL_in = RealInput()      # Under-excitation limiter
+        end
+        if voel_input
+            VOEL_in = RealInput()      # Over-excitation limiter
+        end
+
+        # Building block components
+        transducer = SimpleLag(K=1, T=T_R)
+        voltage_int = LimIntegrator(K=K_IR, outMin=V_RMIN/K_PR, outMax=V_RMAX/K_PR)
+        thyristor = SimpleLag(K=1, T=T_A)
+        current_int = LimIntegrator(K=K_IM, outMin=V_MMIN/K_PM, outMax=V_MMAX/K_PM)
+        rectifier = RectifierCommutationVoltageDrop(K_C=K_C)
+    end
+
+    @variables begin
+        # Signal processing variables
+        voltage_error(t), [description="Voltage error signal [pu]"]
+        vr_sum(t), [description="Voltage regulator input sum [pu]"]
+        vr_prop(t), [description="Voltage regulator proportional output [pu]"]
+        vr_out(t), [guess=1, description="Voltage regulator output [pu]"]
+        va_out(t), [description="Thyristor bridge output [pu]"]
+        current_error(t), [description="Current error with feedback [pu]"]
+        vm_prop(t), [guess=0, description="Current regulator proportional output [pu]"]
+        vm_out(t), [guess=1, description="Current regulator output [pu]"]
+        vm_limited(t), [description="LV_GATE limited output [pu]"]
+        vb_signal(t), [description="Exciter output (limited) [pu]"]
+        VE(t), [description="adapted terminal voltage magnitude for rectifier"]
+    end
+    begin
+        V_T = TERM_VR_in.u + im*TERM_VI_in.u
+        I_T = TERM_IR_in.u + im*TERM_II_in.u
+        K_P_comp = K_P*cos(THETAP) + im*K_P*sin(THETAP)
+        ve_term = simplify(abs(K_P_comp*V_T + im*(K_I + K_P_comp*X_L)*I_T))
+    end
+
+    @equations begin
+        # Input transducer
+        transducer.in ~ ECOMP_in.u
+
+        # Voltage error calculation
+        voltage_error ~ V_REF - transducer.out
+
+        # 3-input sum with conditional switching
+        vr_sum ~ voltage_error +
+                  (vothsg_input ? VOTHSG_in.u : VOTHSG_set) +
+                  (vuel_input ? VUEL_in.u : VUEL_set)
+
+        # Voltage PI controller
+        voltage_int.in ~ vr_sum
+        vr_prop ~ K_PR * vr_sum
+        vr_out ~ clamp(vr_prop + voltage_int.out, V_RMIN, V_RMAX)
+
+        # Thyristor bridge
+        thyristor.in ~ vr_out
+        va_out ~ thyristor.out
+
+        # Current error with feedback
+        current_error ~ va_out - K_G * EFD_out.u
+
+        # Current PI controller
+        current_int.in ~ current_error
+        vm_prop ~ K_PM * current_error
+        vm_out ~ clamp(vm_prop + current_int.out, V_MMIN, V_MMAX)
+
+        # LV_GATE with conditional VOEL
+        vm_limited ~ min(vm_out, voel_input ? VOEL_in.u : VOEL_set)
+
+        # Rectifier commutation voltage drop
+        VE ~ ve_term
+        rectifier.V_EX ~ VE
+        rectifier.XADIFD ~ XADIFD_in.u
+
+        # Final limiting with V_BMAX
+        vb_signal ~ clamp(rectifier.EFD, -Inf, V_BMAX)
+
+        # Output connection
+        EFD_out.u ~ vb_signal * vm_limited
+    end
+end

@@ -77,7 +77,13 @@ The OpenIPSL folder is available locally! No need to web searches, any questions
 PowerDynamics provides several pre-implemented building blocks in `src/Library/building_blocks.jl`:
 
 **Use these building blocks for complex dynamic behavior** that requires proper time constants and transfer function implementations.
-Modelics LimIntegrator from standard library can be modeled as SimpleLagLim with T=1.
+
+**Key building blocks:**
+- `LimIntegrator(K, outMin, outMax)` - Pure integrator with limits: `dy/dt = K*u` (matches Modelica `LimIntegrator`)
+- `SimpleLagLim(K, T, outMin, outMax)` - First-order lag with limits: `T * dy/dt = K*u - y`
+- `SimpleLag(K, T)` - First-order lag without limits: `T * dy/dt = K*u - y`
+
+**Note:** More building blocks are available - check `src/Library/building_blocks.jl` for the complete list and their implementations.
 
 **For simple algebraic operations, implement directly in equations:**
 - `min(a, b)` → use `ifelse(a < b, a, b)` or MTK's `min(a, b)`
@@ -219,7 +225,7 @@ The following OpenIPSL models use the SMIB test harness and are candidates for P
   - *Dependencies: Requires GENROE machine model*
 - [ ] **ESST1A** - Static exciter
   - *Dependencies: Requires GENROE machine model*
-- [ ] **ESST4B** - Static exciter
+- [X] **ESST4B** - Static exciter
   - *Dependencies: Requires GENROU machine model*
 - [ ] **EXAC1** - AC exciter
   - *Dependencies: Requires GENROE machine model*

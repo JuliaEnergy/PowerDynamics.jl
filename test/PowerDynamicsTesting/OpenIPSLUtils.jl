@@ -87,7 +87,8 @@ function OpenIPSL_SMIB(_bus1)
     # pfnw = powerflow_model(nw)
     # pfs = solve_powerflow(pfnw)
 
-    s0 = initialize_from_pf(nw, subverbose=true)
+    s0 = initialize_from_pf(nw, subverbose=[VIndex(1)])
+    # s0 = initialize_from_pf(nw, subverbose=[VIndex(1)], tol=0.1, nwtol=0.3)
 
     prob = ODEProblem(nw, uflat(s0), (0, 10), copy(pflat(s0)), callback=get_callbacks(nw))
     sol = solve(prob, Rodas5P())

@@ -19,6 +19,10 @@
         ISORCE_out = RealOutput() # Machine source current [pu]
         ANGLE_out = RealOutput()  # Machine relative rotor angle
         XADIFD_out = RealOutput() # Machine field current [pu]
+        TERM_VR_out = RealOutput() # Machine terminal voltage real part
+        TERM_VI_out = RealOutput() # Machine terminal voltage imag part
+        TERM_IR_out = RealOutput() # Machine terminal current real part
+        TERM_II_out = RealOutput() # Machine terminal current imag part
         # initial state outputs not necessary!
         # PMECH0_out = RealOutput() # Initial value of machine electrical power
         # EFD0_out = RealOutput()   # Initial generator main field voltage [pu]
@@ -96,6 +100,12 @@
         SPEED_out.u ~ w
         ETERM_out.u ~ Vt
         PELEC_out.u ~ P/CoB
+
+        # additonal outputs for certain controllers
+        TERM_VR_out.u ~ pvr
+        TERM_VI_out.u ~ pvi
+        TERM_IR_out.u ~ pir
+        TERM_II_out.u ~ pii
 
         # Current and voltage transformations (from OpenIPSL line 114-115)
         [pir, pii] .~ -CoB*[sin(delta)  cos(delta); -cos(delta)  sin(delta)] * [id, iq]

@@ -1,5 +1,5 @@
 const POSTPROCESSING_FUNCTIONS = Any[
-    Library.attach_SimpleLagLim_callbacks!
+    Library.attach_limint_callbacks!
 ]
 
 """

@@ -63,12 +63,13 @@ end
     end
 end
 
-@mtkmodel SimpleLagLim begin
+@mtkmodel LimitedIntegratorBase begin
     @structural_parameters begin
+        type # :lag or :int
         K # Gain
         T # Time constant
         outMin # Lower limit
-        outMax # Upper limi)t
+        outMax # Upper limit
     end
     @parameters begin
         _callback_sat_max
@@ -84,12 +85,20 @@ end
     @equations begin
         min ~ outMin
         max ~ outMax
-        forcing ~ K*in - out
+        if type == :lag
+            forcing ~ K*in - out
+        elseif type == :int
+            forcing ~ K*in
+        else
+            error("Unknown type $type for SimpleLagLim. Supported types are :lag and :int")
+        end
         T*Dt(out) ~ (1 - _callback_sat_max - _callback_sat_min) * forcing
     end
 end
+SimpleLagLim(; kwargs...) = LimitedIntegratorBase(; type=:lag, kwargs...)
+LimIntegrator(; kwargs...) = LimitedIntegratorBase(; type=:int, T=1, kwargs...)
 
-function attach_SimpleLagLim_callbacks!(cf)
+function attach_limint_callbacks!(cf)
     laglim_components = String[]
     regex = r"^(.*)₊_callback_sat_max$"
     for s in NetworkDynamics.psym(cf)
@@ -105,14 +114,14 @@ function attach_SimpleLagLim_callbacks!(cf)
         end
     end
     for ns in laglim_components
-        cb = _generate_SimpleLagLim_callbacks(cf, ns)
+        cb = _generate_limint_callbacks(cf, ns)
         NetworkDynamics.add_callback!(cf, cb)
         NetworkDynamics.set_default!(cf, Symbol(ns, "₊_callback_sat_max"), 0.0)
         NetworkDynamics.set_default!(cf, Symbol(ns, "₊_callback_sat_min"), 0.0)
     end
     cf
 end
-function _generate_SimpleLagLim_callbacks(cf::NetworkDynamics.ComponentModel, namespace)
+function _generate_limint_callbacks(cf::NetworkDynamics.ComponentModel, namespace)
     min = Symbol(namespace, "₊min")
     max = Symbol(namespace, "₊max")
     out = Symbol(namespace, "₊out")
@@ -231,3 +240,84 @@ end
     end
 end
 
+# after OpenIPSL.NonElectrical.Continuous.LeadLag
+@mtkmodel LeadLag begin
+    @structural_parameters begin
+        K # Gain
+        T1 # Lead time constant
+        T2 # Lag time constant
+    end
+    @variables begin
+        in(t), [description="Input signal", input=true]
+        out(t), [guess=0, description="Output signal", output=true]
+        internal(t), [guess=0, description="Internal state"]
+        internal_dt(t), [description="derivative of internal state"]
+    end
+    @equations begin
+        internal_dt ~ (in - internal)/T2
+        Dt(internal) ~ internal_dt
+        out ~ K*(internal + T1*internal_dt)
+    end
+end
+
+"""
+    FEX_function(u)
+
+Rectifier commutation function FEX=f(IN) for excitation systems.
+Port of OpenIPSL.NonElectrical.Nonlinear.FEX
+
+This function models the voltage drop across a rectifier as a function
+of the normalized current IN = K_C * I_fd / V_ex.
+"""
+function FEX_function(u)
+    if u <= 0
+        return 1.0
+    elseif u > 0 && u <= 0.433
+        return 1 - 0.577*u
+    elseif u > 0.433 && u < 0.75
+        return sqrt(0.75 - u^2)
+    elseif u >= 0.75 && u <= 1
+        return 1.732*(1 - u)
+    else
+        return 0.0
+    end
+end
+#=
+FEX_function uses if/else statements. We need to register it as a symbolic function
+to block MTK from tracing the function and handle it as a black box.
+=#
+ModelingToolkit.@register_symbolic FEX_function(u)
+
+"""
+    RectifierCommutationVoltageDrop
+
+Models the voltage drop across a rectifier due to commutation effects.
+Port of OpenIPSL.Electrical.Controls.PSSE.ES.BaseClasses.RectifierCommutationVoltageDrop
+
+This component calculates the effective field voltage considering rectifier
+commutation effects. The normalized current IN = K_C * XADIFD / V_EX is used
+to determine the voltage drop factor via the FEX function.
+"""
+@mtkmodel RectifierCommutationVoltageDrop begin
+    @structural_parameters begin
+        K_C # Rectifier loading factor proportional to commutating reactance
+    end
+
+    @variables begin
+        V_EX(t), [description="Exciter voltage input", input=true]
+        XADIFD(t), [description="Field current input", input=true]
+        EFD(t), [description="Field voltage output", output=true]
+        # Internal variables
+        IN(t), [description="Normalized current"]
+        FEX_out(t), [description="FEX function output"]
+    end
+
+    @equations begin
+        # Calculate normalized current
+        IN ~ K_C * XADIFD / V_EX
+        # Apply FEX rectifier function
+        FEX_out ~ FEX_function(IN)
+        # Calculate final field voltage
+        EFD ~ V_EX * FEX_out
+    end
+end

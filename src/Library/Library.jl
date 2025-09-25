@@ -169,7 +169,7 @@ include("OpenIPSL/Machines/PSSE_GENSALIENT.jl")
 export PSSE_Load
 include("OpenIPSL/Loads/PSSE_Load.jl")
 
-export PSSE_IEEET1
+export PSSE_IEEET1, PSSE_ESST4B
 include("OpenIPSL/Controls/PSSE_Excitation.jl")
 
 end
