@@ -9,8 +9,15 @@ TMPDIR="/tmp/gencls_sim"
 # Create temporary directory
 mkdir -p "$TMPDIR" && cd "$TMPDIR"
 
-# Clone OpenIPSL at specific version for reproducibility
-git clone --depth 1 --branch v3.0.1 https://github.com/OpenIPSL/OpenIPSL.git
+# Remove existing OpenIPSL directory if it exists
+rm -rf OpenIPSL
+
+# Clone OpenIPSL at specific commit for reproducibility
+git clone --depth 1 https://github.com/OpenIPSL/OpenIPSL.git
+cd OpenIPSL
+git fetch --depth 1 origin fe8aa5c
+git checkout fe8aa5c
+cd ..
 
 # Set OpenIPSL library path
 export OPENIPSL_PATH="$TMPDIR/OpenIPSL/OpenIPSL"
