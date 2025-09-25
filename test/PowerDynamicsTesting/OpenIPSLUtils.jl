@@ -1,4 +1,4 @@
-function OpenIPSL_SMIB(_bus1; just_init=false)
+function OpenIPSL_SMIB(_bus1; just_init=false, tol=1e-10, nwtol=1e-10)
     # copy constructor and set vidxs
     bus1 = VertexModel(_bus1, vidx=1, name=:GEN1)
 
@@ -88,11 +88,11 @@ function OpenIPSL_SMIB(_bus1; just_init=false)
     # pfs = solve_powerflow(pfnw)
 
     if just_init
-        s0 = initialize_from_pf(nw, subverbose=[VIndex(1)], tol=Inf, nwtol=Inf)
+        s0 = initialize_from_pf!(nw; subverbose=[VIndex(1)], tol=Inf, nwtol=Inf)
         return s0
     end
 
-    s0 = initialize_from_pf(nw, subverbose=[VIndex(1)])
+    s0 = initialize_from_pf!(nw; subverbose=[VIndex(1)], tol, nwtol)
 
     prob = ODEProblem(nw, uflat(s0), (0, 10), copy(pflat(s0)), callback=get_callbacks(nw))
     sol = solve(prob, Rodas5P())

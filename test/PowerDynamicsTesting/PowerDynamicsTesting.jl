@@ -15,7 +15,7 @@ using OrdinaryDiffEqRosenbrock: Rodas5P
 using OrdinaryDiffEqNonlinearSolve: OrdinaryDiffEqNonlinearSolve
 using Makie: Makie, Figure, Axis, axislegend, lines!, Cycled
 
-using PowerDynamics: PowerDynamics, compile_bus, compile_line, MTKLine, initialize_from_pf
+using PowerDynamics: PowerDynamics, compile_bus, compile_line, MTKLine, initialize_from_pf!
 using PowerDynamics.Library: PiLine, SlackDifferential, PSSE_Load, PSSE_GENCLS, PSSE_GENROE
 using LinearAlgebra: norm
 using Statistics: mean

@@ -71,6 +71,7 @@ end
         T # Time constant
         outMin # Lower limit
         outMax # Upper limit
+        guess=0
     end
     @parameters begin
         _callback_sat_max
@@ -78,7 +79,7 @@ end
     end
     @variables begin
         in(t), [description="Input signal", input=true]
-        out(t), [guess=0, description="limited integrator output state"]
+        out(t), [guess=guess, description="limited integrator output state"]
         min(t), [description="Lower limit"]
         max(t), [description="Upper limit"]
         forcing(t)
@@ -133,19 +134,19 @@ function _generate_limint_callbacks(cf::NetworkDynamics.ComponentModel, namespac
     condition = ComponentCondition(_SatLim_condition, [min, max, out, forcing], [satmax, satmin])
 
     upcrossing_affect = ComponentAffect([out], [satmax, satmin]) do u, p, eventidx, ctx
-        if eventidx == 1 || eventidx == 2
-            println("SimpleLagLim: Enabling max sat at time ", ctx.t)
+        if eventidx == 1
+            println("$namespace: /⎺ reached upper saturation at $(round(ctx.t, digits=4))s")
             p[satmax] = 1.0
             p[satmin] = 0.0
         elseif eventidx == 2
-            println("SimpleLagLim: Enabling min sat at time ", ctx.t)
+            println("$namespace: \\_ reached lower saturation at $(round(ctx.t, digits=4))s")
             p[satmax] = 0.0
             p[satmin] = 1.0
         elseif eventidx == 3
             # upcrossing means, forcing went from negative to positive, i.e. we leave lower saturation
             insatmin = !iszero(p[satmin])
             if insatmin
-                println("SimpleLagLim: Disabling lower saturation at time ", ctx.t)
+                println("$namespace: _/ left lower saturation at $(round(ctx.t, digits=4))s")
                 p[satmin] = 0.0
             end
         else
@@ -161,7 +162,7 @@ function _generate_limint_callbacks(cf::NetworkDynamics.ComponentModel, namespac
             # downcrossing means, forcing went from positive to negative, i.e. we leave upper saturation
             insatmax = !iszero(p[satmax])
             if insatmax
-                println("SimpleLagLim: Disabling upper saturation at time ", ctx.t)
+                println("$namespace: ⎺\\ left upper saturation at $(round(ctx.t, digits=4))s")
                 p[satmax] = 0.0
             end
         else

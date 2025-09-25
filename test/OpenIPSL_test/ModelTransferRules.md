@@ -82,6 +82,8 @@ PowerDynamics provides several pre-implemented building blocks in `src/Library/b
 
 **Note:** More building blocks are available - check `src/Library/building_blocks.jl` for the complete list and their implementations.
 
+**DONT USE THE SimpleGain blocks, those are just for debug purposes. For simple gain paasses you can just multiply the signal in the equations. Lots of other blocks, like SimpleLagLim have gains built in.**
+
 **For simple algebraic operations, implement directly in equations:**
 - `min(a, b)` → use `ifelse(a < b, a, b)` or MTK's `min(a, b)`
 - `max(a, b)` → use `ifelse(a > b, a, b)` or MTK's `max(a, b)`

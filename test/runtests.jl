@@ -52,6 +52,7 @@ using Main.PowerDynamicsTesting
         @safetestset "PSSE_IEEET1" begin include(joinpath("OpenIPSL_test", "PSSE_IEEET1_test.jl")) end
         @safetestset "PSSE_ESST4B" begin include(joinpath("OpenIPSL_test", "PSSE_ESST4B_test.jl")) end
         @safetestset "PSSE_EXST1" begin include(joinpath("OpenIPSL_test", "PSSE_EXST1_test.jl")) end
+        @safetestset "PSSE_IEEEG1" begin include(joinpath("OpenIPSL_test", "IEEEG1_test.jl")) end
     end
 
     @testset "validation tests" begin

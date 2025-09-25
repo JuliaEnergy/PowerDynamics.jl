@@ -46,8 +46,8 @@ SE is a structural parameter allowing different saturation functions to be passe
             efd_set, [guess=1, description="field voltage setpoint [pu]"]
         end
         # Additional machine parameters for GENROUND
-        Xpq, [guess=0.6, description="q-axis transient reactance [pu]"]
-        Tpq0, [guess=0.9, description="q-axis transient open-circuit time constant [s]"]
+        Xpq, [description="q-axis transient reactance [pu]"]
+        Tpq0, [description="q-axis transient open-circuit time constant [s]"]
     end
 
     @variables begin
