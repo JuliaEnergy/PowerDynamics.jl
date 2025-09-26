@@ -222,7 +222,7 @@ The following OpenIPSL models use the SMIB test harness and are candidates for P
   - *Dependencies: Requires GENROE machine model*
 - [ ] **ST5B** - IEEE Type ST5B exciter
   - *Dependencies: Requires GENROE machine model*
-- [ ] **ESST1A** - Static exciter
+- [X] **ESST1A** - Static exciter
   - *Dependencies: Requires GENROE machine model*
 - [X] **ESST4B** - Static exciter
   - *Dependencies: Requires GENROU machine model*
@@ -242,9 +242,9 @@ The following OpenIPSL models use the SMIB test harness and are candidates for P
   - *Dependencies: Requires GENROU machine model*
 
 ### Turbine Governors (PSSE)
-- [ ] **GGOV1** - General governor
+- [X] **GGOV1** - General governor
   - *Dependencies: Requires GENROU machine model*
-- [ ] **IEEEG1** - IEEE general governor
+- [X] **IEEEG1** - IEEE general governor
   - *Dependencies: Requires GENROU machine model + IEEET1 excitation system*
 - [ ] **GAST** - Gas turbine governor
   - *Dependencies: Requires GENROU machine model + IEEET1 excitation system*

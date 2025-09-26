@@ -1,0 +1,25 @@
+// Load OpenIPSL library
+loadFile(getEnvironmentVar("OPENIPSL_PATH") + "/package.mo");
+
+// Run ESST1A simulation with model's native experiment settings
+simulate(OpenIPSL.Tests.Controls.PSSE.ES.ESST1A);
+
+// Extract only variables used in unit tests
+filterSimulationResults(
+      "OpenIPSL.Tests.Controls.PSSE.ES.ESST1A_res.mat",
+      "modelica_results.csv",
+      {
+            // GENROE machine variables (core 5 variables as requested)
+            "gENROE.w",                     // Speed deviation
+            "gENROE.delta",                 // Rotor angle
+            "gENROE.P",                     // Active power
+            "gENROE.Q",                     // Reactive power
+            "gENROE.Vt",                    // Terminal voltage magnitude
+            // ESST1A exciter variables (5 key internal signals)
+            "eSST1A.EFD",                   // Final field voltage output
+            "eSST1A.imLeadLag.y",           // Lead-lag 1 output (first lead-lag)
+            "eSST1A.imLeadLag1.y",          // Lead-lag 2 output (second lead-lag)
+            "eSST1A.simpleLagLim.y",        // Amplifier/voltage regulator output
+            "eSST1A.imDerivativeLag.y"      // Derivative feedback output
+      }
+);
