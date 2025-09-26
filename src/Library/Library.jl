@@ -12,6 +12,7 @@ using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using NonlinearSolve: NonlinearProblem
 using SciMLBase: SciMLBase, solve
 using Symbolics: Symbolics
+using LinearAlgebra: LinearAlgebra
 
 """
     simplify_barrier(x) = x
@@ -178,5 +179,8 @@ include("OpenIPSL/Controls/PSSE_TurbineGovernors.jl")
 
 export PSSE_GGOV1_EXPERIMENTAL
 include("OpenIPSL/Controls/PSSE_GGOV1.jl")
+
+export PSSE_IEEEST
+include("OpenIPSL/Controls/PSSE_PSS.jl")
 
 end
