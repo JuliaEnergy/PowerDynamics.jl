@@ -7,7 +7,7 @@
 # This Julia/PowerDynamics port maintains the same mathematical formulation
 # while adapting to PowerDynamics/ModelingToolkit framework conventions.
 
-@mtkmodel GGOV1_AccelerationLimiter begin
+@mtkmodel _GGOV1_AccelerationLimiter begin
     @structural_parameters begin
         Ka # Acceleration limiter gain [pu]
         Ta # Acceleration limiter time constant [s]
@@ -21,7 +21,7 @@
     @variables begin
         SPEED(t), [input=true, description="Machine speed deviation from nominal [pu]"]
         ASET(t), [input=true, description="Acceleration limiter setpoint [pu/s]"]
-        FSR(t), [guess=1, input=true, description="Governor output signal [pu]"]
+        FSR(t), [input=true, description="Governor output signal [pu]"]
         FSRA(t), [output=true, description="Acceleration controller output [pu]"]
         # Internal signals
         error_signal(t), [description="ASET minus speed derivative [pu/s]"]
@@ -33,7 +33,7 @@
     end
 end
 
-@mtkmodel GGOV1_LoadLimiter begin
+@mtkmodel _GGOV1_LoadLimiter begin
     @structural_parameters begin
         Kturb # Turbine gain
         Kpload # Load limiter proportional gain for PI controller
@@ -48,7 +48,7 @@ end
         PELEC(t), [input=true, description="Machine electrical power [pu]"]
         FSRT(t), [output=true, description="Controller output [pu]"]
         # Internal state and signals
-        integral_state(t), [guess=0, description="Integrator state"]
+        integral_state(t), [description="Integrator state"]
         temp_error(t), [description="Temperature error signal"]
     end
 
@@ -64,7 +64,7 @@ end
     end
 end
 
-@mtkmodel GGOV1_PIDGovernor begin
+@mtkmodel _GGOV1_PIDGovernor begin
     @structural_parameters begin
         Rselect # Feedback signal selector (1/-1/-2/0)
         R # Permanent droop
@@ -83,8 +83,8 @@ end
     end
 
     @components begin
-        power_transducer = SimpleLag(K=1, T=T_pelec, guess=1)
-        power_controller = LimIntegrator(K=Kimw, outMin=-1.1*R, outMax=1.1*R, guess=0)
+        power_transducer = SimpleLag(K=1, T=T_pelec, guess=nothing)
+        power_controller = LimIntegrator(K=Kimw, outMin=-1.1*R, outMax=1.1*R, guess=nothing)
         speed_derivative = Derivative(K=Kdgov, T=Tdgov)
         deadband = DeadZone(uMax=db, uMin=-db)
     end
@@ -100,7 +100,7 @@ end
         FSRN(t), [output=true, description="Governor output [pu]"]
 
         # Internal states and signals
-        pid_integral_state(t), [guess=1, description="PID integral state"]
+        pid_integral_state(t), [description="PID integral state"]
 
         # Internal signals
         selected_feedback(t), [description="R_select output"]
@@ -144,7 +144,7 @@ end
     end
 end
 
-@mtkmodel GGOV1_Turbine begin
+@mtkmodel _GGOV1_Turbine begin
     @structural_parameters begin
         Flag # Switch for fuel source (0/1)
         Tact # Actuator time constant
@@ -170,9 +170,9 @@ end
     end
 
     @components begin
-        turbine_dynamics = LeadLag(K=1, T1=Tc, T2=Tb, guess=1)
-        temp_leadlag = LeadLag(K=1, T1=Tsa, T2=Tsb, guess=1)
-        temp_lag = SimpleLag(K=1, T=Tfload, guess=1)
+        turbine_dynamics = LeadLag(K=1, T1=Tc, T2=Tb, guess=nothing)
+        temp_leadlag = LeadLag(K=1, T1=Tsa, T2=Tsb, guess=nothing)
+        temp_lag = SimpleLag(K=1, T=Tfload, guess=nothing)
     end
 
     @variables begin
@@ -187,9 +187,10 @@ end
         TEXM(t), [output=true, description="Measured exhaust temperature [pu]"]
 
         # Internal states
-        valve_integrator(t), [guess=0, description="Valve actuator integrator state"]
+        valve_integrator(t), [description="Valve actuator integrator state"]
 
         # Internal signals
+        speed_offset(t), [description="Speed offset by 1.0"]
         flag_output(t), [description="Flag logic output"]
         dm_output(t), [description="Dm_select logic output"]
         valve_error(t), [description="FSR - valve_position"]
@@ -208,7 +209,7 @@ end
         end
 
         # Dm_select logic
-        dm_output ~ ifelse(Dm >= 0, SPEED + 1, (SPEED + 1)^Dm)
+        dm_output ~ ifelse(Dm ≥ 0, (SPEED + 1)*Dm, (SPEED + 1)^Dm)
 
         # Actuator dynamics (rate and position limited)
         valve_error ~ FSR - VSTROKE
@@ -224,17 +225,19 @@ end
         turbine_dynamics.in ~ turbine_input
 
         # Temperature path
-        temp_input ~ fuel_flow * dm_output
+        # XXX: DEVEATION from OpenIpsl: only multipy when Dm < 0
+        temp_input ~ fuel_flow * ifelse(Dm ≥ 0, 1, dm_output)
         temp_leadlag.in ~ temp_input
         temp_lag.in ~ temp_leadlag.out
 
         # Outputs
-        PMECH ~ turbine_dynamics.out - Dm * dm_output
+        # XXX: DEVIATIOn from OpenIPSL: only substract when Dm ≥ 0
+        PMECH ~ turbine_dynamics.out - ifelse(Dm ≥ 0, dm_output, 0)
         TEXM ~ temp_lag.out
     end
 end
 
-@mtkmodel PSSE_GGOV1 begin
+@mtkmodel PSSE_GGOV1_EXPERIMENTAL begin
     @structural_parameters begin
         Flag=1 # Switch for fuel source characteristic (0/1)
         Rselect=1 # Feedback signal for governor droop (1/-1/-2/0)
@@ -243,6 +246,7 @@ end
     @parameters begin
         # Governor parameters
         # Rselect as structural parameter
+        _Rselect_static=Rselect, [description="Static copy of Rselect for internal use"]
         R=0.04, [description="Permanent droop [pu]"]
         T_pelec=1, [description="Electrical power transducer time constant [s]"]
         maxerr=0.05, [description="Maximum value for speed error signal [pu]"]
@@ -256,6 +260,7 @@ end
 
         # Turbine parameters
         # FLAG as structural parameter
+        _Flag_static = Flag, [description="Static copy of Flag for internal use"]
         Tact=0.5, [description="Actuator time constant [s]"]
         Kturb=1.5, [description="Turbine gain [pu]"]
         Tb=0.1, [description="Turbine lag time constant [s]"]
@@ -269,7 +274,7 @@ end
         Tfload=3, [description="Load Limiter time constant [s]"]
         Kpload=2, [description="Load limiter proportional gain for PI controller [pu]"]
         Kiload=0.67, [description="Load limiter integral gain for PI controller [pu]"]
-        Ldref=1, [description="Load limiter reference value [pu]"]
+        Ldref, [description="Load limiter reference value [pu]"]
 
         # Acceleration limiter parameters
         Ka=10, [description="Acceleration limiter gain [pu]"]
@@ -288,23 +293,23 @@ end
         DELT=0.005, [description="Time step used in simulation [s]"]
 
         # Initialization parameters (determined during initialization)
-        Pref, [guess=0.04, description="Power reference setpoint [pu]"]
-        Pmwset, [guess=1.0, description="Supervisory load controller setpoint [pu]"]
+        Pref, [description="Power reference setpoint [pu]"]
+        Pmwset, [description="Supervisory load controller setpoint [pu]"]
     end
 
     @components begin
-        pid_governor = GGOV1_PIDGovernor(
+        pid_governor = _GGOV1_PIDGovernor(
             Rselect=Rselect, R=R, T_pelec=T_pelec, maxerr=maxerr, minerr=minerr,
             Kpgov=Kpgov, Kigov=Kigov, Kdgov=Kdgov, Tdgov=Tdgov, Kturb=Kturb,
             Kimw=Kimw, db=db, Wfnl=Wfnl, Dm=Dm
         )
-        load_limiter = GGOV1_LoadLimiter(
+        load_limiter = _GGOV1_LoadLimiter(
             Kturb=Kturb, Kpload=Kpload, Kiload=Kiload, Dm=Dm, Wfnl=Wfnl
         )
-        accel_limiter = GGOV1_AccelerationLimiter(
+        accel_limiter = _GGOV1_AccelerationLimiter(
             Ka=Ka, Ta=Ta, DELT=DELT
         )
-        turbine = GGOV1_Turbine(
+        turbine = _GGOV1_Turbine(
             Flag=Flag, Tact=Tact, Kturb=Kturb, Tb=Tb, Tc=Tc, Teng=Teng,
             Tfload=Tfload, Dm=Dm, Vmax=Vmax, Vmin=Vmin, Ropen=Ropen,
             Rclose=Rclose, Tsa=Tsa, Tsb=Tsb, DELT=DELT, Wfnl=Wfnl
@@ -316,8 +321,6 @@ end
     end
 
     @variables begin
-        # Main interface
-
         # Internal signals
         min_select_out(t), [description="Minimum of three controller outputs [pu]"]
         fsr_limited(t), [description="Position-limited governor output [pu]"]

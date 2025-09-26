@@ -3,6 +3,7 @@ module Library
 using ArgCheck: @argcheck
 using ..PowerDynamics: PowerDynamics, Terminal, BusBase, Ibase
 using NetworkDynamics: NetworkDynamics, ComponentCondition, ComponentAffect,
+                       VertexModel, VIndex, EIndex, NWState,
                        VectorContinuousComponentCallback, DiscreteComponentCallback
 using ModelingToolkit: ModelingToolkit, @named, simplify, t_nounits as t, D_nounits as Dt
 # needed for @mtkmodel
@@ -175,7 +176,7 @@ include("OpenIPSL/Controls/PSSE_Excitation.jl")
 export PSSE_IEEEG1
 include("OpenIPSL/Controls/PSSE_TurbineGovernors.jl")
 
-export PSSE_GGOV1
+export PSSE_GGOV1_EXPERIMENTAL
 include("OpenIPSL/Controls/PSSE_GGOV1.jl")
 
 end

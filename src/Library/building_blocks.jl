@@ -133,7 +133,7 @@ function _generate_limint_callbacks(cf::NetworkDynamics.ComponentModel, namespac
 
     condition = ComponentCondition(_SatLim_condition, [min, max, out, forcing], [satmax, satmin])
 
-    upcrossing_affect = ComponentAffect([out], [satmax, satmin]) do u, p, eventidx, ctx
+    upcrossing_affect = ComponentAffect([], [satmax, satmin]) do u, p, eventidx, ctx
         if eventidx == 1
             println("$namespace: /⎺ reached upper saturation at $(round(ctx.t, digits=4))s")
             p[satmax] = 1.0
@@ -154,7 +154,7 @@ function _generate_limint_callbacks(cf::NetworkDynamics.ComponentModel, namespac
         end
     end
 
-    downcrossing_affect = ComponentAffect([out],[satmax]) do u, p, eventidx, ctx
+    downcrossing_affect = ComponentAffect([],[satmax]) do u, p, eventidx, ctx
         if eventidx == 1 || eventidx == 2
             # in theory should never be hit
             return
@@ -171,27 +171,28 @@ function _generate_limint_callbacks(cf::NetworkDynamics.ComponentModel, namespac
     end
 
     discrete_condition = ComponentCondition([out, min, max], []) do u, p, t
-        u[out] < u[min] || u[out] > u[max]
+        # account for nummerical innaccuracies at the boudaries
+        u[out] < u[min] - 1e-10 || u[out] > u[max] + 1e-10
     end
-    discrete_affect = ComponentAffect([out],[]) do u, p, ctx
+    discrete_affect = ComponentAffect([out],[satmin, satmax]) do u, p, ctx
         if ctx.model isa VertexModel
-            minidx = VIndex(ctx.eidx, min)
-            maxidx = VIndex(ctx.eidx, max)
+            minidx = VIndex(ctx.vidx, min)
+            maxidx = VIndex(ctx.vidx, max)
         else
             minidx = EIndex(ctx.eidx, min)
             maxidx = EIndex(ctx.eidx, max)
         end
-        min, max = NWState(ctx.integrator)[(minidx, maxidx)]
-        if u[out] < min
-            @warn "Sanity check cb for LagLim triggered! out=$(u[out]) < min=$min at time $(ctx.t). Forcing out to min. \
+        _min, _max = NWState(ctx.integrator)[(minidx, maxidx)]
+        if u[out] < _min
+            @warn "Sanity check cb for LagLim triggered! out=$(u[out]) < min=$_min at time $(ctx.t). Forcing out to min. \
                    This might indicate a discrete jump in you model which was not picked up by the callback system!"
-            u[out] = min
+            u[out] = _min
             p[satmin] = 1.0
             p[satmax] = 0.0
-        elseif u[out] > max
-            @warn "Sanity check cb for LagLim triggered! out=$(u[out]) > max=$max at time $(ctx.t). Forcing out to max. \
+        elseif u[out] > _max
+            @warn "Sanity check cb for LagLim triggered! out=$(u[out]) > max=$_max at time $(ctx.t). Forcing out to max. \
                    This might indicate a discrete jump in you model which was not picked up by the callback system!"
-            u[out] = max
+            u[out] = _max
             p[satmin] = 0.0
             p[satmax] = 1.0
         else
