@@ -54,13 +54,28 @@ end
         K # Gain
         T # Time constant
         guess=0
+        default=nothing
+    end
+    @variables begin
+        in(t), [description="Input signal", input=true]
+        out(t)=default, [guess=guess, description="Output signal", output=true]
+    end
+    @equations begin
+        T * Dt(out) ~ K*in - out
+    end
+end
+@mtkmodel SimpleLead begin
+    @structural_parameters begin
+        K # Gain
+        T # Time constant
+        guess=0
     end
     @variables begin
         in(t), [description="Input signal", input=true]
         out(t), [guess=guess, description="Output signal", output=true]
     end
     @equations begin
-        T * Dt(out) ~ K*in - out
+        T*Dt(in) ~ K*out - in
     end
 end
 
@@ -79,7 +94,7 @@ end
     end
     @variables begin
         in(t), [description="Input signal", input=true]
-        out(t), [guess=guess, description="limited integrator output state"]
+        out(t), [guess=guess, description="limited integrator output state", output=true]
         min(t), [description="Lower limit"]
         max(t), [description="Upper limit"]
         forcing(t)

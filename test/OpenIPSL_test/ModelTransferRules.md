@@ -254,7 +254,7 @@ The following OpenIPSL models use the SMIB test harness and are candidates for P
   - *Dependencies: Requires GENROU machine model*
 - [ ] **TGOV1** - Steam turbine governor
   - *Dependencies: Requires GENROE machine model*
-- [ ] **HYGOV** - Hydro turbine governor
+- [X] **HYGOV** - Hydro turbine governor
   - *Dependencies: Requires GENSAL machine model + SCRX excitation system*
 
 ### Power System Stabilizers (PSSE)

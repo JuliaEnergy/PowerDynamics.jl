@@ -24,10 +24,10 @@
         A_t=1.2, [description="Turbine gain [pu]"]
         D_turb=0.2, [description="Turbine damping [pu]"]
         q_NL=0.08, [description="Water flow at no load [pu]"]
-        h0=1, [description="Water head initial value [pu]", bounds=(0, Inf)]
+        h0=1, [guess=0.1, description="Water head initial value [pu]", bounds=(0, Inf)]
 
         # Initialization parameters (determined during initialization)
-        n_ref, [guess=1, description="Speed reference [pu]"]
+        n_ref, [guess=1, description="Speed reference [pu]", bounds=(0,Inf)]
     end
 
     # Protected parameters calculated from initial conditions (like OpenIPSL)
@@ -44,11 +44,11 @@
         PMECH_out = RealOutput() # Turbine mechanical power [pu]
 
         # Building block components
-        filter = SimpleLag(K=1, T=T_f, guess=0)
+        filter = SimpleLag(K=1, T=T_f, default=0)
         temp_droop = SimpleLead(K=r*T_r, T=T_r, guess=0)
-        position_limiter = LimIntegrator(K=1, outMin=G_MIN, outMax=G_MAX, guess=nothing)
-        servo = SimpleLag(K=1, T=T_g, guess=nothing)
-        water_integrator = LimIntegrator(K=1/T_w, outMin=-Inf, outMax=Inf, guess=nothing)
+        position_limiter = LimIntegrator(K=1, outMin=G_MIN, outMax=G_MAX, guess=0.1)
+        servo = SimpleLag(K=1, T=T_g, guess=0.1)
+        water_integrator = LimIntegrator(K=1/T_w, outMin=-Inf, outMax=Inf, guess=0.1)
     end
 
     @variables begin
@@ -103,17 +103,14 @@
         flow_gate_ratio ~ water_flow / gate_position
 
         # Product: (Q/G)^2
-        flow_gate_ratio_squared ~ flow_gate_ratio^2
+        turbine_head ~ flow_gate_ratio^2
 
         # Water integrator: dQ/dt = (h0 - (Q/G)^2)/T_w
-        water_integrator.in ~ h0 - flow_gate_ratio_squared
+        water_integrator.in ~ h0 - turbine_head
         water_flow ~ water_integrator.out
 
         # Add3: Q - qNL
         # flow_minus_noload ~ water_flow - q_NL
-
-        # Turbine head calculation: H = (Q/G)^2
-        turbine_head ~ flow_gate_ratio_squared
 
         # Gain6: A_t * H * (Q - qNL)
         base_power ~ A_t * turbine_head * (water_flow - q_NL)
