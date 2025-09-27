@@ -262,7 +262,7 @@ The following OpenIPSL models use the SMIB test harness and are candidates for P
   - *Dependencies: Requires GENROE machine model + ESST1A excitation system*
 - [ ] **PSS2B** - IEEE PSS2B model
   - *Dependencies: Requires GENROE machine model + ESST1A excitation system*
-- [ ] **IEEEST** - IEEE stabilizer
+- [X] **IEEEST** - IEEE stabilizer
   - *Dependencies: Requires GENROE machine model + ESST1A excitation system*
 
 ### CGMES Models

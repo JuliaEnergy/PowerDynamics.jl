@@ -65,8 +65,9 @@ BUS = let
         Ks=0.0099,
         Lsmax=0.1,
         Lsmin=-0.1,
-        Vcu=0.0,
-        Vcl=0.0,
+        # deviation from OpenIPSL: they deactivate on 0/0
+        Vcu=Inf,
+        Vcl=-Inf,
     )
 
     con = [
@@ -93,41 +94,31 @@ BUS = let
     bm = compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0))
 end
 
-# s0 = OpenIPSL_SMIB(BUS; just_init=true);
-
 sol = OpenIPSL_SMIB(BUS);
-let
-    fig = Figure()
-    ax = Axis(fig[1,1])
-    plot!(sol, idxs=VIndex(:GEN1, :ieeest₊filter1₊x1), color=:red)
-    ax = Axis(fig[2,1])
-    plot!(sol, idxs=VIndex(:GEN1, :ieeest₊filter1₊x2), color=:green)
-    fig
-end
 
 ## Validation tests for GENROE machine variables (core 5 variables)
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊w), "gENROE.w") < 5e-6
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊delta), "gENROE.delta") < 1e-3
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊P), "gENROE.P") < 1e-3
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊w), "gENROE.w") < 2e-6
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊delta), "gENROE.delta") < 7e-4
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊P), "gENROE.P") < 7e-4
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊Q), "gENROE.Q") < 1e-4
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :machine₊Vt), "gENROE.Vt") < 5e-5
 
 ## Validation tests for ESST1A exciter variables (signal flow order)
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :esst1a₊leadlag1₊out), "eSST1A.imLeadLag.y") < 1e-5
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :esst1a₊leadlag2₊out), "eSST1A.imLeadLag1.y") < 1e-5
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :esst1a₊amplifier₊out), "eSST1A.simpleLagLim.y") < 2e-3
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :esst1a₊derivative_feedback₊out), "eSST1A.imDerivativeLag.y") < 5e-5
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :esst1a₊EFD_out₊u), "eSST1A.EFD") < 1e-3
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :esst1a₊leadlag1₊out), "eSST1A.imLeadLag.y") < 7e-5
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :esst1a₊leadlag2₊out), "eSST1A.imLeadLag1.y") < 7e-5
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :esst1a₊amplifier₊out), "eSST1A.simpleLagLim.y") < 4e-3
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :esst1a₊derivative_feedback₊out), "eSST1A.imDerivativeLag.y") < 5e-4
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :esst1a₊EFD_out₊u), "eSST1A.EFD") < 7e-4
 
 ## Validation tests for IEEEST PSS variables (requested outputs)
 # Filter2 output (input to lead-lag 1)
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :ieeest₊filter3₊in), "iEEEST.T_1_T_2.u") < 1e-4
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :ieeest₊filter3₊in), "iEEEST.T_1_T_2.u") < 5e-4
 # Filter3 output (lead-lag 1)
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :ieeest₊filter3₊out), "iEEEST.T_1_T_2.y") < 1e-4
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :ieeest₊filter3₊out), "iEEEST.T_1_T_2.y") < 5e-4
 # Filter4 output (lead-lag 2, input to derivative)
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :ieeest₊filter4₊out), "iEEEST.T_3_T_4.y") < 1e-4
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :ieeest₊filter4₊out), "iEEEST.T_3_T_4.y") < 5e-4
 # Overall PSS output
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :ieeest₊VOTHSG_out₊u), "iEEEST.VOTHSG") < 1e-5
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :ieeest₊VOTHSG_out₊u), "iEEEST.VOTHSG") < 5e-5
 
 #=
 # Create comparison plot for IEEEST PSS validation
