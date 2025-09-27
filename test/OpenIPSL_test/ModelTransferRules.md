@@ -212,7 +212,7 @@ The following OpenIPSL models use the SMIB test harness and are candidates for P
   - *Dependencies: Requires GENROE machine model*
 - [ ] **SEXS** - Simplified excitation system
   - *Dependencies: Requires GENROU machine model*
-- [ ] **SCRX** - Static exciter
+- [X] **SCRX** - Static exciter
   - *Dependencies: Requires GENROU machine model*
 - [X] **EXST1** - Static excitation system
   - *Dependencies: Requires GENROE machine model*

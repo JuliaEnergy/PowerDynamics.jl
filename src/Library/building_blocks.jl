@@ -170,6 +170,7 @@ function _generate_limint_callbacks(cf::NetworkDynamics.ComponentModel, namespac
         end
     end
 
+    # TODO: merge both discrete conditions and move condition below function for performance
     discrete_condition = ComponentCondition([out, min, max], []) do u, p, t
         # account for nummerical innaccuracies at the boudaries
         u[out] < u[min] - 1e-10 || u[out] > u[max] + 1e-10
@@ -199,10 +200,29 @@ function _generate_limint_callbacks(cf::NetworkDynamics.ComponentModel, namespac
             error("Sanity check was wrongfully triggered!")
         end
     end
+    discrete_unsat_condition = ComponentCondition([forcing],[satmin, satmax]) do u, p, t
+        insatmin = !iszero(p[satmin])
+        insatmax = !iszero(p[satmax])
+        insatmin && u[forcing] > 0 || insatmax && u[forcing] < 0
+    end
+    discrete_unsat_affect = ComponentAffect([],[satmin, satmax]) do u, p, ctx
+        insatmin = !iszero(p[satmin])
+        insatmax = !iszero(p[satmax])
+        if insatmin
+            println("$namespace: _/ left lower saturation at $(round(ctx.t, digits=4))s (triggered by discrete cb)")
+            p[satmin] = 0.0
+        elseif insatmax
+            println("$namespace: ⎺\\ left upper saturation at $(round(ctx.t, digits=4))s (triggered by discrete cb)")
+            p[satmax] = 0.0
+        else
+            error("Sanity check was wrongfully triggered!")
+        end
+    end
 
     (
         VectorContinuousComponentCallback(condition, upcrossing_affect, 3; affect_neg! = downcrossing_affect),
-        DiscreteComponentCallback(discrete_condition, discrete_affect)
+        DiscreteComponentCallback(discrete_condition, discrete_affect),
+        DiscreteComponentCallback(discrete_unsat_condition, discrete_unsat_affect)
     )
 end
 function _SatLim_condition(_out, u, p, _)

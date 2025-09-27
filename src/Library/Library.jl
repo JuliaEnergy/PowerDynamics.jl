@@ -174,6 +174,9 @@ include("OpenIPSL/Loads/PSSE_Load.jl")
 export PSSE_IEEET1, PSSE_ESST4B, PSSE_EXST1, PSSE_ESST1A
 include("OpenIPSL/Controls/PSSE_Excitation.jl")
 
+export PSSE_SCRX
+include("OpenIPSL/Controls/PSSE_SCRX.jl")
+
 export PSSE_IEEEG1
 include("OpenIPSL/Controls/PSSE_TurbineGovernors.jl")
 

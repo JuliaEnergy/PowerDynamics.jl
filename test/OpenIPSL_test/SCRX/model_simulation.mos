@@ -1,0 +1,23 @@
+// Load OpenIPSL library
+loadFile(getEnvironmentVar("OPENIPSL_PATH") + "/package.mo");
+
+// Run SCRX simulation with model's native experiment settings
+simulate(OpenIPSL.Tests.Controls.PSSE.ES.SCRX);
+
+// Extract minimal machine and exciter data for testing
+filterSimulationResults(
+      "OpenIPSL.Tests.Controls.PSSE.ES.SCRX_res.mat",
+      "modelica_results.csv",
+      {
+            // GENROU machine variables (key dynamics)
+            "gENROU.delta",                 // Rotor angle
+            "gENROU.w",                     // Speed deviation (omega)
+            "gENROU.Vt",                    // Terminal voltage magnitude
+
+            // SCRX exciter variables (control path)
+            "sCRX.imLeadLag.y",            // LeadLag compensator output
+            "sCRX.simpleLagLim.y",         // Amplifier output
+            "gENROU.XADIFD",               // Field current (machine side)
+            "sCRX.EFD"                     // Final exciter field voltage output
+      }
+);

@@ -1,0 +1,100 @@
+# PSSE Static Excitation System Components
+#
+# Original work Copyright (c) 2016-2022 Luigi Vanfretti, ALSETLab, and contributors
+# Original work licensed under BSD 3-Clause License
+# Original source: https://github.com/OpenIPSL/OpenIPSL
+#
+# This Julia/PowerDynamics port maintains the same mathematical formulation
+# while adapting to PowerDynamics/ModelingToolkit framework conventions.
+
+@mtkmodel PSSE_SCRX begin
+    @structural_parameters begin
+        # Optional input enabling flags (following naming convention from other exciter models)
+        vothsg_input=false # Other signal input (typically zero if disabled)
+        vuel_input=false   # Under-excitation limiter input (typically zero if disabled)
+        voel_input=false   # Over-excitation limiter input (typically zero if disabled)
+        C_SWITCH=false     # Feeding selection: false for bus fed, true for solid fed
+    end
+
+    @parameters begin
+        # Excitation system parameters with OpenIPSL defaults
+        T_AT_B=0.1, [description="Ratio between regulator numerator (lead) and denominator (lag) time constants [pu]"]
+        T_B=1, [description="Regulator denominator (lag) time constant [s]"]
+        K=100, [description="Excitation power source output gain [pu]"]
+        T_E=0.005, [description="Excitation power source output time constant [s]"]
+        E_MIN=-10, [description="Minimum exciter output [pu]"]
+        E_MAX=10, [description="Maximum exciter output [pu]"]
+        r_cr_fd=10, [description="Ratio between crowbar circuit resistance and field circuit resistance [pu]"]
+
+        # Initialization parameters (determined during initialization)
+        V_REF, [guess=1, description="Voltage reference setpoint [pu]"]
+    end
+
+    @components begin
+        # Required inputs/outputs
+        ECOMP_in = RealInput()   # Terminal voltage measurement input
+        XADIFD_in = RealInput()  # Machine field current input
+        EFD_out = RealOutput()   # Field voltage output to generator
+
+        # Optional inputs (created conditionally based on structural parameters)
+        if vothsg_input
+            VOTHSG_in = RealInput()  # Other signal input
+        end
+        if vuel_input
+            VUEL_in = RealInput()    # Under-excitation limiter input
+        end
+        if voel_input
+            VOEL_in = RealInput()    # Over-excitation limiter input
+        end
+
+        # Building block components
+        leadlag = LeadLag(K=1, T1=T_AT_B*T_B, T2=T_B, guess=1)
+        amplifier = SimpleLagLim(K=K, T=T_E, outMin=E_MIN, outMax=E_MAX, guess=1)
+    end
+
+    @variables begin
+        # Signal processing variables
+        voltage_error(t), [description="Voltage error signal [pu]"]
+        sum_signal(t), [description="Combined signal before leadlag [pu]"]
+
+        # Amplifier and switching variables
+        amplifier_output(t), [description="Amplifier output before switching [pu]"]
+        switch_output(t), [description="Switched output (bus fed or solid fed) [pu]"]
+
+        # NegCurLogic variables
+        crowbar_voltage(t), [description="Crowbar circuit voltage [pu]"]
+        field_current(t), [description="Field current input [pu]"]
+        EFD(t), [description="Final exciter output [pu]"]
+    end
+
+    @equations begin
+        # Signal combination following OpenIPSL Add3 and DiffV1 logic
+        voltage_error ~ V_REF - ECOMP_in.u
+        sum_signal ~ voltage_error + (vothsg_input ? VOTHSG_IN.u : 0) + (vuel_input ? VUEL_IN.u : 0) - (voel_input ? VOEL_IN.u : 0)
+
+        # LeadLag compensator
+        leadlag.in ~ sum_signal
+
+        # Amplifier with limits
+        amplifier.in ~ leadlag.out
+        amplifier_output ~ amplifier.out
+
+        if C_SWITCH
+            # Solid fed: use amplifier output directly
+            switch_output ~ amplifier_output
+        else
+            # Bus fed: multiply by terminal voltage
+            switch_output ~ amplifier_output * ECOMP_in.u
+        end
+
+        # Field current input
+        field_current ~ XADIFD_in.u
+
+        # Integrated NegCurLogic functionality
+        crowbar_voltage ~ ifelse(abs(r_cr_fd) < eps(), 0.0, -r_cr_fd * field_current)
+        EFD ~ ifelse(field_current < 0, crowbar_voltage, switch_output)
+
+        # Output connection
+        EFD_out.u ~ EFD
+    end
+end
