@@ -164,6 +164,17 @@ function MTKBus(injectors...; name=:bus)
     System(eqs, t; systems=[busbar, injectors...], name)
 end
 
+function MTKBus(systems::Union{AbstractVector,Tuple,Set}, eqs=autoconnections(systems); name=:bus)
+    @named busbar = BusBar()
+    for sys in systems
+        if isinjectormodel(sys)
+            eq = connect(sys.terminal, busbar.terminal)
+            push!(eqs, eq)
+        end
+    end
+    System(eqs, t; systems=vcat(busbar, systems), name)
+end
+
 """
     MTKLine(branches...; name=:line)
 

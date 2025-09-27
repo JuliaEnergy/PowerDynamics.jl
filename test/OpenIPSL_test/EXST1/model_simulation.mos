@@ -1,0 +1,25 @@
+// Load OpenIPSL library
+loadFile(getEnvironmentVar("OPENIPSL_PATH") + "/package.mo");
+
+// Run EXST1 simulation with model's native experiment settings
+simulate(OpenIPSL.Tests.Controls.PSSE.ES.EXST1);
+
+// Extract minimal exciter data for main testing
+filterSimulationResults(
+      "OpenIPSL.Tests.Controls.PSSE.ES.EXST1_res.mat",
+      "modelica_results.csv",
+      {
+            // Generator variables for validation
+            "gENROE.Vt",                    // Terminal voltage magnitude
+            "gENROE.w",                     // Speed deviation
+            "gENROE.P",                     // Active power
+            "gENROE.Q",                     // Reactive power
+            "gENROE.delta",                 // Rotor angle
+            // EXST1 exciter variables (key states)
+            "eXST1.EFD",
+            "eXST1.TransducerDelay.y",
+            "eXST1.imLeadLag.y",
+            "eXST1.Vm1.y",
+            "eXST1.imDerivativeLag.y"
+      }
+);

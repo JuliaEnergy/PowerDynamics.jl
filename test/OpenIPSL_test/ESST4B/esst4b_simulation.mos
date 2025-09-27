@@ -1,0 +1,29 @@
+// Load OpenIPSL library
+loadFile(getEnvironmentVar("OPENIPSL_PATH") + "/package.mo");
+
+// Run ESST4B simulation with model's native experiment settings
+simulate(OpenIPSL.Tests.Controls.PSSE.ES.ESST4B);
+
+// Extract only variables used in unit tests
+filterSimulationResults(
+      "OpenIPSL.Tests.Controls.PSSE.ES.ESST4B_res.mat",
+      "modelica_results.csv",
+      {
+            // GENROU machine variables (only those tested)
+            "gENROU.Vt",                    // Terminal voltage magnitude
+            "gENROU.w",                     // Speed deviation
+            "gENROU.P",                     // Active power
+            "gENROU.Q",                     // Reactive power
+            "gENROU.delta",                 // Rotor angle
+            // ESST4B exciter variables (all tested)
+            "eSST4B.EFD",                   // Final exciter field voltage output
+            "eSST4B.VA.y",                  // Thyristor bridge output
+            "eSST4B.VR1.y",                 // Voltage regulator integral output
+            "eSST4B.VM1.y",                 // Current regulator integral output
+            "eSST4B.TransducerDelay.y",     // Transducer output
+            "eSST4B.VE",                    // Calculated terminal voltage VE
+            "eSST4B.rectifierCommutationVoltageDrop.EFD",  // Rectifier output before V_BMAX limiting
+            "eSST4B.limiter.y",             // Voltage PI controller output
+            "eSST4B.limiter1.y"             // Current PI controller output
+      }
+);

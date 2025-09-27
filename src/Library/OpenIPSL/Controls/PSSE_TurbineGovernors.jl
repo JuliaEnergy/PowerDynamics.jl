@@ -1,0 +1,93 @@
+# PSSE Turbine Governor Components
+#
+# Original work Copyright (c) 2016-2022 Luigi Vanfretti, ALSETLab, and contributors
+# Original work licensed under BSD 3-Clause License
+# Original source: https://github.com/OpenIPSL/OpenIPSL
+#
+# This Julia/PowerDynamics port maintains the same mathematical formulation
+# while adapting to PowerDynamics/ModelingToolkit framework conventions.
+
+@mtkmodel PSSE_IEEEG1 begin
+    @parameters begin
+        P_REF, [guess=1, description="Power reference of the governor [pu]"]
+        # Fixed parameters with OpenIPSL defaults
+        K=20, [description="Regulation gain [1/pu]"]
+        T_1=1e-8, [description="Control time constant [s]"]
+        T_2=1e-8, [description="Control time constant [s]"]
+        T_3=0.1, [description="Control time constant [s]"]
+        U_o=0.1, [description="Max. rate of valve opening [pu/s]"]
+        U_c=-0.1, [description="Max. rate of valve closing [pu/s]"]
+        P_MAX=0.903, [description="Max. valve position [pu]"]
+        P_MIN=0, [description="Min. valve position [pu]"]
+        T_4=0.4, [description="HP section time constant [s]"]
+        K_1=0.3, [description="Fraction of power from high pressure turbine (upper branch) [pu]"]
+        K_2=0, [description="Fraction of power from high pressure turbine (lower branch) [pu]"]
+        T_5=9, [description="Reheat plus intermediate pressure turbine time constant [s]"]
+        K_3=0.4, [description="Fraction of power from intermediate pressure turbine (upper branch) [pu]"]
+        K_4=0, [description="Fraction of power from intermediate pressure turbine (lower branch) [pu]"]
+        T_6=0.5, [description="Reheater plus intermediate pressure turbine time constant (second) [s]"]
+        K_5=0.3, [description="Fraction of power from low pressure turbine (first LP, upper branch) [pu]"]
+        K_6=0, [description="Fraction of power from low pressure turbine (first LP, lower branch) [pu]"]
+        T_7=1e-8, [description="Low pressure turbine time constant [s]"]
+        K_7=0, [description="Fraction of power from low pressure turbine (second LP, upper branch) [pu]"]
+        K_8=0, [description="Fraction of power from low pressure turbine (second LP, lower branch) [pu]"]
+    end
+
+    @components begin
+        # Active inputs/outputs
+        SPEED_HP_in = RealInput()    # Machine speed deviation from nominal [pu]
+        PMECH_HP_out = RealOutput()  # High pressure turbine mechanical power [pu]
+        PMECH_LP_out = RealOutput()  # Low pressure turbine mechanical power [pu]
+
+        # Building block components
+        leadlag = LeadLag(K=K, T1=T_2, T2=T_1)
+        valve_integrator = LimIntegrator(K=1, outMin=P_MIN, outMax=P_MAX, guess=1)
+        hp_turbine = SimpleLag(K=1, T=T_4, guess=1)
+        ip_turbine = SimpleLag(K=1, T=T_5, guess=1)
+        lp1_turbine = SimpleLag(K=1, T=T_6, guess=1)
+        lp2_turbine = SimpleLag(K=1, T=T_7, guess=1)
+    end
+
+    @variables begin
+        # Control signal variables
+        speed_error(t), [description="Speed error signal [pu]"]
+        control_signal(t), [description="Control signal after lead-lag [pu]"]
+        rate_limited_signal(t), [description="Rate limited control signal [pu]"]
+        valve_position(t), [description="Valve position [pu]"]
+    end
+
+    @equations begin
+        # Input processing
+        leadlag.in ~ SPEED_HP_in.u
+
+        # Speed error and control signal calculation
+        speed_error ~ P_REF - leadlag.out - valve_position
+        control_signal ~ speed_error / T_3
+
+        # Rate limiting
+        rate_limited_signal ~ clamp(control_signal, U_c, U_o)
+
+        # Valve position integration with limits
+        valve_integrator.in ~ rate_limited_signal
+        valve_position ~ valve_integrator.out
+
+        # Turbine stages in cascade
+        hp_turbine.in ~ valve_position
+
+        ip_turbine.in ~ hp_turbine.out
+
+        lp1_turbine.in ~ ip_turbine.out
+
+        lp2_turbine.in ~ lp1_turbine.out
+
+        # Power branch calculations (direct gain multiplication)
+        PMECH_HP_out.u ~ K_1*hp_turbine.out +
+                         K_3*ip_turbine.out +
+                         K_5*lp1_turbine.out +
+                         K_7*lp2_turbine.out
+        PMECH_LP_out.u ~ K_2*hp_turbine.out +
+                         K_4*ip_turbine.out +
+                         K_6*lp1_turbine.out +
+                         K_8*lp2_turbine.out
+    end
+end

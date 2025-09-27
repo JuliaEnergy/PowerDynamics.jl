@@ -1,0 +1,44 @@
+// Load OpenIPSL library
+loadFile(getEnvironmentVar("OPENIPSL_PATH") + "/package.mo");
+
+// Run IEEEG1 simulation with model's native experiment settings
+simulate(OpenIPSL.Tests.Controls.PSSE.TG.IEEEG1);
+
+// Extract generator, exciter and governor data for testing
+filterSimulationResults(
+      "OpenIPSL.Tests.Controls.PSSE.TG.IEEEG1_res.mat",
+      "modelica_results.csv",
+      {
+            // GENROU machine variables
+            "gENROU.Vt",                    // Terminal voltage magnitude
+            "gENROU.w",                     // Speed deviation
+            "gENROU.P",                     // Active power
+            "gENROU.Q",                     // Reactive power
+            "gENROU.delta",                 // Rotor angle
+            "gENROU.Epd",                   // d-axis voltage behind transient reactance
+            "gENROU.Epq",                   // q-axis voltage behind transient reactance
+            "gENROU.PSIkd",                 // d-axis rotor flux linkage
+            "gENROU.PSIkq",                 // q-axis rotor flux linkage
+            "gENROU.XadIfd",                // d-axis machine field current
+            "gENROU.Te",                    // Electrical torque
+            "gENROU.id",                    // d-axis current
+            "gENROU.iq",                    // q-axis current
+            "gENROU.ud",                    // d-axis voltage
+            "gENROU.uq",                    // q-axis voltage
+            // IEEET1 exciter variables
+            "iEEET1.EFD",                   // Exciter field voltage output
+            "iEEET1.simpleLagLim.y",        // Amplifier output
+            "iEEET1.derivativeLag.y",       // Derivative feedback signal
+            "iEEET1.TransducerDelay.y",     // Transducer output
+            // IEEEG1 governor variables
+            "iEEEG1.PMECH_HP",              // High pressure turbine power output
+            "iEEEG1.PMECH_LP",              // Low pressure turbine power output
+            "iEEEG1.imSimpleLag.y",         // HP turbine output (T4 section)
+            "iEEEG1.imSimpleLag1.y",        // IP turbine output (T5 section)
+            "iEEEG1.imSimpleLag2.y",        // LP1 turbine output (T6 section)
+            "iEEEG1.imSimpleLag3.y",        // LP2 turbine output (T7 section)
+            "iEEEG1.limIntegrator.y",       // Valve position
+            "iEEEG1.imLeadLag.y"            // Lead-lag compensator output
+      }
+      //addHeader=false   // disables "nrows=.." metadata line
+);

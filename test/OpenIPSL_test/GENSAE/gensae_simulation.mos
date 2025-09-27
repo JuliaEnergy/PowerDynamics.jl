@@ -1,0 +1,63 @@
+// Load OpenIPSL library
+loadFile(getEnvironmentVar("OPENIPSL_PATH") + "/package.mo");
+
+// Run GENSAE simulation with model's native experiment settings
+simulate(OpenIPSL.Tests.Machines.PSSE.GENSAE);
+
+// Extract only tested variables for main testing
+filterSimulationResults(
+      "OpenIPSL.Tests.Machines.PSSE.GENSAE_res.mat",
+      "modelica_results.csv",
+      {
+            // Only variables that are actually tested in PSSE_GENSAE_test.jl
+            "gENSAE.iq",                    // q-axis current
+            "gENSAE.id",                    // d-axis current
+            "gENSAE.PSIkd",                 // d-axis rotor flux linkage
+            "gENSAE.Epq",                   // q-axis voltage behind transient reactance
+            "gENSAE.PSIppq",                // q-axis subtransient flux linkage
+            "gENSAE.delta",                 // Rotor angle
+            "gENSAE.w",                     // Speed deviation
+            "gENSAE.P",                     // Active power
+            "gENSAE.Q",                     // Reactive power
+            "gENSAE.anglev",                // Bus voltage angle
+            "gENSAE.Vt"                     // Terminal voltage magnitude
+      }
+      //addHeader=false   // disables "nrows=.." metadata line
+);
+
+// Extract extended data with all bus variables and injector powers for debugging
+filterSimulationResults(
+      "OpenIPSL.Tests.Machines.PSSE.GENSAE_res.mat",
+      "modelica_results_extended.csv",
+      {
+            // Extended data: same GENSAE variables plus system variables
+            "gENSAE.Vt",
+            "gENSAE.w",
+            "gENSAE.P",
+            "gENSAE.Q",
+            "gENSAE.delta",
+            "gENSAE.Epq",
+            "gENSAE.PSIkd",
+            "gENSAE.PSIppq",
+            "gENSAE.XadIfd",
+            "gENSAE.Te",
+            "gENSAE.id",
+            "gENSAE.iq",
+            "gENSAE.ud",
+            "gENSAE.uq",
+            "gENSAE.PSId",
+            "gENSAE.PSIq",
+            "gENSAE.PSIppd",
+            "gENSAE.anglev",
+            // Bus voltages and angles by bus name
+            "GEN1.v", "GEN1.angle",
+            "GEN2.v", "GEN2.angle",
+            "LOAD.v", "LOAD.angle",
+            "SHUNT.v", "SHUNT.angle",
+            "FAULT.v", "FAULT.angle",
+            // Injector power variables
+            "constantLoad.P", "constantLoad.Q",
+            "gENCLS.P", "gENCLS.Q"
+      }
+      //addHeader=false   // disables "nrows=.." metadata line
+);

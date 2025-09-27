@@ -6,3 +6,4 @@
 .vscode
 devenv
 testenv
+*_extended.csv.gz

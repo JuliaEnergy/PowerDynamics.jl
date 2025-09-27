@@ -1,13 +1,47 @@
 module Library
 
 using ArgCheck: @argcheck
-using ..PowerDynamics: Terminal, BusBase, Ibase
+using ..PowerDynamics: PowerDynamics, Terminal, BusBase, Ibase
+using NetworkDynamics: NetworkDynamics, ComponentCondition, ComponentAffect,
+                       VertexModel, VIndex, EIndex, NWState,
+                       VectorContinuousComponentCallback, DiscreteComponentCallback
 using ModelingToolkit: ModelingToolkit, @named, simplify, t_nounits as t, D_nounits as Dt
 # needed for @mtkmodel
 using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System, Equation, connect
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using NonlinearSolve: NonlinearProblem
 using SciMLBase: SciMLBase, solve
+using Symbolics: Symbolics
+using LinearAlgebra: LinearAlgebra
+
+"""
+    simplify_barrier(x) = x
+
+Symbolicially registers a function that acts as a barrier to simplification.
+It does nothing nummericially but is opaque to structural simplify / mtkcompile.
+Can be used to prevent unwanted simplifications which might lead to devision by zero.
+"""
+simplify_barrier(x) = x
+Symbolics.@register_symbolic simplify_barrier(x)
+
+"""
+    @no_simplify a ~ a + b
+
+Macro to prevent simplification of an equation during mtkcompile.
+Transforms the equation to an explicit constraint opaque to structural simplification:
+
+    0 ~ simplify_barrier(rhs - lhs)
+
+where `lhs ~ rhs` is the original equation.
+"""
+macro no_simplify(ex)
+    if ex isa Expr && ex.head == :call && ex.args[1] == :~
+        lhs, rhs = ex.args[2], ex.args[3]
+        return :(0 ~ $(simplify_barrier)($(esc(rhs)) - $(esc(lhs))))
+    else
+        throw(ArgumentError("@no_simplify can only be used on equations. Can't handle $ex"))
+    end
+end
 
 @mtkmodel SystemBase begin
     @parameters begin
@@ -116,5 +150,43 @@ include("Faults/Faults.jl")
 #### Powerflow models
 ####
 include("powerflow_models.jl")
+
+
+####
+#### OpenIPSL Models
+####
+include("building_blocks.jl")
+
+include("OpenIPSL/Machines/PSSE_BaseMachine.jl")
+
+export PSSE_GENCLS
+include("OpenIPSL/Machines/PSSE_GENCLS.jl")
+
+export PSSE_GENROU, PSSE_GENROE
+include("OpenIPSL/Machines/PSSE_GENROUND.jl")
+
+export PSSE_GENSAL, PSSE_GENSAE
+include("OpenIPSL/Machines/PSSE_GENSALIENT.jl")
+
+export PSSE_Load
+include("OpenIPSL/Loads/PSSE_Load.jl")
+
+export PSSE_IEEET1, PSSE_ESST4B, PSSE_EXST1, PSSE_ESST1A
+include("OpenIPSL/Controls/PSSE_Excitation.jl")
+
+export PSSE_SCRX
+include("OpenIPSL/Controls/PSSE_SCRX.jl")
+
+export PSSE_IEEEG1
+include("OpenIPSL/Controls/PSSE_TurbineGovernors.jl")
+
+export PSSE_GGOV1_EXPERIMENTAL
+include("OpenIPSL/Controls/PSSE_GGOV1.jl")
+
+export PSSE_HYGOV
+include("OpenIPSL/Controls/PSSE_HYGOV.jl")
+
+export PSSE_IEEEST
+include("OpenIPSL/Controls/PSSE_PSS.jl")
 
 end

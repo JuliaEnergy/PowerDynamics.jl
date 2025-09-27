@@ -1,0 +1,63 @@
+// Load OpenIPSL library
+loadFile(getEnvironmentVar("OPENIPSL_PATH") + "/package.mo");
+
+// Run GENSAL simulation with model's native experiment settings
+simulate(OpenIPSL.Tests.Machines.PSSE.GENSAL);
+
+// Extract only tested variables for main testing
+filterSimulationResults(
+      "OpenIPSL.Tests.Machines.PSSE.GENSAL_res.mat",
+      "modelica_results.csv",
+      {
+            // Only variables that are actually tested in PSSE_GENSAL_test.jl
+            "gENSAL.iq",                    // q-axis current
+            "gENSAL.id",                    // d-axis current
+            "gENSAL.PSIkd",                 // d-axis rotor flux linkage
+            "gENSAL.Epq",                   // q-axis voltage behind transient reactance
+            "gENSAL.PSIppq",                // q-axis subtransient flux linkage
+            "gENSAL.delta",                 // Rotor angle
+            "gENSAL.w",                     // Speed deviation
+            "gENSAL.P",                     // Active power
+            "gENSAL.Q",                     // Reactive power
+            "gENSAL.anglev",                // Bus voltage angle
+            "gENSAL.Vt"                     // Terminal voltage magnitude
+      }
+      //addHeader=false   // disables "nrows=.." metadata line
+);
+
+// Extract extended data with all bus variables and injector powers for debugging
+filterSimulationResults(
+      "OpenIPSL.Tests.Machines.PSSE.GENSAL_res.mat",
+      "modelica_results_extended.csv",
+      {
+            // Extended data: same GENSAL variables plus system variables
+            "gENSAL.Vt",
+            "gENSAL.w",
+            "gENSAL.P",
+            "gENSAL.Q",
+            "gENSAL.delta",
+            "gENSAL.Epq",
+            "gENSAL.PSIkd",
+            "gENSAL.PSIppq",
+            "gENSAL.XadIfd",
+            "gENSAL.Te",
+            "gENSAL.id",
+            "gENSAL.iq",
+            "gENSAL.ud",
+            "gENSAL.uq",
+            "gENSAL.PSId",
+            "gENSAL.PSIq",
+            "gENSAL.PSIppd",
+            "gENSAL.anglev",
+            // Bus voltages and angles by bus name
+            "GEN1.v", "GEN1.angle",
+            "GEN2.v", "GEN2.angle",
+            "LOAD.v", "LOAD.angle",
+            "SHUNT.v", "SHUNT.angle",
+            "FAULT.v", "FAULT.angle",
+            // Injector power variables
+            "constantLoad.P", "constantLoad.Q",
+            "gENCLS.P", "gENCLS.Q"
+      }
+      //addHeader=false   // disables "nrows=.." metadata line
+);
