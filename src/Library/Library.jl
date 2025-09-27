@@ -180,6 +180,9 @@ include("OpenIPSL/Controls/PSSE_TurbineGovernors.jl")
 export PSSE_GGOV1_EXPERIMENTAL
 include("OpenIPSL/Controls/PSSE_GGOV1.jl")
 
+export PSSE_HYGOV
+include("OpenIPSL/Controls/PSSE_HYGOV.jl")
+
 export PSSE_IEEEST
 include("OpenIPSL/Controls/PSSE_PSS.jl")
 
