@@ -18,9 +18,8 @@ We have the Tutorials, which are pedagogical examples which aim to show a specif
 of working with the package and we have the advanced examples, which are less focused
 than the tutorials but also consist of copy-pastable examples showing different aspects
 of modeling and simulation.
-Getting-Started
 
-As a first step, it is advised to read through the [getting started tutorial](@ref getting-started), ideally running the code locally and playing around with the example.
+As a first step, it is advised to read through the [Typical Simulation Workflow tutorial](@ref typical-simulation-workflow), ideally running the code locally and playing around with the example.
 Afterwards, it's a good idea to read on the [Modeling Concepts](@ref).
 
 It is also highly recommended to check out the docs on
@@ -35,7 +34,7 @@ as those explain lots of the underlying functionality and concepts
 - **[API Reference](@ref API)** - Complete function and type documentation
 
 ### Tutorials
-- **[Getting Started](@ref getting-started)** - Simulation of a small 3-bus example system, introduces the most important concepts and workflows.
+- **[Typical Simulation Workflow](@ref typical-simulation-workflow)** - Simulation of a small 3-bus example system, introduces the most important concepts and workflows.
 - **[Custom Components](@ref custom-bus)** - Shows how to implement Milano's classical synchronous machine model with a power system stabilizer (PSS)
 - **[Custom Transmission Lines](@ref custom-line)** - Demonstrates creating a PI-branch transmission line model with overcurrent protection that can trip during faults
 
