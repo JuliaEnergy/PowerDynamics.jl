@@ -1,5 +1,5 @@
 #=
-# [Getting Started with PowerDynamics.jl](@id getting-started)
+# [Typical Simulation Workflow](@id typical-simulation-workflow)
 
 The goal of this tutorial is to get you started with PowerDynamics.jl. We'll walk you through the different
 "stages" of a typical simulation workflow while introducing key terminology along the way.
