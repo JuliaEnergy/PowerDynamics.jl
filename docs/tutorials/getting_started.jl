@@ -7,7 +7,9 @@ This tutorial can be downloaded as a normal Julia script [here](@__NAME__.jl). #
 
 The most important distinction in contrast to other tools is that PowerDynamics.jl is a *modeling framework* rather than a *simulation tool*.
 At its core, a dynamic powergrid model is just a set of differential-algebraic equations (DAEs) that describe the evolution of the system over time.
-PowerDynamics.jl helps you to build these DAE models in a modular way, and then simulate them using the powerful solvers from the SciML ecosystem.
+PowerDynamics.jl helps you to build these DAE models in a modular way, and then simulate them using the powerful solvers from the [SciML ecosystem](https://sciml.ai/).
+
+The overall workflow looks like this:
 
 ```asciiart
          ╭───────────────────────────────────────────────╮
@@ -45,34 +47,33 @@ PowerDynamics.jl helps you to build these DAE models in a modular way, and then 
 ```
 
 PowerDynamics.jl gives you direct access to the underlying DAE structure and purposely exposes you to the "raw" commands from the SciML Ecosystem.
-While we could provide wrapper functions like `run_powergrid_simulation` for common tasks, this would limit flexibility for advanced use cases. By working directly with the DAE system, you have full control to customize initialization, event handling, and solver configuration for your specific needs -- and you start learning them from the very first usage.
+While this can be a bit overwhelming at first, it really pays of to learn the API of the underlying packages directly rather than wraping them all up in a PowerDynamics-specific API.
 
-This tight integration with the normal SciML workflow also means that you can use any of the powerful tools from the SciML ecosystem to analyze and manipulate your powergrid models, e.g. for sensitivity analysis, parameter estimation and plotting.
+This tight integration means, that it is much easier to transfer advanced SciML methods and concepts to systems defined with PowerDynamics.jl.
 
 In this tutorial, we will first show you how you'd solve a simple example system which has nothing
 to do with networks or powergrids and just uses "plain" SciML Packages.
 We will then build a super simple power grid simulation to highlight the parallels in nomenclature and workflow.
 
-For a quick overview, here are the key packages that appear throughout the documentation:
+!!! details "Short description of used Packages and their relation"
 
-**Top-level Packages:**
-- [PowerDynamics.jl](https://github.com/JuliaEnergy/PowerDynamics.jl): The main package for building powergrid models. It provides a library and modeling tools specific to power systems, such as powerflow models and component libraries.
-- [NetworkDynamics.jl](https://github.com/JuliaDynamics/NetworkDynamics.jl): Our backend package that provides most of the core functionality. It is general-purpose and can model any kind of networked dynamical system.
+    **Top-level Packages:**
+    - [PowerDynamics.jl](https://github.com/JuliaEnergy/PowerDynamics.jl): The main package for building powergrid models. It provides a library and modeling tools specific to power systems, such as powerflow models and component libraries.
+    - [NetworkDynamics.jl](https://github.com/JuliaDynamics/NetworkDynamics.jl): Our backend package that provides most of the core functionality. It is general-purpose and can model any kind of networked dynamical system.
 
-**SciML Packages:**
-- [ModelingToolkit.jl (MTK)](https://github.com/SciML/ModelingToolkit.jl): A symbolic modeling framework for defining and manipulating differential equations. The key word here is *symbolically* – you write equations, not numerical code. MTK automatically performs simplifications and generates efficient numerical code for simulation.
-- [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl): Umbrella package for everything related to differential equations, including stochastic and delay differential equations. Since it's large, we typically import specific subpackages, i.e.:
-- [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl): Solvers for ordinary differential equations (ODEs and DAEs). You can reduce load time even further by only importing specific solver packages like OrdinaryDiffEqRosenbrock.jl or OrdinaryDiffEqTsit5.jl.
-- [NonlinearSolve.jl](https://github.com/SciML/NonlinearSolve.jl): Solvers for nonlinear systems of equations, used for powerflow calculations and DAE initialization.
+    **SciML Packages:**
+    - [ModelingToolkit.jl (MTK)](https://github.com/SciML/ModelingToolkit.jl): A symbolic modeling framework for defining and manipulating differential equations. The key word here is *symbolically* – you write equations, not numerical code. MTK automatically performs simplifications and generates efficient numerical code for simulation.
+    - [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl): Umbrella package for everything related to differential equations, including stochastic and delay differential equations. Since it's large, we typically import specific subpackages, i.e.:
+    - [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl): Solvers for ordinary differential equations (ODEs and DAEs). You can reduce load time even further by only importing specific solver packages like OrdinaryDiffEqRosenbrock.jl or OrdinaryDiffEqTsit5.jl.
+    - [NonlinearSolve.jl](https://github.com/SciML/NonlinearSolve.jl): Solvers for nonlinear systems of equations, used for powerflow calculations and DAE initialization.
 
-**Other Packages:**
-- [Makie.jl](https://github.com/MakieOrg/Makie.jl): A powerful plotting package for visualizing results with its backends CairoMakie.jl for vector graphic output and GLMakie.jl/WGLMakie.jl for interactive visualizations.
+    **Other Packages:**
+    - [Makie.jl](https://github.com/MakieOrg/Makie.jl): A powerful plotting package for visualizing results with its backends CairoMakie.jl for vector graphic output and GLMakie.jl/WGLMakie.jl for interactive visualizations.
 
 
 ## Simple ModelingToolkit System
-To get things started, we'll first show you how to define and simulate a simple ODE system using just ModelingToolkit.jl.
 
-Since we really like oscillators, we'll use a simple pendulum as an example.
+Since everybody loves oscillators, we'll use a simple pendulum as an example for our plain MTK system.
 ```asciiart
      ╶┬╴
       ┆╲
@@ -83,7 +84,7 @@ Since we really like oscillators, we'll use a simple pendulum as an example.
             ● m
             ↓ g
 ```
-whose equations of motion can be written as
+The equations of that system can be written as:
 ```math
 \begin{aligned}
 F &= -m\,g\,\sin{\theta}&&\text{(tangential force)} \\
@@ -137,8 +138,9 @@ compiled_system = mtkcompile(symbolic_system)
 full_equations(compiled_system) # show all equations
 #=
 You can see that the "compiled" system only consists of two states, $\theta$ and $\omega$.
-This is because $F$ is not really a state of the system, but rather an intermediate variable.
+This is because $F$ is not really a state of the system, but rather an intermediate variable, so it was thrown out.
 The resulting equations are much more closely aligned with the "canonical" form of the pendulum.
+While trivial in this case, this is the symbolic simplification at work.
 
 To simulate the system, we need to define initial conditions for the states $\theta$ and $\omega$.
 Also, we need to define a time span for the simulation.
@@ -179,9 +181,8 @@ gives the full state of the system for each of the time points.
 However, this is far from all we can do with the solution object!
 First off, since we use dense output by default, we can interpolate the solution at any point in time:
 =#
-sol(2.5) # interpolate at t=2.5s
+sol(2.5) # interpolate at t=2.5s (better than linear interpolation)
 #=
-This interpolation is **far more accurate** than a simple linear interpolation between the time points, because the solution object also contains the derivatives of the states at each time point.
 
 The output, however, is still not very user friendly, since we only get a vector of values.
 This is where **symbolic indexing** comes to our help!
@@ -212,19 +213,17 @@ let
 end
 
 #=
-Now that we've seen how to work with ModelingToolkit systems, let's apply these same concepts to build a simple power grid simulation.
 
 ## Simple PowerDynamics System
 
-Now that we have seen how to define and simulate a simple ODE system using ModelingToolkit.jl, we can move on to a simple powergrid example using PowerDynamics.jl.
+In this section, we'll set up a minimal PowerDynamics simulation to show the parallels to the pure-MTK workflow above.
 
-As an example, we'll build a simple 2-bus system with two swing equation models at two buses connected by a transmission line.
+We'll build a simple 2-bus system with two swing equation models at two buses connected by a transmission line.
 ```asciiart
-   ╭─────────╮
-1 ━┿━       ━┿━ 2
-   │         │
-  (~)       (~)
-
+        bus 1          bus 2
+          ╻              ╻
+   (~)────╂──────────────╂────(~)
+swing-eqs ╹   pi-line    ╹ swing-eqs
 ```
 First, we need to load the PowerDynamics.jl package:
 =#
@@ -241,7 +240,7 @@ The equations represent a classic swing equation with no voltage dynamics.
 We passed the keyword argument `V=1` to set the voltage magnitude to 1 p.u.
 So far, this is a "pure" MTK model, similar to the `symbolic_system` from above.
 
-We can then compile the model to get rid of intermediate variables and make it ready for simulation. We do so by calling `compile_bus`. The additional call to `MTKBus` can be ignored for now and is explained in further tutorials.
+We can then compile the model to get rid of intermediate variables and make it ready for simulation. We do so by calling `compile_bus`. The additional call to `MTKBus` can be ignored for now and is explained in further tutorials and the [Modeling Concepts](@ref) docs.
 Additionally, we give the bus model an index using the `vidx` keyword (short for vertex index).
 =#
 bus1 = compile_bus(MTKBus(symbolic_swing_system); vidx=1)
@@ -273,7 +272,6 @@ Similar to the `compiled_system`, it not only contains the right-hand-side funct
 
 In contrast to the MTK example above, our symbolic indices are "hierarchical", i.e., we have to specify the component first and then the state/parameter name.
 
-Symbolic network indices follow a very simple pattern consisting of a "component" specifier and a "state" specifier:
 ```asciiart
       ▷ VIndex(    1, :symbolic_swing_system₊ω)
       ▷ VIndex(:bus1, :symbolic_swing_system₊δ)
@@ -292,12 +290,10 @@ Index/name or src-dst pair╶╯           │
 Name of parameter/state╶───────────────╯
 ```
 
-In order to simulate the system, we need to define initial conditions and a time span.
-
 ## PD: Manual Definition of Initial Conditions
 
-For large systems, we can have thousands of states and thousands of parameters.
-Finding a suitable initial state, i.e., initializing the system, is quite complex in general and is covered in depth in later tutorials.
+For large systems with possibly thousands of states and parameters,
+finding a suitable initial state is a hard problem which is covered in depth in later tutorials.
 
 For now, our system is quite simple and we can find a suitable initial state by hand.
 We can create a "default" state by calling [`NWState`](@extref NetworkDynamics.NWState) on the network object:
@@ -316,10 +312,11 @@ s0[VIndex(1, :symbolic_swing_system₊ω)] = 1
 s0[VIndex(2, :symbolic_swing_system₊ω)] = 1
 nothing #hide #md
 #=
-For the parameters, we set the mechanical power input of bus 1 to 1, and bus 2 to -1:
+Instead of writing the symbolic indices explicitly, `NWState` supports a more user-friedly syntax for acessing states.
+We set the mechanical power input of bus 1 to 1, and bus 2 to -1:
 =#
-s0[VIndex(1, :symbolic_swing_system₊Pm)] =  1
-s0[VIndex(2, :symbolic_swing_system₊Pm)] = -1
+s0.v[1][:symbolic_swing_system₊Pm] =  1
+s0.v[2][:symbolic_swing_system₊Pm] = -1
 nothing #hide #md
 
 #=
@@ -351,6 +348,8 @@ However, you can already see that the pi line injects positive active power at t
 ## PD: Simulation of the System
 Similar to before, we take our model and use it to define an `ODEProblem`.
 We can then solve it using the `Rodas5P` solver again.
+
+The only notable difference here is, that we need to pass both flat vectors: states and paramers.
 =#
 prob = ODEProblem(nw, uflat(s0), (0.0, 10.0), pflat(s0))
 sol = solve(prob, Rodas5P())
@@ -365,13 +364,15 @@ sol(1.0, idxs=VIndex(1, :symbolic_swing_system₊θ)) # get θ of bus 1 at t=1.0
 For generating lists of symbolic indices at once, NetworkDynamics.jl provides the
 auxiliary functions [`vidxs`](@extref NetworkDynamics.vidxs) and [`eidxs`](@extref NetworkDynamics.eidxs):
 =#
-sol(1.0, idxs=vidxs(nw, 1:2, :symbolic_swing_system₊ω)) # get ω of bus 1&2 at t=1.0s
+vidxs(nw, 1:2, :symbolic_swing_system₊ω) # create lists of VIndex objects
+#-
+sol(1.0, idxs=vidxs(nw, 1:2, :symbolic_swing_system₊ω)) # use vidxs get ω of bus 1&2 at t=1.0s
 #=
 Sometimes, you want to get the full `NWState` at a specific time point.
 =#
 s10 = NWState(sol, 1.0) # get full NWState at t=1.0s
 #=
-Lastly, we can do some plotting as before:
+We can do some plotting as before:
 =#
 let
     fig = Figure()
