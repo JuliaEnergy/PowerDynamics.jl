@@ -44,17 +44,26 @@ using Main.PowerDynamicsTesting
     @safetestset "initialization tests" begin include("initialization_test.jl") end
 
     @testset "OpenIPSL Model Tests" begin
+        # Machines
         @safetestset "PSSE_GENCLS" begin include(joinpath("OpenIPSL_test", "PSSE_GENCLS_test.jl")) end
         @safetestset "PSSE_GENROU" begin include(joinpath("OpenIPSL_test", "PSSE_GENROU_test.jl")) end
         @safetestset "PSSE_GENROE" begin include(joinpath("OpenIPSL_test", "PSSE_GENROE_test.jl")) end
         @safetestset "PSSE_GENSAL" begin include(joinpath("OpenIPSL_test", "PSSE_GENSAL_test.jl")) end
         @safetestset "PSSE_GENSAE" begin include(joinpath("OpenIPSL_test", "PSSE_GENSAE_test.jl")) end
+
+        # Exciters
         @safetestset "PSSE_IEEET1" begin include(joinpath("OpenIPSL_test", "PSSE_IEEET1_test.jl")) end
+        @safetestset "PSSE_SCRX" begin include(joinpath("OpenIPSL_test", "PSSE_SCRX_test.jl")) end
         @safetestset "PSSE_ESST4B" begin include(joinpath("OpenIPSL_test", "PSSE_ESST4B_test.jl")) end
         @safetestset "PSSE_EXST1" begin include(joinpath("OpenIPSL_test", "PSSE_EXST1_test.jl")) end
         @safetestset "PSSE_ESST1A" begin include(joinpath("OpenIPSL_test", "PSSE_ESST1A_test.jl")) end
+
+        # Governors
         @safetestset "PSSE_IEEEG1" begin include(joinpath("OpenIPSL_test", "PSSE_IEEEG1_test.jl")) end
         @safetestset "PSSE_GGOV1" begin include(joinpath("OpenIPSL_test", "PSSE_GGOV1_test.jl")) end
+        @safetestset "PSSE_HYGOV" begin include(joinpath("OpenIPSL_test", "PSSE_HYGOV_test.jl")) end
+
+        # Power System Stabilizers
         @safetestset "PSSE_IEEEST" begin include(joinpath("OpenIPSL_test", "PSSE_IEEEST_test.jl")) end
     end
 
