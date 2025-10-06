@@ -4,6 +4,8 @@
 The goal of this tutorial is to get you started with PowerDynamics.jl. We'll walk you through the different
 "stages" of a typical simulation workflow while introducing key terminology along the way.
 
+This tutorial can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
+
 The system to model is a simple 3 bus system:
 - Bus 1: ideal droop inverter
 - Bus 2: a constant Y load
@@ -47,7 +49,7 @@ inverter:
 ```
 =#
 inverter_model = Library.IdealDroopInverter(; name=:droop, Vset=1)
-nothing #hide
+nothing #hide #md
 #=
 This model is an equation-based/symbolic model representing the dynamics.
 It is based on the great [ModelingToolkit.jl Library](https://mtk.sciml.ai/stable/).
@@ -66,7 +68,7 @@ This model still lives in the equation-based/symbolic domain.
 ```
 =#
 bus_model = MTKBus(inverter_model; name=:invbus)
-nothing #hide
+nothing #hide #md
 #=
 **Third**: we compile the symbolic model into a julia function for numeric simulation.
 Doing so, we get a [`VertexModel`](@extref NetworkDynamics.VertexModel-Tuple{}), which is an
@@ -148,7 +150,7 @@ In PowerDynamics.jl, we can attach the power flow models to the dynamic bus mode
 set_pfmodel!(bus1, pfSlack(V=1))
 set_pfmodel!(bus2, pfPQ(P=-0.4, Q=-0.3))
 set_pfmodel!(bus3, pfPQ(P=-0.6, Q=-0.2))
-nothing # hide
+nothing #hide #md
 
 #=
 ### Building the Network
@@ -199,7 +201,7 @@ With the network constructed, we can finally find our equilibrium point.
 We do so using [`initialize_from_pf`](@ref):
 =#
 s0 = initialize_from_pf(nw; verbose=true, subverbose=true)
-nothing #hide
+nothing #hide #md
 #=
 This function actually does quite a lot.
 1. It extracts the powerflow model for each component constructing the powerflow problem.
@@ -293,7 +295,7 @@ With the callback defined, we can finally create and solve the [`ODEProblem`](@e
 =#
 prob = ODEProblem(nw, uflat(s0), (0.0, 5.0), copy(pflat(s0)), callback=get_callbacks(nw))
 sol = solve(prob, Rodas5P());
-nothing #hide
+nothing #hide #md
 
 #=
 ## Stage IV: Postprocessing and Visualization
