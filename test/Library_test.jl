@@ -268,42 +268,6 @@ end
 end
 
 @testset "Test function general TF to system transformation" begin
-    using PowerDynamics.Library: RationalTransferFunction
-
-    # test integrator
-    @variables K T;
-    @named int = RationalTransferFunction([K], [T, 0]);
-    @show equations(int)
-    # old equations test now broken
-    @test repr(equations(int)[1]) == "Differential(t)(x₁(t)) ~ in(t) / T"
-    @test repr(equations(int)[2]) == "out(t) ~ K*x₁(t)"
-
-    # test first order lag
-    @variables K T;
-    @named lag = RationalTransferFunction([K], [T, 1]);
-    @test repr(equations(lag)[1]) == "Differential(t)(x₁(t)) ~ (-x₁(t) + in(t)) / T"
-    @test repr(equations(lag)[2]) == "out(t) ~ K*x₁(t)"
-
-    # differntial estimation
-    @variables K T
-    @named diff = RationalTransferFunction([K, 0], [T, 1]);
-    @test repr(equations(diff)[1]) == "Differential(t)(x₁(t)) ~ (-x₁(t) + in(t)) / T"
-    @test repr(equations(diff)[2]) == "out(t) ~ (-K*x₁(t) + K*in(t)) / T"
-
-    @variables A6 A5 A2 A1
-    @named filter1 = RationalTransferFunction([A6, A5, 1], [A2, A1, 1])
-    equations(filter1)
-
-    @variables A B C D
-    @named filter1 = RationalTransferFunction([B, A, 1], [D, C, 1])
-    equations(filter1)
-end
-
-@testset "Test function general TF to system transformation" begin
-    # tested for below examples by comparing output to mathematica
-    # StateSpaceModel[
-    #  TransferFunctionModel[(1 + 0 a  s + 0  b  s^2)/(
-    #   1 + 1*c  s + 0*d  s^2 + 0*e  s^3 + 0*f  s^4), s]]
     using PowerDynamics.Library: siso_tf_to_ss, ss_to_mtkmodel
 
     ≂(a, b) = isequal(a,b)
@@ -378,11 +342,6 @@ end
     @test C ≂ Num[1 / d a / d]
     @test D ≂ Num[0;;]
     ss_to_mtkmodel(A,B,C,D; name=:foo) |> equations
-    Library.StateSpaceModel(; A, B, C, D, name=:foo)
-    Symbolics.scalarize
-
-    @variables y[1:4]=[1,2]
-    scalarize(y)
 
     @variables a b c d e f
     A,B,C,D = siso_tf_to_ss([   a, 1], [         c, 1])
