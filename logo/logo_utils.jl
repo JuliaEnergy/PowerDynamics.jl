@@ -2,8 +2,8 @@ using Luxor
 
 function blade(thicken)
     height = 100 + thicken
-    thickness_bot = 9 + thicken
-    thickness_top = 3 + thicken
+    thickness_bot = 10 + thicken
+    thickness_top = 4 + thicken
     move(0, 0)
     line(Point(thickness_bot/2, 0))
     line(Point(thickness_top/2, -height))
@@ -36,10 +36,10 @@ function windturbine(;p=Point(0,0), s=1.0, α=0)
     gsave()
     translate(p)
     scale(s)
-    thickness_bot = 18
-    thickness_top = 7
+    thickness_bot = 22
+    thickness_top = 8
     height = 170
-    cpthickness = 10
+    cpthickness = 13
     cpheight = 0.2*height
 
     move(0, 0)
@@ -81,7 +81,7 @@ end
 function load(; p)
     length = 90
     arrowwidth = 40
-    linewidth = 6
+    linewidth = 8
     gsave()
     setline(linewidth)
 
@@ -99,11 +99,13 @@ end
 function gen(; p, α=0)
     offset = 70
     # linewidth = 7.5
-    linewidth = 6
-    gap = 3
+    linewidth = 8
+    gap = 4
     diameter = 75
-    anchor_width = 30
-    anchor_height = 25
+    # anchor_width = 30
+    # anchor_height = 25
+    anchor_width = 25
+    anchor_height = 20
 
     center = p + Point(0, offset)
 
