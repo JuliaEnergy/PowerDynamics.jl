@@ -2,7 +2,7 @@
 
 julia_version = "1.11.7"
 manifest_format = "2.0"
-project_hash = "96b4962599a05595c9fcd3c42aeef3dda4739798"
+project_hash = "d11eed82ffd66465f1d60ba4a8a20f23154e9d55"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -34,17 +34,21 @@ git-tree-sha1 = "fde3bf89aead2e723284a8ff9cdf5b551ed700e8"
 uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.18.5+0"
 
+[[deps.CodeTracking]]
+deps = ["InteractiveUtils", "UUIDs"]
+git-tree-sha1 = "5ac098a7c8660e217ffac31dc2af0964a8c3182a"
+uuid = "da1fd8a2-8d9e-5ec2-8556-3022fb5608a2"
+version = "2.0.0"
+
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
 git-tree-sha1 = "67e11ee83a43eb71ddc950302c53bf33f0690dfe"
 uuid = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
 version = "0.12.1"
+weakdeps = ["StyledStrings"]
 
     [deps.ColorTypes.extensions]
     StyledStringsExt = "StyledStrings"
-
-    [deps.ColorTypes.weakdeps]
-    StyledStrings = "f489334b-da3d-4c2e-b8f0-e476e12c162b"
 
 [[deps.Colors]]
 deps = ["ColorTypes", "FixedPointNumbers", "Reexport"]
@@ -61,6 +65,11 @@ weakdeps = ["Dates", "LinearAlgebra"]
 
     [deps.Compat.extensions]
     CompatLinearAlgebraExt = "LinearAlgebra"
+
+[[deps.Compiler]]
+git-tree-sha1 = "382d79bfe72a406294faca39ef0c3cef6e6ce1f1"
+uuid = "807dbc54-b67e-4c79-8afb-eafe4df6f2e1"
+version = "0.1.1"
 
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -188,6 +197,12 @@ git-tree-sha1 = "4255f0032eafd6451d707a51d5f0248b8a165e4d"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
 version = "3.1.3+0"
 
+[[deps.JuliaInterpreter]]
+deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
+git-tree-sha1 = "d8337622fe53c05d16f031df24daf0270e53bc64"
+uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
+version = "0.10.5"
+
 [[deps.LAME_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "059aabebaa7c82ccb853dd4a0ee9d17796f7e1bc"
@@ -286,6 +301,12 @@ version = "1.11.0"
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 version = "1.11.0"
 
+[[deps.LoweredCodeUtils]]
+deps = ["CodeTracking", "Compiler", "JuliaInterpreter"]
+git-tree-sha1 = "73b98709ad811a6f81d84e105f4f695c229385ba"
+uuid = "6f1432cf-f94c-5a45-995e-cdbf5db27b0b"
+version = "3.4.3"
+
 [[deps.Luxor]]
 deps = ["Base64", "Cairo", "Colors", "DataStructures", "Dates", "FFMPEG", "FileIO", "PolygonAlgorithms", "PrecompileTools", "Random", "Rsvg"]
 git-tree-sha1 = "54bdbc3b05b3a4cf25ec4c00054038758c1c090b"
@@ -379,12 +400,10 @@ version = "0.44.2+0"
 deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "Random", "SHA", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 version = "1.11.0"
+weakdeps = ["REPL"]
 
     [deps.Pkg.extensions]
     REPLExt = "REPL"
-
-    [deps.Pkg.weakdeps]
-    REPL = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 
 [[deps.PolygonAlgorithms]]
 git-tree-sha1 = "809227325f22eedaf6f9eaac311247950678ec8d"
@@ -408,6 +427,11 @@ deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 version = "1.11.0"
 
+[[deps.REPL]]
+deps = ["InteractiveUtils", "Markdown", "Sockets", "StyledStrings", "Unicode"]
+uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
+version = "1.11.0"
+
 [[deps.Random]]
 deps = ["SHA"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
@@ -424,6 +448,18 @@ git-tree-sha1 = "62389eeff14780bfe55195b7204c0d8738436d64"
 uuid = "ae029012-a4dd-5104-9daa-d747884805df"
 version = "1.3.1"
 
+[[deps.Revise]]
+deps = ["CodeTracking", "FileWatching", "JuliaInterpreter", "LibGit2", "LoweredCodeUtils", "OrderedCollections", "REPL", "Requires", "UUIDs", "Unicode"]
+git-tree-sha1 = "d852eba0cc08181083a58d5eb9dccaec3129cb03"
+uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
+version = "3.9.0"
+
+    [deps.Revise.extensions]
+    DistributedExt = "Distributed"
+
+    [deps.Revise.weakdeps]
+    Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
+
 [[deps.Rsvg]]
 deps = ["Cairo", "Glib_jll", "Librsvg_jll"]
 git-tree-sha1 = "e53dad0507631c0b8d5d946d93458cbabd0f05d7"
@@ -433,6 +469,10 @@ version = "1.1.0"
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 version = "0.7.0"
+
+[[deps.Sockets]]
+uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
+version = "1.11.0"
 
 [[deps.Statistics]]
 deps = ["LinearAlgebra"]
@@ -445,6 +485,10 @@ version = "1.11.1"
 
     [deps.Statistics.weakdeps]
     SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+
+[[deps.StyledStrings]]
+uuid = "f489334b-da3d-4c2e-b8f0-e476e12c162b"
+version = "1.11.0"
 
 [[deps.TOML]]
 deps = ["Dates"]

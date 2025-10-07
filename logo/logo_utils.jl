@@ -152,14 +152,14 @@ function gen(; p, α=0)
     grestore()
 end
 
-function powerdynamics_logo(; p=Point(0,0), s=1.0)
+function powerdynamics_logo(; p=Point(0,0), s=1.0, foreground="black")
     gsave()
 
     translate(p)
     scale(s)
 
     units = 50
-    sethue(color)
+    sethue(foreground)
     setline(5)
     move(-1.2units,0.2units)
     p_wt_con = currentpoint()
