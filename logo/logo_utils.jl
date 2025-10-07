@@ -152,12 +152,12 @@ function gen(; p, α=0)
     grestore()
 end
 
-path = joinpath(dirname(@__DIR__), "docs", "src", "assets", "logo.svg")
-path_dark = joinpath(dirname(@__DIR__), "docs", "src", "assets", "logo-dark.svg")
+function powerdynamics_logo(; p=Point(0,0), s=1.0)
+    gsave()
 
-function logo_svg(path, color="black")
-    Drawing(400, 400, path)
-    origin()
+    translate(p)
+    scale(s)
+
     units = 50
     sethue(color)
     setline(5)
@@ -189,6 +189,16 @@ function logo_svg(path, color="black")
     sethue(Luxor.julia_red)
     bus(p=p_gen_conl, l=.75units, r=2.75units)
     gen(p=(p_gen_conl + p_gen_conr)/2, α=0)
+
+    grestore()
+end
+
+path = joinpath(dirname(@__DIR__), "docs", "src", "assets", "logo.svg")
+path_dark = joinpath(dirname(@__DIR__), "docs", "src", "assets", "logo-dark.svg")
+
+function logo_svg(path, color="black")
+    Drawing(400, 400, path)
+    origin()
     # sethue(Luxor.julia_blue)
     finish()
     preview()
