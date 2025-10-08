@@ -25,8 +25,8 @@ SparseConnectivityTracer = "9f842d2f-2579-4b1d-911e-f412cf18a3f5"
 Sparspak = "e56a9233-b9d6-4f03-8d0f-1825330902ac"
 SteadyStateDiffEq = "9672c7b4-1e72-59bd-8a11-6ac3964bc41f"
 
-[sources]
-PowerDynamics = {path = ".."}
+[sources.PowerDynamics]
+path = ".."
 
 [compat]
 CSV = "0.10.15"
@@ -36,7 +36,7 @@ DiffEqCallbacks = "≥0.0.1"
 Documenter = "1.11.4"
 DocumenterInterLinks = "1.0.0"
 Graphs = "≥0.0.1"
-JSON = "0.21.4"
+JSON = "0.21.4, 1"
 Literate = "2.20.1"
 ModelingToolkit = "≥0.0.1"
 ModelingToolkitStandardLibrary = "≥0.0.1"
