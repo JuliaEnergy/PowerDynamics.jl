@@ -29,8 +29,8 @@ Sparspak = "e56a9233-b9d6-4f03-8d0f-1825330902ac"
 SteadyStateDiffEq = "9672c7b4-1e72-59bd-8a11-6ac3964bc41f"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
-[sources]
-PowerDynamics = {path = ".."}
+[sources.PowerDynamics]
+path = ".."
 
 [compat]
 Aqua = "0.8.12"
@@ -41,7 +41,7 @@ DiffEqCallbacks = "≥0.0.1"
 ExplicitImports = "1.11.2"
 Graphs = "≥0.0.1"
 JLD2 = "0.6"
-JSON = "0.21.4"
+JSON = "0.21.4, 1"
 LinearAlgebra = "≥0.0.1"
 Makie = "0.24"
 ModelingToolkit = "≥0.0.1"
