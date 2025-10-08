@@ -9,7 +9,7 @@ To make it more interesting, we add protection logic to the branches:
 - each branch continuously checks the current magnitude against a limit,
 - if the current exceeds the limit, the branch is switched off after a delay time.
 
-This script can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
+This tutorial can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
 =#
 using PowerDynamics
 using ModelingToolkit
