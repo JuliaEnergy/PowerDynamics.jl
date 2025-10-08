@@ -5,57 +5,66 @@ This tutorial introduces the core ideas behind PowerDynamics.jl and its relation
 
 This tutorial can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
 
+PowerDynamics.jl is a tool for modeling and simulating dynamic powergrid models.
+Its main idea is to build equation-based, symbolic models for various dynamic components.
+Different components, such as shunts, generators or controllers are then connected to form
+dynamic models representing entire Buses or Lines.
+The dynamic Bus and Line models are then interconnected to form powergrids.
+
 The most important distinction in contrast to other tools is that PowerDynamics.jl is a *modeling framework* rather than a *simulation tool*.
 At its core, a dynamic powergrid model is just a set of differential-algebraic equations (DAEs) that describe the evolution of the system over time.
 PowerDynamics.jl helps you to build these DAE models in a modular way, and then simulate them using the powerful solvers from the [SciML ecosystem](https://sciml.ai/).
 
-The overall workflow looks like this:
-
-```asciiart
-         ╭───────────────────────────────────────────────╮
-         │ PowerGrid Model                               │
-         │ Composite Model consisting of Buses and Lines │
-         │                  ╭───────╮                    │
-         │              2 ┯━┿       ┿━┯ 3                │
-         │                ↓ │   ╭───╯ ↓                  │
-         │                  ┷━┯━┷ 1                      │
-         │                   (~)                         │
-         ╰───────────────────────┬───────────────────────╯
-    PowerDynamics.jl constructs  ▾
-                       ╭─────────┴─────────╮
-                       │ DAE System        │
-                       │ M ̇x = f(x, p, t)  │
-                       ╰─────────┬─────────╯
-     RHS function + Mass Matrix  ▾
-         ╭───────────────────────┴───────────────────────╮
-         │ SciML-ODEProblem                              │
-         │ Data structure for time-domain simulation     │
-         ╰───────────────────────┬───────────────────────╯
-   Any OrdinaryDiffEq.jl solver  ▾
-         ╭───────────────────────┴───────────────────────╮
-         │ SciML-ODESolution                             │
-         │ Solution object containing the time series    │
-         │ for all components                            │
-         ╰───────────────────────┬───────────────────────╯
-              Symbolic Indexing  ▾
-         ╭───────────────────────┴───────────────────────╮
-         │ Time-series Inspection                        │
-         │ Symbolic indexing allows for easy access to   │
-         │ all states of all subcomponents for detailed  │
-         │ analysis.                                     │
-         ╰───────────────────────────────────────────────╯
-```
-
-PowerDynamics.jl gives you direct access to the underlying DAE structure and purposely exposes you to the "raw" commands from the SciML Ecosystem.
-While this can be a bit overwhelming at first, it really pays of to learn the API of the underlying packages directly rather than wraping them all up in a PowerDynamics-specific API.
+PowerDynamics.jl gives you direct access to the underlying DAE structure and purposely exposes you to the "raw" commands from the SciML Ecosystem, most importantly [DifferentialEquations.jl](https://docs.sciml.ai/DiffEqDocs/stable/).
+While this can be a bit overwhelming at first, it really pays off to learn the API of the underlying packages directly rather than wrapping them all up in a PowerDynamics-specific API.
 
 This tight integration means, that it is much easier to transfer advanced SciML methods and concepts to systems defined with PowerDynamics.jl.
 
-In this tutorial, we will first show you how you'd solve a simple example system which has nothing
-to do with networks or powergrids and just uses "plain" SciML Packages.
-We will then build a super simple power grid simulation to highlight the parallels in nomenclature and workflow.
+In this tutorial, we will model the same physical system, a Single-Machine-Infinite-Bus (SMIB), in two different ways.
+First, we'll build it as a "plain" ModelingToolkit model using pure SciML packages.
+Then, we'll model the same system using PowerDynamics' component-based approach.
+This side-by-side comparison highlights the parallels in nomenclature and workflow between the two approaches.
 
-!!! details "Short description of used Packages and their relation"
+The workflow for both approaches looks like this:
+```asciiart
+╭────────────────────────╮ ╭────────────────────────────╮
+│ Pure MTK Model         │ │ PowerDynamics.jl Model     │
+╞════════════════════════╡ ╞════════════════════════════╡
+│ Equation-based model   │ │ Composite Model consisting │
+│ of the entire system.  │ │ of equation-based MTK      │
+╰─────────────────────┬──╯ │ models for Buses and Lines │
+                      │    │         ╭───────╮          │
+                      │    │     2 ┯━┿       ┿━┯ 3      │
+                      │    │       ↓ │   ╭───╯ ↓        │
+                      │    │         ┷━┯━┷ 1            │
+                      │    │          (~)               │
+                      │    ╰──────┬─────────────────────╯
+  ModelingToolkit.jl  │           │  PowerDynamics.jl
+           generates  ▾           ▾  generates
+                  ╭───┴───────────┴───╮
+                  │ DAE System        │
+                  │ M ̇x = f(x, p, t)  │
+                  ╰─────────┬─────────╯
+RHS function + Mass Matrix  ▾
+      ╭─────────────────────┴─────────────────────╮
+      │ SciML-ODEProblem                          │
+      │ Data structure for time-domain simulation │
+      ╰─────────────────────┬─────────────────────╯
+  OrdinaryDiffEq.jl solver  ▾
+     ╭──────────────────────┴──────────────────────╮
+     │ SciML-ODESolution                           │
+     │ Solution object containing the time series  │
+     │ for all components                          │
+     ╰──────────────────────┬──────────────────────╯
+         Symbolic Indexing  ▾
+ ╭──────────────────────────┴──────────────────────────╮
+ │ Time-series Inspection                              │
+ │ Symbolic indexing allows for easy access to all     │
+ │ states of all subcomponents for detailed analysis.  │
+ ╰─────────────────────────────────────────────────────╯
+```
+
+!!! info "Short description of used Packages and their relation"
 
     **Top-level Packages:**
     - [PowerDynamics.jl](https://github.com/JuliaEnergy/PowerDynamics.jl): The main package for building powergrid models. It provides a library and modeling tools specific to power systems, such as powerflow models and component libraries.
@@ -73,25 +82,30 @@ We will then build a super simple power grid simulation to highlight the paralle
 
 ## Simple ModelingToolkit System
 
-Since everybody loves oscillators, we'll use a simple pendulum as an example for our plain MTK system.
+In this section we'll model the simplest Single-Machine-Infinite-Bus System (SMIB): a Swing equation connected to
+a slack bus.
+
 ```asciiart
-     ╶┬╴
-      ┆╲
-      ┆ ╲ l
-      ┆  ╲
-      ┆θ,ω̇╲
-           ╲
-            ● m
-            ↓ g
+                    ω,θ
+                     ⤺
+Turbine Power  Pₘ  🭃▄▄▄🭎  Pₑ  Electrical Power
+               ─→  🭔▀▀▀🭟  ─→
+                     H
+
 ```
-The equations of that system can be written as:
+
+The equations of the rotor connected to the infinite bus can be written as:
+
 ```math
 \begin{aligned}
-F &= -m\,g\,\sin{\theta}&&\text{(tangential force)} \\
-m\,l^2\,\dot{\omega} &= F\,l&&\text{(Newton's second law)}\\
-\dot{\theta} &= \omega
+\dot{\theta} &= \omega\\
+M\,\dot{\omega} &= P_\mathrm{m} - P_\mathrm{e} - D\,\omega&&\text{Swing Equation with}\\
+P_\mathrm{e} &= \frac{1}{X}\sin{\theta}&&\text{connection to infinite bus with}\ δ=0
 \end{aligned}
 ```
+where $M$ is the inertia, $\omega_s$ is the synchronous speed, $P_m$ is the mechanical power input, and $P_e$ is the electrical power output.
+The state is described by the rotor angle $\theta$ and the angular velocity $\omega$ (deviation from synchronous speed).
+The ideal rotor is connected to a slack bus via a lossless transmission line with reactance $X$.
 
 To simulate this system, we first need to import some packages...
 =#
@@ -103,32 +117,37 @@ using CairoMakie
 nothing #hide #md
 #=
 ## MTK: Model Definition & Simulation
+
+!!! tip "Unicode Symbols"
+    Julia allows you to use unicode characters in variable names. In most Julia development environments you can insert them with LaTeX-like syntax: `\alpha<TAB> ⇒ α`, `\_e<TAB> ⇒ ₑ` and `\_+ ⇒ ₊`. Especially `₊` is important as it is used as a separator in MTK.
+
 After importing the packages, we can define the *symbolic system* using the `@mtkmodel` macro:
 =#
-@mtkmodel Pendulum begin
+@mtkmodel SwingInfiniteBus begin
     @parameters begin
-        g = 9.81  # gravitational acceleration
-        m = 1 # mass of the pendulum
-        l = 1 # length of the pendulum
+        M  = 1   # machine inertia
+        D  = 1   # machine damping
+        Pₘ = 1   # mechanical power
+        X  = 0.1 # reactance of powerline
     end
     @variables begin
-        θ(t) # angle of the pendulum
-        ω(t) # angular velocity of the pendulum
-        F(t) # accelerating force in tangential direction
+        θ(t)  # rotor angle
+        ω(t)  # angular velocity (rel to sync. speed)
+        Pₑ(t) # electrical power (connection to IB)
     end
     @equations begin
-        F ~ -m * g * sin(θ)
-        m * l^2 * Dt(ω) ~ F * l
+        Pₑ ~ 1/X * sin(θ)
         Dt(θ) ~ ω
+        M * Dt(ω) ~ Pₘ - Pₑ - D*ω
     end
 end
 nothing #hide #md
 #=
 The definition of the system is quite straightforward. Note how we defined 3
-states, including one for the force $F$.
-We can instantiate the system by calling its constructor `Pendulum()`:
+states, including one for the electrical power $P_\mathrm{e}$.
+We can instantiate the system by calling its constructor `SwingInfiniteBus()`:
 =#
-@named symbolic_system = Pendulum()
+@named symbolic_system = SwingInfiniteBus()
 full_equations(symbolic_system) # show all equations
 #=
 In order to simulate the system, we need to call `mtkcompile`, which will essentially
@@ -138,8 +157,7 @@ compiled_system = mtkcompile(symbolic_system)
 full_equations(compiled_system) # show all equations
 #=
 You can see that the "compiled" system only consists of two states, $\theta$ and $\omega$.
-This is because $F$ is not really a state of the system, but rather an intermediate variable, so it was thrown out.
-The resulting equations are much more closely aligned with the "canonical" form of the pendulum.
+This is because $P_\mathrm{e}$ is not really a state of the system, but rather an intermediate variable, so it was thrown out.
 While trivial in this case, this is the symbolic simplification at work.
 
 To simulate the system, we need to define initial conditions for the states $\theta$ and $\omega$.
@@ -147,10 +165,10 @@ Also, we need to define a time span for the simulation.
 =#
 
 u0 = [
-    compiled_system.θ => pi/4,
+    compiled_system.θ => 0.0,
     compiled_system.ω => 0.0,
 ]
-tspan = (0.0, 5.0)
+tspan = (0.0, 10.0)
 nothing #hide #md
 #=
 Combining the compiled system, initial conditions, and time span, we can define a so-called `ODEProblem`.
@@ -196,9 +214,9 @@ This syntax has lots of variants; for example, we can efficiently interpolate mu
 sol([0.0, 1.0], idxs=[compiled_system.θ, compiled_system.ω]) # get θ and ω at t=0.0s and t=1.0s
 #=
 Since ModelingToolkit keeps track of all of its simplifications, we can also extract so-called "observed" states, i.e., states that were part of the original symbolic system but got eliminated during compilation.
-For this example, we can get the force $F$ at any time point even though it is not part of the solution itself:
+For this example, we can get the electrical power $P_\mathrm{e}$ at any time point even though it is not part of the solution itself:
 =#
-sol(0.0, idxs=compiled_system.F) # get F at t=0.0s
+sol(0.5, idxs=compiled_system.Pₑ) # get Pe at t=0.5s
 #=
 Finally, we can use the same *symbolic indexing* syntax in plotting commands. The example below uses Makie.jl; however, the commands are very similar in Plots.jl.
 =#
@@ -207,7 +225,7 @@ let
     ax = Axis(fig[1,1], xlabel="Time (s)", ylabel="States")
     lines!(sol, idxs=compiled_system.θ, color=:darkred)
     lines!(sol, idxs=compiled_system.ω, color=:darkblue)
-    lines!(sol, idxs=compiled_system.F, color=:darkgreen)
+    lines!(sol, idxs=compiled_system.Pₑ, color=:darkgreen)
     axislegend(ax; position=:rt)
     fig
 end
@@ -216,14 +234,15 @@ end
 
 ## Simple PowerDynamics System
 
-In this section, we'll set up a minimal PowerDynamics simulation to show the parallels to the pure-MTK workflow above.
+Now, we're going to model the same physical system but this time using the component based approach of PowerDynamics.jl
 
-We'll build a simple 2-bus system with two swing equation models at two buses connected by a transmission line.
+This means, we'll define two buses with a pi-line (zero shunts) connecting them.
+
 ```asciiart
         bus 1          bus 2
           ╻              ╻
-   (~)────╂──────────────╂────(~)
-swing-eqs ╹   pi-line    ╹ swing-eqs
+  (═)╶────╂──────────────╂───╴(~)
+swing-eqs ╹   pi-line    ╹ slack/infinite bus
 ```
 First, we need to load the PowerDynamics.jl package:
 =#
@@ -232,27 +251,32 @@ using PowerDynamics: Library
 #=
 We start by loading a Swing model generator from the library.
 =#
-@named symbolic_swing_system = Library.Swing(V=1)
-full_equations(symbolic_swing_system) # show all equations
+@named symbolic_swing = Library.Swing(V=1)
+full_equations(symbolic_swing) # show all equations
 
 #=
 The equations represent a classic swing equation with no voltage dynamics.
 We passed the keyword argument `V=1` to set the voltage magnitude to 1 p.u.
 So far, this is a "pure" MTK model, similar to the `symbolic_system` from above.
+The equations are structurally identical to the ones we defined manually above only differing in some conventions.
 
 We can then compile the model to get rid of intermediate variables and make it ready for simulation. We do so by calling `compile_bus`. The additional call to `MTKBus` can be ignored for now and is explained in further tutorials and the [Modeling Concepts](@ref) docs.
 Additionally, we give the bus model an index using the `vidx` keyword (short for vertex index).
 =#
-bus1 = compile_bus(MTKBus(symbolic_swing_system); vidx=1)
+bus1 = compile_bus(MTKBus(symbolic_swing); vidx=1, name=:swing)
 #=
 This object is a so-called `VertexModel`. VertexModels (and EdgeModels) are the building blocks
 of systems in PowerDynamics.jl and NetworkDynamics.jl.
 From the printout you can already see that it has different variables/parameters with some default values and so on.
 
-Similarly, we can create a second bus:
+For the second bus, we use a slack bus (also called infinite bus), which maintains constant voltage magnitude and angle:
 =#
-bus2 = compile_bus(MTKBus(symbolic_swing_system); vidx=2)
+@named symbolic_slack = Library.VδConstraint(; V=1, δ=0)
+bus2 = compile_bus(MTKBus(symbolic_slack); vidx=2, name=:slack)
+
 #=
+The `VδConstraint` enforces $V=1$ p.u. and $\delta=0$ at all times, which is the mathematical definition of a slack/infinite bus.
+
 And a powerline connecting the two:
 =#
 @named symbolic_piline = Library.PiLine()
@@ -272,22 +296,27 @@ Similar to the `compiled_system`, it not only contains the right-hand-side funct
 
 In contrast to the MTK example above, our symbolic indices are "hierarchical", i.e., we have to specify the component first and then the state/parameter name.
 
+`VIndex` objects are used to reference states/parameters of vertex-entities (buses, shunts, generators, loads, etc.),
 ```asciiart
-      ▷ VIndex(    1, :symbolic_swing_system₊ω)
-      ▷ VIndex(:bus1, :symbolic_swing_system₊δ)
-        ╶──┬─╴ ╶─┬─╴  ╶───────────┬──────────╴
-Vertex╶────╯     ╰──────╮         │
-Index or name of vertex╶╯         │
-Name of parameter/state╶──────────╯
-
-      ▷ EIndex(             1, :src₊P)
-      ▷ EIndex(        :edge1, :src₊Q)
-      ▷ EIndex(        1 => 2, :src₊Q)
-      ▷ EIndex(:bus1 => :bus2, :symbolic_piline₊R)
-        ╶──┬─╴ ╶──────┬─────╴  ╶───────┬────────╴
-Edge╶──────╯          ╰────╮           │
-Index/name or src-dst pair╶╯           │
-Name of parameter/state╶───────────────╯
+VIndex(  1,    :symbolic_swing₊ω)
+VIndex(:swing, :symbolic_swing₊θ)
+       ╶─┬──╴  ╶───────┬───────╴
+         ╵             │
+Index/name of vertex   │
+                       ╵
+         Name of parameter/state
+```
+while `EIndex` objects are used to reference states/parameters of edge-entities (lines, transformers, etc.),
+```asciiart
+EIndex(        1,             :src₊P       )
+EIndex(     :edge,            :src₊Q       )
+EIndex(     1 => 2,           :src₊Q       )
+EIndex(:swing => :slack, :symbolic_piline₊R)
+       ╶──────┬───────╴  ╶───────┬────────╴
+              ╵                  │
+ Index/name or src-dst pair      │
+                                 ╵
+                      Name of parameter/state
 ```
 
 ## PD: Manual Definition of Initial Conditions
@@ -298,32 +327,29 @@ finding a suitable initial state is a hard problem which is covered in depth in 
 For now, our system is quite simple and we can find a suitable initial state by hand.
 We can create a "default" state by calling [`NWState`](@extref NetworkDynamics.NWState) on the network object:
 =#
+@assert dim(nw) == 2 # hide
 s0 = NWState(nw)
 #=
 This creates a state and parameter object, which is prefilled with all of the default values stored in the Network.
 The undefined states/parameters are set to `NaN`.
+
+!!! note Automatic State Reduction
+In the printout of `s0` you see only two "real" states: $\omega$ and $\theta$ of the swing equation, everything else was simplified away, just like in the MTK example above.
+
 Using the symbolic indexing syntax described above, we can now set the initial conditions for all states and parameters that are not already defined.
 
-We initialize the frequency of both machines to 1 p.u. and the angles to small deviations around 0:
+Similar to the example above, we start at 0 angle and a frequency of 1 p.u. (in contrast to the MTK example above, the swing model from the library is defined in terms of PU frequency not frequency deviation):
 =#
-s0[VIndex(1, :symbolic_swing_system₊θ)] = 0.01
-s0[VIndex(2, :symbolic_swing_system₊θ)] = -0.01
-s0[VIndex(1, :symbolic_swing_system₊ω)] = 1
-s0[VIndex(2, :symbolic_swing_system₊ω)] = 1
+s0[VIndex(1, :symbolic_swing₊θ)] = 0.0
+s0[VIndex(:swing, :symbolic_swing₊ω)] = 1 # alternatively, reference vertex by unique name
 nothing #hide #md
 #=
-Instead of writing the symbolic indices explicitly, `NWState` supports a more user-friedly syntax for acessing states.
-We set the mechanical power input of bus 1 to 1, and bus 2 to -1:
+Instead of using the symbolic indices explicitly, `NWState` supports a more user-friendly syntax for accessing states.
+We set the mechanical power input, the inertia, and the damping of the machine at bus 1:
 =#
-s0.v[1][:symbolic_swing_system₊Pm] =  1
-s0.v[2][:symbolic_swing_system₊Pm] = -1
-nothing #hide #md
-
-#=
-We can also do more complex operations, for example, we'll set the inertia and damping of both machines to 1 using broadcasting:
-=#
-s0.v[1:2][:symbolic_swing_system₊M] .= 1 # sets the parameters :…₊M of vertices 1 and 2 to 1
-s0.v[1:2][:symbolic_swing_system₊D] .= 1 # sets the parameters :…₊D of vertices 1 and 2 to 1
+s0.v[1][:symbolic_swing₊Pm] =  1
+s0.v[1][:symbolic_swing₊M] = 1
+s0.v[:swing][:symbolic_swing₊D] = 1
 nothing #hide #md
 
 #=
@@ -342,16 +368,15 @@ For example, we can inspect the active power at both src and destination end.
 =#
 s0.e[1=>2]([:src₊P, :dst₊P])
 #=
-The exact syntax will be covered in later tutorials.
-However, you can already see that the pi line injects positive active power at the destination end and negative active power at the source end. This matches our expectation, since the line is defined from bus 1 to bus 2, and we gave bus 1 a slightly higher angle than bus 2—therefore we expected this net flow from 1 to 2.
+Unsurprisingly, since we start at an angle of 0 with both slack and swing, there is no active power flow.
 
 ## PD: Simulation of the System
 Similar to before, we take our model and use it to define an `ODEProblem`.
 We can then solve it using the `Rodas5P` solver again.
 
-The only notable difference here is, that we need to pass both flat vectors: states and paramers.
+The only notable difference here is, that we need to pass both flat vectors: states and parameters.
 =#
-prob = ODEProblem(nw, uflat(s0), (0.0, 10.0), pflat(s0))
+prob = ODEProblem(nw, uflat(s0), (0.0, 10.0), copy(pflat(s0)))
 sol = solve(prob, Rodas5P())
 nothing #hide #md
 
@@ -359,32 +384,38 @@ nothing #hide #md
 ## PD: Solution Handling
 The solution handling is analogous to the pure-MTK example above.
 =#
-sol(1.0, idxs=VIndex(1, :symbolic_swing_system₊θ)) # get θ of bus 1 at t=1.0s
+sol(1.0, idxs=VIndex(1, :symbolic_swing₊θ)) # get θ of bus 1 at t=1.0s
 #=
 For generating lists of symbolic indices at once, NetworkDynamics.jl provides the
 auxiliary functions [`vidxs`](@extref NetworkDynamics.vidxs) and [`eidxs`](@extref NetworkDynamics.eidxs):
 =#
-vidxs(nw, 1:2, :symbolic_swing_system₊ω) # create lists of VIndex objects
+vidxs(nw, :, :busbar₊u_arg) # create lists of VIndex objects
 #-
-sol(1.0, idxs=vidxs(nw, 1:2, :symbolic_swing_system₊ω)) # use vidxs get ω of bus 1&2 at t=1.0s
+sol(1.0, idxs=vidxs(nw, :, :busbar₊u_arg)) # use vidxs get voltage angle of all buses at t=1.0s
 #=
+!!! tip
+    Certain electrical "bus" states, such as `:busbar₊u_arg` or `:busbar₊u_mag`, are available at every bus regardless of the models attached to that bus. The full list of avialable symbols can be checked interatively using `s0.v[1]`/`s0.e[1=>2]`.
+
 Sometimes, you want to get the full `NWState` at a specific time point.
 =#
 s10 = NWState(sol, 1.0) # get full NWState at t=1.0s
+#=
+which you can then inspect as before:
+=#
+s10.e[1=>2]([:src₊P, :dst₊P]) # get active power at line 1=>2 at t=1.0s
 #=
 We can do some plotting as before:
 =#
 let
     fig = Figure()
-    ax = Axis(fig[1,1], xlabel="Time (s)", ylabel="Angles")
-    lines!(sol, idxs=VIndex(1, :symbolic_swing_system₊θ), color=:darkred)
-    lines!(sol, idxs=VIndex(2, :symbolic_swing_system₊θ), color=:darkblue)
+    ax = Axis(fig[1,1], xlabel="Time (s)", ylabel="Voltage Angles")
+    lines!(sol, idxs=VIndex(1, :symbolic_swing₊θ), color=:darkred)
+    lines!(sol, idxs=VIndex(2, :busbar₊u_arg), color=:darkblue)
     axislegend(ax; position=:rt)
-    ax = Axis(fig[2,1], xlabel="Time (s)", ylabel="Frequencies")
-    lines!(sol, idxs=VIndex(1, :symbolic_swing_system₊ω), color=:darkred)
-    lines!(sol, idxs=VIndex(2, :symbolic_swing_system₊ω), color=:darkblue)
+    ax = Axis(fig[2,1], xlabel="Time (s)", ylabel="Frequency at Swing")
+    lines!(sol, idxs=VIndex(1, :symbolic_swing₊ω), color=:darkred)
     axislegend(ax; position=:rt)
-    ax = Axis(fig[3,1], xlabel="Time (s)", ylabel="Active Power")
+    ax = Axis(fig[3,1], xlabel="Time (s)", ylabel="Active Power in Line")
     lines!(sol, idxs=EIndex(1=>2, :src₊P), color=:darkgreen, label="P injected towards bus 1")
     lines!(sol, idxs=EIndex(1=>2, :dst₊P), color=:lightgreen, label="P injected towards bus 2")
     axislegend(ax; position=:rt)
@@ -392,7 +423,6 @@ let
 end
 #=
 We observe the expected behavior:
-- both swing generators, well, swing around each other until they reach a steady state (due to the non-zero damping term)
-- in steady state, the active power injected at bus 1 is equal to the active power extracted at bus 2
-- there is a net power flow from bus 1 to bus 2
+- as in the pure MTK example, the swing node accelerates and oscillates around until it settles at a new steady state, where the angle difference between bus 1 and the slack bus (with $\delta=0$) leads to a power flow of $P_\mathrm{e} = P_\mathrm{m} = 1$ p.u.
+- in steady state, the active power injected at bus 1 is equal to the active power extracted at bus 2 (lossless line)
 =#

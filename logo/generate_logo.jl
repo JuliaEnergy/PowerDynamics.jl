@@ -14,6 +14,10 @@ function logo_svg(path, foreground="black")
 end
 logo_svg(joinpath(assetpath, "logo.svg"), "black")
 logo_svg(joinpath(assetpath, "logo-dark.svg"), "white")
+# use imagick to convert svg to ico
+# run(`convert -background none $(assetpath)/logo.svg -define icon:auto-resize=64,48,32,16 $(assetpath)/favicon.ico`)
+# current logo is not suitable as favicon, far to thin
+# maye later somethin like  turbine - gen - load in line?
 
 function logo_text_svg(path, foreground="black", bg=nothing)
     Drawing(1150, 400, path)
