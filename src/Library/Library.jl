@@ -171,14 +171,23 @@ include("OpenIPSL/Machines/PSSE_GENSALIENT.jl")
 export PSSE_Load
 include("OpenIPSL/Loads/PSSE_Load.jl")
 
-export PSSE_IEEET1, PSSE_ESST4B, PSSE_EXST1, PSSE_ESST1A
-include("OpenIPSL/Controls/PSSE_Excitation.jl")
+export PSSE_IEEET1
+include("OpenIPSL/Controls/PSSE_IEEET1.jl")
+
+export PSSE_EXST1
+include("OpenIPSL/Controls/PSSE_EXST1.jl")
+
+export PSSE_ESST4B
+include("OpenIPSL/Controls/PSSE_ESST4B.jl")
+
+export PSSE_ESST1A
+include("OpenIPSL/Controls/PSSE_ESST1A.jl")
 
 export PSSE_SCRX
 include("OpenIPSL/Controls/PSSE_SCRX.jl")
 
 export PSSE_IEEEG1
-include("OpenIPSL/Controls/PSSE_TurbineGovernors.jl")
+include("OpenIPSL/Controls/PSSE_IEEEG1.jl")
 
 export PSSE_GGOV1_EXPERIMENTAL
 include("OpenIPSL/Controls/PSSE_GGOV1.jl")
@@ -187,6 +196,6 @@ export PSSE_HYGOV
 include("OpenIPSL/Controls/PSSE_HYGOV.jl")
 
 export PSSE_IEEEST
-include("OpenIPSL/Controls/PSSE_PSS.jl")
+include("OpenIPSL/Controls/PSSE_IEEEST.jl")
 
 end

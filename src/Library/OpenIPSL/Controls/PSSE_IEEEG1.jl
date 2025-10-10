@@ -1,4 +1,4 @@
-# PSSE Turbine Governor Components
+# PSSE IEEEG1 Turbine Governor
 #
 # Original work Copyright (c) 2016-2022 Luigi Vanfretti, ALSETLab, and contributors
 # Original work licensed under BSD 3-Clause License

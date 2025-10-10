@@ -312,68 +312,6 @@ end
     end
 end
 
-"""
-    FEX_function(u)
-
-Rectifier commutation function FEX=f(IN) for excitation systems.
-Port of OpenIPSL.NonElectrical.Nonlinear.FEX
-
-This function models the voltage drop across a rectifier as a function
-of the normalized current IN = K_C * I_fd / V_ex.
-"""
-function FEX_function(u)
-    if u <= 0
-        return 1.0
-    elseif u > 0 && u <= 0.433
-        return 1 - 0.577*u
-    elseif u > 0.433 && u < 0.75
-        return sqrt(0.75 - u^2)
-    elseif u >= 0.75 && u <= 1
-        return 1.732*(1 - u)
-    else
-        return 0.0
-    end
-end
-#=
-FEX_function uses if/else statements. We need to register it as a symbolic function
-to block MTK from tracing the function and handle it as a black box.
-=#
-ModelingToolkit.@register_symbolic FEX_function(u)
-
-"""
-    RectifierCommutationVoltageDrop
-
-Models the voltage drop across a rectifier due to commutation effects.
-Port of OpenIPSL.Electrical.Controls.PSSE.ES.BaseClasses.RectifierCommutationVoltageDrop
-
-This component calculates the effective field voltage considering rectifier
-commutation effects. The normalized current IN = K_C * XADIFD / V_EX is used
-to determine the voltage drop factor via the FEX function.
-"""
-@mtkmodel RectifierCommutationVoltageDrop begin
-    @structural_parameters begin
-        K_C # Rectifier loading factor proportional to commutating reactance
-    end
-
-    @variables begin
-        V_EX(t), [description="Exciter voltage input", input=true]
-        XADIFD(t), [description="Field current input", input=true]
-        EFD(t), [description="Field voltage output", output=true]
-        # Internal variables
-        IN(t), [description="Normalized current"]
-        FEX_out(t), [description="FEX function output"]
-    end
-
-    @equations begin
-        # Calculate normalized current
-        IN ~ K_C * XADIFD / V_EX
-        # Apply FEX rectifier function
-        FEX_out ~ FEX_function(IN)
-        # Calculate final field voltage
-        EFD ~ V_EX * FEX_out
-    end
-end
-
 # after modelica Modelica.Blocks.Nonlinear.DeadZone
 @mtkmodel DeadZone begin
     @structural_parameters begin
@@ -393,4 +331,82 @@ end
             )
         )
     end
+end
+
+ModelingToolkit.@component ss_to_mtkmodel(; A, B, C, D, kwargs...) = ss_to_mtkmodel(A, B, C, D; kwargs...)
+function ss_to_mtkmodel(A, B, C, D; name=nothing, guesses=zeros(size(A,1)))
+    t = ModelingToolkit.t_nounits
+    Dt = ModelingToolkit.D_nounits
+
+    n = size(A, 1)
+    @assert size(D) == (1, 1) "Only SISO systems supported"
+
+    # Symbolic system
+    @variables in(t) out(t)
+    _xs_names = [ Symbol("x", NetworkDynamics.subscript(i)) for i in 1:n]
+    # dont use Symbolics.variables as it does not create all necessary metadata?
+    # also needs to set guess in @variables not with MTK.setguess
+    x = map(zip(_xs_names, guesses)) do (_name, _guess)
+        only(@variables $(_name)(t) [guess=_guess])
+    end
+
+    ∂x = Dt.(x)
+    eqs = vcat(
+        ∂x .~ A*x .+ B*[in],
+        [out] .~ (length(C)>0 ? C*x : 0) .+ D*[in]
+    )
+    eqs = Symbolics.simplify.(eqs)
+    allp = mapreduce(Symbolics.get_variables, ∪, Iterators.flatten((A,B,C,D)))
+
+    return System(eqs, t, vcat(x, [in, out]), allp; name=name)
+end
+
+#=
+Taken and adapted from SymbolicControlSystems.jl
+
+Copyright (c) 2020 Fredrik Bagge Carlson, MIT License
+=#
+function siso_tf_to_ss(num0, den0)
+    T = Base.promote_type(eltype(num0), eltype(den0))
+
+    # truncate leading zeros
+    num0 = num0[findfirst(!iszero, num0):end]
+    den0 = den0[findfirst(!iszero, den0):end]
+
+    # check if it is proper
+    denorder = length(den0) - 1
+    numorder = length(num0) - 1
+    if numorder > denorder
+        error("Numerator degree > denominator degree not allowed (non-proper).")
+    end
+
+
+    # Normalize the numerator and denominator to allow realization of transfer functions
+    # that are proper, but not strictly proper
+    num = num0 ./ den0[1]
+    den = den0 ./ den0[1]
+
+    N = length(den) - 1 # The order of the rational function f
+
+    # Get numerator coefficient of the same order as the denominator
+    bN = length(num) == N+1 ? num[1] : zero(eltype(num))
+
+    @views if N == 0 #|| num == zero(Polynomial{T})
+        A = zeros(T, 0, 0)
+        B = zeros(T, 0, 1)
+        C = zeros(T, 1, 0)
+    else
+        A = LinearAlgebra.diagm(1 => ones(T, N-1))
+        A[end, :] .= .-reverse(den)[1:end-1]
+
+        B = zeros(T, N, 1)
+        B[end] = one(T)
+
+        C = zeros(T, 1, N)
+        C[1:min(N, length(num))] = reverse(num)[1:min(N, length(num))]
+        C[:] .-= bN .* reverse(den)[1:end-1] # Can index into polynomials at greater inddices than their length
+    end
+    D = fill(bN, 1, 1)
+
+    return A, B, C, D
 end

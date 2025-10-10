@@ -1,3 +1,12 @@
+# PSSE IEEEST Power System Stabilizer
+#
+# Original work Copyright (c) 2016-2022 Luigi Vanfretti, ALSETLab, and contributors
+# Original work licensed under BSD 3-Clause License
+# Original source: https://github.com/OpenIPSL/OpenIPSL
+#
+# This Julia/PowerDynamics port maintains the same mathematical formulation
+# while adapting to PowerDynamics/ModelingToolkit framework conventions.
+
 @mtkmodel PSSE_IEEEST begin
     @structural_parameters begin
         warn = true
@@ -106,82 +115,4 @@
         vct ~ V_CT_in.u
         VOTHSG_out.u ~ clamped_sig * _IEEEST_active
     end
-end
-
-ModelingToolkit.@component ss_to_mtkmodel(; A, B, C, D, kwargs...) = ss_to_mtkmodel(A, B, C, D; kwargs...)
-function ss_to_mtkmodel(A, B, C, D; name=nothing, guesses=zeros(size(A,1)))
-    t = ModelingToolkit.t_nounits
-    Dt = ModelingToolkit.D_nounits
-
-    n = size(A, 1)
-    @assert size(D) == (1, 1) "Only SISO systems supported"
-
-    # Symbolic system
-    @variables in(t) out(t)
-    _xs_names = [ Symbol("x", NetworkDynamics.subscript(i)) for i in 1:n]
-    # dont use Symbolics.variables as it does not create all necessary metadata?
-    # also needs to set guess in @variables not with MTK.setguess
-    x = map(zip(_xs_names, guesses)) do (_name, _guess)
-        only(@variables $(_name)(t) [guess=_guess])
-    end
-
-    ∂x = Dt.(x)
-    eqs = vcat(
-        ∂x .~ A*x .+ B*[in],
-        [out] .~ (length(C)>0 ? C*x : 0) .+ D*[in]
-    )
-    eqs = Symbolics.simplify.(eqs)
-    allp = mapreduce(Symbolics.get_variables, ∪, Iterators.flatten((A,B,C,D)))
-
-    return System(eqs, t, vcat(x, [in, out]), allp; name=name)
-end
-
-#=
-Taken and adapted from SymbolicControlSystems.jl
-
-Copyright (c) 2020 Fredrik Bagge Carlson, MIT License
-=#
-function siso_tf_to_ss(num0, den0)
-    T = Base.promote_type(eltype(num0), eltype(den0))
-
-    # truncate leading zeros
-    num0 = num0[findfirst(!iszero, num0):end]
-    den0 = den0[findfirst(!iszero, den0):end]
-
-    # check if it is proper
-    denorder = length(den0) - 1
-    numorder = length(num0) - 1
-    if numorder > denorder
-        error("Numerator degree > denominator degree not allowed (non-proper).")
-    end
-
-
-    # Normalize the numerator and denominator to allow realization of transfer functions
-    # that are proper, but not strictly proper
-    num = num0 ./ den0[1]
-    den = den0 ./ den0[1]
-
-    N = length(den) - 1 # The order of the rational function f
-
-    # Get numerator coefficient of the same order as the denominator
-    bN = length(num) == N+1 ? num[1] : zero(eltype(num))
-
-    @views if N == 0 #|| num == zero(Polynomial{T})
-        A = zeros(T, 0, 0)
-        B = zeros(T, 0, 1)
-        C = zeros(T, 1, 0)
-    else
-        A = LinearAlgebra.diagm(1 => ones(T, N-1))
-        A[end, :] .= .-reverse(den)[1:end-1]
-
-        B = zeros(T, N, 1)
-        B[end] = one(T)
-
-        C = zeros(T, 1, N)
-        C[1:min(N, length(num))] = reverse(num)[1:min(N, length(num))]
-        C[:] .-= bN .* reverse(den)[1:end-1] # Can index into polynomials at greater inddices than their length
-    end
-    D = fill(bN, 1, 1)
-
-    return A, B, C, D
 end
