@@ -171,31 +171,31 @@ include("Machines/PSSE_GENSALIENT.jl")
 export PSSE_Load
 include("Loads/PSSE_Load.jl")
 
-export PSSE_IEEET1
-include("Controls/PSSE_IEEET1.jl")
-
 export PSSE_EXST1
-include("Controls/PSSE_EXST1.jl")
+include("Controls/EX/PSSE_EXST1.jl")
 
 export PSSE_ESST4B
-include("Controls/PSSE_ESST4B.jl")
+include("Controls/EX/PSSE_ESST4B.jl")
 
 export PSSE_ESST1A
-include("Controls/PSSE_ESST1A.jl")
+include("Controls/EX/PSSE_ESST1A.jl")
 
 export PSSE_SCRX
-include("Controls/PSSE_SCRX.jl")
+include("Controls/EX/PSSE_SCRX.jl")
 
 export PSSE_IEEEG1
-include("Controls/PSSE_IEEEG1.jl")
+include("Controls/GOV/PSSE_IEEEG1.jl")
 
 export PSSE_GGOV1_EXPERIMENTAL
-include("Controls/PSSE_GGOV1.jl")
+include("Controls/GOV/PSSE_GGOV1.jl")
 
 export PSSE_HYGOV
-include("Controls/PSSE_HYGOV.jl")
+include("Controls/GOV/PSSE_HYGOV.jl")
+
+export PSSE_IEEET1
+include("Controls/PSS/PSSE_IEEET1.jl")
 
 export PSSE_IEEEST
-include("Controls/PSSE_IEEEST.jl")
+include("Controls/PSS/PSSE_IEEEST.jl")
 
 end
