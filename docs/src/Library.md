@@ -32,12 +32,13 @@ ClassicalMachine
 
 ## Control Systems
 
-### Automatic Voltage Regulators (AVRs)
+### Exciters & AVRs
 ```@docs
 PSSE_EXST1
 PSSE_ESST4B
 PSSE_ESST1A
 PSSE_SCRX
+PSSE_IEEET1
 AVRFixed
 AVRTypeI
 ```
@@ -54,7 +55,6 @@ PSSE_GGOV1_EXPERIMENTAL
 
 ### Power System Stabilizers (PSS)
 ```@docs
-PSSE_IEEET1
 PSSE_IEEEST
 ```
 
@@ -62,11 +62,11 @@ PSSE_IEEEST
 
 ### Static Load Models
 ```@docs
-PSSE_Load
 PQLoad
 VoltageDependentLoad
 ConstantYLoad
 ZIPLoad
+PSSE_Load
 ```
 
 ## Line Models

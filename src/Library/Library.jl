@@ -53,6 +53,9 @@ end
    end
 end
 
+####
+#### Slack Models
+####
 export SlackAlgebraic, SlackDifferential, VariableFrequencySlack
 
 @mtkmodel SlackAlgebraic begin
@@ -105,6 +108,21 @@ end
 ####
 #### Machine Models
 ####
+
+# Building blocks for PSSE models
+include("building_blocks.jl")
+include("Machines/PSSE_BaseMachine.jl")
+
+# Synchronous Machine Models
+export PSSE_GENCLS
+include("Machines/PSSE_GENCLS.jl")
+
+export PSSE_GENROU, PSSE_GENROE
+include("Machines/PSSE_GENROUND.jl")
+
+export PSSE_GENSAL, PSSE_GENSAE
+include("Machines/PSSE_GENSALIENT.jl")
+
 export SauerPaiMachine
 include("Machines/SauerPaiMachine.jl")
 
@@ -115,62 +133,10 @@ export ClassicalMachine
 include("Machines/ClassicalMachine.jl")
 
 ####
-#### Control Models
+#### Control Systems
 ####
-export AVRFixed, AVRTypeI
-include("Controls/AVRs.jl")
 
-export GovFixed, TurbineGovTypeI, TGOV1
-include("Controls/Govs.jl")
-
-####
-#### Load Models
-####
-export PQLoad, VoltageDependentLoad, ConstantYLoad, ZIPLoad
-include("Loads/PQLoad.jl")
-
-
-####
-#### Line Models
-####
-export PiLine
-include("Branches/PiLine.jl")
-export PiLine_fault
-include("Branches/PiLine_fault.jl")
-
-
-####
-#### Fault models
-####
-export RXGroundFault
-include("Faults/Faults.jl")
-
-
-####
-#### Powerflow models
-####
-include("powerflow_models.jl")
-
-
-####
-#### OpenIPSL Models
-####
-include("building_blocks.jl")
-
-include("Machines/PSSE_BaseMachine.jl")
-
-export PSSE_GENCLS
-include("Machines/PSSE_GENCLS.jl")
-
-export PSSE_GENROU, PSSE_GENROE
-include("Machines/PSSE_GENROUND.jl")
-
-export PSSE_GENSAL, PSSE_GENSAE
-include("Machines/PSSE_GENSALIENT.jl")
-
-export PSSE_Load
-include("Loads/PSSE_Load.jl")
-
+# Exciters & AVRs
 export PSSE_EXST1
 include("Controls/EX/PSSE_EXST1.jl")
 
@@ -183,19 +149,62 @@ include("Controls/EX/PSSE_ESST1A.jl")
 export PSSE_SCRX
 include("Controls/EX/PSSE_SCRX.jl")
 
+export PSSE_IEEET1
+include("Controls/PSS/PSSE_IEEET1.jl")
+
+export AVRFixed, AVRTypeI
+include("Controls/AVRs.jl")
+
+# Governors and Turbines
 export PSSE_IEEEG1
 include("Controls/GOV/PSSE_IEEEG1.jl")
-
-export PSSE_GGOV1_EXPERIMENTAL
-include("Controls/GOV/PSSE_GGOV1.jl")
 
 export PSSE_HYGOV
 include("Controls/GOV/PSSE_HYGOV.jl")
 
-export PSSE_IEEET1
-include("Controls/PSS/PSSE_IEEET1.jl")
+export GovFixed, TurbineGovTypeI, TGOV1
+include("Controls/Govs.jl")
 
+export PSSE_GGOV1_EXPERIMENTAL
+include("Controls/GOV/PSSE_GGOV1.jl")
+
+# Power System Stabilizers (PSS)
 export PSSE_IEEEST
 include("Controls/PSS/PSSE_IEEEST.jl")
+
+####
+#### Load Models
+####
+
+export PQLoad, VoltageDependentLoad, ConstantYLoad, ZIPLoad
+include("Loads/PQLoad.jl")
+
+# Static Load Models
+export PSSE_Load
+include("Loads/PSSE_Load.jl")
+
+####
+#### Line Models
+####
+
+# Transmission Line Models
+export PiLine
+include("Branches/PiLine.jl")
+
+export PiLine_fault
+include("Branches/PiLine_fault.jl")
+
+####
+#### Fault Models
+####
+
+# Ground Fault Models
+export RXGroundFault
+include("Faults/Faults.jl")
+
+####
+#### Powerflow models
+####
+include("powerflow_models.jl")
 
 end
