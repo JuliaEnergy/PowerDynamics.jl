@@ -150,7 +150,7 @@ export PSSE_SCRX
 include("Controls/EX/PSSE_SCRX.jl")
 
 export PSSE_IEEET1
-include("Controls/PSS/PSSE_IEEET1.jl")
+include("Controls/EX/PSSE_IEEET1.jl")
 
 export AVRFixed, AVRTypeI
 include("Controls/AVRs.jl")
