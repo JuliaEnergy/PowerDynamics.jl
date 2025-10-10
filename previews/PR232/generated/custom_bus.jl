@@ -6,6 +6,7 @@
 #
 # > F. Milano, Power System Modelling and Scripting,  Berlin, Heidelberg: Springer Berlin Heidelberg, 2010. doi: 10.1007/978-3-642-13669-6.
 #
+#
 # ## Defining the Machine as Injector
 #
 # In order to use this model in a Bus, we need to define it in a way that it
