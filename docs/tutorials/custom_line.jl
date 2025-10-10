@@ -9,7 +9,7 @@ To make it more interesting, we add protection logic to the branches:
 - each branch continuously checks the current magnitude against a limit,
 - if the current exceeds the limit, the branch is switched off after a delay time.
 
-This script can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
+This tutorial can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
 =#
 using PowerDynamics
 using ModelingToolkit
@@ -269,7 +269,7 @@ the line cutoff, while the cutoff callback actually switches off the line.
 !!! note
     NetworkDynamics currently does not support Events defined in MTK models. So we need to split the implementation:
     The new parameters need to be introduced to the `MTKModel` (extending CustomPiBranch), the callbacks need to be defined
-    for the *compiled VertexModel*.
+    for the *compiled EdgeModel*.
 
 ### Extension of the CustomPiBranch MTKModel
 Let's add the new parameters to the `CustomPiBranch` model by *extending* the model.

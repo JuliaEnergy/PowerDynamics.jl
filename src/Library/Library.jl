@@ -203,6 +203,12 @@ export RXGroundFault
 include("Faults/Faults.jl")
 
 ####
+#### Renewables
+####
+export IdealDroopInverter
+include("Renewables/IdealDroopInverter.jl")
+
+####
 #### Powerflow models
 ####
 include("powerflow_models.jl")
