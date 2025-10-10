@@ -127,73 +127,54 @@ BUS = let
     busmodel = MTKBus([genrou, ggov1], con; name=:GEN1)
     bm = compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0))
 
-    # known from powerflow
-    set_default!(bm, :busbar₊u_r, 0.9975073964161392)
-    set_default!(bm, :busbar₊u_i, 0.07056198760731923)
-    set_default!(bm, :busbar₊i_i, 0.025805999344453115)
-    set_default!(bm, :busbar₊i_r, -0.40282458986120284)
-
-    # syms = merge(get_guesses_dict(BUS), get_inits_dict(BUS), get_defaults_dict(BUS))
-    syms = Dict(sym => get_default(bm, sym) for sym in psym(bm) if has_default(bm, sym))
-    newg = Dict()
-
-    # base equations
-    Pe0 = -get_default(bm, :busbar₊u_r) * get_default(bm, :busbar₊i_r) - get_default(bm, :busbar₊u_i) * get_default(bm, :busbar₊i_i)
-    Pmech0 = Pe0
-
-    newg[:ggov1₊Pmwset] = Pe0
-    turbine_output = if syms[:ggov1₊Dm] ≥ 0
-        Pmech0 + 1*syms[:ggov1₊Dm]
-    else
-        Pmech0
-    end
-    newg[:ggov1₊turbine₊turbine_dynamics₊internal] = turbine_output
-    fuel_flow = turbine_output/syms[:ggov1₊Kturb] + syms[:ggov1₊Wfnl]
-    newg[:ggov1₊turbine₊valve_integrator] = fuel_flow
-
-    TEXM = fuel_flow # ifels of DM is 1 either way
-    newg[:ggov1₊turbine₊temp_leadlag₊internal] = TEXM
-    newg[:ggov1₊turbine₊temp_lag₊out] = TEXM
-
-    # pid govenor initialization
-    rsel_contribution = if syms[:ggov1₊_Rselect_static] == 0
-        0
-    elseif syms[:ggov1₊_Rselect_static]
-        syms[:ggov1₊R]*Pe0
-    else
-        syms[:ggov1₊R]*fuel_flow
-    end
-    Pref_plus_int = -rsel_contribution
-    newg[:ggov1₊pid_governor₊power_controller₊out] = Pref_plus_int - syms[:ggov1₊Pref]
-    newg[:ggov1₊pid_governor₊power_transducer₊out] = Pe0 # power measurment
-    newg[:ggov1₊pid_governor₊pid_integral_state] = fuel_flow # integral state
-    # newg[:ggov1₊pid_governor₊speed_derivative₊internal] = 0
-
-    # accel limiter initialization
-    # the derivateive is zero which is fine
-    # however, the accelerator intoruced an algebraic loop, we need guess its output
-    newg[:ggov1₊accel_limiter₊FSR] = fuel_flow # same as govenor output
-
     # load/temp limiter initialization
     # XXX This is a choice! It won't affect the result so we can chose whatever
     # we like here, however it defines how far away from the "limiting" we start
     # with our simulation
     set_default!(bm, :ggov1₊load_limiter₊integral_state, 1)
-    newg[:ggov1₊Ldref] = (TEXM - syms[:ggov1₊Wfnl]) * syms[:ggov1₊Kturb]
 
-    for (k,v) in newg
-        try
-            old = has_guess(bm, k) ? get_guess(bm, k) : nothing
-            set_guess!(bm, k, v)
-            if old !== nothing
-                @info "Updating guess for $k: $old -> $v"
-            else
-                @info "Setting guess for $k: $v"
-            end
-        catch e
-            @warn "Could not set guess for $k = $v"
+    guessformulas = @guessformula begin
+        # base equations
+        Pe0 = - 1 * (:busbar₊u_r*:busbar₊i_r + :busbar₊u_i*:busbar₊i_i)
+        Pmech0 = Pe0
+        :ggov1₊Pmwset = Pe0
+
+        turbine_output = if :ggov1₊Dm ≥ 0
+            Pmech0 + 1 * :ggov1₊Dm
+        else
+            Pmech0
         end
+        :ggov1₊turbine₊turbine_dynamics₊internal = turbine_output
+        fuel_flow = turbine_output/ :ggov1₊Kturb + :ggov1₊Wfnl
+        :ggov1₊turbine₊valve_integrator = fuel_flow
+
+        TEXM = fuel_flow # ifels of DM is 1 either way
+        :ggov1₊turbine₊temp_leadlag₊internal = TEXM
+        :ggov1₊turbine₊temp_lag₊out = TEXM
+
+        # pid govenor initialization
+        rsel_contribution = if :ggov1₊_Rselect_static == 0
+            0
+        elseif :ggov1₊_Rselect_static
+            :ggov1₊R * Pe0
+        else
+            :ggov1₊R * fuel_flow
+        end
+        Pref_plus_int = -rsel_contribution
+        :ggov1₊pid_governor₊power_controller₊out = Pref_plus_int - :ggov1₊Pref
+        :ggov1₊pid_governor₊power_transducer₊out = Pe0 # power measurment
+        :ggov1₊pid_governor₊pid_integral_state = fuel_flow # integral state
+        # :ggov1₊pid_governor₊speed_derivative₊internal = 0
+
+        # accel limiter initialization
+        # the derivateive is zero which is fine
+        # however, the accelerator intoruced an algebraic loop, we need guess its output
+        :ggov1₊accel_limiter₊FSR = fuel_flow # same as govenor output
+
+        :ggov1₊Ldref = (TEXM - :ggov1₊Wfnl) * :ggov1₊Kturb
     end
+    add_guessformula!(bm, guessformulas)
+
     bm
 end
 sol = OpenIPSL_SMIB(BUS);
