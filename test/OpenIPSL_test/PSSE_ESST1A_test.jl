@@ -87,54 +87,55 @@ sol = OpenIPSL_SMIB(BUS);
 # 5. Final field voltage output
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :esst1a₊EFD_out₊u), "eSST1A.EFD") < 1e-3                # Actual: 5.53e-4
 
-#=
 # Create focused comparison plot following signal flow
-fig_esst1a = let
-    fig = Figure(size=(1400, 1000))
-    ts = refine_timeseries(sol.t)
+if isdefined(Main, :EXPORT_FIGURES) && Main.EXPORT_FIGURES
+    fig = let
+        fig = Figure(size=(1400, 1000))
+        ts = refine_timeseries(sol.t)
 
-    # Plot 1: Generator Terminal Voltage
-    ax1 = Axis(fig[1,1]; xlabel="Time [s]", ylabel="Vt [pu]", title="Generator: Terminal Voltage")
-    lines!(ax1, ref.time, ref[!, Symbol("gENROE.Vt")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.7)
-    lines!(ax1, ts, sol(ts, idxs=VIndex(:GEN1, :machine₊Vt)).u; label="PowerDynamics", color=Cycled(1), linewidth=2, linestyle=:dash)
-    axislegend(ax1)
+        # Plot 1: Generator Terminal Voltage
+        ax1 = Axis(fig[1,1]; xlabel="Time [s]", ylabel="Vt [pu]", title="Generator: Terminal Voltage")
+        lines!(ax1, ref.time, ref[!, Symbol("gENROE.Vt")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.7)
+        lines!(ax1, ts, sol(ts, idxs=VIndex(:GEN1, :machine₊Vt)).u; label="PowerDynamics", color=Cycled(1), linewidth=2, linestyle=:dash)
+        axislegend(ax1)
 
-    # Plot 2: Generator Rotor Angle
-    ax2 = Axis(fig[1,2]; xlabel="Time [s]", ylabel="δ [rad]", title="Generator: Rotor Angle")
-    lines!(ax2, ref.time, ref[!, Symbol("gENROE.delta")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.7)
-    lines!(ax2, ts, sol(ts, idxs=VIndex(:GEN1, :machine₊delta)).u; label="PowerDynamics", color=Cycled(1), linewidth=2, linestyle=:dash)
-    axislegend(ax2)
+        # Plot 2: Generator Rotor Angle
+        ax2 = Axis(fig[1,2]; xlabel="Time [s]", ylabel="δ [rad]", title="Generator: Rotor Angle")
+        lines!(ax2, ref.time, ref[!, Symbol("gENROE.delta")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.7)
+        lines!(ax2, ts, sol(ts, idxs=VIndex(:GEN1, :machine₊delta)).u; label="PowerDynamics", color=Cycled(1), linewidth=2, linestyle=:dash)
+        axislegend(ax2)
 
-    # Plot 3: ESST1A First Lead-Lag Output
-    ax3 = Axis(fig[2,1]; xlabel="Time [s]", ylabel="[pu]", title="ESST1A: First Lead-Lag Output")
-    lines!(ax3, ref.time, ref[!, Symbol("eSST1A.imLeadLag.y")]; label="OpenIPSL", color=Cycled(2), linewidth=2, alpha=0.7)
-    lines!(ax3, ts, sol(ts, idxs=VIndex(:GEN1, :esst1a₊leadlag1₊out)).u; label="PowerDynamics", color=Cycled(2), linewidth=2, linestyle=:dash)
-    axislegend(ax3)
+        # Plot 3: ESST1A First Lead-Lag Output
+        ax3 = Axis(fig[2,1]; xlabel="Time [s]", ylabel="[pu]", title="ESST1A: First Lead-Lag Output")
+        lines!(ax3, ref.time, ref[!, Symbol("eSST1A.imLeadLag.y")]; label="OpenIPSL", color=Cycled(2), linewidth=2, alpha=0.7)
+        lines!(ax3, ts, sol(ts, idxs=VIndex(:GEN1, :esst1a₊leadlag1₊out)).u; label="PowerDynamics", color=Cycled(2), linewidth=2, linestyle=:dash)
+        axislegend(ax3)
 
-    # Plot 4: ESST1A Second Lead-Lag Output
-    ax4 = Axis(fig[2,2]; xlabel="Time [s]", ylabel="[pu]", title="ESST1A: Second Lead-Lag Output")
-    lines!(ax4, ref.time, ref[!, Symbol("eSST1A.imLeadLag1.y")]; label="OpenIPSL", color=Cycled(3), linewidth=2, alpha=0.7)
-    lines!(ax4, ts, sol(ts, idxs=VIndex(:GEN1, :esst1a₊leadlag2₊out)).u; label="PowerDynamics", color=Cycled(3), linewidth=2, linestyle=:dash)
-    axislegend(ax4)
+        # Plot 4: ESST1A Second Lead-Lag Output
+        ax4 = Axis(fig[2,2]; xlabel="Time [s]", ylabel="[pu]", title="ESST1A: Second Lead-Lag Output")
+        lines!(ax4, ref.time, ref[!, Symbol("eSST1A.imLeadLag1.y")]; label="OpenIPSL", color=Cycled(3), linewidth=2, alpha=0.7)
+        lines!(ax4, ts, sol(ts, idxs=VIndex(:GEN1, :esst1a₊leadlag2₊out)).u; label="PowerDynamics", color=Cycled(3), linewidth=2, linestyle=:dash)
+        axislegend(ax4)
 
-    # Plot 5: ESST1A Amplifier/Voltage Regulator Output
-    ax5 = Axis(fig[3,1]; xlabel="Time [s]", ylabel="[pu]", title="ESST1A: Amplifier Output")
-    lines!(ax5, ref.time, ref[!, Symbol("eSST1A.simpleLagLim.y")]; label="OpenIPSL", color=Cycled(4), linewidth=2, alpha=0.7)
-    lines!(ax5, ts, sol(ts, idxs=VIndex(:GEN1, :esst1a₊amplifier₊out)).u; label="PowerDynamics", color=Cycled(4), linewidth=2, linestyle=:dash)
-    axislegend(ax5)
+        # Plot 5: ESST1A Amplifier/Voltage Regulator Output
+        ax5 = Axis(fig[3,1]; xlabel="Time [s]", ylabel="[pu]", title="ESST1A: Amplifier Output")
+        lines!(ax5, ref.time, ref[!, Symbol("eSST1A.simpleLagLim.y")]; label="OpenIPSL", color=Cycled(4), linewidth=2, alpha=0.7)
+        lines!(ax5, ts, sol(ts, idxs=VIndex(:GEN1, :esst1a₊amplifier₊out)).u; label="PowerDynamics", color=Cycled(4), linewidth=2, linestyle=:dash)
+        axislegend(ax5)
 
-    # Plot 6: ESST1A Derivative Feedback Output
-    ax6 = Axis(fig[3,2]; xlabel="Time [s]", ylabel="[pu]", title="ESST1A: Derivative Feedback")
-    lines!(ax6, ref.time, ref[!, Symbol("eSST1A.imDerivativeLag.y")]; label="OpenIPSL", color=Cycled(5), linewidth=2, alpha=0.7)
-    lines!(ax6, ts, sol(ts, idxs=VIndex(:GEN1, :esst1a₊derivative_feedback₊out)).u; label="PowerDynamics", color=Cycled(5), linewidth=2, linestyle=:dash)
-    axislegend(ax6)
+        # Plot 6: ESST1A Derivative Feedback Output
+        ax6 = Axis(fig[3,2]; xlabel="Time [s]", ylabel="[pu]", title="ESST1A: Derivative Feedback")
+        lines!(ax6, ref.time, ref[!, Symbol("eSST1A.imDerivativeLag.y")]; label="OpenIPSL", color=Cycled(5), linewidth=2, alpha=0.7)
+        lines!(ax6, ts, sol(ts, idxs=VIndex(:GEN1, :esst1a₊derivative_feedback₊out)).u; label="PowerDynamics", color=Cycled(5), linewidth=2, linestyle=:dash)
+        axislegend(ax6)
 
-    # Plot 7: ESST1A Final Field Voltage Output
-    ax7 = Axis(fig[4,1]; xlabel="Time [s]", ylabel="EFD [pu]", title="ESST1A: Final Field Voltage")
-    lines!(ax7, ref.time, ref[!, Symbol("eSST1A.EFD")]; label="OpenIPSL", color=Cycled(6), linewidth=2, alpha=0.7)
-    lines!(ax7, ts, sol(ts, idxs=VIndex(:GEN1, :esst1a₊EFD_out₊u)).u; label="PowerDynamics", color=Cycled(6), linewidth=2, linestyle=:dash)
-    axislegend(ax7)
+        # Plot 7: ESST1A Final Field Voltage Output
+        ax7 = Axis(fig[4,1]; xlabel="Time [s]", ylabel="EFD [pu]", title="ESST1A: Final Field Voltage")
+        lines!(ax7, ref.time, ref[!, Symbol("eSST1A.EFD")]; label="OpenIPSL", color=Cycled(6), linewidth=2, alpha=0.7)
+        lines!(ax7, ts, sol(ts, idxs=VIndex(:GEN1, :esst1a₊EFD_out₊u)).u; label="PowerDynamics", color=Cycled(6), linewidth=2, linestyle=:dash)
+        axislegend(ax7)
 
-    fig
+        fig
+    end
+    save(joinpath(pkgdir(PowerDynamics),"docs","src","assets","OpenIPSL_valid","ESST1A.png"), fig)
 end
-=#

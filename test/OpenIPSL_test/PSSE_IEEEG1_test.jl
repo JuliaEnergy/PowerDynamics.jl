@@ -110,86 +110,87 @@ sol = OpenIPSL_SMIB(BUS);
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :ieeeg1₊valve_integrator₊out), "iEEEG1.limIntegrator.y") < 3e-4 # Actual: 2.29e-4
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :ieeeg1₊leadlag₊out), "iEEEG1.imLeadLag.y") < 2e-5      # Actual: 1.53e-5
 
-#=
-fig_ieeeg1 = let
-    fig = Figure(size=(1800, 1600))  # Larger figure for more plots
-    # ts = refine_timeseries(sol.t)[1:100]
-    ts = refine_timeseries(sol.t)
+if isdefined(Main, :EXPORT_FIGURES) && Main.EXPORT_FIGURES
+    fig = let
+        fig = Figure(size=(1800, 1600))  # Larger figure for more plots
+        # ts = refine_timeseries(sol.t)[1:100]
+        ts = refine_timeseries(sol.t)
 
-    # Plot 1: Generator - Angular frequency ω
-    ax1 = Axis(fig[1,1]; xlabel="Time [s]", ylabel="ω [pu]", title="Generator: Angular Frequency")
-    lines!(ax1, ref.time, ref[!, Symbol("gENROU.w")]; label="gENROU.w", color=Cycled(1), linewidth=2, alpha=0.7)
-    lines!(ax1, ts, sol(ts, idxs=VIndex(:GEN1, :genrou₊w)).u; label="genrou.w", color=Cycled(1), linewidth=2, linestyle=:dash)
-    axislegend(ax1)
+        # Plot 1: Generator - Angular frequency ω
+        ax1 = Axis(fig[1,1]; xlabel="Time [s]", ylabel="ω [pu]", title="Generator: Angular Frequency")
+        lines!(ax1, ref.time, ref[!, Symbol("gENROU.w")]; label="gENROU.w", color=Cycled(1), linewidth=2, alpha=0.7)
+        lines!(ax1, ts, sol(ts, idxs=VIndex(:GEN1, :genrou₊w)).u; label="genrou.w", color=Cycled(1), linewidth=2, linestyle=:dash)
+        axislegend(ax1)
 
-    # Plot 2: Generator - Rotor angle δ
-    ax2 = Axis(fig[1,2]; xlabel="Time [s]", ylabel="δ [rad]", title="Generator: Rotor Angle")
-    lines!(ax2, ref.time, ref[!, Symbol("gENROU.delta")]; label="gENROU.delta", color=Cycled(1), linewidth=2, alpha=0.7)
-    lines!(ax2, ts, sol(ts, idxs=VIndex(:GEN1, :genrou₊delta)).u; label="genrou.delta", color=Cycled(1), linewidth=2, linestyle=:dash)
-    axislegend(ax2)
+        # Plot 2: Generator - Rotor angle δ
+        ax2 = Axis(fig[1,2]; xlabel="Time [s]", ylabel="δ [rad]", title="Generator: Rotor Angle")
+        lines!(ax2, ref.time, ref[!, Symbol("gENROU.delta")]; label="gENROU.delta", color=Cycled(1), linewidth=2, alpha=0.7)
+        lines!(ax2, ts, sol(ts, idxs=VIndex(:GEN1, :genrou₊delta)).u; label="genrou.delta", color=Cycled(1), linewidth=2, linestyle=:dash)
+        axislegend(ax2)
 
-    # Plot 3: Governor - HP Power Output
-    ax3 = Axis(fig[2,1]; xlabel="Time [s]", ylabel="PMECH_HP [pu]", title="Governor: HP Power Output")
-    lines!(ax3, ref.time, ref[!, Symbol("iEEEG1.PMECH_HP")]; label="iEEEG1.PMECH_HP", color=Cycled(2), linewidth=2, alpha=0.7)
-    lines!(ax3, ts, sol(ts, idxs=VIndex(:GEN1, :ieeeg1₊PMECH_HP_out₊u)).u; label="ieeeg1.PMECH_HP_out", color=Cycled(2), linewidth=2, linestyle=:dash)
-    axislegend(ax3)
+        # Plot 3: Governor - HP Power Output
+        ax3 = Axis(fig[2,1]; xlabel="Time [s]", ylabel="PMECH_HP [pu]", title="Governor: HP Power Output")
+        lines!(ax3, ref.time, ref[!, Symbol("iEEEG1.PMECH_HP")]; label="iEEEG1.PMECH_HP", color=Cycled(2), linewidth=2, alpha=0.7)
+        lines!(ax3, ts, sol(ts, idxs=VIndex(:GEN1, :ieeeg1₊PMECH_HP_out₊u)).u; label="ieeeg1.PMECH_HP_out", color=Cycled(2), linewidth=2, linestyle=:dash)
+        axislegend(ax3)
 
-    # Plot 4: Governor - LP Power Output
-    ax4 = Axis(fig[2,2]; xlabel="Time [s]", ylabel="PMECH_LP [pu]", title="Governor: LP Power Output")
-    lines!(ax4, ref.time, ref[!, Symbol("iEEEG1.PMECH_LP")]; label="iEEEG1.PMECH_LP", color=Cycled(3), linewidth=2, alpha=0.7)
-    lines!(ax4, ts, sol(ts, idxs=VIndex(:GEN1, :ieeeg1₊PMECH_LP_out₊u)).u; label="ieeeg1.PMECH_LP_out", color=Cycled(3), linewidth=2, linestyle=:dash)
-    axislegend(ax4)
+        # Plot 4: Governor - LP Power Output
+        ax4 = Axis(fig[2,2]; xlabel="Time [s]", ylabel="PMECH_LP [pu]", title="Governor: LP Power Output")
+        lines!(ax4, ref.time, ref[!, Symbol("iEEEG1.PMECH_LP")]; label="iEEEG1.PMECH_LP", color=Cycled(3), linewidth=2, alpha=0.7)
+        lines!(ax4, ts, sol(ts, idxs=VIndex(:GEN1, :ieeeg1₊PMECH_LP_out₊u)).u; label="ieeeg1.PMECH_LP_out", color=Cycled(3), linewidth=2, linestyle=:dash)
+        axislegend(ax4)
 
-    # Plot 5: Governor - Turbine Stages
-    ax5 = Axis(fig[3,1]; xlabel="Time [s]", ylabel="[pu]", title="Governor: Turbine Stages")
-    lines!(ax5, ref.time, ref[!, Symbol("iEEEG1.imSimpleLag.y")]; label="iEEEG1.imSimpleLag.y (HP)", color=Cycled(4), linewidth=2, alpha=0.7)
-    lines!(ax5, ts, sol(ts, idxs=VIndex(:GEN1, :ieeeg1₊hp_turbine₊out)).u; label="ieeeg1.hp_turbine.out (HP)", color=Cycled(4), linewidth=2, linestyle=:dash)
-    lines!(ax5, ref.time, ref[!, Symbol("iEEEG1.imSimpleLag1.y")]; label="iEEEG1.imSimpleLag1.y (IP)", color=Cycled(5), linewidth=2, alpha=0.7)
-    lines!(ax5, ts, sol(ts, idxs=VIndex(:GEN1, :ieeeg1₊ip_turbine₊out)).u; label="ieeeg1.ip_turbine.out (IP)", color=Cycled(5), linewidth=2, linestyle=:dash)
-    axislegend(ax5)
+        # Plot 5: Governor - Turbine Stages
+        ax5 = Axis(fig[3,1]; xlabel="Time [s]", ylabel="[pu]", title="Governor: Turbine Stages")
+        lines!(ax5, ref.time, ref[!, Symbol("iEEEG1.imSimpleLag.y")]; label="iEEEG1.imSimpleLag.y (HP)", color=Cycled(4), linewidth=2, alpha=0.7)
+        lines!(ax5, ts, sol(ts, idxs=VIndex(:GEN1, :ieeeg1₊hp_turbine₊out)).u; label="ieeeg1.hp_turbine.out (HP)", color=Cycled(4), linewidth=2, linestyle=:dash)
+        lines!(ax5, ref.time, ref[!, Symbol("iEEEG1.imSimpleLag1.y")]; label="iEEEG1.imSimpleLag1.y (IP)", color=Cycled(5), linewidth=2, alpha=0.7)
+        lines!(ax5, ts, sol(ts, idxs=VIndex(:GEN1, :ieeeg1₊ip_turbine₊out)).u; label="ieeeg1.ip_turbine.out (IP)", color=Cycled(5), linewidth=2, linestyle=:dash)
+        axislegend(ax5)
 
-    # Plot 6: Governor - Valve Position
-    ax6 = Axis(fig[3,2]; xlabel="Time [s]", ylabel="Valve Position [pu]", title="Governor: Valve Position")
-    lines!(ax6, ref.time, ref[!, Symbol("iEEEG1.limIntegrator.y")]; label="iEEEG1.limIntegrator.y", color=Cycled(6), linewidth=2, alpha=0.7)
-    lines!(ax6, ts, sol(ts, idxs=VIndex(:GEN1, :ieeeg1₊valve_integrator₊out)).u; label="ieeeg1.valve_integrator.out", color=Cycled(6), linewidth=2, linestyle=:dash)
-    axislegend(ax6)
+        # Plot 6: Governor - Valve Position
+        ax6 = Axis(fig[3,2]; xlabel="Time [s]", ylabel="Valve Position [pu]", title="Governor: Valve Position")
+        lines!(ax6, ref.time, ref[!, Symbol("iEEEG1.limIntegrator.y")]; label="iEEEG1.limIntegrator.y", color=Cycled(6), linewidth=2, alpha=0.7)
+        lines!(ax6, ts, sol(ts, idxs=VIndex(:GEN1, :ieeeg1₊valve_integrator₊out)).u; label="ieeeg1.valve_integrator.out", color=Cycled(6), linewidth=2, linestyle=:dash)
+        axislegend(ax6)
 
-    # Plot 7: Exciter - Field Voltage Output
-    ax7 = Axis(fig[4,1]; xlabel="Time [s]", ylabel="EFD [pu]", title="Exciter: Field Voltage Output")
-    lines!(ax7, ref.time, ref[!, Symbol("iEEET1.EFD")]; label="iEEET1.EFD", color=Cycled(7), linewidth=2, alpha=0.7)
-    lines!(ax7, ts, sol(ts, idxs=VIndex(:GEN1, :ieeet1₊exciter₊EFD)).u; label="ieeet1.exciter.EFD", color=Cycled(7), linewidth=2, linestyle=:dash)
-    axislegend(ax7)
+        # Plot 7: Exciter - Field Voltage Output
+        ax7 = Axis(fig[4,1]; xlabel="Time [s]", ylabel="EFD [pu]", title="Exciter: Field Voltage Output")
+        lines!(ax7, ref.time, ref[!, Symbol("iEEET1.EFD")]; label="iEEET1.EFD", color=Cycled(7), linewidth=2, alpha=0.7)
+        lines!(ax7, ts, sol(ts, idxs=VIndex(:GEN1, :ieeet1₊exciter₊EFD)).u; label="ieeet1.exciter.EFD", color=Cycled(7), linewidth=2, linestyle=:dash)
+        axislegend(ax7)
 
-    # Plot 8: Governor - Lead-Lag Output
-    ax8 = Axis(fig[4,2]; xlabel="Time [s]", ylabel="Lead-Lag Output [pu]", title="Governor: Lead-Lag Compensator")
-    lines!(ax8, ref.time, ref[!, Symbol("iEEEG1.imLeadLag.y")]; label="iEEEG1.imLeadLag.y", color=Cycled(8), linewidth=2, alpha=0.7)
-    lines!(ax8, ts, sol(ts, idxs=VIndex(:GEN1, :ieeeg1₊leadlag₊out)).u; label="ieeeg1.leadlag.out", color=Cycled(8), linewidth=2, linestyle=:dash)
-    axislegend(ax8)
+        # Plot 8: Governor - Lead-Lag Output
+        ax8 = Axis(fig[4,2]; xlabel="Time [s]", ylabel="Lead-Lag Output [pu]", title="Governor: Lead-Lag Compensator")
+        lines!(ax8, ref.time, ref[!, Symbol("iEEEG1.imLeadLag.y")]; label="iEEEG1.imLeadLag.y", color=Cycled(8), linewidth=2, alpha=0.7)
+        lines!(ax8, ts, sol(ts, idxs=VIndex(:GEN1, :ieeeg1₊leadlag₊out)).u; label="ieeeg1.leadlag.out", color=Cycled(8), linewidth=2, linestyle=:dash)
+        axislegend(ax8)
 
-    # Plot 9: Exciter - Voltage Transducer
-    ax9 = Axis(fig[5,1]; xlabel="Time [s]", ylabel="[pu]", title="Exciter: Voltage Transducer")
-    lines!(ax9, ref.time, ref[!, Symbol("iEEET1.TransducerDelay.y")]; label="iEEET1.TransducerDelay.y", color=Cycled(9), linewidth=2, alpha=0.7)
-    lines!(ax9, ts, sol(ts, idxs=VIndex(:GEN1, :ieeet1₊transducer₊out)).u; label="ieeet1.transducer.out", color=Cycled(9), linewidth=2, linestyle=:dash)
-    axislegend(ax9)
+        # Plot 9: Exciter - Voltage Transducer
+        ax9 = Axis(fig[5,1]; xlabel="Time [s]", ylabel="[pu]", title="Exciter: Voltage Transducer")
+        lines!(ax9, ref.time, ref[!, Symbol("iEEET1.TransducerDelay.y")]; label="iEEET1.TransducerDelay.y", color=Cycled(9), linewidth=2, alpha=0.7)
+        lines!(ax9, ts, sol(ts, idxs=VIndex(:GEN1, :ieeet1₊transducer₊out)).u; label="ieeet1.transducer.out", color=Cycled(9), linewidth=2, linestyle=:dash)
+        axislegend(ax9)
 
-    # Plot 10: Exciter - Amplifier Output
-    ax10 = Axis(fig[5,2]; xlabel="Time [s]", ylabel="[pu]", title="Exciter: Amplifier Output")
-    lines!(ax10, ref.time, ref[!, Symbol("iEEET1.simpleLagLim.y")]; label="iEEET1.simpleLagLim.y", color=Cycled(10), linewidth=2, alpha=0.7)
-    lines!(ax10, ts, sol(ts, idxs=VIndex(:GEN1, :ieeet1₊amplifier₊out)).u; label="ieeet1.amplifier.out", color=Cycled(10), linewidth=2, linestyle=:dash)
-    axislegend(ax10)
+        # Plot 10: Exciter - Amplifier Output
+        ax10 = Axis(fig[5,2]; xlabel="Time [s]", ylabel="[pu]", title="Exciter: Amplifier Output")
+        lines!(ax10, ref.time, ref[!, Symbol("iEEET1.simpleLagLim.y")]; label="iEEET1.simpleLagLim.y", color=Cycled(10), linewidth=2, alpha=0.7)
+        lines!(ax10, ts, sol(ts, idxs=VIndex(:GEN1, :ieeet1₊amplifier₊out)).u; label="ieeet1.amplifier.out", color=Cycled(10), linewidth=2, linestyle=:dash)
+        axislegend(ax10)
 
-    # Plot 11: Exciter - Derivative Feedback
-    ax11 = Axis(fig[6,1]; xlabel="Time [s]", ylabel="[pu]", title="Exciter: Derivative Feedback")
-    lines!(ax11, ref.time, ref[!, Symbol("iEEET1.derivativeLag.y")]; label="iEEET1.derivativeLag.y", color=Cycled(11), linewidth=2, alpha=0.7)
-    lines!(ax11, ts, sol(ts, idxs=VIndex(:GEN1, :ieeet1₊derivative_lag₊out)).u; label="ieeet1.derivative_lag.out", color=Cycled(11), linewidth=2, linestyle=:dash)
-    axislegend(ax11)
+        # Plot 11: Exciter - Derivative Feedback
+        ax11 = Axis(fig[6,1]; xlabel="Time [s]", ylabel="[pu]", title="Exciter: Derivative Feedback")
+        lines!(ax11, ref.time, ref[!, Symbol("iEEET1.derivativeLag.y")]; label="iEEET1.derivativeLag.y", color=Cycled(11), linewidth=2, alpha=0.7)
+        lines!(ax11, ts, sol(ts, idxs=VIndex(:GEN1, :ieeet1₊derivative_lag₊out)).u; label="ieeet1.derivative_lag.out", color=Cycled(11), linewidth=2, linestyle=:dash)
+        axislegend(ax11)
 
-    # Plot 12: Generator - Terminal Voltage
-    ax12 = Axis(fig[6,2]; xlabel="Time [s]", ylabel="Vt [pu]", title="Generator: Terminal Voltage")
-    lines!(ax12, ref.time, ref[!, Symbol("gENROU.Vt")]; label="gENROU.Vt", color=Cycled(12), linewidth=2, alpha=0.7)
-    lines!(ax12, ts, sol(ts, idxs=VIndex(:GEN1, :genrou₊Vt)).u; label="genrou.Vt", color=Cycled(12), linewidth=2, linestyle=:dash)
-    axislegend(ax12)
+        # Plot 12: Generator - Terminal Voltage
+        ax12 = Axis(fig[6,2]; xlabel="Time [s]", ylabel="Vt [pu]", title="Generator: Terminal Voltage")
+        lines!(ax12, ref.time, ref[!, Symbol("gENROU.Vt")]; label="gENROU.Vt", color=Cycled(12), linewidth=2, alpha=0.7)
+        lines!(ax12, ts, sol(ts, idxs=VIndex(:GEN1, :genrou₊Vt)).u; label="genrou.Vt", color=Cycled(12), linewidth=2, linestyle=:dash)
+        axislegend(ax12)
 
-    fig
+        fig
+    end
+    save(joinpath(pkgdir(PowerDynamics),"docs","src","assets","OpenIPSL_valid","IEEEG1.png"), fig)
 end
-=#

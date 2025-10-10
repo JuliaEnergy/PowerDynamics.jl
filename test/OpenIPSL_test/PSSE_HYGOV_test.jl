@@ -134,71 +134,74 @@ sol = OpenIPSL_SMIB(BUS, tol=1e-4, nwtol=1e-4);
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :hygov₊turbine_head), "hYGOV.H") < 3e-4
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :hygov₊PMECH_out₊u), "hYGOV.PMECH") < 3e-4
 
-#=
-fig_hygov = let
-    fig = Figure(size=(1600, 1200))
-    ts = refine_timeseries(sol.t)
+# Create comprehensive comparison plot
+if isdefined(Main, :EXPORT_FIGURES) && Main.EXPORT_FIGURES
+    fig = let
+        fig = Figure(size=(1600, 1200))
+        ts = refine_timeseries(sol.t)
 
-    # Plot 1: Generator Rotor Angle
-    ax1 = Axis(fig[1,1]; xlabel="Time [s]", ylabel="δ [rad]", title="GENSAL: Rotor Angle")
-    lines!(ax1, ref.time, ref[!, Symbol("gENSAL.delta")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.7)
-    lines!(ax1, ts, sol(ts, idxs=VIndex(:GEN1, :gensal₊delta)).u; label="PowerDynamics", color=Cycled(1), linewidth=2, linestyle=:dash)
-    axislegend(ax1)
+        # Plot 1: Generator Rotor Angle
+        ax1 = Axis(fig[1,1]; xlabel="Time [s]", ylabel="δ [rad]", title="GENSAL: Rotor Angle")
+        lines!(ax1, ref.time, ref[!, Symbol("gENSAL.delta")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.7)
+        lines!(ax1, ts, sol(ts, idxs=VIndex(:GEN1, :gensal₊delta)).u; label="PowerDynamics", color=Cycled(1), linewidth=2, linestyle=:dash)
+        axislegend(ax1)
 
-    # Plot 2: Generator Speed Deviation
-    ax2 = Axis(fig[1,2]; xlabel="Time [s]", ylabel="ω [pu]", title="GENSAL: Speed Deviation")
-    lines!(ax2, ref.time, ref[!, Symbol("gENSAL.w")]; label="OpenIPSL", color=Cycled(2), linewidth=2, alpha=0.7)
-    lines!(ax2, ts, sol(ts, idxs=VIndex(:GEN1, :gensal₊w)).u; label="PowerDynamics", color=Cycled(2), linewidth=2, linestyle=:dash)
-    axislegend(ax2)
+        # Plot 2: Generator Speed Deviation
+        ax2 = Axis(fig[1,2]; xlabel="Time [s]", ylabel="ω [pu]", title="GENSAL: Speed Deviation")
+        lines!(ax2, ref.time, ref[!, Symbol("gENSAL.w")]; label="OpenIPSL", color=Cycled(2), linewidth=2, alpha=0.7)
+        lines!(ax2, ts, sol(ts, idxs=VIndex(:GEN1, :gensal₊w)).u; label="PowerDynamics", color=Cycled(2), linewidth=2, linestyle=:dash)
+        axislegend(ax2)
 
-    # Plot 3: Generator Terminal Voltage
-    ax3 = Axis(fig[1,3]; xlabel="Time [s]", ylabel="Vt [pu]", title="GENSAL: Terminal Voltage")
-    lines!(ax3, ref.time, ref[!, Symbol("gENSAL.Vt")]; label="OpenIPSL", color=Cycled(3), linewidth=2, alpha=0.7)
-    lines!(ax3, ts, sol(ts, idxs=VIndex(:GEN1, :gensal₊Vt)).u; label="PowerDynamics", color=Cycled(3), linewidth=2, linestyle=:dash)
-    axislegend(ax3)
+        # Plot 3: Generator Terminal Voltage
+        ax3 = Axis(fig[1,3]; xlabel="Time [s]", ylabel="Vt [pu]", title="GENSAL: Terminal Voltage")
+        lines!(ax3, ref.time, ref[!, Symbol("gENSAL.Vt")]; label="OpenIPSL", color=Cycled(3), linewidth=2, alpha=0.7)
+        lines!(ax3, ts, sol(ts, idxs=VIndex(:GEN1, :gensal₊Vt)).u; label="PowerDynamics", color=Cycled(3), linewidth=2, linestyle=:dash)
+        axislegend(ax3)
 
-    # Plot 4: SCRX Field Voltage Output
-    ax4 = Axis(fig[2,1]; xlabel="Time [s]", ylabel="EFD [pu]", title="SCRX: Field Voltage")
-    lines!(ax4, ref.time, ref[!, Symbol("sCRX.EFD")]; label="OpenIPSL", color=Cycled(4), linewidth=2, alpha=0.7)
-    lines!(ax4, ts, sol(ts, idxs=VIndex(:GEN1, :scrx₊EFD_out₊u)).u; label="PowerDynamics", color=Cycled(4), linewidth=2, linestyle=:dash)
-    axislegend(ax4)
+        # Plot 4: SCRX Field Voltage Output
+        ax4 = Axis(fig[2,1]; xlabel="Time [s]", ylabel="EFD [pu]", title="SCRX: Field Voltage")
+        lines!(ax4, ref.time, ref[!, Symbol("sCRX.EFD")]; label="OpenIPSL", color=Cycled(4), linewidth=2, alpha=0.7)
+        lines!(ax4, ts, sol(ts, idxs=VIndex(:GEN1, :scrx₊EFD_out₊u)).u; label="PowerDynamics", color=Cycled(4), linewidth=2, linestyle=:dash)
+        axislegend(ax4)
 
-    # Plot 5: HYGOV Filter Output
-    ax5 = Axis(fig[2,2]; xlabel="Time [s]", ylabel="[pu]", title="HYGOV: Filter Output")
-    lines!(ax5, ref.time, ref[!, Symbol("hYGOV.SimpleLag1.y")]; label="OpenIPSL", color=Cycled(5), linewidth=2, alpha=0.7)
-    lines!(ax5, ts, sol(ts, idxs=VIndex(:GEN1, :hygov₊filter₊out)).u; label="PowerDynamics", color=Cycled(5), linewidth=2, linestyle=:dash)
-    axislegend(ax5)
+        # Plot 5: HYGOV Filter Output
+        ax5 = Axis(fig[2,2]; xlabel="Time [s]", ylabel="[pu]", title="HYGOV: Filter Output")
+        lines!(ax5, ref.time, ref[!, Symbol("hYGOV.SimpleLag1.y")]; label="OpenIPSL", color=Cycled(5), linewidth=2, alpha=0.7)
+        lines!(ax5, ts, sol(ts, idxs=VIndex(:GEN1, :hygov₊filter₊out)).u; label="PowerDynamics", color=Cycled(5), linewidth=2, linestyle=:dash)
+        axislegend(ax5)
 
-    # Plot 6: HYGOV Desired Gate Position
-    ax6 = Axis(fig[2,3]; xlabel="Time [s]", ylabel="[pu]", title="HYGOV: Desired Gate Position")
-    lines!(ax6, ref.time, ref[!, Symbol("hYGOV.Position_Limiter.y")]; label="OpenIPSL", color=Cycled(6), linewidth=2, alpha=0.7)
-    lines!(ax6, ts, sol(ts, idxs=VIndex(:GEN1, :hygov₊position_limiter₊out)).u; label="PowerDynamics", color=Cycled(6), linewidth=2, linestyle=:dash)
-    axislegend(ax6)
+        # Plot 6: HYGOV Desired Gate Position
+        ax6 = Axis(fig[2,3]; xlabel="Time [s]", ylabel="[pu]", title="HYGOV: Desired Gate Position")
+        lines!(ax6, ref.time, ref[!, Symbol("hYGOV.Position_Limiter.y")]; label="OpenIPSL", color=Cycled(6), linewidth=2, alpha=0.7)
+        lines!(ax6, ts, sol(ts, idxs=VIndex(:GEN1, :hygov₊position_limiter₊out)).u; label="PowerDynamics", color=Cycled(6), linewidth=2, linestyle=:dash)
+        axislegend(ax6)
 
-    # Plot 7: HYGOV Actual Gate Position
-    ax7 = Axis(fig[3,1]; xlabel="Time [s]", ylabel="G [pu]", title="HYGOV: Actual Gate Position")
-    lines!(ax7, ref.time, ref[!, Symbol("hYGOV.g.y")]; label="OpenIPSL", color=Cycled(7), linewidth=2, alpha=0.7)
-    lines!(ax7, ts, sol(ts, idxs=VIndex(:GEN1, :hygov₊servo₊out)).u; label="PowerDynamics", color=Cycled(7), linewidth=2, linestyle=:dash)
-    axislegend(ax7)
+        # Plot 7: HYGOV Actual Gate Position
+        ax7 = Axis(fig[3,1]; xlabel="Time [s]", ylabel="G [pu]", title="HYGOV: Actual Gate Position")
+        lines!(ax7, ref.time, ref[!, Symbol("hYGOV.g.y")]; label="OpenIPSL", color=Cycled(7), linewidth=2, alpha=0.7)
+        lines!(ax7, ts, sol(ts, idxs=VIndex(:GEN1, :hygov₊servo₊out)).u; label="PowerDynamics", color=Cycled(7), linewidth=2, linestyle=:dash)
+        axislegend(ax7)
 
-    # Plot 8: HYGOV Water Flow
-    ax8 = Axis(fig[3,2]; xlabel="Time [s]", ylabel="Q [pu]", title="HYGOV: Water Flow")
-    lines!(ax8, ref.time, ref[!, Symbol("hYGOV.q.y")]; label="OpenIPSL", color=Cycled(8), linewidth=2, alpha=0.7)
-    lines!(ax8, ts, sol(ts, idxs=VIndex(:GEN1, :hygov₊water_integrator₊out)).u; label="PowerDynamics", color=Cycled(8), linewidth=2, linestyle=:dash)
-    axislegend(ax8)
+        # Plot 8: HYGOV Water Flow
+        ax8 = Axis(fig[3,2]; xlabel="Time [s]", ylabel="Q [pu]", title="HYGOV: Water Flow")
+        lines!(ax8, ref.time, ref[!, Symbol("hYGOV.q.y")]; label="OpenIPSL", color=Cycled(8), linewidth=2, alpha=0.7)
+        lines!(ax8, ts, sol(ts, idxs=VIndex(:GEN1, :hygov₊water_integrator₊out)).u; label="PowerDynamics", color=Cycled(8), linewidth=2, linestyle=:dash)
+        axislegend(ax8)
 
-    # Plot 9: HYGOV Turbine Head
-    ax9 = Axis(fig[3,3]; xlabel="Time [s]", ylabel="H [pu]", title="HYGOV: Turbine Head")
-    lines!(ax9, ref.time, ref[!, Symbol("hYGOV.H")]; label="OpenIPSL", color=Cycled(9), linewidth=2, alpha=0.7)
-    lines!(ax9, ts, sol(ts, idxs=VIndex(:GEN1, :hygov₊turbine_head)).u; label="PowerDynamics", color=Cycled(9), linewidth=2, linestyle=:dash)
-    axislegend(ax9)
+        # Plot 9: HYGOV Turbine Head
+        ax9 = Axis(fig[3,3]; xlabel="Time [s]", ylabel="H [pu]", title="HYGOV: Turbine Head")
+        lines!(ax9, ref.time, ref[!, Symbol("hYGOV.H")]; label="OpenIPSL", color=Cycled(9), linewidth=2, alpha=0.7)
+        lines!(ax9, ts, sol(ts, idxs=VIndex(:GEN1, :hygov₊turbine_head)).u; label="PowerDynamics", color=Cycled(9), linewidth=2, linestyle=:dash)
+        axislegend(ax9)
 
-    # Plot 10: HYGOV Mechanical Power Output
-    ax10 = Axis(fig[4,1]; xlabel="Time [s]", ylabel="PMECH [pu]", title="HYGOV: Mechanical Power")
-    lines!(ax10, ref.time, ref[!, Symbol("hYGOV.PMECH")]; label="OpenIPSL", color=Cycled(10), linewidth=2, alpha=0.7)
-    lines!(ax10, ts, sol(ts, idxs=VIndex(:GEN1, :hygov₊PMECH_out₊u)).u; label="PowerDynamics", color=Cycled(10), linewidth=2, linestyle=:dash)
-    axislegend(ax10)
+        # Plot 10: HYGOV Mechanical Power Output
+        ax10 = Axis(fig[4,1]; xlabel="Time [s]", ylabel="PMECH [pu]", title="HYGOV: Mechanical Power")
+        lines!(ax10, ref.time, ref[!, Symbol("hYGOV.PMECH")]; label="OpenIPSL", color=Cycled(10), linewidth=2, alpha=0.7)
+        lines!(ax10, ts, sol(ts, idxs=VIndex(:GEN1, :hygov₊PMECH_out₊u)).u; label="PowerDynamics", color=Cycled(10), linewidth=2, linestyle=:dash)
+        axislegend(ax10)
 
-    fig
+        fig
+
+        save(joinpath(pkgdir(PowerDynamics),"docs","src","assets","OpenIPSL_valid","Htion.png"), fig)
+    end
 end
-=#

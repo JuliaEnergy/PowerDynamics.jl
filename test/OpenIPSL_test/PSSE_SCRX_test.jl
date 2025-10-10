@@ -95,47 +95,48 @@ sol = OpenIPSL_SMIB(BUS);
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :genrou₊XADIFD_out₊u), "gENROU.XADIFD") < 1e-3
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :scrx₊EFD_out₊u), "sCRX.EFD") < 2e-3
 
-#=
-fig_scrx = let
-    fig = Figure(size=(1400, 1200))
-    ts = refine_timeseries(sol.t)
+if isdefined(Main, :EXPORT_FIGURES) && Main.EXPORT_FIGURES
+    fig = let
+        fig = Figure(size=(1400, 1200))
+        ts = refine_timeseries(sol.t)
 
-    # Plot 1: Generator Rotor Angle
-    ax1 = Axis(fig[1,1]; xlabel="Time [s]", ylabel="δ [rad]", title="Generator: Rotor Angle")
-    lines!(ax1, ref.time, ref[!, Symbol("gENROU.delta")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.7)
-    lines!(ax1, ts, sol(ts, idxs=VIndex(:GEN1, :genrou₊delta)).u; label="PowerDynamics", color=Cycled(1), linewidth=2, linestyle=:dash)
-    axislegend(ax1)
+        # Plot 1: Generator Rotor Angle
+        ax1 = Axis(fig[1,1]; xlabel="Time [s]", ylabel="δ [rad]", title="Generator: Rotor Angle")
+        lines!(ax1, ref.time, ref[!, Symbol("gENROU.delta")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.7)
+        lines!(ax1, ts, sol(ts, idxs=VIndex(:GEN1, :genrou₊delta)).u; label="PowerDynamics", color=Cycled(1), linewidth=2, linestyle=:dash)
+        axislegend(ax1)
 
-    # Plot 2: Generator Speed Deviation
-    ax2 = Axis(fig[1,2]; xlabel="Time [s]", ylabel="ω [pu]", title="Generator: Speed Deviation")
-    lines!(ax2, ref.time, ref[!, Symbol("gENROU.w")]; label="OpenIPSL", color=Cycled(2), linewidth=2, alpha=0.7)
-    lines!(ax2, ts, sol(ts, idxs=VIndex(:GEN1, :genrou₊w)).u; label="PowerDynamics", color=Cycled(2), linewidth=2, linestyle=:dash)
-    axislegend(ax2)
+        # Plot 2: Generator Speed Deviation
+        ax2 = Axis(fig[1,2]; xlabel="Time [s]", ylabel="ω [pu]", title="Generator: Speed Deviation")
+        lines!(ax2, ref.time, ref[!, Symbol("gENROU.w")]; label="OpenIPSL", color=Cycled(2), linewidth=2, alpha=0.7)
+        lines!(ax2, ts, sol(ts, idxs=VIndex(:GEN1, :genrou₊w)).u; label="PowerDynamics", color=Cycled(2), linewidth=2, linestyle=:dash)
+        axislegend(ax2)
 
-    # Plot 3: Generator Terminal Voltage
-    ax3 = Axis(fig[2,1]; xlabel="Time [s]", ylabel="Vt [pu]", title="Generator: Terminal Voltage")
-    lines!(ax3, ref.time, ref[!, Symbol("gENROU.Vt")]; label="OpenIPSL", color=Cycled(3), linewidth=2, alpha=0.7)
-    lines!(ax3, ts, sol(ts, idxs=VIndex(:GEN1, :genrou₊Vt)).u; label="PowerDynamics", color=Cycled(3), linewidth=2, linestyle=:dash)
-    axislegend(ax3)
+        # Plot 3: Generator Terminal Voltage
+        ax3 = Axis(fig[2,1]; xlabel="Time [s]", ylabel="Vt [pu]", title="Generator: Terminal Voltage")
+        lines!(ax3, ref.time, ref[!, Symbol("gENROU.Vt")]; label="OpenIPSL", color=Cycled(3), linewidth=2, alpha=0.7)
+        lines!(ax3, ts, sol(ts, idxs=VIndex(:GEN1, :genrou₊Vt)).u; label="PowerDynamics", color=Cycled(3), linewidth=2, linestyle=:dash)
+        axislegend(ax3)
 
-    # Plot 4: SCRX LeadLag Output
-    ax4 = Axis(fig[2,2]; xlabel="Time [s]", ylabel="[pu]", title="SCRX: LeadLag Output")
-    lines!(ax4, ref.time, ref[!, Symbol("sCRX.imLeadLag.y")]; label="OpenIPSL", color=Cycled(4), linewidth=2, alpha=0.7)
-    lines!(ax4, ts, sol(ts, idxs=VIndex(:GEN1, :scrx₊leadlag₊out)).u; label="PowerDynamics", color=Cycled(4), linewidth=2, linestyle=:dash)
-    axislegend(ax4)
+        # Plot 4: SCRX LeadLag Output
+        ax4 = Axis(fig[2,2]; xlabel="Time [s]", ylabel="[pu]", title="SCRX: LeadLag Output")
+        lines!(ax4, ref.time, ref[!, Symbol("sCRX.imLeadLag.y")]; label="OpenIPSL", color=Cycled(4), linewidth=2, alpha=0.7)
+        lines!(ax4, ts, sol(ts, idxs=VIndex(:GEN1, :scrx₊leadlag₊out)).u; label="PowerDynamics", color=Cycled(4), linewidth=2, linestyle=:dash)
+        axislegend(ax4)
 
-    # Plot 5: SCRX Amplifier Output
-    ax5 = Axis(fig[3,1]; xlabel="Time [s]", ylabel="[pu]", title="SCRX: Amplifier Output")
-    lines!(ax5, ref.time, ref[!, Symbol("sCRX.simpleLagLim.y")]; label="OpenIPSL", color=Cycled(5), linewidth=2, alpha=0.7)
-    lines!(ax5, ts, sol(ts, idxs=VIndex(:GEN1, :scrx₊amplifier₊out)).u; label="PowerDynamics", color=Cycled(5), linewidth=2, linestyle=:dash)
-    axislegend(ax5)
+        # Plot 5: SCRX Amplifier Output
+        ax5 = Axis(fig[3,1]; xlabel="Time [s]", ylabel="[pu]", title="SCRX: Amplifier Output")
+        lines!(ax5, ref.time, ref[!, Symbol("sCRX.simpleLagLim.y")]; label="OpenIPSL", color=Cycled(5), linewidth=2, alpha=0.7)
+        lines!(ax5, ts, sol(ts, idxs=VIndex(:GEN1, :scrx₊amplifier₊out)).u; label="PowerDynamics", color=Cycled(5), linewidth=2, linestyle=:dash)
+        axislegend(ax5)
 
-    # Plot 6: SCRX Final EFD Output
-    ax6 = Axis(fig[3,2]; xlabel="Time [s]", ylabel="EFD [pu]", title="SCRX: Final Field Voltage")
-    lines!(ax6, ref.time, ref[!, Symbol("sCRX.EFD")]; label="OpenIPSL", color=Cycled(6), linewidth=2, alpha=0.7)
-    lines!(ax6, ts, sol(ts, idxs=VIndex(:GEN1, :scrx₊EFD_out₊u)).u; label="PowerDynamics", color=Cycled(6), linewidth=2, linestyle=:dash)
-    axislegend(ax6)
+        # Plot 6: SCRX Final EFD Output
+        ax6 = Axis(fig[3,2]; xlabel="Time [s]", ylabel="EFD [pu]", title="SCRX: Final Field Voltage")
+        lines!(ax6, ref.time, ref[!, Symbol("sCRX.EFD")]; label="OpenIPSL", color=Cycled(6), linewidth=2, alpha=0.7)
+        lines!(ax6, ts, sol(ts, idxs=VIndex(:GEN1, :scrx₊EFD_out₊u)).u; label="PowerDynamics", color=Cycled(6), linewidth=2, linestyle=:dash)
+        axislegend(ax6)
 
-    fig
+        fig
+    end
+    save(joinpath(pkgdir(PowerDynamics),"docs","src","assets","OpenIPSL_valid","SCRX.png"), fig)
 end
-=#

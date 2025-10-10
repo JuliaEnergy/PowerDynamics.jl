@@ -50,6 +50,46 @@ sol = OpenIPSL_SMIB(GENCLS_BUS);
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :gencls₊Q), "gENCLS1.Q") < 1e-4
 
 # debug code blow
+if isdefined(Main, :EXPORT_FIGURES) && Main.EXPORT_FIGURES
+    fig = let
+        fig = Figure(size=(1200, 800))
+        ts = refine_timeseries(sol.t)
+
+        # Plot 1: Angular frequency ω
+        ax1 = Axis(fig[1,1]; xlabel="Time [s]", ylabel="ω [pu]", title="Generator: Angular Frequency")
+        lines!(ax1, ref.time, ref[!, Symbol("gENCLS1.omega")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.5)
+        lines!(ax1, ts, sol(ts, idxs=VIndex(1, :gencls₊ω)).u; label="PD", color=Cycled(1), linewidth=2, linestyle=:dash)
+        axislegend(ax1)
+
+        # Plot 2: Rotor angle δ
+        ax2 = Axis(fig[1,2]; xlabel="Time [s]", ylabel="δ [rad]", title="Generator: Rotor Angle")
+        lines!(ax2, ref.time, ref[!, Symbol("gENCLS1.delta")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.5)
+        lines!(ax2, ts, sol(ts, idxs=VIndex(1, :gencls₊δ)).u; label="PD", color=Cycled(1), linewidth=2, linestyle=:dash)
+        axislegend(ax2)
+
+        # Plot 3: Active power P
+        ax3 = Axis(fig[2,1]; xlabel="Time [s]", ylabel="P [pu]", title="Generator: Active Power")
+        lines!(ax3, ref.time, ref[!, Symbol("gENCLS1.P")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.5)
+        lines!(ax3, ts, sol(ts, idxs=VIndex(1, :gencls₊P)).u; label="PD", color=Cycled(1), linewidth=2, linestyle=:dash)
+        axislegend(ax3)
+
+        # Plot 4: Reactive power Q
+        ax4 = Axis(fig[2,2]; xlabel="Time [s]", ylabel="Q [pu]", title="Generator: Reactive Power")
+        lines!(ax4, ref.time, ref[!, Symbol("gENCLS1.Q")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.5)
+        lines!(ax4, ts, sol(ts, idxs=VIndex(1, :gencls₊Q)).u; label="PD", color=Cycled(1), linewidth=2, linestyle=:dash)
+        axislegend(ax4)
+
+        # Plot 5: Voltage magnitude V
+        ax5 = Axis(fig[3,1:2]; xlabel="Time [s]", ylabel="V [pu]", title="Generator: Voltage Magnitude")
+        lines!(ax5, ref.time, ref[!, Symbol("gENCLS1.V")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.5)
+        lines!(ax5, ts, sol(ts, idxs=VIndex(1, :gencls₊V)).u; label="PD", color=Cycled(1), linewidth=2, linestyle=:dash)
+        axislegend(ax5)
+
+        fig
+    end
+    save(joinpath(pkgdir(PowerDynamics),"docs","src","assets","OpenIPSL_valid","GENCLS.png"), fig)
+end
+
 #=
 # Load extended reference data for bus and power comparisons
 ref_extended = CSV.read(
@@ -58,45 +98,6 @@ ref_extended = CSV.read(
     drop=(i,name) -> contains(string(name), "nrows="),
     silencewarnings=true
 )
-
-# Create comprehensive comparison plots
-fig_generator = let
-    fig = Figure(size=(1200, 800))
-    ts = refine_timeseries(sol.t)
-
-    # Plot 1: Angular frequency ω
-    ax1 = Axis(fig[1,1]; xlabel="Time [s]", ylabel="ω [pu]", title="Generator: Angular Frequency")
-    lines!(ax1, ref.time, ref[!, Symbol("gENCLS1.omega")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.5)
-    lines!(ax1, ts, sol(ts, idxs=VIndex(1, :gencls₊ω)).u; label="PD", color=Cycled(1), linewidth=2, linestyle=:dash)
-    axislegend(ax1)
-
-    # Plot 2: Rotor angle δ
-    ax2 = Axis(fig[1,2]; xlabel="Time [s]", ylabel="δ [rad]", title="Generator: Rotor Angle")
-    lines!(ax2, ref.time, ref[!, Symbol("gENCLS1.delta")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.5)
-    lines!(ax2, ts, sol(ts, idxs=VIndex(1, :gencls₊δ)).u; label="PD", color=Cycled(1), linewidth=2, linestyle=:dash)
-    axislegend(ax2)
-
-    # Plot 3: Active power P
-    ax3 = Axis(fig[2,1]; xlabel="Time [s]", ylabel="P [pu]", title="Generator: Active Power")
-    lines!(ax3, ref.time, ref[!, Symbol("gENCLS1.P")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.5)
-    lines!(ax3, ts, sol(ts, idxs=VIndex(1, :gencls₊P)).u; label="PD", color=Cycled(1), linewidth=2, linestyle=:dash)
-    axislegend(ax3)
-
-    # Plot 4: Reactive power Q
-    ax4 = Axis(fig[2,2]; xlabel="Time [s]", ylabel="Q [pu]", title="Generator: Reactive Power")
-    lines!(ax4, ref.time, ref[!, Symbol("gENCLS1.Q")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.5)
-    lines!(ax4, ts, sol(ts, idxs=VIndex(1, :gencls₊Q)).u; label="PD", color=Cycled(1), linewidth=2, linestyle=:dash)
-    axislegend(ax4)
-
-    # Plot 5: Voltage magnitude V
-    ax5 = Axis(fig[3,1:2]; xlabel="Time [s]", ylabel="V [pu]", title="Generator: Voltage Magnitude")
-    lines!(ax5, ref.time, ref[!, Symbol("gENCLS1.V")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.5)
-    lines!(ax5, ts, sol(ts, idxs=VIndex(1, :gencls₊V)).u; label="PD", color=Cycled(1), linewidth=2, linestyle=:dash)
-    axislegend(ax5)
-
-    fig
-end
-
 # Separate plot for Voltage Magnitude across all buses
 fig_V = let
     fig = Figure(size=(1200, 600))

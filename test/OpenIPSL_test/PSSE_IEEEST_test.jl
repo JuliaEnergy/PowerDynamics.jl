@@ -120,60 +120,61 @@ sol = OpenIPSL_SMIB(BUS);
 # Overall PSS output
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :ieeest₊VOTHSG_out₊u), "iEEEST.VOTHSG") < 5e-5
 
-#=
-# Create comparison plot for IEEEST PSS validation
-fig_ieeest = let
-    fig = Figure(size=(1400, 1000))
-    ts = refine_timeseries(sol.t)
+if isdefined(Main, :EXPORT_FIGURES) && Main.EXPORT_FIGURES
+    fig = let
+        fig = Figure(size=(1400, 1000))
+        ts = refine_timeseries(sol.t)
 
-    # Plot 1: Generator Terminal Voltage
-    ax1 = Axis(fig[1,1]; xlabel="Time [s]", ylabel="Vt [pu]", title="Generator: Terminal Voltage")
-    lines!(ax1, ref.time, ref[!, Symbol("gENROE.Vt")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.7)
-    lines!(ax1, ts, sol(ts, idxs=VIndex(:GEN1, :machine₊Vt)).u; label="PowerDynamics", color=Cycled(1), linewidth=2, linestyle=:dash)
-    axislegend(ax1)
+        # Plot 1: Generator Terminal Voltage
+        ax1 = Axis(fig[1,1]; xlabel="Time [s]", ylabel="Vt [pu]", title="Generator: Terminal Voltage")
+        lines!(ax1, ref.time, ref[!, Symbol("gENROE.Vt")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.7)
+        lines!(ax1, ts, sol(ts, idxs=VIndex(:GEN1, :machine₊Vt)).u; label="PowerDynamics", color=Cycled(1), linewidth=2, linestyle=:dash)
+        axislegend(ax1)
 
-    # Plot 2: Generator Rotor Angle
-    ax2 = Axis(fig[1,2]; xlabel="Time [s]", ylabel="δ [rad]", title="Generator: Rotor Angle")
-    lines!(ax2, ref.time, ref[!, Symbol("gENROE.delta")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.7)
-    lines!(ax2, ts, sol(ts, idxs=VIndex(:GEN1, :machine₊delta)).u; label="PowerDynamics", color=Cycled(1), linewidth=2, linestyle=:dash)
-    axislegend(ax2)
+        # Plot 2: Generator Rotor Angle
+        ax2 = Axis(fig[1,2]; xlabel="Time [s]", ylabel="δ [rad]", title="Generator: Rotor Angle")
+        lines!(ax2, ref.time, ref[!, Symbol("gENROE.delta")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.7)
+        lines!(ax2, ts, sol(ts, idxs=VIndex(:GEN1, :machine₊delta)).u; label="PowerDynamics", color=Cycled(1), linewidth=2, linestyle=:dash)
+        axislegend(ax2)
 
-    # Plot 3: IEEEST Filter2 Output (Input to Lead-Lag 1)
-    ax3 = Axis(fig[2,1]; xlabel="Time [s]", ylabel="[pu]", title="IEEEST: Filter2 Output (T_1_T_2.u)")
-    lines!(ax3, ref.time, ref[!, Symbol("iEEEST.T_1_T_2.u")]; label="OpenIPSL", color=Cycled(2), linewidth=2, alpha=0.7)
-    lines!(ax3, ts, sol(ts, idxs=VIndex(:GEN1, :ieeest₊filter3₊in)).u; label="PowerDynamics", color=Cycled(2), linewidth=2, linestyle=:dash)
-    axislegend(ax3)
+        # Plot 3: IEEEST Filter2 Output (Input to Lead-Lag 1)
+        ax3 = Axis(fig[2,1]; xlabel="Time [s]", ylabel="[pu]", title="IEEEST: Filter2 Output (T_1_T_2.u)")
+        lines!(ax3, ref.time, ref[!, Symbol("iEEEST.T_1_T_2.u")]; label="OpenIPSL", color=Cycled(2), linewidth=2, alpha=0.7)
+        lines!(ax3, ts, sol(ts, idxs=VIndex(:GEN1, :ieeest₊filter3₊in)).u; label="PowerDynamics", color=Cycled(2), linewidth=2, linestyle=:dash)
+        axislegend(ax3)
 
-    # Plot 4: IEEEST Filter3 Output (Lead-Lag 1)
-    ax4 = Axis(fig[2,2]; xlabel="Time [s]", ylabel="[pu]", title="IEEEST: Filter3 Output (T_1_T_2.y)")
-    lines!(ax4, ref.time, ref[!, Symbol("iEEEST.T_1_T_2.y")]; label="OpenIPSL", color=Cycled(3), linewidth=2, alpha=0.7)
-    lines!(ax4, ts, sol(ts, idxs=VIndex(:GEN1, :ieeest₊filter3₊out)).u; label="PowerDynamics", color=Cycled(3), linewidth=2, linestyle=:dash)
-    axislegend(ax4)
+        # Plot 4: IEEEST Filter3 Output (Lead-Lag 1)
+        ax4 = Axis(fig[2,2]; xlabel="Time [s]", ylabel="[pu]", title="IEEEST: Filter3 Output (T_1_T_2.y)")
+        lines!(ax4, ref.time, ref[!, Symbol("iEEEST.T_1_T_2.y")]; label="OpenIPSL", color=Cycled(3), linewidth=2, alpha=0.7)
+        lines!(ax4, ts, sol(ts, idxs=VIndex(:GEN1, :ieeest₊filter3₊out)).u; label="PowerDynamics", color=Cycled(3), linewidth=2, linestyle=:dash)
+        axislegend(ax4)
 
-    # Plot 5: IEEEST Filter4 Output (Lead-Lag 2)
-    ax5 = Axis(fig[3,1]; xlabel="Time [s]", ylabel="[pu]", title="IEEEST: Filter4 Output (T_3_T_4.y)")
-    lines!(ax5, ref.time, ref[!, Symbol("iEEEST.T_3_T_4.y")]; label="OpenIPSL", color=Cycled(4), linewidth=2, alpha=0.7)
-    lines!(ax5, ts, sol(ts, idxs=VIndex(:GEN1, :ieeest₊filter4₊out)).u; label="PowerDynamics", color=Cycled(4), linewidth=2, linestyle=:dash)
-    axislegend(ax5)
+        # Plot 5: IEEEST Filter4 Output (Lead-Lag 2)
+        ax5 = Axis(fig[3,1]; xlabel="Time [s]", ylabel="[pu]", title="IEEEST: Filter4 Output (T_3_T_4.y)")
+        lines!(ax5, ref.time, ref[!, Symbol("iEEEST.T_3_T_4.y")]; label="OpenIPSL", color=Cycled(4), linewidth=2, alpha=0.7)
+        lines!(ax5, ts, sol(ts, idxs=VIndex(:GEN1, :ieeest₊filter4₊out)).u; label="PowerDynamics", color=Cycled(4), linewidth=2, linestyle=:dash)
+        axislegend(ax5)
 
-    # Plot 6: IEEEST Overall PSS Output
-    ax6 = Axis(fig[3,2]; xlabel="Time [s]", ylabel="VOTHSG [pu]", title="IEEEST: Overall PSS Output")
-    lines!(ax6, ref.time, ref[!, Symbol("iEEEST.VOTHSG")]; label="OpenIPSL", color=Cycled(5), linewidth=2, alpha=0.7)
-    lines!(ax6, ts, sol(ts, idxs=VIndex(:GEN1, :ieeest₊VOTHSG_out₊u)).u; label="PowerDynamics", color=Cycled(5), linewidth=2, linestyle=:dash)
-    axislegend(ax6)
+        # Plot 6: IEEEST Overall PSS Output
+        ax6 = Axis(fig[3,2]; xlabel="Time [s]", ylabel="VOTHSG [pu]", title="IEEEST: Overall PSS Output")
+        lines!(ax6, ref.time, ref[!, Symbol("iEEEST.VOTHSG")]; label="OpenIPSL", color=Cycled(5), linewidth=2, alpha=0.7)
+        lines!(ax6, ts, sol(ts, idxs=VIndex(:GEN1, :ieeest₊VOTHSG_out₊u)).u; label="PowerDynamics", color=Cycled(5), linewidth=2, linestyle=:dash)
+        axislegend(ax6)
 
-    # Plot 7: ESST1A Final Field Voltage Output
-    ax7 = Axis(fig[4,1]; xlabel="Time [s]", ylabel="EFD [pu]", title="ESST1A: Final Field Voltage")
-    lines!(ax7, ref.time, ref[!, Symbol("eSST1A.EFD")]; label="OpenIPSL", color=Cycled(6), linewidth=2, alpha=0.7)
-    lines!(ax7, ts, sol(ts, idxs=VIndex(:GEN1, :esst1a₊EFD_out₊u)).u; label="PowerDynamics", color=Cycled(6), linewidth=2, linestyle=:dash)
-    axislegend(ax7)
+        # Plot 7: ESST1A Final Field Voltage Output
+        ax7 = Axis(fig[4,1]; xlabel="Time [s]", ylabel="EFD [pu]", title="ESST1A: Final Field Voltage")
+        lines!(ax7, ref.time, ref[!, Symbol("eSST1A.EFD")]; label="OpenIPSL", color=Cycled(6), linewidth=2, alpha=0.7)
+        lines!(ax7, ts, sol(ts, idxs=VIndex(:GEN1, :esst1a₊EFD_out₊u)).u; label="PowerDynamics", color=Cycled(6), linewidth=2, linestyle=:dash)
+        axislegend(ax7)
 
-    # Plot 8: Generator Speed Deviation
-    ax8 = Axis(fig[4,2]; xlabel="Time [s]", ylabel="ω [pu]", title="Generator: Speed Deviation")
-    lines!(ax8, ref.time, ref[!, Symbol("gENROE.w")]; label="OpenIPSL", color=Cycled(7), linewidth=2, alpha=0.7)
-    lines!(ax8, ts, sol(ts, idxs=VIndex(:GEN1, :machine₊w)).u; label="PowerDynamics", color=Cycled(7), linewidth=2, linestyle=:dash)
-    axislegend(ax8)
+        # Plot 8: Generator Speed Deviation
+        ax8 = Axis(fig[4,2]; xlabel="Time [s]", ylabel="ω [pu]", title="Generator: Speed Deviation")
+        lines!(ax8, ref.time, ref[!, Symbol("gENROE.w")]; label="OpenIPSL", color=Cycled(7), linewidth=2, alpha=0.7)
+        lines!(ax8, ts, sol(ts, idxs=VIndex(:GEN1, :machine₊w)).u; label="PowerDynamics", color=Cycled(7), linewidth=2, linestyle=:dash)
+        axislegend(ax8)
 
-    fig
+        fig
+
+    end
+    save(joinpath(pkgdir(PowerDynamics),"docs","src","assets","OpenIPSL_valid","IEEEST.png"), fig)
 end
-=#

@@ -43,6 +43,7 @@ using Main.PowerDynamicsTesting
     @safetestset "modeling_tools tests" begin include("modeling_tools_test.jl") end
     @safetestset "initialization tests" begin include("initialization_test.jl") end
 
+    EXPORT_FIGURES = false
     @testset "OpenIPSL Model Tests" begin
         # Machines
         @safetestset "PSSE_GENCLS" begin include(joinpath("OpenIPSL_test", "PSSE_GENCLS_test.jl")) end

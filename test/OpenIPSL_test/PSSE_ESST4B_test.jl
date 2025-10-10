@@ -109,71 +109,74 @@ sol = OpenIPSL_SMIB(BUS);
 # 9. Final field voltage output
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :esst4b₊EFD_out₊u), "eSST4B.EFD") < 2e-2                # Actual: 1.44e-2
 
-#=
 # Create focused comparison plot following signal flow
-fig_esst4b = let
-    fig = Figure(size=(1400, 1200))
-    ts = refine_timeseries(sol.t)
+if isdefined(Main, :EXPORT_FIGURES) && Main.EXPORT_FIGURES
+    fig = let
+        fig = Figure(size=(1400, 1200))
+        ts = refine_timeseries(sol.t)
 
-    # Plot 1: Generator Terminal Voltage
-    ax1 = Axis(fig[1,1]; xlabel="Time [s]", ylabel="Vt [pu]", title="Generator: Terminal Voltage")
-    lines!(ax1, ref.time, ref[!, Symbol("gENROU.Vt")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.7)
-    lines!(ax1, ts, sol(ts, idxs=VIndex(:GEN1, :genrou₊Vt)).u; label="PowerDynamics", color=Cycled(1), linewidth=2, linestyle=:dash)
-    axislegend(ax1)
+        # Plot 1: Generator Terminal Voltage
+        ax1 = Axis(fig[1,1]; xlabel="Time [s]", ylabel="Vt [pu]", title="Generator: Terminal Voltage")
+        lines!(ax1, ref.time, ref[!, Symbol("gENROU.Vt")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.7)
+        lines!(ax1, ts, sol(ts, idxs=VIndex(:GEN1, :genrou₊Vt)).u; label="PowerDynamics", color=Cycled(1), linewidth=2, linestyle=:dash)
+        axislegend(ax1)
 
-    # Plot 2: Generator Rotor Angle
-    ax2 = Axis(fig[1,2]; xlabel="Time [s]", ylabel="δ [rad]", title="Generator: Rotor Angle")
-    lines!(ax2, ref.time, ref[!, Symbol("gENROU.delta")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.7)
-    lines!(ax2, ts, sol(ts, idxs=VIndex(:GEN1, :genrou₊delta)).u; label="PowerDynamics", color=Cycled(1), linewidth=2, linestyle=:dash)
-    axislegend(ax2)
+        # Plot 2: Generator Rotor Angle
+        ax2 = Axis(fig[1,2]; xlabel="Time [s]", ylabel="δ [rad]", title="Generator: Rotor Angle")
+        lines!(ax2, ref.time, ref[!, Symbol("gENROU.delta")]; label="OpenIPSL", color=Cycled(1), linewidth=2, alpha=0.7)
+        lines!(ax2, ts, sol(ts, idxs=VIndex(:GEN1, :genrou₊delta)).u; label="PowerDynamics", color=Cycled(1), linewidth=2, linestyle=:dash)
+        axislegend(ax2)
 
-    # Plot 4: ESST4B Voltage PI Controller Output (proportional + integral + limits)
-    ax4 = Axis(fig[2,1]; xlabel="Time [s]", ylabel="[pu]", title="ESST4B: Voltage PI Controller")
-    lines!(ax4, ref.time, ref[!, Symbol("eSST4B.limiter.y")]; label="OpenIPSL", color=Cycled(3), linewidth=2, alpha=0.7)
-    lines!(ax4, ts, sol(ts, idxs=VIndex(:GEN1, :esst4b₊vr_out)).u; label="PowerDynamics", color=Cycled(3), linewidth=2, linestyle=:dash)
-    axislegend(ax4)
+        # Plot 4: ESST4B Voltage PI Controller Output (proportional + integral + limits)
+        ax4 = Axis(fig[2,1]; xlabel="Time [s]", ylabel="[pu]", title="ESST4B: Voltage PI Controller")
+        lines!(ax4, ref.time, ref[!, Symbol("eSST4B.limiter.y")]; label="OpenIPSL", color=Cycled(3), linewidth=2, alpha=0.7)
+        lines!(ax4, ts, sol(ts, idxs=VIndex(:GEN1, :esst4b₊vr_out)).u; label="PowerDynamics", color=Cycled(3), linewidth=2, linestyle=:dash)
+        axislegend(ax4)
 
-    # Plot 5: ESST4B Voltage Integrator Component
-    ax5 = Axis(fig[2,2]; xlabel="Time [s]", ylabel="[pu]", title="ESST4B: Voltage Integrator")
-    lines!(ax5, ref.time, ref[!, Symbol("eSST4B.VR1.y")]; label="OpenIPSL", color=Cycled(4), linewidth=2, alpha=0.7)
-    lines!(ax5, ts, sol(ts, idxs=VIndex(:GEN1, :esst4b₊voltage_int₊out)).u; label="PowerDynamics", color=Cycled(4), linewidth=2, linestyle=:dash)
-    axislegend(ax5)
+        # Plot 5: ESST4B Voltage Integrator Component
+        ax5 = Axis(fig[2,2]; xlabel="Time [s]", ylabel="[pu]", title="ESST4B: Voltage Integrator")
+        lines!(ax5, ref.time, ref[!, Symbol("eSST4B.VR1.y")]; label="OpenIPSL", color=Cycled(4), linewidth=2, alpha=0.7)
+        lines!(ax5, ts, sol(ts, idxs=VIndex(:GEN1, :esst4b₊voltage_int₊out)).u; label="PowerDynamics", color=Cycled(4), linewidth=2, linestyle=:dash)
+        axislegend(ax5)
 
-    # Plot 6: ESST4B Current PI Controller Output (proportional + integral + limits)
-    ax6 = Axis(fig[3,1]; xlabel="Time [s]", ylabel="[pu]", title="ESST4B: Current PI Controller")
-    lines!(ax6, ref.time, ref[!, Symbol("eSST4B.limiter1.y")]; label="OpenIPSL", color=Cycled(5), linewidth=2, alpha=0.7)
-    lines!(ax6, ts, sol(ts, idxs=VIndex(:GEN1, :esst4b₊vm_out)).u; label="PowerDynamics", color=Cycled(5), linewidth=2, linestyle=:dash)
-    axislegend(ax6)
+        # Plot 6: ESST4B Current PI Controller Output (proportional + integral + limits)
+        ax6 = Axis(fig[3,1]; xlabel="Time [s]", ylabel="[pu]", title="ESST4B: Current PI Controller")
+        lines!(ax6, ref.time, ref[!, Symbol("eSST4B.limiter1.y")]; label="OpenIPSL", color=Cycled(5), linewidth=2, alpha=0.7)
+        lines!(ax6, ts, sol(ts, idxs=VIndex(:GEN1, :esst4b₊vm_out)).u; label="PowerDynamics", color=Cycled(5), linewidth=2, linestyle=:dash)
+        axislegend(ax6)
 
-    # Plot 7: ESST4B Current Integrator Component
-    ax7 = Axis(fig[3,2]; xlabel="Time [s]", ylabel="[pu]", title="ESST4B: Current Integrator")
-    lines!(ax7, ref.time, ref[!, Symbol("eSST4B.VM1.y")]; label="OpenIPSL", color=Cycled(6), linewidth=2, alpha=0.7)
-    lines!(ax7, ts, sol(ts, idxs=VIndex(:GEN1, :esst4b₊current_int₊out)).u; label="PowerDynamics", color=Cycled(6), linewidth=2, linestyle=:dash)
-    axislegend(ax7)
+        # Plot 7: ESST4B Current Integrator Component
+        ax7 = Axis(fig[3,2]; xlabel="Time [s]", ylabel="[pu]", title="ESST4B: Current Integrator")
+        lines!(ax7, ref.time, ref[!, Symbol("eSST4B.VM1.y")]; label="OpenIPSL", color=Cycled(6), linewidth=2, alpha=0.7)
+        lines!(ax7, ts, sol(ts, idxs=VIndex(:GEN1, :esst4b₊current_int₊out)).u; label="PowerDynamics", color=Cycled(6), linewidth=2, linestyle=:dash)
+        axislegend(ax7)
 
-    # Plot 3: ESST4B Transducer Output (first in signal chain)
-    ax3 = Axis(fig[4,1]; xlabel="Time [s]", ylabel="[pu]", title="ESST4B: Transducer Output")
-    lines!(ax3, ref.time, ref[!, Symbol("eSST4B.TransducerDelay.y")]; label="OpenIPSL", color=Cycled(2), linewidth=2, alpha=0.7)
-    lines!(ax3, ts, sol(ts, idxs=VIndex(:GEN1, :esst4b₊transducer₊out)).u; label="PowerDynamics", color=Cycled(2), linewidth=2, linestyle=:dash)
-    axislegend(ax3)
+        # Plot 3: ESST4B Transducer Output (first in signal chain)
+        ax3 = Axis(fig[4,1]; xlabel="Time [s]", ylabel="[pu]", title="ESST4B: Transducer Output")
+        lines!(ax3, ref.time, ref[!, Symbol("eSST4B.TransducerDelay.y")]; label="OpenIPSL", color=Cycled(2), linewidth=2, alpha=0.7)
+        lines!(ax3, ts, sol(ts, idxs=VIndex(:GEN1, :esst4b₊transducer₊out)).u; label="PowerDynamics", color=Cycled(2), linewidth=2, linestyle=:dash)
+        axislegend(ax3)
 
-    # Plot 8: ESST4B Terminal Voltage Calculation (VE)
-    ax8 = Axis(fig[4,2]; xlabel="Time [s]", ylabel="VE [pu]", title="ESST4B: Terminal Voltage Calculation")
-    lines!(ax8, ref.time, ref[!, Symbol("eSST4B.VE")]; label="OpenIPSL", color=Cycled(7), linewidth=2, alpha=0.7)
-    lines!(ax8, ts, sol(ts, idxs=VIndex(:GEN1, :esst4b₊VE)).u; label="PowerDynamics", color=Cycled(7), linewidth=2, linestyle=:dash)
-    axislegend(ax8)
+        # Plot 8: ESST4B Terminal Voltage Calculation (VE)
+        ax8 = Axis(fig[4,2]; xlabel="Time [s]", ylabel="VE [pu]", title="ESST4B: Terminal Voltage Calculation")
+        lines!(ax8, ref.time, ref[!, Symbol("eSST4B.VE")]; label="OpenIPSL", color=Cycled(7), linewidth=2, alpha=0.7)
+        lines!(ax8, ts, sol(ts, idxs=VIndex(:GEN1, :esst4b₊VE)).u; label="PowerDynamics", color=Cycled(7), linewidth=2, linestyle=:dash)
+        axislegend(ax8)
 
-    # Plot 9: ESST4B Final Field Voltage Output
-    ax9 = Axis(fig[5,1]; xlabel="Time [s]", ylabel="EFD [pu]", title="ESST4B: Final Field Voltage")
-    lines!(ax9, ref.time, ref[!, Symbol("eSST4B.EFD")]; label="OpenIPSL", color=Cycled(8), linewidth=2, alpha=0.7)
-    lines!(ax9, ts, sol(ts, idxs=VIndex(:GEN1, :esst4b₊EFD_out₊u)).u; label="PowerDynamics", color=Cycled(8), linewidth=2, linestyle=:dash)
-    axislegend(ax9)
+        # Plot 9: ESST4B Final Field Voltage Output
+        ax9 = Axis(fig[5,1]; xlabel="Time [s]", ylabel="EFD [pu]", title="ESST4B: Final Field Voltage")
+        lines!(ax9, ref.time, ref[!, Symbol("eSST4B.EFD")]; label="OpenIPSL", color=Cycled(8), linewidth=2, alpha=0.7)
+        lines!(ax9, ts, sol(ts, idxs=VIndex(:GEN1, :esst4b₊EFD_out₊u)).u; label="PowerDynamics", color=Cycled(8), linewidth=2, linestyle=:dash)
+        axislegend(ax9)
 
-    names(ref)
+        names(ref)
 
-    fig
+        fig
+    end
+    save(joinpath(pkgdir(PowerDynamics),"docs","src","assets","OpenIPSL_valid","ESST4B.png"), fig)
 end
 
+#=
 fig_genrou = let
     fig = Figure(size=(1400, 1000))
     ts = refine_timeseries(sol.t)
