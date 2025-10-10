@@ -157,45 +157,45 @@ include("powerflow_models.jl")
 ####
 include("building_blocks.jl")
 
-include("OpenIPSL/Machines/PSSE_BaseMachine.jl")
+include("Machines/PSSE_BaseMachine.jl")
 
 export PSSE_GENCLS
-include("OpenIPSL/Machines/PSSE_GENCLS.jl")
+include("Machines/PSSE_GENCLS.jl")
 
 export PSSE_GENROU, PSSE_GENROE
-include("OpenIPSL/Machines/PSSE_GENROUND.jl")
+include("Machines/PSSE_GENROUND.jl")
 
 export PSSE_GENSAL, PSSE_GENSAE
-include("OpenIPSL/Machines/PSSE_GENSALIENT.jl")
+include("Machines/PSSE_GENSALIENT.jl")
 
 export PSSE_Load
-include("OpenIPSL/Loads/PSSE_Load.jl")
+include("Loads/PSSE_Load.jl")
 
 export PSSE_IEEET1
-include("OpenIPSL/Controls/PSSE_IEEET1.jl")
+include("Controls/PSSE_IEEET1.jl")
 
 export PSSE_EXST1
-include("OpenIPSL/Controls/PSSE_EXST1.jl")
+include("Controls/PSSE_EXST1.jl")
 
 export PSSE_ESST4B
-include("OpenIPSL/Controls/PSSE_ESST4B.jl")
+include("Controls/PSSE_ESST4B.jl")
 
 export PSSE_ESST1A
-include("OpenIPSL/Controls/PSSE_ESST1A.jl")
+include("Controls/PSSE_ESST1A.jl")
 
 export PSSE_SCRX
-include("OpenIPSL/Controls/PSSE_SCRX.jl")
+include("Controls/PSSE_SCRX.jl")
 
 export PSSE_IEEEG1
-include("OpenIPSL/Controls/PSSE_IEEEG1.jl")
+include("Controls/PSSE_IEEEG1.jl")
 
 export PSSE_GGOV1_EXPERIMENTAL
-include("OpenIPSL/Controls/PSSE_GGOV1.jl")
+include("Controls/PSSE_GGOV1.jl")
 
 export PSSE_HYGOV
-include("OpenIPSL/Controls/PSSE_HYGOV.jl")
+include("Controls/PSSE_HYGOV.jl")
 
 export PSSE_IEEEST
-include("OpenIPSL/Controls/PSSE_IEEEST.jl")
+include("Controls/PSSE_IEEEST.jl")
 
 end
