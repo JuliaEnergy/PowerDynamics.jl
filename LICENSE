@@ -13,6 +13,12 @@ MIT License
 
 Copyright (c) 2024 Hans Würfel <git@wuerfel.io> and contributors
 
+This project includes derivative works from OpenIPSL:
+- OpenIPSL Copyright (c) 2016-2022 Luigi Vanfretti, ALSETLab, and contributors
+- OpenIPSL licensed under BSD 3-Clause License
+- OpenIPSL source: https://github.com/OpenIPSL/OpenIPSL
+- Specific derived components are clearly marked in source files
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights

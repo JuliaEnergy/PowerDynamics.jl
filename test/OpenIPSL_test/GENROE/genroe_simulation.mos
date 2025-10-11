@@ -1,0 +1,71 @@
+// Load OpenIPSL library
+loadFile(getEnvironmentVar("OPENIPSL_PATH") + "/package.mo");
+
+// Run GENROE simulation with model's native experiment settings
+simulate(OpenIPSL.Tests.Machines.PSSE.GENROE);
+
+// Extract minimal generator data for main testing
+filterSimulationResults(
+      "OpenIPSL.Tests.Machines.PSSE.GENROE_res.mat",
+      "modelica_results.csv",
+      {
+            // GENROE machine variables
+            "gENROE.Vt",                    // Terminal voltage magnitude
+            "gENROE.w",                     // Speed deviation
+            "gENROE.P",                     // Active power
+            "gENROE.Q",                     // Reactive power
+            "gENROE.delta",                 // Rotor angle
+            "gENROE.Epd",                   // d-axis voltage behind transient reactance
+            "gENROE.Epq",                   // q-axis voltage behind transient reactance
+            "gENROE.PSIkd",                 // d-axis rotor flux linkage
+            "gENROE.PSIkq",                 // q-axis rotor flux linkage
+            "gENROE.XadIfd",                // d-axis machine field current
+            "gENROE.Te",                    // Electrical torque
+            "gENROE.id",                    // d-axis current
+            "gENROE.iq",                    // q-axis current
+            "gENROE.ud",                    // d-axis voltage
+            "gENROE.uq"                     // q-axis voltage
+      }
+      //addHeader=false   // disables "nrows=.." metadata line
+);
+
+// Extract extended data with all bus variables and injector powers for debugging
+filterSimulationResults(
+      "OpenIPSL.Tests.Machines.PSSE.GENROE_res.mat",
+      "modelica_results_extended.csv",
+      {
+            // GENROE machine variables
+            "gENROE.Vt",
+            "gENROE.w",
+            "gENROE.P",
+            "gENROE.Q",
+            "gENROE.delta",
+            "gENROE.Epd",
+            "gENROE.Epq",
+            "gENROE.PSIkd",
+            "gENROE.PSIkq",
+            "gENROE.XadIfd",
+            "gENROE.Te",
+            "gENROE.id",
+            "gENROE.iq",
+            "gENROE.ud",
+            "gENROE.uq",
+            // Additional state variables
+            "gENROE.PSId",                  // d-axis flux linkage
+            "gENROE.PSIq",                  // q-axis flux linkage
+            "gENROE.PSIppd",                // d-axis subtransient flux linkage
+            "gENROE.PSIppq",                // q-axis subtransient flux linkage
+            "gENROE.PSIpp",                 // Air-gap flux
+            "gENROE.XaqIlq",                // q-axis machine field current
+            // Bus voltages and angles by bus name
+            "GEN1.v", "GEN1.angle",
+            "GEN2.v", "GEN2.angle",
+            "LOAD.v", "LOAD.angle",
+            "SHUNT.v", "SHUNT.angle",
+            "FAULT.v", "FAULT.angle",
+            // Injector power variables
+            "constantLoad.P", "constantLoad.Q",
+            "gENCLS.P", "gENCLS.Q"
+      }
+      //addHeader=false   // disables "nrows=.." metadata line
+);

@@ -52,8 +52,10 @@ end
     end
 end
 
-# FIXME: handle Q_Set = 0 and Q_set != 0 in the same model?
 @mtkmodel ConstantYLoad begin
+    @structural_parameters begin
+        allow_zero_conductance = false
+    end
     @components begin
         terminal = Terminal()
     end
@@ -70,8 +72,13 @@ end
         iload = -Y * (terminal.u_r + im*terminal.u_i)
     end
     @equations begin
-        terminal.i_r ~ simplify(real(iload))
-        terminal.i_i ~ simplify(imag(iload))
+        if !allow_zero_conductance
+            terminal.i_r ~ simplify(real(iload))
+            terminal.i_i ~ simplify(imag(iload))
+        else
+            @no_simplify terminal.i_r ~ simplify(real(iload))
+            @no_simplify terminal.i_i ~ simplify(imag(iload))
+        end
 
         # observables
         P ~ terminal.u_r*terminal.i_r + terminal.u_i*terminal.i_i

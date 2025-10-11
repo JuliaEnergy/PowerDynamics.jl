@@ -20,6 +20,11 @@ VariableFrequencySlack
 
 ### Synchronous Machine Models
 ```@docs
+PSSE_GENCLS
+PSSE_GENROU
+PSSE_GENROE
+PSSE_GENSAL
+PSSE_GENSAE
 SauerPaiMachine
 Swing
 ClassicalMachine
@@ -27,17 +32,30 @@ ClassicalMachine
 
 ## Control Systems
 
-### Automatic Voltage Regulators (AVRs)
+### Exciters & AVRs
 ```@docs
+PSSE_EXST1
+PSSE_ESST4B
+PSSE_ESST1A
+PSSE_SCRX
+PSSE_IEEET1
 AVRFixed
 AVRTypeI
 ```
 
 ### Governors and Turbines
 ```@docs
+PSSE_IEEEG1
+PSSE_HYGOV
 GovFixed
 TurbineGovTypeI
 TGOV1
+PSSE_GGOV1_EXPERIMENTAL
+```
+
+### Power System Stabilizers (PSS)
+```@docs
+PSSE_IEEEST
 ```
 
 ## Load Models
@@ -48,6 +66,7 @@ PQLoad
 VoltageDependentLoad
 ConstantYLoad
 ZIPLoad
+PSSE_Load
 ```
 
 ## Line Models

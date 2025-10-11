@@ -1,0 +1,28 @@
+// Load OpenIPSL library
+loadFile(getEnvironmentVar("OPENIPSL_PATH") + "/package.mo");
+
+// Run HYGOV simulation with model's native experiment settings
+simulate(OpenIPSL.Tests.Controls.PSSE.TG.HYGOV);
+
+// Extract machine, exciter and governor data for testing
+filterSimulationResults(
+      "OpenIPSL.Tests.Controls.PSSE.TG.HYGOV_res.mat",
+      "modelica_results.csv",
+      {
+            // GENSAL machine variables (key dynamics)
+            "gENSAL.delta",                 // Rotor angle
+            "gENSAL.w",                     // Speed deviation (omega)
+            "gENSAL.Vt",                    // Terminal voltage magnitude
+
+            // SCRX exciter variables (control path)
+            "sCRX.EFD",                     // Final exciter field voltage output
+
+            // HYGOV governor variables (main states)
+            "hYGOV.SimpleLag1.y",          // Filtered governor error (filter output)
+            "hYGOV.Position_Limiter.y",    // Desired gate position (c)
+            "hYGOV.g.y",                   // Actual gate position (G)
+            "hYGOV.q.y",                   // Water flow (Q)
+            "hYGOV.H",                     // Turbine head (H)
+            "hYGOV.PMECH"                  // Turbine mechanical power output
+      }
+);

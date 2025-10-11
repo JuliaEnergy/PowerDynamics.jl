@@ -266,3 +266,120 @@ end
         end
     end
 end
+
+@testset "Test function general TF to system transformation" begin
+    using PowerDynamics.Library: siso_tf_to_ss, ss_to_mtkmodel
+
+    ≂(a, b) = isequal(a,b)
+    # test integrator
+    @variables K T;
+    A,B,C,D = siso_tf_to_ss([K], [T, 0]);
+    @test A ≂ [0;;]
+    @test B ≂ [1;;]
+    @test C ≂ [K/T;;]
+    @test D ≂ [0;;]
+    ss_to_mtkmodel(A,B,C,D; name=:foo) |> equations
+
+    # test first order lag
+    @variables K T;
+    A,B,C,D = siso_tf_to_ss([K], [T, 1]);
+    @test A ≂ Num[-(1 / T);;]
+    @test B ≂ Num[1;;]
+    @test C ≂ Num[K / T;;]
+    @test D ≂ Num[0;;]
+    ss_to_mtkmodel(A,B,C,D; name=:foo) |> equations
+
+    # differntial estimation
+    @variables K T
+    A,B,C,D = siso_tf_to_ss([K, 0], [T, 1]);
+    @test A ≂ Num[-(1 / T);;]
+    @test B ≂ Num[1;;]
+    @test C ≂ Num[-(K / (T^2));;]
+    @test D ≂ Num[K / T;;]
+    ss_to_mtkmodel(A,B,C,D; name=:foo) |> equations
+
+    # test notch filter wit hdifferent amout of zeros
+    @variables a b c d e f
+    A,B,C,D = siso_tf_to_ss([b, a, 1], [f, e, d, c, 1])
+    @test A ≂ Num[0 1 0 0; 0 0 1 0; 0 0 0 1; -(1 / f) -(c / f) -(d / f) -(e / f)]
+    @test B ≂ Num[0; 0; 0; 1;;]
+    @test C ≂ Num[1 / f a / f b / f 0]
+    @test D ≂ Num[0;;]
+    ss_to_mtkmodel(A,B,C,D; name=:foo) |> equations
+
+    A,B,C,D = siso_tf_to_ss([b, a, 1], [   e, d, c, 1])
+    @test A ≂ Num[0 1 0; 0 0 1; -(1 / e) -(c / e) -(d / e)]
+    @test B ≂ Num[0; 0; 1;;]
+    @test C ≂ Num[1 / e a / e b / e]
+    @test D ≂ Num[0;;]
+    ss_to_mtkmodel(A,B,C,D; name=:foo) |> equations
+
+    A,B,C,D = siso_tf_to_ss([b, a, 1], [      d, c, 1])
+    @test A ≂ Num[0 1; -(1 / d) -(c / d)]
+    @test B ≂ Num[0; 1;;]
+    # @test C ≂ Num[(-b) / (d^2) + 1 / d a / d + (-b*c) / (d^2)] # symbolics comparison fails here?
+    @test repr(C) == repr(Num[(-b) / (d^2) + 1 / d a / d + (-b*c) / (d^2)])
+    @test D ≂ Num[b / d;;]
+    ss_to_mtkmodel(A,B,C,D; name=:foo) |> equations
+
+    A,B,C,D = siso_tf_to_ss([   a, 1], [f, e, d, c, 1])
+    @test A ≂ Num[0 1 0 0; 0 0 1 0; 0 0 0 1; -(1 / f) -(c / f) -(d / f) -(e / f)]
+    @test B ≂ Num[0; 0; 0; 1;;]
+    @test C ≂ Num[1 / f a / f 0 0]
+    @test D ≂ Num[0;;]
+    ss_to_mtkmodel(A,B,C,D; name=:foo) |> equations
+
+    A,B,C,D = siso_tf_to_ss([   a, 1], [   e, d, c, 1])
+    @test A ≂ Num[0 1 0; 0 0 1; -(1 / e) -(c / e) -(d / e)]
+    @test B ≂ Num[0; 0; 1;;]
+    @test C ≂ Num[1 / e a / e 0]
+    @test D ≂ Num[0;;]
+    ss_to_mtkmodel(A,B,C,D; name=:foo) |> equations
+
+    A,B,C,D = siso_tf_to_ss([   a, 1], [      d, c, 1])
+    @test A ≂ Num[0 1; -(1 / d) -(c / d)]
+    @test B ≂ Num[0; 1;;]
+    @test C ≂ Num[1 / d a / d]
+    @test D ≂ Num[0;;]
+    ss_to_mtkmodel(A,B,C,D; name=:foo) |> equations
+
+    @variables a b c d e f
+    A,B,C,D = siso_tf_to_ss([   a, 1], [         c, 1])
+    @test A ≂ Num[-(1 / c);;]
+    @test B ≂ Num[1;;]
+    # @test C ≂ Num[(-a) / (c^2) + 1 / c;;] # symbolics comparison fails here?
+    @test repr(C) == repr(Num[(-a) / (c^2) + 1 / c;;])
+    @test D ≂ Num[a / c;;]
+    ss_to_mtkmodel(A,B,C,D; name=:foo) |> equations
+
+    A,B,C,D = siso_tf_to_ss([      1], [f, e, d, c, 1])
+    @test A ≂ Num[0 1 0 0; 0 0 1 0; 0 0 0 1; -(1 / f) -(c / f) -(d / f) -(e / f)]
+    @test B ≂ Num[0; 0; 0; 1;;]
+    @test C ≂ Num[1 / f 0 0 0]
+    @test D ≂ Num[0;;]
+    ss_to_mtkmodel(A,B,C,D; name=:foo) |> equations
+
+    A,B,C,D = siso_tf_to_ss([      1], [   e, d, c, 1])
+    @test A ≂ Num[0 1 0; 0 0 1; -(1 / e) -(c / e) -(d / e)]
+    @test B ≂ Num[0; 0; 1;;]
+    @test C ≂ Num[1 / e 0 0]
+    @test D ≂ Num[0;;]
+    ss_to_mtkmodel(A,B,C,D; name=:foo) |> equations
+
+    A,B,C,D = siso_tf_to_ss([      1], [      d, c, 1])
+    @test A ≂ Num[0 1; -(1 / d) -(c / d)]
+    @test B ≂ Num[0; 1;;]
+    @test C ≂ Num[1 / d 0]
+    @test D ≂ Num[0;;]
+    ss_to_mtkmodel(A,B,C,D; name=:foo) |> equations
+
+    A,B,C,D = siso_tf_to_ss([      1], [         c, 1])
+    @test A ≂ Num[-(1 / c);;]
+    @test B ≂ Num[1;;]
+    @test C ≂ Num[1 / c;;]
+    @test D ≂ Num[0;;]
+    ss_to_mtkmodel(A,B,C,D; name=:foo) |> equations
+
+    # improper test
+    @test_throws ErrorException siso_tf_to_ss([b, a, 1], [0, 0, 0, c, 1])
+end

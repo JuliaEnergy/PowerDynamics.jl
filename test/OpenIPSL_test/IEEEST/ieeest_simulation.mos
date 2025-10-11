@@ -1,0 +1,30 @@
+// Load OpenIPSL library
+loadFile(getEnvironmentVar("OPENIPSL_PATH") + "/package.mo");
+
+// Run IEEEST simulation with model's native experiment settings
+simulate(OpenIPSL.Tests.Controls.PSSE.PSS.IEEEST);
+
+// Extract variables used in unit tests
+filterSimulationResults(
+      "OpenIPSL.Tests.Controls.PSSE.PSS.IEEEST_res.mat",
+      "modelica_results.csv",
+      {
+            // GENROE machine variables (core 5 variables)
+            "gENROE.w",                     // Speed deviation
+            "gENROE.delta",                 // Rotor angle
+            "gENROE.P",                     // Active power
+            "gENROE.Q",                     // Reactive power
+            "gENROE.Vt",                    // Terminal voltage magnitude
+            // ESST1A exciter variables (for validation)
+            "eSST1A.EFD",                   // Final field voltage output
+            "eSST1A.imLeadLag.y",           // Lead-lag 1 output
+            "eSST1A.imLeadLag1.y",          // Lead-lag 2 output
+            "eSST1A.simpleLagLim.y",        // Amplifier output
+            "eSST1A.imDerivativeLag.y",     // Derivative feedback output
+            // IEEEST PSS variables (specific outputs requested)
+            "iEEEST.T_1_T_2.u",             // Filter2 output (input to T_1_T_2)
+            "iEEEST.T_1_T_2.y",             // Filter3 output (lead-lag 1)
+            "iEEEST.T_3_T_4.y",             // Filter4 output (lead-lag 2, input to derivative)
+            "iEEEST.VOTHSG"                 // Overall PSS output
+      }
+);
