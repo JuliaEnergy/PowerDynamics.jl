@@ -256,8 +256,14 @@ function _SatLim_condition(_out, u, p, _)
         _out[2] = insatmin ? Inf : upcrossing_min
         if insatmax || insatmin
             # when in saturation, check for zero crossing of forcing
-            # when not in saturation don't set out[3] at all
             _out[3] = u[4]
+        else
+            # when not in saturation, set out[3] at Inf
+            # This migh be problematic if
+            # - lower lim is hit (i.e. forcing is negative)
+            # - next round, forcing is still negativ so we have a discrete jump from Inf to small negativ, which is a zero crossing
+            # - but it seems like this non-contionus crossing is not actually registerd as a crossing? Maybe becaus t=t in both cases?
+            _out[3] = Inf
         end
 end
 
