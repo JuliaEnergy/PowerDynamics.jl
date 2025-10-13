@@ -1,5 +1,10 @@
 # PowerDynamices.jl Changelog
 
+## Version 4.3.0 Changelog
+- [#232](https://github.com/JuliaDynamics/PowerDynamics.jl/pull/232): Added lots of new models based on the great OpenIPSL Library.
+  Those models are validated against OpenIPSL by reproducing their component test-harness and comparing trajectories of internal
+  states.
+
 ## Version 4.2.0 Changelog
 - [#230](https://github.com/JuliaDynamics/PowerDynamics.jl/pull/230): 
   - deprecate `Bus(...)` → `compile_bus(...)` and `Line(...)` → `compile_line(...)`
