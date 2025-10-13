@@ -1,0 +1,40 @@
+// Load OpenIPSL library
+loadFile(getEnvironmentVar("OPENIPSL_PATH") + "/package.mo");
+
+// Run GGOV1 simulation with model's native experiment settings
+simulate(OpenIPSL.Tests.Controls.PSSE.TG.GGOV1);
+
+// Extract generator and governor data for testing
+filterSimulationResults(
+      "OpenIPSL.Tests.Controls.PSSE.TG.GGOV1_res.mat",
+      "modelica_results_modified.csv",
+      {
+            // GENROU machine variables
+            "gENROU.Vt",                    // Terminal voltage magnitude
+            "gENROU.w",                     // Speed deviation
+            "gENROU.P",                     // Active power
+            "gENROU.Q",                     // Reactive power
+            "gENROU.delta",                 // Rotor angle
+            // "gENROU.Epd",                   // d-axis voltage behind transient reactance
+            // "gENROU.Epq",                   // q-axis voltage behind transient reactance
+            // "gENROU.PSIkd",                 // d-axis rotor flux linkage
+            // "gENROU.PSIkq",                 // q-axis rotor flux linkage
+            // "gENROU.XadIfd",                // d-axis machine field current
+            // "gENROU.Te",                    // Electrical torque
+            // "gENROU.id",                    // d-axis current
+            // "gENROU.iq",                    // q-axis current
+            // "gENROU.ud",                    // d-axis voltage
+            // "gENROU.uq",                    // q-axis voltage
+            // GGOV1 main outputs and key internal variables
+            "gGOV1.PMECH",                  // Turbine mechanical power output
+            // load limiter states
+            "gGOV1.gGOV1_Temp.FSRT", // output of the LoadLimiter
+            // acceleration limiter
+            "gGOV1.gGOV1_Accel.FSRA", // output of the AccelerationLimiter
+            // govenor states
+            "gGOV1.gGOV1_Power.FSRN",       // Governor proportional state
+            // turbine sates
+            "gGOV1.gGOV1_Turb.VSTROKE",// Measured exhaust temperature
+            "gGOV1.gGOV1_Turb.TEXM"         // Measured exhaust temperature
+      }
+);

@@ -118,9 +118,9 @@ function bus_on_slack(busf; tmax=6, toilength=1000, argscale=1, magscale=1)
     return TrajectoriesOfInterest(sol, plotspec; length=toilength)
 end
 
-
 # using PowerDynamics.ModelChecks: _set_voltage
 function _set_voltage(u::NWState, i, mag, arg)
     u.v[i,:busbar₊u_r] = mag * cos(arg)
     u.v[i,:busbar₊u_i] = mag * sin(arg)
 end
+

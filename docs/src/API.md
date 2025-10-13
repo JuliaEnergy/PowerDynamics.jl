@@ -94,3 +94,8 @@ delete_pfinitconstraints!
 delete_pfinitformulas!
 copy_pf_parameters
 ```
+
+## Utils
+```@docs
+refine_timeseries
+```

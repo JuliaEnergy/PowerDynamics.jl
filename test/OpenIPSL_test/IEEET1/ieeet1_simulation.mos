@@ -1,0 +1,35 @@
+// Load OpenIPSL library
+loadFile(getEnvironmentVar("OPENIPSL_PATH") + "/package.mo");
+
+// Run IEEET1 simulation with model's native experiment settings
+simulate(OpenIPSL.Tests.Controls.PSSE.ES.IEEET1);
+
+// Extract minimal generator and exciter data for testing
+filterSimulationResults(
+      "OpenIPSL.Tests.Controls.PSSE.ES.IEEET1_res.mat",
+      "modelica_results.csv",
+      {
+            // GENROE machine variables (same as GENROE test)
+            "gENROE.Vt",                    // Terminal voltage magnitude
+            "gENROE.w",                     // Speed deviation
+            "gENROE.P",                     // Active power
+            "gENROE.Q",                     // Reactive power
+            "gENROE.delta",                 // Rotor angle
+            "gENROE.Epd",                   // d-axis voltage behind transient reactance
+            "gENROE.Epq",                   // q-axis voltage behind transient reactance
+            "gENROE.PSIkd",                 // d-axis rotor flux linkage
+            "gENROE.PSIkq",                 // q-axis rotor flux linkage
+            "gENROE.XadIfd",                // d-axis machine field current
+            "gENROE.Te",                    // Electrical torque
+            "gENROE.id",                    // d-axis current
+            "gENROE.iq",                    // q-axis current
+            "gENROE.ud",                    // d-axis voltage
+            "gENROE.uq",                    // q-axis voltage
+            // IEEET1 exciter variables (key addition)
+            "iEEET1.EFD",                   // Exciter field voltage output
+            "iEEET1.simpleLagLim.y",        // Amplifier output (before exciter)
+            "iEEET1.derivativeLag.y",       // Derivative feedback signal
+            "iEEET1.TransducerDelay.y"      // Transducer output
+      }
+      //addHeader=false   // disables "nrows=.." metadata line
+);
