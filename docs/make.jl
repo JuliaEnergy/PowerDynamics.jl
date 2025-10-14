@@ -54,6 +54,7 @@ kwargs = (;
         "Initialization" => "initialization.md",
         "Component Library" => "Library.md",
         "Tutorials" => [
+            "Julia Setup for New Users" => "julia_setup.md",
             "Getting Started" => "generated/getting_started.md",
             "Typical Simulation Workflow" => "generated/typical_simulation_workflow.md",
             "Custom Generator Bus" => "generated/custom_bus.md",
