@@ -10,13 +10,13 @@ We recommend you checking out further resources, like the excellent
 ## Setup Julia
 First you need to install Julia.
 Check out the [install instructions](https://julialang.org/install/) on the official Julia homepage.
-It is recommended installing Julia using **juliaup**.
+It is recommended to install Julia using **juliaup**.
 
 !!! note
 [juliaup](https://github.com/JuliaLang/juliaup) is a Julia version multiplexer, you can use it to "manage" different Julia version on the same system
 using commands like `juliaup update` (update installed versions), `juliaup add 1.11` (add a new version), `juliaup default 1.11` (tell you computer which version to start when you invoke the `julia` command).
 
-In general, julia can be run without any administrator privileges.
+In general, Julia can be run without any administrator privileges.
 
 **Windows***
 You can install Julia on Windows using the Microsoft Store. Instead of searching manually, you can invoke this installation in the terminal.
@@ -39,7 +39,7 @@ After the installation, run the `julia` command in your terminal. You should get
 ![image](../assets/juliasetup/julia-prompt.png)
 
 !!! tip "Stick to Julia 1.11 for now"
-    Per default, juliaup will install the latest stable version of julia. As of 10/2025, that is 1.12. However there are some minor problems in 1.12 which might make it less stable. For now, I'd advise you to stay at Julia 1.11. To do so, run
+    Per default, juliaup will install the latest stable version of Julia. As of 10/2025, that is 1.12. However there are some minor problems in 1.12 which might make it less stable. For now, I'd advise you to stay at Julia 1.11. To do so, run
     ```bash
     juliaup add 1.11
     juliaup default 1.11
@@ -47,7 +47,7 @@ After the installation, run the `julia` command in your terminal. You should get
     after which your `julia` command should point to Julia 1.11 per default.
 
 ## The REPL
-Julias main interface is the REPL (read-eval-print-loop). It is similar to `ipython` or the Matlab command window.
+Julia's main interface is the REPL (read-eval-print-loop). It is similar to `ipython` or the Matlab command window.
 You can execute code in the REPL by typing it. Try `julia> println("hello world")<RETURN>` to run your first Julia command.
 Exit the REPL by pressing `<ctrl>+d` or typing `exit()<RETURN>`.
 
@@ -56,7 +56,7 @@ Exit the REPL by pressing `<ctrl>+d` or typing `exit()<RETURN>`.
     - hit `]` to enter package manager mode (see [Environment Basics](@ref env-basics) below)
     - hit `?` to enter help mode: search for functions or concepts to get documentation, for example, look up the docstring of `println`
     - scroll through history using arrow up and arrow down
-    The REPL is a great to get to know julia.
+    The REPL is a great way to get to know Julia.
 
 ## Setup VSCode with the Julia extension
 The REPL is great, but its not great for actual development. For that we need an editor.
@@ -89,7 +89,7 @@ Hit `]` to launch the package manager. Your REPL changes:
 ```julia-repl
 (@v1.11) pkg>
 ```
-This output means, your "active" environment is the global environment for julia `v1.11`.
+This output means, your "active" environment is the global environment for Julia `v1.11`.
 If you were to add packages here, you would add them globally. Normally, that's not what we want.
 So instead we activate the current folder (`.`) as our working environment:
 ```julia-repl
@@ -115,12 +115,12 @@ ProjectRoot
 ╰╴Manifest.toml
 ```
 The existence of a `Project.toml` file marks a folder as a "project". You can "activate" such a folder.
-When executing code in a file using the julia VSCode extension, it will automatically activate the environment for you.
+When executing code in a file using the Julia VSCode extension, it will automatically activate the environment for you.
 
 ## Executing Code in VSCode
 Working with Julia is much like working in a notebook, due to the persistent REPL.
 Because of how Julia works internally, everything you do will take much more time the first time you do it.
-Therefore, it is always preferred to have a **persistent REPL** over relaunching julia. That is:
+Therefore, it is always preferred to have a **persistent REPL** over relaunching Julia. That is:
 - opening a REPL,
 - executing a script in REPL,
 - changing script and
@@ -196,6 +196,6 @@ and save it. If you evaluate `foo()` again (either in REPL directly or in your s
 At some point, you might want to put your project in a "Julia Package", but that's beyond the scope of this tutorial. Consult the documentation and your favorite Chatbot for help. Especially check out `] dev MyPackage` in contrast to `] add MyPackage`.
 
 ## Additional Remarks & Tips
-1. Embrace the *interactivity of the REPL*: it really is (one of) Julias superpower. Play around with objects, make use of the help mode and use functions like `propertynames()`.
+1. Embrace the *interactivity of the REPL*: it really is (one of) Julia's superpowers. Play around with objects, make use of the help mode and use functions like `propertynames()`.
 2. Get to know the package manager. It is really good! However, package management is not a trivial problem so package managers tend to be non-trivial. Read the docs and try to understand it. Just using it by trial and error will lead to major frustration down the road. Especially the option to `] dev` packages and define local [sources](https://pkgdocs.julialang.org/v1.12/toml-files/#The-%5Bsources%5D-section) can be very powerful tools.
 3. Seek help. The [julia discourse](https://discourse.julialang.org/) and the [Julia Slack](https://julialang.org/slack/) and the [Julia Zulip](https://julialang.zulipchat.com/) are great platforms to post your problems and get help from the community.
