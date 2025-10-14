@@ -67,6 +67,7 @@ Please [download and install](https://code.visualstudio.com/Download) it.
 
 Within VSCode, you need to install the [julia-extension](https://marketplace.visualstudio.com/items?itemName=julialang.language-julia).
 You should be able to click the "install" link in any browser, it'll open VSCode and install the extension.
+Alternatively, you can search for "Julia" in the VSCode extension store.
 
 ## [Environment and Package Manager Basics](@id env-basics)
 Julia has a built-in package manager. It lets you install, update and manage dependencies across your projects.

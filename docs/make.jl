@@ -72,7 +72,10 @@ kwargs = (;
         "🔗 NetworkDynamics.jl Docs" => "networkdynamics_forward.md",
     ],
     draft=haskey(ENV, "DOCUMENTER_DRAFT"),
-    linkcheck_ignore = [r"^\.\./assets/OpenIPSL_valid/.*\.png$"],  # Match ../assets/OpenIPSL_valid/*.png
+    linkcheck_ignore = [
+        r"^\.\./assets/OpenIPSL_valid/.*\.png$",  # Match ../assets/OpenIPSL_valid/*.png
+        "https://marketplace.visualstudio.com/items?itemName=julialang.language-julia", # curl blocked?
+        ],
     warnonly=[:missing_docs, :docs_block],
 )
 kwargs_warnonly = (; kwargs..., warnonly=true)
