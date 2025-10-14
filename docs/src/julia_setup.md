@@ -160,7 +160,7 @@ Now you know everything you need to know to run our examples locally.
 
 At the beginning of each example, there is a link:
 
-> This tutorial can be downloaded as a normal Julia script here
+> This tutorial can be downloaded as a normal Julia script here.
 
 Go to the [getting started](@ref getting-started) tutorial, download the script, put it in your
 directory and go through it, executing it block by block.

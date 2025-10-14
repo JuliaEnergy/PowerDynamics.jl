@@ -1,6 +1,8 @@
 #=
 # [Tutorial on custom Transmission Line Models](@id custom-line)
 
+This tutorial can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
+
 In this tutorial we'll implement a custom transmission line model:
 - we start by defining a PI-branch component with optional fault admittance,
 - we combine two PI-branch components into one MTKLine, to essentially model a dual-branch transmission line.
@@ -8,8 +10,6 @@ In this tutorial we'll implement a custom transmission line model:
 To make it more interesting, we add protection logic to the branches:
 - each branch continuously checks the current magnitude against a limit,
 - if the current exceeds the limit, the branch is switched off after a delay time.
-
-This tutorial can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
 =#
 using PowerDynamics
 using ModelingToolkit

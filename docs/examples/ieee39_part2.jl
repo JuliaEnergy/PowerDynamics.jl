@@ -1,6 +1,8 @@
 #=
 # [IEEE39 Bus Tutorial - Part II: Initialization](@id ieee39-part2)
 
+This tutorial can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
+
 This is the second part of a four-part tutorial series for the IEEE 39-bus test system:
 
 - **Part I: Model Creation** - Build the network structure with buses, lines, and components
