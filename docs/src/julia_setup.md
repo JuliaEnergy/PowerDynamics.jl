@@ -1,4 +1,4 @@
-# Julia Setup for PowerDynamics
+# [Julia Setup for PowerDynamics](@id julia-setup)
 
 In this document we'll provide a very brief overview on how to set up your development environment with Julia.
 The goal of this document is to get you ready to follow our examples in this documentation.
