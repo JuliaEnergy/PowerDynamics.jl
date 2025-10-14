@@ -1,6 +1,8 @@
 #=
 # [IEEE39 Bus Tutorial - Part IV: Advanced Modeling & Parameter Optimization](@id ieee39-part4)
 
+This tutorial can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
+
 This is the fourth and final part of the IEEE 39-bus tutorial series:
 
 - **Part I: Model Creation** - Build the network structure with buses, lines, and components
@@ -15,8 +17,6 @@ In this tutorial, we'll demonstrate advanced PowerDynamics.jl capabilities by:
 
 This tutorial showcases custom component creation and
 the integration with Julia's optimization ecosystem for parameter tuning.
-
-This script can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
 
 !!! note
     This tutorial is designed as a pedagogical example. It does not necessarily represent

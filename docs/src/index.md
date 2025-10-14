@@ -19,6 +19,8 @@ of working with the package and we have the advanced examples, which are less fo
 than the tutorials but also consist of copy-pastable examples showing different aspects
 of modeling and simulation.
 
+If you're new to Julia, start with the [Julia Setup](@ref julia-setup) guide to set up your development environment.
+
 As a first step, it is advised to read through the [Getting Started](@ref getting-started) tutorial to understand the core philosophy and SciML integration.
 Then, work through the [Typical Simulation Workflow](@ref typical-simulation-workflow) tutorial for a hands-on walkthrough of building and simulating a power system.
 Afterwards, it's a good idea to read on the [Modeling Concepts](@ref).

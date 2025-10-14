@@ -1,13 +1,13 @@
 #=
 # [Define a Custom Bus Model](@id custom-bus)
 
+This tutorial can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
+
 In this Tutorial, we will define a custom bus model that can be used in PowerDynamics.jl.
 
 The model we set out to recreate is the classical machine from Chapter 15.1 from Milano's book
 
 > F. Milano, Power System Modelling and Scripting,  Berlin, Heidelberg: Springer Berlin Heidelberg, 2010. doi: 10.1007/978-3-642-13669-6.
-
-This tutorial can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
 
 ## Defining the Machine as Injector
 

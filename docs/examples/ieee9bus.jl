@@ -1,6 +1,8 @@
 #=
 # [IEEE 9-Bus Example](@id ieee9bus)
 
+This tutorial can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
+
 In this example, we're going to model the IEEE 9 bus system.
 
 The parameters are mainly adopted from the RTDS data.

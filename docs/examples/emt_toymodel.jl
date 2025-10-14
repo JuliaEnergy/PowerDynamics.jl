@@ -1,6 +1,8 @@
 #=
 # [EMT Toy Model Example](@id emt-toymodel)
 
+This script can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
+
 This example demonstrates an electromagnetic transient (EMT) simulation of a simple
 two-bus system using PowerDynamics.jl. The system consists of a slack bus connected
 to a load bus through an RL transmission line, with the load bus having both a
@@ -18,8 +20,6 @@ the EMT modeling approach.
 
     The example serves to illustrate the flexibility of the modeling framework
     rather than provide a production-ready EMT simulation tool.
-
-This script can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
 
 ## System Description
 

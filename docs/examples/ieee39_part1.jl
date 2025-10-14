@@ -1,6 +1,8 @@
 #=
 # [IEEE39 Bus Tutorial - Part I: Model Creation](@id ieee39-part1)
 
+This tutorial can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
+
 This is the first part of a four-part tutorial series for the IEEE 39-bus test system:
 
 - **Part I: Model Creation** (this tutorial) - Build the network structure with buses, lines, and components
@@ -10,8 +12,6 @@ This is the first part of a four-part tutorial series for the IEEE 39-bus test s
 
 In this first part, we'll construct the complete IEEE 39-bus network model using PowerDynamics.jl,
 including generators, loads, transmission lines, and control systems.
-
-This script can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
 
 ## System Structure
 The system consists of 39 buses (with 10 generators and 19 loads) and 46 branches (12 of which are transformers).

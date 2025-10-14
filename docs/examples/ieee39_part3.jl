@@ -1,6 +1,8 @@
 #=
 # [IEEE39 Bus Tutorial - Part III: Dynamic Simulation](@id ieee39-part3)
 
+This tutorial can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
+
 This is the third part of the IEEE 39-bus tutorial series:
 
 - **Part I: Model Creation** - Build the network structure with buses, lines, and components
@@ -25,8 +27,6 @@ This scenario tests the system's ability to:
 - Survive the initial fault (maintain synchronism)
 - Stabilize after the line disconnection
 - Operate reliably with reduced transmission capacity
-
-This script can be downloaded as a normal Julia script [here](@__NAME__.jl). #md
 =#
 
 ## Loading required packages and setup
