@@ -202,7 +202,7 @@ delete_pfmodel!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfmodel!(get
 """
     solve_powerflow(nw::Network;
                     pfnw = powerflow_model(nw),
-                    pfs0 = NWState(nw),
+                    pfs0 = NWState(pfnw),
                     fill_busbar_defaults=true
                     verbose=true)
 
@@ -225,7 +225,7 @@ See also [`initialize_from_pf`](@ref).
 function solve_powerflow(
     nw::Network;
     pfnw = powerflow_model(nw),
-    pfs0 = NWState(nw),
+    pfs0 = NWState(pfnw),
     fill_busbar_defaults=true,
     verbose=true
 )
