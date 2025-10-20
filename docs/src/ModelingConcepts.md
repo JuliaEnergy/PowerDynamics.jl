@@ -363,7 +363,7 @@ nothing #hide
 ```
 Then we can solve the problem
 ```@example concepts
-prob = ODEProblem(nw, uflat(u0), (0,1), pflat(u0))
+prob = ODEProblem(nw, u0, (0,1))
 sol = solve(prob, Rodas5P())
 @assert OrdinaryDiffEqRosenbrock.SciMLBase.successful_retcode(sol) #hide
 nothing #hide

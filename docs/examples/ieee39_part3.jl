@@ -149,12 +149,12 @@ The simulation process involves:
 3. Solving the ODE using a suitable numerical method
 4. Analyzing the results
 
-Note that we use [`get_callbacks`](@extref NetworkDynamics.get_callbacks-Tuple{Network}) to collect the
-component callbacks, transform them into a `CallbackSet` compatible with the DifferentialEquations.jl ecosystem and pass them to the ODEProblem.
+The constructor [`ODEProblem(::Network)`](@extref SciMLBase.ODEProblem(::NetworkDynamics.Network, ::NetworkDynamics.NWState, ::Any))
+automatically extracts the component callbacks from the models and uses them during the simulation.
 =#
 
 u0 = NWState(nw) # state is stored in metadata because of mutating init function!
-prob = ODEProblem(nw, uflat(u0), (0.0, 15.0), copy(pflat(u0)); callback=get_callbacks(nw))
+prob = ODEProblem(nw,  u0, (0.0, 15.0))
 ## Solve the ODE using Rodas5P (suitable for stiff differential-algebraic systems)
 sol = solve(prob, Rodas5P());
 @assert SciMLBase.successful_retcode(sol) # ensure the simulation was successful

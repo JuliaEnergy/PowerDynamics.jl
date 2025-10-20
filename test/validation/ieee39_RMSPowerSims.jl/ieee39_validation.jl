@@ -381,7 +381,7 @@ inc_cb = PresetTimeComponentCallback(1, increase_load)
 set_callback!(nw[VIndex(16)], inc_cb)
 
 s0 = NWState(nw)
-prob = ODEProblem(nw, copy(uflat(s0)), (0,15), copy(pflat(s0)); callback=get_callbacks(nw))
+prob = ODEProblem(nw, s0, (0,15))
 sol = solve(prob, Rodas5P());
 
 @testset "test sparsity pattern construction" begin

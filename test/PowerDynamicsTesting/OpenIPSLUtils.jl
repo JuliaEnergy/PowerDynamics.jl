@@ -94,7 +94,7 @@ function OpenIPSL_SMIB(_bus1; just_init=false, tol=1e-10, nwtol=1e-10)
 
     s0 = initialize_from_pf!(nw; subverbose=[VIndex(1)], tol, nwtol)
 
-    prob = ODEProblem(nw, uflat(s0), (0, 10), copy(pflat(s0)), callback=get_callbacks(nw))
+    prob = ODEProblem(nw, s0, (0, 10))
     sol = solve(prob, Rodas5P())
     @assert SciMLBase.successful_retcode(sol) "Simulation was not successful: retcode=$(sol.retcode)"
     sol

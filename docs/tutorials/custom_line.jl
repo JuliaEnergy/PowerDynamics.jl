@@ -608,10 +608,8 @@ With all those callbacks set, we can go ahead simulating the system.
 =#
 prob = ODEProblem(
     nw_protected,
-    uflat(s0_protected),
-    (0.0, 15),
-    copy(pflat(s0_protected));
-    callback=get_callbacks(nw_protected),
+    s0_protected,
+    (0.0, 15);
     dtmax=0.01,
 )
 sol = solve(prob, Rodas5P());

@@ -35,7 +35,7 @@ function line_between_slacks(edgef)
     end
     cb = PresetTimeCallback([1,2,3,4,5], affect)
 
-    prob = ODEProblem(nw, uflat(u0), (0,6), pflat(u0); callback=cb)
+    prob = ODEProblem(nw,  u0, (0,6); add_nw_cb=cb)
     sol = solve(prob, Rodas5P())
 
     plotspec = OrderedDict(
@@ -100,7 +100,7 @@ function bus_on_slack(busf; tmax=6, toilength=1000, argscale=1, magscale=1)
     end
     cb = PresetTimeCallback(tstops, affect)
 
-    prob = ODEProblem(nw, uflat(u0), (0,tmax), pflat(u0); callback=cb)
+    prob = ODEProblem(nw,  u0, (0,tmax); add_nw_cb=cb)
     sol = solve(prob, Rodas5P())
 
     plotspec = OrderedDict(
