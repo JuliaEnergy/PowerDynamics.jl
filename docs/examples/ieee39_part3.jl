@@ -149,7 +149,7 @@ The simulation process involves:
 3. Solving the ODE using a suitable numerical method
 4. Analyzing the results
 
-The constructor [`ODEProblem(::Network)`](@extref SciMLBase.ODEProblem(::NetworkDynamics.Network, ::NetworkDynamics.NWState, ::Any))
+The constructor [`ODEProblem(::Network)`](@extref SciMLBase.ODEProblem-Tuple{Network, NWState, Any})
 automatically extracts the component callbacks from the models and uses them during the simulation.
 =#
 
