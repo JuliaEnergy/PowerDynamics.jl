@@ -5,8 +5,7 @@ using PowerDynamics: OrderedDict
 using PowerDynamics.NetworkDynamics.Graphs: path_graph
 using PowerDynamics: Network, NWState, uflat, pflat
 using PowerDynamics.NetworkDynamics: VIndex, EIndex, SII, VertexModel,
-                                     ComponentAffect, PresetTimeComponentCallback, set_callback!,
-                                     get_callbacks
+                                     ComponentAffect, PresetTimeComponentCallback, set_callback!
 using PowerDynamics.SciMLBase: SciMLBase, solve, ODEProblem, auto_dt_reset!
 using PowerDynamics.NetworkDynamics.DiffEqCallbacks: PresetTimeCallback
 using PowerDynamics.ModelingToolkit: @named

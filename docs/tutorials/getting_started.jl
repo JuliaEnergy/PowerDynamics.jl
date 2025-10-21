@@ -376,7 +376,7 @@ We can then solve it using the `Rodas5P` solver again.
 
 The only notable difference here is, that we need to pass both flat vectors: states and parameters.
 =#
-prob = ODEProblem(nw, uflat(s0), (0.0, 10.0), copy(pflat(s0)))
+prob = ODEProblem(nw, s0, (0.0, 10.0))
 sol = solve(prob, Rodas5P())
 nothing #hide #md
 

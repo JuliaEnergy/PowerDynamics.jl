@@ -242,7 +242,7 @@ With the system properly initialized, we can set up and solve the dynamic simula
 We simulate for 100 seconds to capture the machine's response to the frequency disturbance.
 =#
 s0 = NWState(nw)
-prob = ODEProblem(nw, uflat(s0), (0,100), pflat(s0), callback=get_callbacks(nw))
+prob = ODEProblem(nw, s0, (0,100))
 sol = solve(prob, Rodas5P())
 nothing #hide #md
 
@@ -515,7 +515,7 @@ nothing #hide #md
 
 # Run simulation with simple PSS
 s0_pss = NWState(nw_pss)
-prob_pss = ODEProblem(nw_pss, uflat(s0_pss), (0,100), pflat(s0_pss), callback=get_callbacks(nw_pss))
+prob_pss = ODEProblem(nw_pss, s0_pss, (0,100))
 sol_pss = solve(prob_pss, Rodas5P())
 nothing #hide #md
 

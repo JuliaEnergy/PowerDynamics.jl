@@ -292,7 +292,7 @@ With the system properly initialized and the disturbance configured,
 we can now run the electromagnetic transient simulation.
 =#
 
-prob = ODEProblem(nw, uflat(s0), (0.0, 0.15), copy(pflat(s0)); callback=get_callbacks(nw))
+prob = ODEProblem(nw, s0, (0.0, 0.15))
 sol = solve(prob, Rodas5P());
 nothing #hide #md
 

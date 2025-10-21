@@ -291,9 +291,9 @@ bus2 #hide
 
 
 #=
-With the callback defined, we can finally create and solve the [`ODEProblem`](@extref SciMLBase.ODEProblem):
+With the callback defined, we can finally create and solve the [`ODEProblem`](@extref SciMLBase.ODEProblem-Tuple{Network, NWState, Any}):
 =#
-prob = ODEProblem(nw, uflat(s0), (0.0, 5.0), copy(pflat(s0)), callback=get_callbacks(nw))
+prob = ODEProblem(nw, s0, (0.0, 5.0))
 sol = solve(prob, Rodas5P());
 nothing #hide #md
 
