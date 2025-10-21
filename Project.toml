@@ -1,7 +1,7 @@
 name = "PowerDynamics"
 uuid = "cc46b21f-1b17-51c2-b642-af74c3d3a8be"
 authors = ["Hans Würfel", "Tim Kittel", "Jan Liße", "Sabine Auer", "Anton Plietzsch"]
-version = "4.3.0"
+version = "4.3.1"
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
