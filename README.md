@@ -5,11 +5,16 @@
 [![Stable Docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliaenergy.github.io/PowerDynamics.jl/stable/)
 [![Dev Docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliaenergy.github.io/PowerDynamics.jl/dev/)
 
-PowerDynamics.jl: An Open-Source Framework Written in Julia for Dynamic Power Grid Modeling and Analysis. [Please check out the Docs.](https://juliaenergy.github.io/PowerDynamics.jl/stable/)
+PowerDynamics.jl: An Open-Source Framework Written in Julia for Dynamic Power Grid Modeling and Analysis.
+The main idea of this package is to turn dynamic power grid models into a right-hand-side function of a DAE system, which can then be solved using [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl).
 
-> [!IMPORTANT]
-> In Q2/2024 we started a complete rewrite of PowerDynamics.jl, which is much closer aligned to the modern SciML-Stack, heavily leaning on [ModelingToolkit.jl](https://github.com/SciML/ModelingToolkit.jl) for equation based models and a vastly modernized version of our backend, [NetworkDynamics.jl](https://github.com/JuliaDynamics/NetworkDynamics.jl)
-> The new PowerDynamics improved significantly in terms of modeling, initialization and solution analysis. However, some models and tools previously available are not yet avilable. If you've want to continue using the (unmaintained) old version, stick with PowerDynamics@v3.
+The main features of PowerDynamics are:
+- **[ModelingToolkit.jl](https://github.com/SciML/ModelingToolkit.jl) based Frontend**: Component models such as machines, controllers, power lines, ... are all defined as symbolic, equation-based MTK models.
+- **[NetworkDynamics.jl](https://github.com/JuliaDynamics/NetworkDynamics.jl) based Backend**: PD.jl generates Julia code for each of the MTK models as NetworkDynamics.jl compatible vertex- and edge models. NetworkDynamics is used to interconnect those bus and edge models.
+- **Component-Based Initialisation**: Annotate your dynamic models with simplified powerflow models. Solve the powerflow and initialize free dynamic states and parameters of the node and edge models to fit the powerflow result.
+- **Symbolic Indexing and Observables**: Use your typical SciML syntax like `plot(sol, idxs=VIndex(2,:busbar₊u_mag))` to access arbitrary states, parameters, observables of your MTK models (in this case, the variable named `busbar₊u_mag` of vertex model 2).
+
+... and there is much more! Please check out the [Documentation](https://juliaenergy.github.io/PowerDynamics.jl/stable/).
 
 ## Citation
 
