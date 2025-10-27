@@ -53,7 +53,7 @@ jobs:
           fail_ci_if_error: false
       - name: Upload test comparison images
         if: always() && hashFiles('assets/*.png') != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-comparison-images-julia-${{ matrix.version }}-${{ matrix.os }}
           path: "assets/*.png"
