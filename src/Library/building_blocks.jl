@@ -1,52 +1,38 @@
 """
-    PSSE_QUAD_SE(u, SE1, SE2, E1, E2)
+    QUAD_SE(u, SE1, SE2, E1, E2)
 
-Scaled Quadratic Saturation Function (PTI PSS/E).
-Port of OpenIPSL.NonElectrical.Functions.PSSE_QUAD_SE
+Quadratic Saturation Function through two points (E1,SE1) and (E2,SE2).
 """
-function PSSE_QUAD_SE(u, SE1, SE2, E1, E2)
-    if !(SE1 > 0.0 || SE1 < 0.0) || u <= 0.0
-        return 0.0
+function QUAD_SE(u, SE1, SE2, E1, E2)
+    if !(0 < SE1 < SE2) || !(0 < E1 < E2)
+        throw(ArgumentError("QUAD_SE: Saturation values and voltage points must be positive and increasing! Got SE1=$SE1, SE2=$SE2, E1=$E1, E2=$E2"))
     end
 
-    # XXX: This is weird! The original code uses
-    # parameter Real a=if not (SE2 > 0.0 or SE2 < 0.0) then sqrt(SE1*E1/(SE2*E2)) else 0;
-    # which has the not operator so it is differnet from this julia function
-    # maybe i missunderstand something about not or the or operator in modelica?
-    a = if (SE2 > 0.0 || SE2 < 0.0)
-        sqrt(SE1*E1/(SE2*E2))
-    else
-        0.0
-    end
-
-    A = E2 - (E1 - E2)/(a - 1)
-    B = if abs(E1 - E2) < eps()
-        0.0
-    else
-        SE2*E2*(a - 1)^2/(E1 - E2)^2
-    end
-
+    a = sqrt(SE1 * E1 / (SE2 * E2))
+    A = E2 - (E1 - E2) / (a - 1)
     if u <= A
         return 0.0
     else
-        return B*(u - A)^2/u
+        B = SE2 * E2 * (a - 1)^2 / (E1 - E2)^2
+        return B * (u - A)^2 / u
     end
 end
-#=
-PSSE_QUAD_SSE uses if/else statements. We need to register it as a symbolic function
-to block MTK from tracing the function and handle it as a black box.
-=#
-ModelingToolkit.@register_symbolic PSSE_QUAD_SE(u, SE1, SE2, E1, E2)
+ModelingToolkit.@register_symbolic QUAD_SE(u, SE1, SE2, E1, E2)
 
 """
-    PSSE_EXP_SE(u, S_EE_1, S_EE_2, E_1, E_2)
+    EXP_SE(u, SE1, SE2, E1, E2)
 
-Exponential Saturation Function (PTI PSS/E).
-Port of OpenIPSL.NonElectrical.Functions.SE_exp
+Exponential Saturation Function through two points (E1,SE1) and (E2,SE2).
 """
-function PSSE_EXP_SE(u, S_EE_1, S_EE_2, E_1, E_2)
-    X = log(S_EE_2/S_EE_1)/log(E_2)
-    return S_EE_1*u^X
+function EXP_SE(u, SE1, SE2, E1, E2)
+    if !(0 < SE1 < SE2) || !(0 < E1 < E2)
+        throw(ArgumentError("EXP_SE: Saturation values and voltage points must be positive and increasing! Got SE1=$SE1, SE2=$SE2, E1=$E1, E2=$E2"))
+    end
+
+    X = log(SE2/SE1) / log(E2/E1)
+    k = SE1 / E1^X
+
+    return k * u^X  # equivalently: SE1 * (u/E1)^X
 end
 
 """
