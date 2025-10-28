@@ -49,6 +49,17 @@ function PSSE_EXP_SE(u, S_EE_1, S_EE_2, E_1, E_2)
     return S_EE_1*u^X
 end
 
+"""
+SimpleLag block, modeld after OpenIPSL.NonElectrical.Continuous.SimpleLag
+
+```asciart
+    ╭─────────╮
+ in │    K    │ out
+╶───┤╶───────╴├────╴
+    │ 1 + s T │
+    ╰─────────╯
+```
+"""
 @mtkmodel SimpleLag begin
     @structural_parameters begin
         K # Gain
@@ -64,6 +75,18 @@ end
         T * Dt(out) ~ K*in - out
     end
 end
+
+"""
+SimpleLead block, modeld after OpenIPSL.NonElectrical.Continuous.SimpleLead
+
+```asciart
+    ╭─────────╮
+ in │ 1 + s T │ out
+╶───┤╶───────╴├────╴
+    │    K    │
+    ╰─────────╯
+```
+"""
 @mtkmodel SimpleLead begin
     @structural_parameters begin
         K # Gain
@@ -112,7 +135,35 @@ end
         T*Dt(out) ~ (1 - _callback_sat_max - _callback_sat_min) * forcing
     end
 end
+"""
+SimpleLagLim block, modeld after OpenIPSL.NonElectrical.Continuous.SimpleLagLim
+
+```asciart
+              __ outMax
+             /
+      ╭─────────╮
+   in │    K    │ out
+  ╶───┤╶───────╴├────╴
+      │ 1 + s T │
+      ╰─────────╯
+outMin __/
+```
+"""
 SimpleLagLim(; kwargs...) = LimitedIntegratorBase(; type=:lag, kwargs...)
+"""
+LimIntegrator block, modeld after OpenIPSL.NonElectrical.Continuous.LimIntegrator
+
+```asciart
+              __ outMax
+             /
+        ╭─────╮
+     in │  K  │ out
+    ╶───┤╶───╴├────╴
+        │ s T │
+        ╰─────╯
+outMin __/
+```
+"""
 LimIntegrator(; kwargs...) = LimitedIntegratorBase(; type=:int, T=1, kwargs...)
 
 function attach_limint_callbacks!(cf)
@@ -267,6 +318,15 @@ function _SatLim_condition(_out, u, p, _)
         end
 end
 
+"""
+Simple gain block
+
+```asciart
+ in ╭───╮ out
+╶───┤ K ├────╴
+    ╰───╯
+```
+"""
 @mtkmodel SimpleGain begin
     @structural_parameters begin
         K # Gain
@@ -280,7 +340,17 @@ end
     end
 end
 
-# after Modelica.Blocks.Continuous.Derivative
+"""
+Derivative approximation block. Modeld after Modelica.Blocks.Continuous.Derivative
+
+```asciart
+    ╭─────────╮
+ in │   s K   │ out
+╶───┤╶───────╴├────╴
+    │ 1 + s T │
+    ╰─────────╯
+```
+"""
 @mtkmodel Derivative begin
     @structural_parameters begin
         K # Gain
@@ -297,7 +367,17 @@ end
     end
 end
 
-# after OpenIPSL.NonElectrical.Continuous.LeadLag
+"""
+LeadLag block, modeld after OpenIPSL.NonElectrical.Continuous.LeadLag
+
+```asciart
+    ╭──────────╮
+ in │  1 + sT1 │ out
+╶───┤K╶───────╴├────╴
+    │  1 + sT2 │
+    ╰──────────╯
+```
+"""
 @mtkmodel LeadLag begin
     @structural_parameters begin
         K # Gain
