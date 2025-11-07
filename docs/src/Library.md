@@ -11,7 +11,7 @@ This page documents all the pre-built components available in the PowerDynamics.
 
 The following building blocks can be used to construct custom control systems and machine models.
 
-### Basic Blocsk
+### Basic Blocks
 ```@docs
 SimpleLag
 SimpleLead

@@ -38,7 +38,7 @@ function EXP_SE(u, SE1, SE2, E1, E2)
 end
 
 """
-SimpleLag block, modeld after OpenIPSL.NonElectrical.Continuous.SimpleLag
+SimpleLag block
 
 ```asciart
     ╭─────────╮
@@ -76,7 +76,7 @@ Additional structural parameters:
 end
 
 """
-SimpleLead block, modeld after OpenIPSL.NonElectrical.Continuous.SimpleLead
+SimpleLead block
 
 ```asciart
     ╭─────────╮
@@ -86,7 +86,7 @@ SimpleLead block, modeld after OpenIPSL.NonElectrical.Continuous.SimpleLead
     ╰─────────╯
 ```
 
-This block direclty uses `Dt(in)`, therefore it does not add additional states
+This block directly uses `Dt(in)`, therefore it does not add additional states
 but may not be used in all scenarios!
 """
 @mtkmodel SimpleLead begin
@@ -104,7 +104,7 @@ but may not be used in all scenarios!
     end
 end
 
-function attach_limint_callback! end # needs to be defined befor @mtkmodel
+function attach_limint_callback! end # needs to be defined before @mtkmodel
 @mtkmodel LimitedIntegratorBase begin
     @structural_parameters begin
         type # :lag or :int
@@ -143,7 +143,7 @@ function attach_limint_callback! end # needs to be defined befor @mtkmodel
 end
 
 """
-SimpleLagLim block, modeld after OpenIPSL.NonElectrical.Continuous.SimpleLagLim
+SimpleLagLim block
 
 ```asciart
               __ outMax
@@ -162,7 +162,7 @@ Additional structural parameters:
 SimpleLagLim(; kwargs...) = LimitedIntegratorBase(; type=:lag, kwargs...)
 
 """
-LimIntegrator block, modeld after OpenIPSL.NonElectrical.Continuous.LimIntegrator
+LimIntegrator block
 
 ```asciart
               __ outMax
@@ -307,10 +307,10 @@ function _SatLim_condition(_out, u, p, _)
             _out[3] = u[4]
         else
             # when not in saturation, set out[3] at Inf
-            # This migh be problematic if
+            # This might be problematic if
             # - lower lim is hit (i.e. forcing is negative)
             # - next round, forcing is still negativ so we have a discrete jump from Inf to small negativ, which is a zero crossing
-            # - but it seems like this non-contionus crossing is not actually registerd as a crossing? Maybe becaus t=t in both cases?
+            # - but it seems like this non-continuous crossing is not actually registered as a crossing? Maybe because t=t in both cases?
             _out[3] = Inf
         end
 end
@@ -369,7 +369,7 @@ Additional structural parameters:
 end
 
 """
-LeadLag block, modeld after OpenIPSL.NonElectrical.Continuous.LeadLag
+LeadLag block
 
 ```asciart
     ╭──────────╮
@@ -549,7 +549,7 @@ function siso_tf_to_ss(num0, den0)
 
         C = zeros(T, 1, N)
         C[1:min(N, length(num))] = reverse(num)[1:min(N, length(num))]
-        C[:] .-= bN .* reverse(den)[1:end-1] # Can index into polynomials at greater inddices than their length
+        C[:] .-= bN .* reverse(den)[1:end-1] # Can index into polynomials at greater indices than their length
     end
     D = fill(bN, 1, 1)
 

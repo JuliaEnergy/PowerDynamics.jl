@@ -1,5 +1,14 @@
 # PowerDynamices.jl Changelog
 
+## Unreleased
+- **Improved building blocks documentation**: Added comprehensive docstrings with ASCII art diagrams for all control system building blocks (`SimpleLag`, `SimpleLead`, `LeadLag`, `Derivative`, `SimpleGain`, `SimpleLagLim`, `LimIntegrator`, `DeadZone`)
+- **New building block features**: Added `allowzeroT` structural parameter to `SimpleLag` and `LeadLag` blocks to optionally bypass lag/lead when time constants are zero
+- **Exported building blocks**: All building blocks and saturation functions are now properly exported and documented in the Library API documentation
+- **Enhanced limited integrator callbacks**: Refactored to use NetworkDynamics v0.10.12's `ComponentPostprocessing` metadata for cleaner callback attachment
+- **Added saturation function tests**: New tests verify that `QUAD_SE` and `EXP_SE` correctly pass through specified points
+- **Renamed saturation functions** (Library): `PSSE_QUAD_SE` → `QUAD_SE`, `PSSE_EXP_SE` → `EXP_SE`. The old names are no longer available. Users should update their code to use the new names.
+- **Removed global postprocessing system**: The global `POSTPROCESSING_FUNCTIONS` array and `register_postprocessing_function!()` function have been removed. Component postprocessing is now handled via `ComponentPostprocessing` metadata in ModelingToolkit models. This change only affects users who were manually registering postprocessing functions.
+
 ## Version 4.3.0 Changelog
 - [#232](https://github.com/JuliaDynamics/PowerDynamics.jl/pull/232): Added lots of new models based on the great OpenIPSL Library.
   Those models are validated against OpenIPSL by reproducing their component test-harness and comparing trajectories of internal
