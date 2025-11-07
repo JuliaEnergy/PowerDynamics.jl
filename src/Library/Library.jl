@@ -4,10 +4,10 @@ using ArgCheck: @argcheck
 using ..PowerDynamics: PowerDynamics, Terminal, BusBase, Ibase
 using NetworkDynamics: NetworkDynamics, ComponentCondition, ComponentAffect,
                        VertexModel, VIndex, EIndex, NWState,
-                       VectorContinuousComponentCallback, DiscreteComponentCallback
+                       VectorContinuousComponentCallback, DiscreteComponentCallback, ComponentPostprocessing
 using ModelingToolkit: ModelingToolkit, @named, simplify, t_nounits as t, D_nounits as Dt
 # needed for @mtkmodel
-using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System, Equation, connect
+using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System, Equation, connect, setmetadata
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using NonlinearSolve: NonlinearProblem
 using SciMLBase: SciMLBase, solve

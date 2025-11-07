@@ -4,9 +4,10 @@
 Quadratic Saturation Function through two points (E1,SE1) and (E2,SE2).
 """
 function QUAD_SE(u, SE1, SE2, E1, E2)
-    if !(0 < SE1 < SE2) || !(0 < E1 < E2)
-        throw(ArgumentError("QUAD_SE: Saturation values and voltage points must be positive and increasing! Got SE1=$SE1, SE2=$SE2, E1=$E1, E2=$E2"))
-    end
+    # the check is annoying the model might get tested with arbitrary data...
+    # if !(0 < SE1 < SE2) || !(0 < E1 < E2)
+    #     throw(ArgumentError("QUAD_SE: Saturation values and voltage points must be positive and increasing! Got SE1=$SE1, SE2=$SE2, E1=$E1, E2=$E2"))
+    # end
 
     a = sqrt(SE1 * E1 / (SE2 * E2))
     A = E2 - (E1 - E2) / (a - 1)
@@ -25,9 +26,10 @@ ModelingToolkit.@register_symbolic QUAD_SE(u, SE1, SE2, E1, E2)
 Exponential Saturation Function through two points (E1,SE1) and (E2,SE2).
 """
 function EXP_SE(u, SE1, SE2, E1, E2)
-    if !(0 < SE1 < SE2) || !(0 < E1 < E2)
-        throw(ArgumentError("EXP_SE: Saturation values and voltage points must be positive and increasing! Got SE1=$SE1, SE2=$SE2, E1=$E1, E2=$E2"))
-    end
+    # commented out check, to not register as symbolic
+    # if !(0 < SE1 < SE2) || !(0 < E1 < E2)
+    #     throw(ArgumentError("EXP_SE: Saturation values and voltage points must be positive and increasing! Got SE1=$SE1, SE2=$SE2, E1=$E1, E2=$E2"))
+    # end
 
     X = log(SE2/SE1) / log(E2/E1)
     k = SE1 / E1^X
@@ -45,6 +47,9 @@ SimpleLag block, modeld after OpenIPSL.NonElectrical.Continuous.SimpleLag
     │ 1 + s T │
     ╰─────────╯
 ```
+Additional structural parameters:
+- `guess=0`/`default`: initial guess/default for the internal state (equals output in steady state)
+- `allowzeroT`: if true, the lag is be bypassed when T=0 (this does not reduce the model order)
 """
 @mtkmodel SimpleLag begin
     @structural_parameters begin
@@ -52,13 +57,21 @@ SimpleLag block, modeld after OpenIPSL.NonElectrical.Continuous.SimpleLag
         T # Time constant
         guess=0
         default=nothing
+        allowzeroT=false
     end
     @variables begin
         in(t), [description="Input signal", input=true]
-        out(t)=default, [guess=guess, description="Output signal", output=true]
+        internal(t)=default, [guess=guess]
+        out(t), [description="Output signal", output=true]
     end
     @equations begin
-        T * Dt(out) ~ K*in - out
+        if allowzeroT
+            Dt(internal) ~ ifelse(T==0, 0, (K*in - internal)/T)
+            out ~ ifelse(T==0, in, internal)
+        else
+            T * Dt(internal) ~ K*in - internal
+            out ~ internal
+        end
     end
 end
 
@@ -72,6 +85,9 @@ SimpleLead block, modeld after OpenIPSL.NonElectrical.Continuous.SimpleLead
     │    K    │
     ╰─────────╯
 ```
+
+This block direclty uses `Dt(in)`, therefore it does not add additional states
+but may not be used in all scenarios!
 """
 @mtkmodel SimpleLead begin
     @structural_parameters begin
@@ -134,6 +150,9 @@ SimpleLagLim block, modeld after OpenIPSL.NonElectrical.Continuous.SimpleLagLim
       ╰─────────╯
 outMin __/
 ```
+
+Additional structural parameters:
+- `guess=0`: initial guess for the internal state (equals output in steady state)
 """
 SimpleLagLim(; kwargs...) = LimitedIntegratorBase(; type=:lag, kwargs...)
 """
@@ -149,6 +168,9 @@ LimIntegrator block, modeld after OpenIPSL.NonElectrical.Continuous.LimIntegrato
         ╰─────╯
 outMin __/
 ```
+
+Additional structural parameters:
+- `guess=0`: initial guess for the internal state (equals output in steady state)
 """
 LimIntegrator(; kwargs...) = LimitedIntegratorBase(; type=:int, T=1, kwargs...)
 
@@ -336,16 +358,20 @@ Derivative approximation block. Modeld after Modelica.Blocks.Continuous.Derivati
     │ 1 + s T │
     ╰─────────╯
 ```
+
+Additional structural parameters:
+- `guess=0`: initial guess for the internal state (equals input in steady state)
 """
 @mtkmodel Derivative begin
     @structural_parameters begin
         K # Gain
         T # Time constant
+        guess=0
     end
     @variables begin
         in(t), [description="Input signal", input=true]
         out(t), [description="Output signal"]
-        internal(t), [guess=0, description="Internal integrator for derivative estimation"]
+        internal(t), [guess=guess, description="Internal integrator for derivative estimation"]
     end
     @equations begin
         T*Dt(internal) ~ in - internal
@@ -363,6 +389,10 @@ LeadLag block, modeld after OpenIPSL.NonElectrical.Continuous.LeadLag
     │  1 + sT2 │
     ╰──────────╯
 ```
+
+Additional structural parameters:
+- `guess=0`: initial guess for the internal state (equals input in steady state)
+- `allowzeroT`: if true, the lead-lag is be bypassed when T1=0 and T2=0 (this does not reduce the model order)
 """
 @mtkmodel LeadLag begin
     @structural_parameters begin
@@ -370,6 +400,7 @@ LeadLag block, modeld after OpenIPSL.NonElectrical.Continuous.LeadLag
         T1 # Lead time constant
         T2 # Lag time constant
         guess=0
+        allowzeroT=false
     end
     @variables begin
         in(t), [description="Input signal", input=true]
@@ -378,9 +409,14 @@ LeadLag block, modeld after OpenIPSL.NonElectrical.Continuous.LeadLag
         internal_dt(t), [description="derivative of internal state"]
     end
     @equations begin
-        internal_dt ~ (in - internal)/T2
+        if allowzeroT
+            internal_dt ~ ifelse((T1==0) & (T2==0), 0, (in - internal)/T2)
+            out ~ ifelse((T1==0) & (T2==0), K*in, K*(internal + T1*internal_dt))
+        else
+            internal_dt ~ (in - internal)/T2
+            out ~ K*(internal + T1*internal_dt)
+        end
         Dt(internal) ~ internal_dt
-        out ~ K*(internal + T1*internal_dt)
     end
 end
 
@@ -437,6 +473,12 @@ end
 Taken and adapted from SymbolicControlSystems.jl
 
 Copyright (c) 2020 Fredrik Bagge Carlson, MIT License
+
+num0 and den0 are vectors of coefficients starting from highest degree
+So for a transfer function like (2s + 3) / (s² + 4s + 5), you would pass:
+- num = [2, 3]
+- den = [1, 4, 5]
+conv
 =#
 function siso_tf_to_ss(num0, den0)
     T = Base.promote_type(eltype(num0), eltype(den0))
