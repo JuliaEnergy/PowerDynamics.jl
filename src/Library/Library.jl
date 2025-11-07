@@ -109,8 +109,13 @@ end
 #### Machine Models
 ####
 
-# Building blocks for PSSE models
+export SimpleLag, SimpleLead, LeadLag, Derivative, SimpleGain
+export SimpleLagLim, LimIntegrator
+export DeadZone
+export QUAD_SE, EXP_SE
+export ss_to_mtkmodel, siso_tf_to_ss
 include("building_blocks.jl")
+
 include("Machines/PSSE_BaseMachine.jl")
 
 # Synchronous Machine Models

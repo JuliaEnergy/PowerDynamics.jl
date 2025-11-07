@@ -141,6 +141,7 @@ function attach_limint_callback! end # needs to be defined befor @mtkmodel
         ComponentPostprocessing = attach_limint_callback!
     end
 end
+
 """
 SimpleLagLim block, modeld after OpenIPSL.NonElectrical.Continuous.SimpleLagLim
 
@@ -159,6 +160,7 @@ Additional structural parameters:
 - `guess=0`: initial guess for the internal state (equals output in steady state)
 """
 SimpleLagLim(; kwargs...) = LimitedIntegratorBase(; type=:lag, kwargs...)
+
 """
 LimIntegrator block, modeld after OpenIPSL.NonElectrical.Continuous.LimIntegrator
 
@@ -407,7 +409,26 @@ Additional structural parameters:
     end
 end
 
-# after modelica Modelica.Blocks.Nonlinear.DeadZone
+"""
+DeadZone block, modeled after Modelica.Blocks.Nonlinear.DeadZone
+
+```asciart
+        │    ╱
+   uMin │   ╱
+─────┼╼━┿━╾┼─────
+    ╱   │ uMax
+   ╱    │
+```
+
+A dead zone nonlinearity that outputs zero when the input is within the specified band [uMin, uMax].
+- If `in < uMin`: `out = in - uMin` (negative linear)
+- If `uMin ≤ in ≤ uMax`: `out = 0` (dead zone)
+- If `in > uMax`: `out = in - uMax` (positive linear)
+
+Structural parameters:
+- `uMax`: Upper dead zone limit
+- `uMin=-uMax`: Lower dead zone limit (defaults to -uMax for symmetric dead zone)
+"""
 @mtkmodel DeadZone begin
     @structural_parameters begin
         uMax # Lower dead zone limit
@@ -428,6 +449,15 @@ end
     end
 end
 
+"""
+    ss_to_mtkmodel(A, B, C, D; name=nothing, guesses=zeros(size(A,1)))
+
+Convert a state-space representation to a ModelingToolkit model.
+
+Matrices can be either of real numbers or symbolic parameters/terms.
+
+Returns A `System` object with variables `in` (input), `out` (output), and `x₁, x₂, ...` (states).
+"""
 ModelingToolkit.@component ss_to_mtkmodel(; A, B, C, D, kwargs...) = ss_to_mtkmodel(A, B, C, D; kwargs...)
 function ss_to_mtkmodel(A, B, C, D; name=nothing, guesses=zeros(size(A,1)))
     t = ModelingToolkit.t_nounits
@@ -456,17 +486,31 @@ function ss_to_mtkmodel(A, B, C, D; name=nothing, guesses=zeros(size(A,1)))
     return System(eqs, t, vcat(x, [in, out]), allp; name=name)
 end
 
-#=
-Taken and adapted from SymbolicControlSystems.jl
+"""
+    siso_tf_to_ss(num, den)
 
-Copyright (c) 2020 Fredrik Bagge Carlson, MIT License
+Convert a SISO transfer function to state-space representation.
 
-num0 and den0 are vectors of coefficients starting from highest degree
-So for a transfer function like (2s + 3) / (s² + 4s + 5), you would pass:
-- num = [2, 3]
-- den = [1, 4, 5]
-conv
-=#
+Takes polynomial coefficients for numerator and denominator and returns state-space matrices (A, B, C, D).
+The transfer function is represented as:
+```
+       num[1]sⁿ + num[2]sⁿ⁻¹ + ... + num[end]
+G(s) = ─────────────────────────────────────
+       den[1]sᵐ + den[2]sᵐ⁻¹ + ... + den[end]
+```
+
+# Arguments
+- `num`: Vector of numerator coefficients (highest degree first)
+- `den`: Vector of denominator coefficients (highest degree first)
+
+# Returns
+A tuple `(A, B, C, D)` of state-space matrices in controller canonical form.
+
+# Notes
+- Leading zeros in num/den are automatically truncated
+- Transfer function must be proper (numerator degree ≤ denominator degree)
+- Adapted from SymbolicControlSystems.jl (Copyright (c) 2020 Fredrik Bagge Carlson, MIT License)
+"""
 function siso_tf_to_ss(num0, den0)
     T = Base.promote_type(eltype(num0), eltype(den0))
 
