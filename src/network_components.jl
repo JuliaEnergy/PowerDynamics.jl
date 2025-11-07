@@ -1,25 +1,3 @@
-const POSTPROCESSING_FUNCTIONS = Any[
-    Library.attach_limint_callbacks!
-]
-
-"""
-    register_postprocessing_function!(f)
-
-Register a function `f` that is called at the end of the `compile_bus` and `compile_pipeline`
-on the newly generated component (VertexModel/Edgemodel).
-
-Can be used to add custom callbacks based on the presence of certain symbols for example.
-
-Adds the function to the global `POSTPROCESSING_FUNCTIONS` array.
-"""
-function register_postprocessing_function!(f)
-    if f ∉ POSTPROCESSING_FUNCTIONS
-        push!(POSTPROCESSING_FUNCTIONS, f)
-    else
-        @warn "The function $f is already registered as a postprocessing function!"
-    end
-end
-
 ####
 #### Network level Bus representation
 ####
@@ -92,10 +70,6 @@ function compile_bus(template::VertexModel; copy=true, vidx=nothing, pf=nothing,
     end
     for (v, d) in pairs
         set_default!(vertexf, v, d)
-    end
-
-    for f in POSTPROCESSING_FUNCTIONS
-        f(vertexf)
     end
 
     vertexf
@@ -196,10 +170,6 @@ function compile_line(edgef::EdgeModel; copy=true, src=nothing, dst=nothing, nam
     end
     for (v, d) in pairs
         set_default!(edgef, v, d)
-    end
-
-    for f in POSTPROCESSING_FUNCTIONS
-        f(edgef)
     end
 
     edgef

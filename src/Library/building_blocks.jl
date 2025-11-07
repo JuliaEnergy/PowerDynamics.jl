@@ -104,6 +104,7 @@ but may not be used in all scenarios!
     end
 end
 
+function attach_limint_callback! end # needs to be defined befor @mtkmodel
 @mtkmodel LimitedIntegratorBase begin
     @structural_parameters begin
         type # :lag or :int
@@ -114,8 +115,8 @@ end
         guess=0
     end
     @parameters begin
-        _callback_sat_max
-        _callback_sat_min
+        _callback_sat_max = 0
+        _callback_sat_min = 0
     end
     @variables begin
         in(t), [description="Input signal", input=true]
@@ -135,6 +136,9 @@ end
             error("Unknown type $type for SimpleLagLim. Supported types are :lag and :int")
         end
         T*Dt(out) ~ (1 - _callback_sat_max - _callback_sat_min) * forcing
+    end
+    @metadata begin
+        ComponentPostprocessing = attach_limint_callback!
     end
 end
 """
@@ -174,30 +178,13 @@ Additional structural parameters:
 """
 LimIntegrator(; kwargs...) = LimitedIntegratorBase(; type=:int, T=1, kwargs...)
 
-function attach_limint_callbacks!(cf)
-    laglim_components = String[]
-    regex = r"^(.*)₊_callback_sat_max$"
-    for s in NetworkDynamics.psym(cf)
-        m = match(regex, String(s))
-        isnothing(m) || push!(laglim_components, m.captures[1])
-    end
-    if NetworkDynamics.has_callback(cf)
-        allcb = NetworkDynamics.get_callbacks(cf)
-        for cb in allcb
-            if cb isa VectorContinuousComponentCallback && any(s -> !isnothing(match(regex, string(s))), cb.condition.psym)
-                error("Component model already has a SimpleLagLim callback attached! Can't attach another one.")
-            end
-        end
-    end
-    for ns in laglim_components
-        cb = _generate_limint_callbacks(cf, ns)
-        NetworkDynamics.add_callback!(cf, cb)
-        NetworkDynamics.set_default!(cf, Symbol(ns, "₊_callback_sat_max"), 0.0)
-        NetworkDynamics.set_default!(cf, Symbol(ns, "₊_callback_sat_min"), 0.0)
-    end
-    cf
+function attach_limint_callback!(cf, ns)
+    cb = _generate_limint_callbacks(ns)
+    NetworkDynamics.add_callback!(cf, cb)
+    NetworkDynamics.set_default!(cf, Symbol(ns, "₊_callback_sat_max"), 0.0)
+    NetworkDynamics.set_default!(cf, Symbol(ns, "₊_callback_sat_min"), 0.0)
 end
-function _generate_limint_callbacks(cf::NetworkDynamics.ComponentModel, namespace)
+function _generate_limint_callbacks(namespace)
     min = Symbol(namespace, "₊min")
     max = Symbol(namespace, "₊max")
     out = Symbol(namespace, "₊out")
