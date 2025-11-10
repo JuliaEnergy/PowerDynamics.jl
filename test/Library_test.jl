@@ -383,3 +383,28 @@ end
     # improper test
     @test_throws ErrorException siso_tf_to_ss([b, a, 1], [0, 0, 0, c, 1])
 end
+
+@testset "Test saturation functions" begin
+    E1 = 0.9
+    E2 = 1.2
+    S10 = 0.11
+    S12 = 0.39
+
+    es = 0:0.01:1.5
+    se_quad = Library.QUAD_SE.(es, S10, S12, E1, E2)
+    se_exp  = Library.EXP_SE.(es, S10, S12, E1, E2)
+    @test Library.QUAD_SE.(E1, S10, S12, E1, E2) ≈ S10
+    @test Library.QUAD_SE.(E2, S10, S12, E1, E2) ≈ S12
+    @test Library.EXP_SE.(E1, S10, S12, E1, E2) ≈ S10
+    @test Library.EXP_SE.(E2, S10, S12, E1, E2) ≈ S12
+
+    # let
+    #     fig = Figure()
+    #     ax = Axis(fig[1,1])
+    #     lines!(ax, es, se_quad; label="QUAD_SE")
+    #     lines!(ax, es, se_exp; label="EXP_SE")
+    #     axislegend(ax)
+    #     scatter!(ax, [(E1, S10), (E2, S12)])
+    #     fig
+    # end
+end
