@@ -180,7 +180,7 @@ Those subcomponents are MTK models and not yet compiled node models. See [Modeli
 
 ### Load Model
 We use the ZIP load model to represent loads. This model satisfies the [Injector Interface](@ref).
-```
+```asciiart
 (t) ┌──────────┐
  o──┤ ZIP Load │
     └──────────┘
@@ -197,7 +197,7 @@ We create two variants:
 
 **Uncontrolled Machine**: No external control inputs for mechanical torque or field voltage.
 This model satisfies the [Injector Interface](@ref) directly.
-```
+```asciiart
 (t) ┌─────────┐
  o──┤ Machine │
     └─────────┘
@@ -220,7 +220,7 @@ The AVR receives the voltage magnitude measurement from the terminal of the mach
 The governor receives the frequency measurement and sets the mechanical torque.
 Together, they satisfy the [Injector Interface](@ref).
 
-```
+```asciiart
       ┌───────────────────────────────┐
       │ CtrldMachine  u_mag_meas      │
       │              ╭─────→────╮     │
@@ -258,7 +258,7 @@ Now we have all the components (i.e., the MTK models) so we can combine them int
 
 ### Junction Bus
 Pure transmission buses with no generation or load
-```
+```asciiart
            ╔══════════════════════╗
            ║ Junction (compiled)  ║
  Network   ║  ┌─────────────────┐ ║
@@ -279,7 +279,7 @@ junction_bus_template #hide #md
 ### Load Bus
 Buses with only load components
 
-```
+```asciiart
            ╔═════════════════════╗
            ║ Load (compiled)     ║
  Network   ║  ┌────────────────┐ ║
@@ -300,7 +300,7 @@ load_bus_template #hide #md
 ### Generator Bus (Controlled)
 Buses with controlled generators (machine + AVR + governor)
 
-```
+```asciiart
             ╔════════════════════════════════════════════════╗
             ║ Ctrld Machine Bus (compiled)                   ║
             ║  ┌───────────────────────────────────────────┐ ║
@@ -333,7 +333,7 @@ ctrld_machine_bus_template #hide #md
 ### Generator + Load Bus (Controlled)
 Buses with both controlled generators and loads
 
-```
+```asciiart
             ╔═════════════════════════════════════════════════╗
             ║ Ctrld Machine Load Bus (compiled)               ║
             ║  ┌────────────────────────────────────────────┐ ║
@@ -367,7 +367,7 @@ ctrld_machine_load_bus_template #hide #md
 ### Generator + Load Bus (Uncontrolled)
 Buses with uncontrolled generators and loads
 
-```
+```asciiart
             ╔════════════════════════════════╗
             ║ Unctr. Ma. Load Bus (compiled) ║
             ║  ┌────────────────────────┐    ║

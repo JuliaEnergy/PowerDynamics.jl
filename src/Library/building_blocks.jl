@@ -40,7 +40,7 @@ end
 """
 SimpleLag block
 
-```asciart
+```asciiart
     ╭─────────╮
  in │    K    │ out
 ╶───┤╶───────╴├────╴
@@ -78,7 +78,7 @@ end
 """
 SimpleLead block
 
-```asciart
+```asciiart
     ╭─────────╮
  in │ 1 + s T │ out
 ╶───┤╶───────╴├────╴
@@ -145,7 +145,7 @@ end
 """
 SimpleLagLim block
 
-```asciart
+```asciiart
               __ outMax
              /
       ╭─────────╮
@@ -164,7 +164,7 @@ SimpleLagLim(; kwargs...) = LimitedIntegratorBase(; type=:lag, kwargs...)
 """
 LimIntegrator block
 
-```asciart
+```asciiart
               __ outMax
              /
         ╭─────╮
@@ -318,7 +318,7 @@ end
 """
 Simple gain block
 
-```asciart
+```asciiart
  in ╭───╮ out
 ╶───┤ K ├────╴
     ╰───╯
@@ -340,7 +340,7 @@ end
 """
 Derivative approximation block. Modeld after Modelica.Blocks.Continuous.Derivative
 
-```asciart
+```asciiart
     ╭─────────╮
  in │   s K   │ out
 ╶───┤╶───────╴├────╴
@@ -371,7 +371,7 @@ end
 """
 LeadLag block
 
-```asciart
+```asciiart
     ╭──────────╮
  in │  1 + sT1 │ out
 ╶───┤K╶───────╴├────╴
@@ -412,7 +412,7 @@ end
 """
 DeadZone block, modeled after Modelica.Blocks.Nonlinear.DeadZone
 
-```asciart
+```asciiart
         │    ╱
    uMin │   ╱
 ─────┼╼━┿━╾┼─────

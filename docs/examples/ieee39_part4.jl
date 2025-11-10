@@ -107,7 +107,7 @@ in islanded operation.
 Network components in PowerDynamics must follow the [Injector Interface](@ref) - they connect to
 the network through a single `Terminal`:
 
-```
+```asciiart
       ┌──────────────────────────┐
 (t)   │                          │
  o←───┤ Droop Inverter Equations │
@@ -173,7 +173,7 @@ Following the descriptions in [Modeling Concepts](@ref), we build an MTKBus usin
 the droop as the single injector and then compile the bus model, similar to
 how we define the templates in [part I](@ref ieee39-part1):
 
-```
+```asciiart
            ╔═════════════════════════╗
            ║ Droop (compiled)        ║
  Network   ║  ┌────────────────────┐ ║
