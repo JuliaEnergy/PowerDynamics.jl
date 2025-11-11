@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>IEEE 9-Bus Example · PowerDynamics.jl</title><meta name="title" content="IEEE 9-Bus Example · PowerDynamics.jl"/><meta property="og:title" content="IEEE 9-Bus Example · PowerDynamics.jl"/><meta property="twitter:title" content="IEEE 9-Bus Example · PowerDynamics.jl"/><meta name="description" content="Documentation for PowerDynamics.jl."/><meta property="og:description" content="Documentation for PowerDynamics.jl."/><meta property="twitter:description" content="Documentation for PowerDynamics.jl."/><meta property="og:url" content="https://juliaenergy.github.io/PowerDynamics.jl/generated/ieee9bus/"/><meta property="twitter:url" content="https://juliaenergy.github.io/PowerDynamics.jl/generated/ieee9bus/"/><link rel="canonical" href="https://juliaenergy.github.io/PowerDynamics.jl/generated/ieee9bus/"/><meta property="og:image" content="https://juliaenergy.github.io/PowerDynamics.jl/assets/preview.png"/><meta property="twitter:image" content="https://juliaenergy.github.io/PowerDynamics.jl/assets/preview.png"/><meta property="twitter:card" content="summary_large_image"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="PowerDynamics.jl logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="PowerDynamics.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PowerDynamics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../ModelingConcepts/">Modeling Concepts</a></li><li><a class="tocitem" href="../../initialization/">Initialization</a></li><li><a class="tocitem" href="../../Library/">Component Library</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../../julia_setup/">Julia Setup for New Users</a></li><li><a class="tocitem" href="../getting_started/">Getting Started</a></li><li><a class="tocitem" href="../typical_simulation_workflow/">Typical Simulation Workflow</a></li><li><a class="tocitem" href="../custom_bus/">Custom Generator Bus</a></li><li><a class="tocitem" href="../custom_line/">Custom Transmission Line</a></li></ul></li><li><span class="tocitem">Advanced Examples</span><ul><li class="is-active"><a class="tocitem" href>IEEE 9-Bus Example</a><ul class="internal"><li><a class="tocitem" href="#Generator-Buses"><span>Generator Buses</span></a></li><li><a class="tocitem" href="#Load-Buses"><span>Load Buses</span></a></li><li><a class="tocitem" href="#Generate-Dynamical-models"><span>Generate Dynamical models</span></a></li><li><a class="tocitem" href="#Branches"><span>Branches</span></a></li><li><a class="tocitem" href="#Build-Network"><span>Build Network</span></a></li><li><a class="tocitem" href="#System-Initialization"><span>System Initialization</span></a></li><li><a class="tocitem" href="#Disturbance"><span>Disturbance</span></a></li><li><a class="tocitem" href="#Dynamic-Simulation"><span>Dynamic Simulation</span></a></li><li><a class="tocitem" href="#Plotting-the-Solution"><span>Plotting the Solution</span></a></li></ul></li><li><a class="tocitem" href="../ieee39_part1/">IEEE39 Part I: Modeling</a></li><li><a class="tocitem" href="../ieee39_part2/">IEEE39 Part II: Initialization</a></li><li><a class="tocitem" href="../ieee39_part3/">IEEE39 Part III: Simulation</a></li><li><a class="tocitem" href="../ieee39_part4/">IEEE39 Part IV: Parameter Tuning</a></li><li><a class="tocitem" href="../emt_toymodel/">EMT Toymodel</a></li></ul></li><li><a class="tocitem" href="../../API/">API</a></li><li><a class="tocitem" href="../../networkdynamics_forward/">🔗 NetworkDynamics.jl Docs</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Advanced Examples</a></li><li class="is-active"><a href>IEEE 9-Bus Example</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>IEEE 9-Bus Example</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl/blob/main/docs/examples/ieee9bus.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="ieee9bus"><a class="docs-heading-anchor" href="#ieee9bus">IEEE 9-Bus Example</a><a id="ieee9bus-1"></a><a class="docs-heading-anchor-permalink" href="#ieee9bus" title="Permalink"></a></h1><p>This tutorial can be downloaded as a normal Julia script <a href="../ieee9bus.jl">here</a>.</p><p>In this example, we&#39;re going to model the IEEE 9 bus system.</p><p>The parameters are mainly adopted from the RTDS data.</p><pre><code class="language-julia hljs">using PowerDynamics
+using PowerDynamics.Library
+using ModelingToolkit
+using NetworkDynamics
+using Graphs
+using OrdinaryDiffEqRosenbrock
+using OrdinaryDiffEqNonlinearSolve
+using CairoMakie</code></pre><h2 id="Generator-Buses"><a class="docs-heading-anchor" href="#Generator-Buses">Generator Buses</a><a id="Generator-Buses-1"></a><a class="docs-heading-anchor-permalink" href="#Generator-Buses" title="Permalink"></a></h2><p>The 3 generator buses are modeled using a SauerPai 6th order machine model with variable field voltage and mechanical torque input. The field voltage is provided by an <code>AVRTypeI</code>, the torque is provided by a <code>TGOV1</code> model.</p><pre><code class="language-julia hljs">function GeneratorBus(; machine_p=(;), avr_p=(;), gov_p=(;))
+    @named machine = SauerPaiMachine(;
+        vf_input=true,
+        τ_m_input=true,
+        S_b=100,
+        V_b=1,
+        ω_b=2π*60,
+        R_s=0.000125,
+        T″_d0=0.01,
+        T″_q0=0.01,
+        machine_p... # unpack machine parameters
+    )
+    @named avr = AVRTypeI(; vr_min=-5, vr_max=5,
+        Ka=20, Ta=0.2,
+        Kf=0.063, Tf=0.35,
+        Ke=1, Te=0.314,
+        E1=3.3, Se1=0.6602, E2=4.5, Se2=4.2662,
+        tmeas_lag=false,
+        avr_p... # unpack AVR parameters
+    )
+    @named gov = TGOV1(; R=0.05, T1=0.05, T2=2.1, T3=7.0, DT=0, V_max=5, V_min=-5,
+        gov_p... # unpack governor parameters
+    )
+    # generate the &quot;injector&quot; as combination of multiple components
+    injector = CompositeInjector([machine, avr, gov]; name=:generator)
+
+    # generate the MTKBus (i.e. the MTK model containg the busbar and the injector)
+    mtkbus = MTKBus(injector)
+end</code></pre><h2 id="Load-Buses"><a class="docs-heading-anchor" href="#Load-Buses">Load Buses</a><a id="Load-Buses-1"></a><a class="docs-heading-anchor-permalink" href="#Load-Buses" title="Permalink"></a></h2><p>The dynamic loads are modeled as static Y-loads. Those have 2 parameters: <code>G</code> and <code>B</code> which form the complex admittance</p><p class="math-container">\[Y = G + j\,B\]</p><p>For now, those parameters will be left free. We&#39;ll initialize them later on from the powerflow results.</p><pre><code class="language-julia hljs">function ConstantYLoadBus()
+    @named load = ConstantYLoad()
+    MTKBus(load; name=:loadbus)
+end</code></pre><h2 id="Generate-Dynamical-models"><a class="docs-heading-anchor" href="#Generate-Dynamical-models">Generate Dynamical models</a><a id="Generate-Dynamical-models-1"></a><a class="docs-heading-anchor-permalink" href="#Generate-Dynamical-models" title="Permalink"></a></h2><p>The parameters of the machines are obtained from the data table from the RTDS datasheet.</p><pre><code class="language-julia hljs">gen1p = (;X_ls=0.01460, X_d=0.1460, X′_d=0.0608, X″_d=0.06, X_q=0.1000, X′_q=0.0969, X″_q=0.06, T′_d0=8.96, T′_q0=0.310, H=23.64)
+gen2p = (;X_ls=0.08958, X_d=0.8958, X′_d=0.1198, X″_d=0.11, X_q=0.8645, X′_q=0.1969, X″_q=0.11, T′_d0=6.00, T′_q0=0.535, H= 6.40)
+gen3p = (;X_ls=0.13125, X_d=1.3125, X′_d=0.1813, X″_d=0.18, X_q=1.2578, X′_q=0.2500, X″_q=0.18, T′_d0=5.89, T′_q0=0.600, H= 3.01)</code></pre><p>We instantiate all models as modeling toolkit models.</p><pre><code class="language-julia hljs">mtkbus1 = GeneratorBus(; machine_p=gen1p)
+mtkbus2 = GeneratorBus(; machine_p=gen2p)
+mtkbus3 = GeneratorBus(; machine_p=gen3p)
+mtkbus4 = MTKBus() # &lt;- bus with no injectors, essentially
+mtkbus5 = ConstantYLoadBus()
+mtkbus6 = ConstantYLoadBus()
+mtkbus7 = MTKBus()
+mtkbus8 = ConstantYLoadBus()
+mtkbus9 = MTKBus()</code></pre><p>After this, we can build the <code>NetworkDynamics</code> components using the <code>Bus</code>-constructor.</p><p>The <code>Bus</code> constructor is essentially a thin wrapper around the <code>VertexModel</code> constructor which, per default, adds some metadata. For example the <code>vidx</code> property which later on allows for &quot;graph free&quot; network dynamics instantiation.</p><p>We use the <code>pf</code> keyword to specify the models which should be used in the powerflow calculation. Here, generator 1 is modeled as a slack bus while the other two generators are modeled as PV buses. The loads are modeled as PQ buses.</p><pre><code class="language-julia hljs">@named bus1 = compile_bus(mtkbus1; vidx=1, pf=pfSlack(V=1.04))
+@named bus2 = compile_bus(mtkbus2; vidx=2, pf=pfPV(V=1.025, P=1.63))
+@named bus3 = compile_bus(mtkbus3; vidx=3, pf=pfPV(V=1.025, P=0.85))
+@named bus4 = compile_bus(mtkbus4; vidx=4)
+@named bus5 = compile_bus(mtkbus5; vidx=5, pf=pfPQ(P=-1.25, Q=-0.5))
+@named bus6 = compile_bus(mtkbus6; vidx=6, pf=pfPQ(P=-0.9, Q=-0.3))
+@named bus7 = compile_bus(mtkbus7; vidx=7)
+@named bus8 = compile_bus(mtkbus8; vidx=8, pf=pfPQ(P=-1.0, Q=-0.35))
+@named bus9 = compile_bus(mtkbus9; vidx=9)</code></pre><h2 id="Branches"><a class="docs-heading-anchor" href="#Branches">Branches</a><a id="Branches-1"></a><a class="docs-heading-anchor-permalink" href="#Branches" title="Permalink"></a></h2><p>Branches and Transformers are built from the same <code>PILine</code> model with optional transformer on both ends. However, the data is provided in a way that the actual transformer values are 1.0. Apparently, the transforming action has been absorbed into the line parameters according to the base voltage on both ends.</p><p>For the lines we again make use of the <code>src</code> and <code>dst</code> metadata of the <code>EdgeModel</code> objects for automatic graph construction.</p><pre><code class="language-julia hljs">function piline(; R, X, B)
+    @named pibranch = PiLine(;R, X, B_src=B/2, B_dst=B/2, G_src=0, G_dst=0)
+    MTKLine(pibranch)
+end
+function transformer(; R, X)
+    @named transformer = PiLine(;R, X, B_src=0, B_dst=0, G_src=0, G_dst=0)
+    MTKLine(transformer)
+end
+
+@named l45 = compile_line(piline(; R=0.0100, X=0.0850, B=0.1760), src=4, dst=5)
+@named l46 = compile_line(piline(; R=0.0170, X=0.0920, B=0.1580), src=4, dst=6)
+@named l57 = compile_line(piline(; R=0.0320, X=0.1610, B=0.3060), src=5, dst=7)
+@named l69 = compile_line(piline(; R=0.0390, X=0.1700, B=0.3580), src=6, dst=9)
+@named l78 = compile_line(piline(; R=0.0085, X=0.0720, B=0.1490), src=7, dst=8)
+@named l89 = compile_line(piline(; R=0.0119, X=0.1008, B=0.2090), src=8, dst=9)
+@named t14 = compile_line(transformer(; R=0, X=0.0576), src=1, dst=4)
+@named t27 = compile_line(transformer(; R=0, X=0.0625), src=2, dst=7)
+@named t39 = compile_line(transformer(; R=0, X=0.0586), src=3, dst=9)</code></pre><h2 id="Build-Network"><a class="docs-heading-anchor" href="#Build-Network">Build Network</a><a id="Build-Network-1"></a><a class="docs-heading-anchor-permalink" href="#Build-Network" title="Permalink"></a></h2><p>Finally, we can build the network by providing the vertices and edges.</p><pre><code class="language-julia hljs">vertexfs = [bus1, bus2, bus3, bus4, bus5, bus6, bus7, bus8, bus9];
+edgefs = [l45, l46, l57, l69, l78, l89, t14, t27, t39];
+nw = Network(vertexfs, edgefs; warn_order=false)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Network with 54 states and 216 parameters
+ ├─ 9 vertices (3 unique types)
+ └─ 9 edges (2 unique types)
+Edge-Aggregation using SequentialAggregator(+)</code></pre><h2 id="System-Initialization"><a class="docs-heading-anchor" href="#System-Initialization">System Initialization</a><a id="System-Initialization-1"></a><a class="docs-heading-anchor-permalink" href="#System-Initialization" title="Permalink"></a></h2><p>To initialize the system for dynamic simulation, we use <code>initialize_from_pf!</code> which performs a unified powerflow solving and component initialization process.</p><p>Internally, this function:</p><ol><li>Builds an equivalent static powerflow network from the dynamic models</li><li>Solves the static powerflow equations using the specified powerflow models (<code>pfSlack</code>, <code>pfPV</code>, <code>pfPQ</code>)</li><li>Uses the powerflow solution to initialize all dynamic component states and parameters</li></ol><p>This ensures that the dynamic model starts from a steady-state condition that matches the powerflow solution. Specifically, it determines:</p><ul><li>Bus voltages and currents from the powerflow solution</li><li>Unknown <code>G</code> and <code>B</code> parameters for load buses</li><li>Internal machine states (flux linkages, rotor angles, etc.)</li><li>Controller states and references for AVRs and governors</li></ul><p>For example, we use constant Y-loads for the dynamic load models. Those have a fixed admittance</p><p class="math-container">\[Y = G+j\,B\]</p><p>which is not known a priori. However, from the powerflow (where the loads are modeled as PQ loads) we know both voltage and current at steady state. With this knowledge, we can determine the missing parameters <code>G</code> and <code>B</code> such that the dynamic load model matches the static load model in the initial state.</p><pre><code class="language-julia hljs">u0 = initialize_from_pf(nw);</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr33"><span class="sgr1">┌ Warning: </span></span>The `alias_u0` keyword argument is deprecated. Please use a NonlinearAliasSpecifier, e.g. `alias = NonlinearAliasSpecifier(alias_u0 = true)`.
+<span class="sgr33"><span class="sgr1">└ </span></span><span class="sgr90">@ NonlinearSolveBase ~/.julia/packages/NonlinearSolveBase/2E600/src/solve.jl:57</span>
+Initializing vertex 1... =&gt; residual 1.8930559493673422e-14
+Initializing vertex 2... =&gt; residual 1.8540257924989902e-14
+Initializing vertex 3... =&gt; residual 1.0643358756527945e-13
+Initializing vertex 4... =&gt; residual 1.9298110615968595e-15
+Initializing vertex 5... =&gt; residual 2.8307098403882007e-14
+Initializing vertex 6... =&gt; residual 1.1102230246251565e-16
+Initializing vertex 7... =&gt; residual 1.8457457784393227e-15
+Initializing vertex 8... =&gt; residual 6.604641230743592e-14
+Initializing vertex 9... =&gt; residual 8.345155887641791e-16
+Initializing edge 1... =&gt; residual 0.0
+Initializing edge 2... =&gt; residual 0.0
+Initializing edge 3... =&gt; residual 0.0
+Initializing edge 4... =&gt; residual 0.0
+Initializing edge 5... =&gt; residual 0.0
+Initializing edge 6... =&gt; residual 0.0
+Initializing edge 7... =&gt; residual 0.0
+Initializing edge 8... =&gt; residual 0.0
+Initializing edge 9... =&gt; residual 0.0
+Initialized network with residual 1.3115439717313017e-13!</code></pre><p>To verify what we&#39;ve just said, we can check the initial values of the active and reactive power of our constant Y load model at bus 5 to see if it matches the setpoints of our powerflow model:</p><pre><code class="language-julia hljs">u0[VIndex(5, :load₊P)] ≈ -1.25 &amp;&amp; u0[VIndex(5, :load₊Q)] ≈ -0.5</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><h2 id="Disturbance"><a class="docs-heading-anchor" href="#Disturbance">Disturbance</a><a id="Disturbance-1"></a><a class="docs-heading-anchor-permalink" href="#Disturbance" title="Permalink"></a></h2><p>To see some dynamics, we need to introduce some disturbance. For that we use a <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.PresetTimeComponentCallback"><code>PresetTimeComponentCallback</code></a> to deactivate a line at a certain time.</p><pre><code class="language-julia hljs">deactivate_line = ComponentAffect([], [:pibranch₊active]) do u, p, ctx
+    @info &quot;Deactivate line $(ctx.src)=&gt;$(ctx.dst) at t=$(ctx.t)&quot;
+    p[:pibranch₊active] = 0
+end
+cb = PresetTimeComponentCallback([1.0], deactivate_line)
+set_callback!(l46, cb)
+l46 # printout shows that the callback is set</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">EdgeModel <span class="sgr1">:l46</span> <span class="sgr94">PureFeedForward()</span> @ Edge 4=&gt;6
+ ├─ 2/2 inputs:   src=[src₊u_r, src₊u_i] dst=[dst₊u_r, dst₊u_i]
+ ├─   0 states:   []  
+ ├─ 2/2 outputs:  src=[src₊i_r, src₊i_i] dst=[dst₊i_r, dst₊i_i]
+ ├─   9 params:   [pibranch₊R=0.017, pibranch₊X=0.092, pibranch₊G_src=0, pibranch₊B_src=0.079, pibranch₊G_dst=0, pibranch₊B_dst=0.079, pibranch₊r_src=1, pibranch₊r_dst=1, pibranch₊active=1]
+ └─   1 callback: (:pibranch₊active) affected at t=[1.0]</code></pre><h2 id="Dynamic-Simulation"><a class="docs-heading-anchor" href="#Dynamic-Simulation">Dynamic Simulation</a><a id="Dynamic-Simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Dynamic-Simulation" title="Permalink"></a></h2><p>With the system properly initialized, we can now set up and run the dynamic simulation. We create an ODE problem using the initialized state and simulate the system response to the line outage disturbance.</p><pre><code class="language-julia hljs">prob = ODEProblem(nw,  u0, (0,15))
+sol = solve(prob, Rodas5P())</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr36"><span class="sgr1">[ Info: </span></span>Deactivate line 4=&gt;6 at t=1.0</code></pre><h2 id="Plotting-the-Solution"><a class="docs-heading-anchor" href="#Plotting-the-Solution">Plotting the Solution</a><a id="Plotting-the-Solution-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting-the-Solution" title="Permalink"></a></h2><p>Finally, we visualize the simulation results showing the system response to the line outage at t=1.0 seconds. The plots show active power, voltage magnitudes, and generator frequencies across the simulation time.</p><pre><code class="language-julia hljs">fig = Figure(size=(600,800));
+
+# Active power at selected buses
+ax = Axis(fig[1, 1]; title=&quot;Active Power&quot;, xlabel=&quot;Time [s]&quot;, ylabel=&quot;Power [pu]&quot;)
+for i in [1,2,3,5,6,8]
+    lines!(ax, sol; idxs=VIndex(i,:busbar₊P), label=&quot;Bus $i&quot;, color=Cycled(i))
+end
+axislegend(ax)
+
+# Voltage magnitude at all buses
+ax = Axis(fig[2, 1]; title=&quot;Voltage Magnitude&quot;, xlabel=&quot;Time [s]&quot;, ylabel=&quot;Voltage [pu]&quot;)
+for i in 1:9
+    lines!(ax, sol; idxs=VIndex(i,:busbar₊u_mag), label=&quot;Bus $i&quot;, color=Cycled(i))
+end
+
+# Generator frequencies
+ax = Axis(fig[3, 1]; title=&quot;Generator Frequency&quot;, xlabel=&quot;Time [s]&quot;, ylabel=&quot;Frequency [pu]&quot;)
+for i in 1:3
+    lines!(ax, sol; idxs=VIndex(i,:generator₊machine₊ω), label=&quot;Gen $i&quot;, color=Cycled(i))
+end
+axislegend(ax)</code></pre><img src="2f0974d8.png" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../custom_line/">« Custom Transmission Line</a><a class="docs-footer-nextpage" href="../ieee39_part1/">IEEE39 Part I: Modeling »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Tuesday 21 October 2025 07:53">Tuesday 21 October 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
