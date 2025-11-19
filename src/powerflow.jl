@@ -203,7 +203,8 @@ delete_pfmodel!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfmodel!(get
     solve_powerflow(nw::Network;
                     pfnw = powerflow_model(nw),
                     pfs0 = NWState(pfnw),
-                    fill_busbar_defaults=true
+                    fill_busbar_defaults=true,
+                    sparse=nv(pfnw) > 50,
                     verbose=true)
 
 Solve the power flow equations for a given network.
@@ -215,6 +216,7 @@ Uses [`find_fixpoint`](@extref NetworkDynamics.find_fixpoint) from NetworkDynami
 - `pfnw`: The power flow network model (default: created from `nw`)
 - `pfs0`: Initial state for the power flow calculation
 - `fill_busbar_defaults`: Whether to fill missing default values for busbar states (i.e. u_r=1 u_i=0)
+- `sparse`: Whether to use a sparse solver (default: for networks with more than 50 buses)
 - `verbose`: Whether to print the power flow solution
 
 ## Returns
@@ -227,10 +229,23 @@ function solve_powerflow(
     pfnw = powerflow_model(nw),
     pfs0 = NWState(pfnw),
     fill_busbar_defaults=true,
+    sparse = nv(pfnw) > 50,
     verbose=true
 )
     # don't enforce this, check happes in `powerflow_model`
     # pfnw.mass_matrix == LinearAlgebra.UniformScaling(0) || error("Powerflow model must have a mass matrix of 0!")
+
+    if sparse && isnothing(pfnw.jac_prototype)
+        alg = try
+            set_jac_prototype!(pfnw)
+            NonlinearSolve.FastShortcutNLLSPolyalg(linsolve=NonlinearSolve.LinearSolve.KLUFactorization())
+        catch e
+            @warn "Could not set sparse jacobian prototype for powerflow model! Falling back to dense solver. Error: $e"
+            NonlinearSolve.FastShortcutNLLSPolyalg()
+        end
+    else
+        alg = NonlinearSolve.FastShortcutNLLSPolyalg()
+    end
 
     if fill_busbar_defaults && any(isnan, uflat(pfs0))
         urinds = generate_indices(nw, VIndex(:), :busbar₊u_r, s=true, obs=false, out=false, in=false, p=false)
@@ -241,7 +256,7 @@ function solve_powerflow(
         pfs0[uiinds[nanidx]] .= 1.0
     end
 
-    pfs = find_fixpoint(pfnw, pfs0)
+    pfs = find_fixpoint(pfnw, pfs0; alg)
     verbose && show_powerflow(pfs)
 
     return pfs
@@ -255,6 +270,7 @@ initialize_from_pf_docstring = raw"""
         pfnw = powerflow_model(nw),
         pfs0 = NWState(pfnw),
         pfs = solve_powerflow(nw; pfnw, pfs0, verbose),
+        sparsepf = nv(nw) > 50,
         kwargs...
     )
 
@@ -286,6 +302,7 @@ state again, as it is stored in the metadata.
 - `pfnw`: Power flow network model (default: created from `nw` using `powerflow_model`)
 - `pfs0`: Initial state for power flow calculation (default: created from `pfnw`)
 - `pfs`: Power flow solution (default: calculated using `solve_powerflow`)
+- `sparsepf`: Whether to use a sparse solver for power flow (default: for networks with more than 50 buses)
 - Additional keyword arguments are passed to `initialize_componentwise[!]`
 
 ## Returns
@@ -304,12 +321,13 @@ function _init_from_pf(
     pfnw = nothing,
     pfs0 = nothing,
     pfs = nothing,
+    sparsepf = nv(nw) > 50,
     kwargs...
 )
     if isnothing(pfs)
         pfnw = isnothing(pfnw) ? powerflow_model(nw) : pfnw
         pfs0 = isnothing(pfs0) ? NWState(pfnw) : pfnw
-        pfs = solve_powerflow(nw; pfnw, pfs0, verbose)
+        pfs = solve_powerflow(nw; pfnw, pfs0, verbose, sparse=sparsepf)
     end
 
     interface_vals = interface_values(pfs)
