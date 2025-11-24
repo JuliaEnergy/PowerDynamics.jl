@@ -204,6 +204,7 @@ delete_pfmodel!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfmodel!(get
                     pfnw = powerflow_model(nw),
                     pfs0 = NWState(pfnw),
                     fill_busbar_defaults=true,
+                    use_guesses=true,
                     sparse=nv(pfnw) > 50,
                     verbose=true)
 
@@ -216,6 +217,7 @@ Uses [`find_fixpoint`](@extref NetworkDynamics.find_fixpoint) from NetworkDynami
 - `pfnw`: The power flow network model (default: created from `nw`)
 - `pfs0`: Initial state for the power flow calculation
 - `fill_busbar_defaults`: Whether to fill missing default values for busbar states (i.e. u_r=1 u_i=0)
+- `use_guesses`: Whether to fall back to "guess" values instead of "default" values if available.
 - `sparse`: Whether to use a sparse solver (default: for networks with more than 50 buses)
 - `verbose`: Whether to print the power flow solution
 
@@ -229,6 +231,7 @@ function solve_powerflow(
     pfnw = powerflow_model(nw),
     pfs0 = NWState(pfnw),
     fill_busbar_defaults=true,
+    use_guesses=true,
     sparse = nv(pfnw) > 50,
     verbose=true
 )
@@ -254,6 +257,13 @@ function solve_powerflow(
         uiinds = generate_indices(nw, VIndex(:), :busbar₊u_i, s=true, obs=false, out=false, in=false, p=false)
         nanidx = findall(isnan, pfs0[uiinds])
         pfs0[uiinds[nanidx]] .= 1.0
+    end
+    if use_guesses && any(isnan, uflat(pfs0))
+        for (i, idx) in enumerate(SII.variable_symbols(pfs0))
+            isnan(uflat(pfs0)[i]) || continue
+            has_guess(nw, idx) || continue
+            uflat(pfs0)[i] = get_guess(nw, idx)
+        end
     end
 
     pfs = find_fixpoint(pfnw, pfs0; alg)
