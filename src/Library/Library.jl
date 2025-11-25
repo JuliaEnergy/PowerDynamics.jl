@@ -4,10 +4,10 @@ using ArgCheck: @argcheck
 using ..PowerDynamics: PowerDynamics, Terminal, BusBase, Ibase
 using NetworkDynamics: NetworkDynamics, ComponentCondition, ComponentAffect,
                        VertexModel, VIndex, EIndex, NWState,
-                       VectorContinuousComponentCallback, DiscreteComponentCallback
+                       VectorContinuousComponentCallback, DiscreteComponentCallback, ComponentPostprocessing
 using ModelingToolkit: ModelingToolkit, @named, simplify, t_nounits as t, D_nounits as Dt
 # needed for @mtkmodel
-using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System, Equation, connect
+using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System, Equation, connect, setmetadata
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using NonlinearSolve: NonlinearProblem
 using SciMLBase: SciMLBase, solve
@@ -109,8 +109,13 @@ end
 #### Machine Models
 ####
 
-# Building blocks for PSSE models
+export SimpleLag, SimpleLead, LeadLag, Derivative, SimpleGain
+export SimpleLagLim, LimIntegrator
+export DeadZone
+export QUAD_SE, EXP_SE
+export ss_to_mtkmodel, siso_tf_to_ss
 include("building_blocks.jl")
+
 include("Machines/PSSE_BaseMachine.jl")
 
 # Synchronous Machine Models

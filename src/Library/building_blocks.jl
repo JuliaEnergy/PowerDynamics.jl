@@ -1,69 +1,94 @@
 """
-    PSSE_QUAD_SE(u, SE1, SE2, E1, E2)
+    QUAD_SE(u, SE1, SE2, E1, E2)
 
-Scaled Quadratic Saturation Function (PTI PSS/E).
-Port of OpenIPSL.NonElectrical.Functions.PSSE_QUAD_SE
+Quadratic Saturation Function through two points (E1,SE1) and (E2,SE2).
 """
-function PSSE_QUAD_SE(u, SE1, SE2, E1, E2)
-    if !(SE1 > 0.0 || SE1 < 0.0) || u <= 0.0
-        return 0.0
-    end
+function QUAD_SE(u, SE1, SE2, E1, E2)
+    # the check is annoying the model might get tested with arbitrary data...
+    # if !(0 < SE1 < SE2) || !(0 < E1 < E2)
+    #     throw(ArgumentError("QUAD_SE: Saturation values and voltage points must be positive and increasing! Got SE1=$SE1, SE2=$SE2, E1=$E1, E2=$E2"))
+    # end
 
-    # XXX: This is weird! The original code uses
-    # parameter Real a=if not (SE2 > 0.0 or SE2 < 0.0) then sqrt(SE1*E1/(SE2*E2)) else 0;
-    # which has the not operator so it is differnet from this julia function
-    # maybe i missunderstand something about not or the or operator in modelica?
-    a = if (SE2 > 0.0 || SE2 < 0.0)
-        sqrt(SE1*E1/(SE2*E2))
-    else
-        0.0
-    end
-
-    A = E2 - (E1 - E2)/(a - 1)
-    B = if abs(E1 - E2) < eps()
-        0.0
-    else
-        SE2*E2*(a - 1)^2/(E1 - E2)^2
-    end
-
+    a = sqrt(SE1 * E1 / (SE2 * E2))
+    A = E2 - (E1 - E2) / (a - 1)
     if u <= A
         return 0.0
     else
-        return B*(u - A)^2/u
+        B = SE2 * E2 * (a - 1)^2 / (E1 - E2)^2
+        return B * (u - A)^2 / u
     end
 end
-#=
-PSSE_QUAD_SSE uses if/else statements. We need to register it as a symbolic function
-to block MTK from tracing the function and handle it as a black box.
-=#
-ModelingToolkit.@register_symbolic PSSE_QUAD_SE(u, SE1, SE2, E1, E2)
+ModelingToolkit.@register_symbolic QUAD_SE(u, SE1, SE2, E1, E2)
 
 """
-    PSSE_EXP_SE(u, S_EE_1, S_EE_2, E_1, E_2)
+    EXP_SE(u, SE1, SE2, E1, E2)
 
-Exponential Saturation Function (PTI PSS/E).
-Port of OpenIPSL.NonElectrical.Functions.SE_exp
+Exponential Saturation Function through two points (E1,SE1) and (E2,SE2).
 """
-function PSSE_EXP_SE(u, S_EE_1, S_EE_2, E_1, E_2)
-    X = log(S_EE_2/S_EE_1)/log(E_2)
-    return S_EE_1*u^X
+function EXP_SE(u, SE1, SE2, E1, E2)
+    # commented out check, to not register as symbolic
+    # if !(0 < SE1 < SE2) || !(0 < E1 < E2)
+    #     throw(ArgumentError("EXP_SE: Saturation values and voltage points must be positive and increasing! Got SE1=$SE1, SE2=$SE2, E1=$E1, E2=$E2"))
+    # end
+
+    X = log(SE2/SE1) / log(E2/E1)
+    k = SE1 / E1^X
+
+    return k * u^X  # equivalently: SE1 * (u/E1)^X
 end
 
+"""
+SimpleLag block
+
+```asciiart
+    ╭─────────╮
+ in │    K    │ out
+╶───┤╶───────╴├────╴
+    │ 1 + s T │
+    ╰─────────╯
+```
+Additional structural parameters:
+- `guess=0`/`default`: initial guess/default for the internal state (equals output in steady state)
+- `allowzeroT`: if true, the lag is be bypassed when T=0 (this does not reduce the model order)
+"""
 @mtkmodel SimpleLag begin
     @structural_parameters begin
         K # Gain
         T # Time constant
         guess=0
         default=nothing
+        allowzeroT=false
     end
     @variables begin
         in(t), [description="Input signal", input=true]
-        out(t)=default, [guess=guess, description="Output signal", output=true]
+        internal(t)=default, [guess=guess]
+        out(t), [description="Output signal", output=true]
     end
     @equations begin
-        T * Dt(out) ~ K*in - out
+        if allowzeroT
+            Dt(internal) ~ ifelse(T==0, 0, (K*in - internal)/T)
+            out ~ ifelse(T==0, in, internal)
+        else
+            T * Dt(internal) ~ K*in - internal
+            out ~ internal
+        end
     end
 end
+
+"""
+SimpleLead block
+
+```asciiart
+    ╭─────────╮
+ in │ 1 + s T │ out
+╶───┤╶───────╴├────╴
+    │    K    │
+    ╰─────────╯
+```
+
+This block directly uses `Dt(in)`, therefore it does not add additional states
+but may not be used in all scenarios!
+"""
 @mtkmodel SimpleLead begin
     @structural_parameters begin
         K # Gain
@@ -79,6 +104,7 @@ end
     end
 end
 
+function attach_limint_callback! end # needs to be defined before @mtkmodel
 @mtkmodel LimitedIntegratorBase begin
     @structural_parameters begin
         type # :lag or :int
@@ -89,8 +115,8 @@ end
         guess=0
     end
     @parameters begin
-        _callback_sat_max
-        _callback_sat_min
+        _callback_sat_max = 0
+        _callback_sat_min = 0
     end
     @variables begin
         in(t), [description="Input signal", input=true]
@@ -111,34 +137,56 @@ end
         end
         T*Dt(out) ~ (1 - _callback_sat_max - _callback_sat_min) * forcing
     end
+    @metadata begin
+        ComponentPostprocessing = attach_limint_callback!
+    end
 end
+
+"""
+SimpleLagLim block
+
+```asciiart
+              __ outMax
+             /
+      ╭─────────╮
+   in │    K    │ out
+  ╶───┤╶───────╴├────╴
+      │ 1 + s T │
+      ╰─────────╯
+outMin __/
+```
+
+Additional structural parameters:
+- `guess=0`: initial guess for the internal state (equals output in steady state)
+"""
 SimpleLagLim(; kwargs...) = LimitedIntegratorBase(; type=:lag, kwargs...)
+
+"""
+LimIntegrator block
+
+```asciiart
+              __ outMax
+             /
+        ╭─────╮
+     in │  K  │ out
+    ╶───┤╶───╴├────╴
+        │ s T │
+        ╰─────╯
+outMin __/
+```
+
+Additional structural parameters:
+- `guess=0`: initial guess for the internal state (equals output in steady state)
+"""
 LimIntegrator(; kwargs...) = LimitedIntegratorBase(; type=:int, T=1, kwargs...)
 
-function attach_limint_callbacks!(cf)
-    laglim_components = String[]
-    regex = r"^(.*)₊_callback_sat_max$"
-    for s in NetworkDynamics.psym(cf)
-        m = match(regex, String(s))
-        isnothing(m) || push!(laglim_components, m.captures[1])
-    end
-    if NetworkDynamics.has_callback(cf)
-        allcb = NetworkDynamics.get_callbacks(cf)
-        for cb in allcb
-            if cb isa VectorContinuousComponentCallback && any(s -> !isnothing(match(regex, string(s))), cb.condition.psym)
-                error("Component model already has a SimpleLagLim callback attached! Can't attach another one.")
-            end
-        end
-    end
-    for ns in laglim_components
-        cb = _generate_limint_callbacks(cf, ns)
-        NetworkDynamics.add_callback!(cf, cb)
-        NetworkDynamics.set_default!(cf, Symbol(ns, "₊_callback_sat_max"), 0.0)
-        NetworkDynamics.set_default!(cf, Symbol(ns, "₊_callback_sat_min"), 0.0)
-    end
-    cf
+function attach_limint_callback!(cf, ns)
+    cb = _generate_limint_callbacks(ns)
+    NetworkDynamics.add_callback!(cf, cb)
+    NetworkDynamics.set_default!(cf, Symbol(ns, "₊_callback_sat_max"), 0.0)
+    NetworkDynamics.set_default!(cf, Symbol(ns, "₊_callback_sat_min"), 0.0)
 end
-function _generate_limint_callbacks(cf::NetworkDynamics.ComponentModel, namespace)
+function _generate_limint_callbacks(namespace)
     min = Symbol(namespace, "₊min")
     max = Symbol(namespace, "₊max")
     out = Symbol(namespace, "₊out")
@@ -259,14 +307,23 @@ function _SatLim_condition(_out, u, p, _)
             _out[3] = u[4]
         else
             # when not in saturation, set out[3] at Inf
-            # This migh be problematic if
+            # This might be problematic if
             # - lower lim is hit (i.e. forcing is negative)
             # - next round, forcing is still negativ so we have a discrete jump from Inf to small negativ, which is a zero crossing
-            # - but it seems like this non-contionus crossing is not actually registerd as a crossing? Maybe becaus t=t in both cases?
+            # - but it seems like this non-continuous crossing is not actually registered as a crossing? Maybe because t=t in both cases?
             _out[3] = Inf
         end
 end
 
+"""
+Simple gain block
+
+```asciiart
+ in ╭───╮ out
+╶───┤ K ├────╴
+    ╰───╯
+```
+"""
 @mtkmodel SimpleGain begin
     @structural_parameters begin
         K # Gain
@@ -280,16 +337,30 @@ end
     end
 end
 
-# after Modelica.Blocks.Continuous.Derivative
+"""
+Derivative approximation block. Modeld after Modelica.Blocks.Continuous.Derivative
+
+```asciiart
+    ╭─────────╮
+ in │   s K   │ out
+╶───┤╶───────╴├────╴
+    │ 1 + s T │
+    ╰─────────╯
+```
+
+Additional structural parameters:
+- `guess=0`: initial guess for the internal state (equals input in steady state)
+"""
 @mtkmodel Derivative begin
     @structural_parameters begin
         K # Gain
         T # Time constant
+        guess=0
     end
     @variables begin
         in(t), [description="Input signal", input=true]
         out(t), [description="Output signal"]
-        internal(t), [guess=0, description="Internal integrator for derivative estimation"]
+        internal(t), [guess=guess, description="Internal integrator for derivative estimation"]
     end
     @equations begin
         T*Dt(internal) ~ in - internal
@@ -297,13 +368,28 @@ end
     end
 end
 
-# after OpenIPSL.NonElectrical.Continuous.LeadLag
+"""
+LeadLag block
+
+```asciiart
+    ╭──────────╮
+ in │  1 + sT1 │ out
+╶───┤K╶───────╴├────╴
+    │  1 + sT2 │
+    ╰──────────╯
+```
+
+Additional structural parameters:
+- `guess=0`: initial guess for the internal state (equals input in steady state)
+- `allowzeroT`: if true, the lead-lag is be bypassed when T1=0 and T2=0 (this does not reduce the model order)
+"""
 @mtkmodel LeadLag begin
     @structural_parameters begin
         K # Gain
         T1 # Lead time constant
         T2 # Lag time constant
         guess=0
+        allowzeroT=false
     end
     @variables begin
         in(t), [description="Input signal", input=true]
@@ -312,13 +398,37 @@ end
         internal_dt(t), [description="derivative of internal state"]
     end
     @equations begin
-        internal_dt ~ (in - internal)/T2
+        if allowzeroT
+            internal_dt ~ ifelse((T1==0) & (T2==0), 0, (in - internal)/T2)
+            out ~ ifelse((T1==0) & (T2==0), K*in, K*(internal + T1*internal_dt))
+        else
+            internal_dt ~ (in - internal)/T2
+            out ~ K*(internal + T1*internal_dt)
+        end
         Dt(internal) ~ internal_dt
-        out ~ K*(internal + T1*internal_dt)
     end
 end
 
-# after modelica Modelica.Blocks.Nonlinear.DeadZone
+"""
+DeadZone block, modeled after Modelica.Blocks.Nonlinear.DeadZone
+
+```asciiart
+        │    ╱
+   uMin │   ╱
+─────┼╼━┿━╾┼─────
+    ╱   │ uMax
+   ╱    │
+```
+
+A dead zone nonlinearity that outputs zero when the input is within the specified band [uMin, uMax].
+- If `in < uMin`: `out = in - uMin` (negative linear)
+- If `uMin ≤ in ≤ uMax`: `out = 0` (dead zone)
+- If `in > uMax`: `out = in - uMax` (positive linear)
+
+Structural parameters:
+- `uMax`: Upper dead zone limit
+- `uMin=-uMax`: Lower dead zone limit (defaults to -uMax for symmetric dead zone)
+"""
 @mtkmodel DeadZone begin
     @structural_parameters begin
         uMax # Lower dead zone limit
@@ -339,6 +449,15 @@ end
     end
 end
 
+"""
+    ss_to_mtkmodel(A, B, C, D; name=nothing, guesses=zeros(size(A,1)))
+
+Convert a state-space representation to a ModelingToolkit model.
+
+Matrices can be either of real numbers or symbolic parameters/terms.
+
+Returns A `System` object with variables `in` (input), `out` (output), and `x₁, x₂, ...` (states).
+"""
 ModelingToolkit.@component ss_to_mtkmodel(; A, B, C, D, kwargs...) = ss_to_mtkmodel(A, B, C, D; kwargs...)
 function ss_to_mtkmodel(A, B, C, D; name=nothing, guesses=zeros(size(A,1)))
     t = ModelingToolkit.t_nounits
@@ -367,11 +486,31 @@ function ss_to_mtkmodel(A, B, C, D; name=nothing, guesses=zeros(size(A,1)))
     return System(eqs, t, vcat(x, [in, out]), allp; name=name)
 end
 
-#=
-Taken and adapted from SymbolicControlSystems.jl
+"""
+    siso_tf_to_ss(num, den)
 
-Copyright (c) 2020 Fredrik Bagge Carlson, MIT License
-=#
+Convert a SISO transfer function to state-space representation.
+
+Takes polynomial coefficients for numerator and denominator and returns state-space matrices (A, B, C, D).
+The transfer function is represented as:
+```
+       num[1]sⁿ + num[2]sⁿ⁻¹ + ... + num[end]
+G(s) = ─────────────────────────────────────
+       den[1]sᵐ + den[2]sᵐ⁻¹ + ... + den[end]
+```
+
+# Arguments
+- `num`: Vector of numerator coefficients (highest degree first)
+- `den`: Vector of denominator coefficients (highest degree first)
+
+# Returns
+A tuple `(A, B, C, D)` of state-space matrices in controller canonical form.
+
+# Notes
+- Leading zeros in num/den are automatically truncated
+- Transfer function must be proper (numerator degree ≤ denominator degree)
+- Adapted from SymbolicControlSystems.jl (Copyright (c) 2020 Fredrik Bagge Carlson, MIT License)
+"""
 function siso_tf_to_ss(num0, den0)
     T = Base.promote_type(eltype(num0), eltype(den0))
 
@@ -410,7 +549,7 @@ function siso_tf_to_ss(num0, den0)
 
         C = zeros(T, 1, N)
         C[1:min(N, length(num))] = reverse(num)[1:min(N, length(num))]
-        C[:] .-= bN .* reverse(den)[1:end-1] # Can index into polynomials at greater inddices than their length
+        C[:] .-= bN .* reverse(den)[1:end-1] # Can index into polynomials at greater indices than their length
     end
     D = fill(bN, 1, 1)
 
