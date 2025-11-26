@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>EMT Toymodel · PowerDynamics.jl</title><meta name="title" content="EMT Toymodel · PowerDynamics.jl"/><meta property="og:title" content="EMT Toymodel · PowerDynamics.jl"/><meta property="twitter:title" content="EMT Toymodel · PowerDynamics.jl"/><meta name="description" content="Documentation for PowerDynamics.jl."/><meta property="og:description" content="Documentation for PowerDynamics.jl."/><meta property="twitter:description" content="Documentation for PowerDynamics.jl."/><meta property="og:url" content="https://juliaenergy.github.io/PowerDynamics.jl/generated/emt_toymodel/"/><meta property="twitter:url" content="https://juliaenergy.github.io/PowerDynamics.jl/generated/emt_toymodel/"/><link rel="canonical" href="https://juliaenergy.github.io/PowerDynamics.jl/generated/emt_toymodel/"/><meta property="og:image" content="https://juliaenergy.github.io/PowerDynamics.jl/assets/preview.png"/><meta property="twitter:image" content="https://juliaenergy.github.io/PowerDynamics.jl/assets/preview.png"/><meta property="twitter:card" content="summary_large_image"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="PowerDynamics.jl logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="PowerDynamics.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PowerDynamics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../ModelingConcepts/">Modeling Concepts</a></li><li><a class="tocitem" href="../../initialization/">Initialization</a></li><li><a class="tocitem" href="../../Library/">Component Library</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../getting_started/">Getting Started</a></li><li><a class="tocitem" href="../typical_simulation_workflow/">Typical Simulation Workflow</a></li><li><a class="tocitem" href="../custom_bus/">Custom Generator Bus</a></li><li><a class="tocitem" href="../custom_line/">Custom Transmission Line</a></li></ul></li><li><span class="tocitem">Advanced Examples</span><ul><li><a class="tocitem" href="../ieee9bus/">IEEE 9-Bus Example</a></li><li><a class="tocitem" href="../ieee39_part1/">IEEE39 Part I: Modeling</a></li><li><a class="tocitem" href="../ieee39_part2/">IEEE39 Part II: Initialization</a></li><li><a class="tocitem" href="../ieee39_part3/">IEEE39 Part III: Simulation</a></li><li><a class="tocitem" href="../ieee39_part4/">IEEE39 Part IV: Parameter Tuning</a></li><li class="is-active"><a class="tocitem" href>EMT Toymodel</a><ul class="internal"><li><a class="tocitem" href="#System-Description"><span>System Description</span></a></li><li><a class="tocitem" href="#System-Parameters"><span>System Parameters</span></a></li><li><a class="tocitem" href="#Bus-Definitions"><span>Bus Definitions</span></a></li><li><a class="tocitem" href="#Transmission-Line-Model"><span>Transmission Line Model</span></a></li><li><a class="tocitem" href="#Network-Assembly-and-Initialization"><span>Network Assembly and Initialization</span></a></li><li><a class="tocitem" href="#Disturbance-Setup"><span>Disturbance Setup</span></a></li><li><a class="tocitem" href="#Dynamic-Simulation"><span>Dynamic Simulation</span></a></li><li><a class="tocitem" href="#Results-and-Validation"><span>Results and Validation</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../../API/">API</a></li><li><a class="tocitem" href="../../networkdynamics_forward/">🔗 NetworkDynamics.jl Docs</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Advanced Examples</a></li><li class="is-active"><a href>EMT Toymodel</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>EMT Toymodel</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl/blob/main/docs/examples/emt_toymodel.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="emt-toymodel"><a class="docs-heading-anchor" href="#emt-toymodel">EMT Toy Model Example</a><a id="emt-toymodel-1"></a><a class="docs-heading-anchor-permalink" href="#emt-toymodel" title="Permalink"></a></h1><p>This example demonstrates an electromagnetic transient (EMT) simulation of a simple two-bus system using PowerDynamics.jl. The system consists of a slack bus connected to a load bus through an RL transmission line, with the load bus having both a dynamic PQ load and a capacitive shunt element.</p><p>We compare our simulation results with PowerFactory reference data to validate the EMT modeling approach.</p><div class="admonition is-info" id="Pedagogical-Example-fa620589649209fc"><header class="admonition-header">Pedagogical Example<a class="admonition-anchor" href="#Pedagogical-Example-fa620589649209fc" title="Permalink"></a></header><div class="admonition-body"><p>This is a <strong>pedagogical example</strong> that demonstrates the modeling concepts in PowerDynamics.jl are generally compatible with EMT simulations. However, this is far from being an actual interesting simulation study. The way we want to handle EMT simulations in PowerDynamics.jl is not yet fully clear and remains an active area of development.</p><p>The example serves to illustrate the flexibility of the modeling framework rather than provide a production-ready EMT simulation tool.</p></div></div><p>This script can be downloaded as a normal Julia script <a href="../emt_toymodel.jl">here</a>.</p><h2 id="System-Description"><a class="docs-heading-anchor" href="#System-Description">System Description</a><a id="System-Description-1"></a><a class="docs-heading-anchor-permalink" href="#System-Description" title="Permalink"></a></h2><p>The test system includes:</p><ul><li>Bus 1: Slack bus (infinite bus with constant voltage)</li><li>Bus 2: Load bus with PQ load and shunt capacitor</li><li>Transmission line: RL model with distributed capacitance</li><li>Disturbance: Load disconnection at t=0.1s</li></ul><pre><code class="language-julia hljs">using PowerDynamics
+using PowerDynamics.Library
+using NetworkDynamics
+using ModelingToolkit
+using ModelingToolkit: D_nounits as Dt, t_nounits as t
+using CSV
+using SteadyStateDiffEq
+using OrdinaryDiffEqRosenbrock
+using DataFrames
+using CairoMakie</code></pre><h2 id="System-Parameters"><a class="docs-heading-anchor" href="#System-Parameters">System Parameters</a><a id="System-Parameters-1"></a><a class="docs-heading-anchor-permalink" href="#System-Parameters" title="Permalink"></a></h2><p>First, we define the base system parameters and component values.</p><pre><code class="language-julia hljs">ω0    = 2π*50    ## Nominal frequency [rad/s]
+Sbase = 300      ## Base power [MW]
+Vbase = 110      ## Base voltage [kV]
+
+Rline = 1        ## Line resistance [Ω]
+Lline = (1/100π) ## Line inductance [H]
+Cline = (2e-6)   ## Line capacitance [F]
+Pload = -300     ## Load power (negative = consumption) [MW]
+
+# Convert to per-unit values
+Rline_pu = Rline / Zbase(Sbase, Vbase)
+Lline_pu = Lline / Zbase(Sbase, Vbase)
+Cline_pu = Cline / Ybase(Sbase, Vbase)
+Pload_pu = Pload / Sbase</code></pre><h2 id="Bus-Definitions"><a class="docs-heading-anchor" href="#Bus-Definitions">Bus Definitions</a><a id="Bus-Definitions-1"></a><a class="docs-heading-anchor-permalink" href="#Bus-Definitions" title="Permalink"></a></h2><h3 id="Slack-Bus"><a class="docs-heading-anchor" href="#Slack-Bus">Slack Bus</a><a id="Slack-Bus-1"></a><a class="docs-heading-anchor-permalink" href="#Slack-Bus" title="Permalink"></a></h3><p>The slack bus maintains constant voltage magnitude and angle, representing an infinite bus or strong grid connection.</p><pre><code class="language-julia hljs">slackbus = compile_bus(pfSlack(; V=1), vidx=1)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:slackbus</span> <span class="sgr94">NoFeedForward()</span> @ Vertex 1
+ ├─ 2 inputs:  [busbar₊i_r, busbar₊i_i]
+ ├─ 0 states:  []
+ ├─ 2 outputs: [busbar₊u_r=1, busbar₊u_i=0]
+ └─ 2 params:  [slack₊V=1, slack₊δ=0]</code></pre><h3 id="Dynamic-Shunt-Capacitor-Model"><a class="docs-heading-anchor" href="#Dynamic-Shunt-Capacitor-Model">Dynamic Shunt Capacitor Model</a><a id="Dynamic-Shunt-Capacitor-Model-1"></a><a class="docs-heading-anchor-permalink" href="#Dynamic-Shunt-Capacitor-Model" title="Permalink"></a></h3><p>The shunt capacitor is modeled as a dynamic component in the dq-frame. This allows us to observe the three-phase voltages (<code>u_a</code>, <code>u_b</code>, <code>u_c</code>) by transforming from the dq-frame back to abc coordinates.</p><p>The capacitor dynamics are given by:</p><p class="math-container">\[\begin{aligned}
+\frac{du_r}{dt} &amp;= \phantom{-}\omega_0 u_i + \frac{1}{C} i_r \\
+\frac{du_i}{dt} &amp;= -\omega_0 u_r + \frac{1}{C} i_i
+\end{aligned}\]</p><p>where the <span>$\omega_0 u_i$</span> and <span>$-\omega_0 u_r$</span> terms account for the rotating dq-frame.</p><pre><code class="language-julia hljs">@mtkmodel DynamicShunt begin
+    @components begin
+        terminal = Terminal()
+    end
+    @variables begin
+        u_r(t), [guess=1, description=&quot;Real part of voltage&quot;]
+        u_i(t), [guess=0, description=&quot;Imaginary part of voltage&quot;]
+        # Three-phase voltages as observables
+        u_a(t), [description=&quot;Voltage in a phase&quot;]
+        u_b(t), [description=&quot;Voltage in b phase&quot;]
+        u_c(t), [description=&quot;Voltage in c phase&quot;]
+    end
+    @parameters begin
+        C, [description=&quot;Capacitance&quot;]
+        ω0, [description=&quot;Angular frequency of dq Frame&quot;]
+    end
+    begin
+        # Transformation matrix from dq to abc coordinates
+        Tdqinv(δ) = [cos(δ)       -sin(δ)
+                     cos(δ-2pi/3) -sin(δ-2pi/3)
+                     cos(δ+2pi/3) -sin(δ+2pi/3)]
+    end
+    @equations begin
+        # Capacitor dynamics in rotating dq-frame
+        Dt(u_r) ~  ω0*u_i + 1/C * terminal.i_r
+        Dt(u_i) ~ -ω0*u_r + 1/C * terminal.i_i
+        # Terminal connections
+        terminal.u_r ~ u_r
+        terminal.u_i ~ u_i
+        # Transform to three-phase voltages
+        [u_a, u_b, u_c] ~ Tdqinv(ω0*t) * [u_r, u_i]
+    end
+end</code></pre><h3 id="Load-Bus-Components"><a class="docs-heading-anchor" href="#Load-Bus-Components">Load Bus Components</a><a id="Load-Bus-Components-1"></a><a class="docs-heading-anchor-permalink" href="#Load-Bus-Components" title="Permalink"></a></h3><p>The load bus combines two components:</p><ol><li>A PQ load consuming constant active power (injector model from Library)</li><li>A dynamic shunt capacitor representing line charging</li></ol><pre><code class="language-julia hljs">@named load = PQLoad(Pset=-Pload_pu, Qset=0)
+@named shunt = DynamicShunt(C=Cline_pu, ω0=ω0)
+loadbus = compile_bus(
+    MTKBus(load, shunt);
+    vidx=2
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:bus</span> <span class="sgr94">PureStateMap()</span> @ Vertex 2
+ ├─ 2 inputs:  [busbar₊i_r, busbar₊i_i]
+ ├─ 2 states:  [busbar₊u_i=0, busbar₊u_r=1]
+ ├─ 2 outputs: [busbar₊u_r=1, busbar₊u_i=0]
+ └─ 4 params:  [load₊Pset=1, load₊Qset=0, shunt₊C=8.0667e-5, shunt₊ω0=314.16]</code></pre><h2 id="Transmission-Line-Model"><a class="docs-heading-anchor" href="#Transmission-Line-Model">Transmission Line Model</a><a id="Transmission-Line-Model-1"></a><a class="docs-heading-anchor-permalink" href="#Transmission-Line-Model" title="Permalink"></a></h2><h3 id="Dynamic-RL-Branch"><a class="docs-heading-anchor" href="#Dynamic-RL-Branch">Dynamic RL Branch</a><a id="Dynamic-RL-Branch-1"></a><a class="docs-heading-anchor-permalink" href="#Dynamic-RL-Branch" title="Permalink"></a></h3><p>The transmission line is modeled as a dynamic RL branch in the dq-frame. The line current dynamics are given by:</p><p class="math-container">\[\begin{aligned}
+\frac{di_r}{dt} &amp;= \phantom{-}\omega_0 i_i - \frac{R}{L} i_r + \frac{1}{L}(u_{\text{dst},r} - u_{\text{src},r}) \\
+\frac{di_i}{dt} &amp;= -\omega_0 i_r - \frac{R}{L} i_i + \frac{1}{L}(u_{\text{dst},i} - u_{\text{src},i})
+\end{aligned}\]</p><p>where the voltage difference drives the current through the line impedance.</p><pre><code class="language-julia hljs">@mtkmodel DynamicRLBranch begin
+    @components begin
+        src = Terminal()
+        dst = Terminal()
+    end
+    @variables begin
+        i_r(t)=0, [description=&quot;Current in real part&quot;]
+        i_i(t)=-1, [description=&quot;Current in imaginary part&quot;]
+    end
+    @parameters begin
+        R, [description=&quot;Resistance&quot;]
+        L, [description=&quot;Inductance&quot;]
+        ω0, [description=&quot;Angular frequency of dq Frame&quot;]
+    end
+    @equations begin
+        # RL line dynamics in rotating dq-frame
+        Dt(i_r) ~  ω0 * i_i  - R/L * i_r + 1/L*(dst.u_r - src.u_r)
+        Dt(i_i) ~ -ω0 * i_r  - R/L * i_i + 1/L*(dst.u_i - src.u_i)
+        # Terminal current connections (KCL enforcement)
+        src.i_r ~ -i_r  ## Current flows out of source
+        src.i_i ~ -i_i
+        dst.i_r ~ i_r   ## Current flows into destination
+        dst.i_i ~ i_i
+    end
+end
+
+@named branch = DynamicRLBranch(; R=Rline_pu, L=Lline_pu, ω0=ω0)
+line_model = compile_line(
+    MTKLine(branch);
+    src=1, dst=2
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">EdgeModel <span class="sgr1">:line</span> <span class="sgr94">PureStateMap()</span> @ Edge 1=&gt;2
+ ├─ 2/2 inputs:  src=[src₊u_r, src₊u_i] dst=[dst₊u_r, dst₊u_i]
+ ├─   2 states:  [branch₊i_i=-1, branch₊i_r=0]
+ ├─ 2/2 outputs: src=[src₊i_r, src₊i_i] dst=[dst₊i_r, dst₊i_i]
+ └─   3 params:  [branch₊R=0.024793, branch₊L=7.892e-5, branch₊ω0=314.16]</code></pre><h2 id="Network-Assembly-and-Initialization"><a class="docs-heading-anchor" href="#Network-Assembly-and-Initialization">Network Assembly and Initialization</a><a id="Network-Assembly-and-Initialization-1"></a><a class="docs-heading-anchor-permalink" href="#Network-Assembly-and-Initialization" title="Permalink"></a></h2><p>We assemble the complete network and attempt initialization.</p><pre><code class="language-julia hljs">nw = Network([slackbus, loadbus], line_model)
+s0 = find_fixpoint(nw; alg=DynamicSS(Rodas5P()))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr33"><span class="sgr1">┌ Warning: </span></span>At t=5.048047796807022e-5, dt was forced below floating point epsilon 6.776263578034403e-21, and step error estimate = 28375.542759452987. Aborting. There is either an error in your model specification or the true solution is unstable (or the true solution can not be represented in the precision of Float64).
+<span class="sgr33"><span class="sgr1">└ </span></span><span class="sgr90">@ SciMLBase ~/.julia/packages/SciMLBase/YE7xF/src/integrator_interface.jl:657</span>
+<span class="sgr91"><span class="sgr1">┌ Error: </span></span>NetworkInitError(&quot;Could not find fixpoint, solver returned Failure (alg=SteadyStateDiffEq.DynamicSS{Rodas5P{0, ADTypes.AutoForwardDiff{nothing, Nothing}, Nothing, typeof(OrdinaryDiffEqCore.DEFAULT_PRECS), Val{:forward}(), true, nothing, typeof(OrdinaryDiffEqCore.trivial_limiter!), typeof(OrdinaryDiffEqCore.trivial_limiter!)}, Float64}(Rodas5P{0, ADTypes.AutoForwardDiff{nothing, Nothing}, Nothing, typeof(OrdinaryDiffEqCore.DEFAULT_PRECS), Val{:forward}(), true, nothing, typeof(OrdinaryDiffEqCore.trivial_limiter!), typeof(OrdinaryDiffEqCore.trivial_limiter!)}(nothing, OrdinaryDiffEqCore.DEFAULT_PRECS, OrdinaryDiffEqCore.trivial_limiter!, OrdinaryDiffEqCore.trivial_limiter!, ADTypes.AutoForwardDiff()), Inf))! For debugging, it is advised to manually construct the steady state problem and try different solvers/arguments:\n\nprob = SteadyStateProblem(nw, uflat(nwstate), pflat(nwpara))\nsol = solve(prob, alg; kwargs...)\nx0 = NWState(nw, sol.u)\n\nFor detail see https://docs.sciml.ai/NonlinearSolve/stable/native/steadystatediffeq/\n&quot;)
+<span class="sgr91"><span class="sgr1">└ </span></span><span class="sgr90">@ Main emt_toymodel.md:204</span></code></pre><h3 id="Initialization-Challenge"><a class="docs-heading-anchor" href="#Initialization-Challenge">Initialization Challenge</a><a id="Initialization-Challenge-1"></a><a class="docs-heading-anchor-permalink" href="#Initialization-Challenge" title="Permalink"></a></h3><p>The direct initialization fails due to the stiffness of the PQ load model. When the load current is computed algebraically from <span>$i = P \frac{u}{|u|^2}$</span>, the system becomes numerically challenging to initialize.</p><p>To overcome this, we use a &quot;less stiff&quot; load model with dynamics that smooth out the algebraic singularity during initialization.</p><p>We create a &quot;less stiff&quot; version of the PQ load that introduces first-order dynamics with a fast time constant (1/1000 s). This smooths the algebraic relation and makes initialization more robust:</p><p class="math-container">\[\begin{aligned}
+\frac{di_r}{dt} &amp;= 1000 \left( P \frac{u_r}{u_r^2 + u_i^2} - i_r \right) \\
+\frac{di_i}{dt} &amp;= 1000 \left( P \frac{u_i}{u_r^2 + u_i^2} - i_i \right)
+\end{aligned}\]</p><p>This approaches the algebraic PQ load behavior but avoids initialization issues.</p><pre><code class="language-julia hljs">@mtkmodel LessStiffPQLoad begin
+    @components begin
+        terminal = Terminal()
+    end
+    @variables begin
+        i_r(t)=0, [description=&quot;Current in real part&quot;]
+        i_i(t)=0, [description=&quot;Current in imaginary part&quot;]
+    end
+    @parameters begin
+        Pset, [description=&quot;Active Power demand&quot;]
+    end
+    @equations begin
+        # First-order dynamics with fast time constant
+        Dt(i_r) ~ 1e3*(Pset * terminal.u_r/(terminal.u_r^2 + terminal.u_i^2) - i_r)
+        Dt(i_i) ~ 1e3*(Pset * terminal.u_i/(terminal.u_r^2 + terminal.u_i^2) - i_i)
+        terminal.i_r ~ i_r
+        terminal.i_i ~ i_i
+    end
+end
+
+@named less_stiff_load = LessStiffPQLoad(Pset=-Pload_pu)
+less_stiff_loadbus = compile_bus(
+    MTKBus(less_stiff_load, shunt);
+    vidx=2
+)
+less_stiff_nw = Network([slackbus, less_stiff_loadbus], line_model)
+less_stiff_s0 = find_fixpoint(less_stiff_nw; alg=DynamicSS(Rodas5P()))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NWState{Vector{Float64}} of Network (2 vertices, 1 edges)
+  ├─ VIndex(2, :busbar₊u_i)          =&gt; -0.02539048768641113
+  ├─ VIndex(2, :busbar₊u_r)          =&gt; 0.9745092560101434
+  ├─ VIndex(2, :less_stiff_load₊i_i) =&gt; -0.02671802718435793
+  ├─ VIndex(2, :less_stiff_load₊i_r) =&gt; 1.0254613901218117
+  ├─ EIndex(1, :branch₊i_i)          =&gt; 0.0020218374630564407
+  └─ EIndex(1, :branch₊i_r)          =&gt; -1.0261048404693773<span class="sgr90">
+ p = NWParameter([1.0, 0.0, 1.0, 8.06667e-5, 314.159, 0.0247934, 7.89198e-5, 314.159])
+ t = nothing</span></code></pre><h3 id="Initialize-Target-System"><a class="docs-heading-anchor" href="#Initialize-Target-System">Initialize Target System</a><a id="Initialize-Target-System-1"></a><a class="docs-heading-anchor-permalink" href="#Initialize-Target-System" title="Permalink"></a></h3><p>Perfect! The less stiff load initialization worked. Now we use this solution as an initial guess for our target system with the algebraic PQ load.</p><pre><code class="language-julia hljs">s0guess = NWState(nw)
+# Transfer key state variables from less stiff solution
+s0guess[VIndex(2, :busbar₊u_i)] = less_stiff_s0[VIndex(2, :busbar₊u_i)]
+s0guess[VIndex(2, :busbar₊u_r)] = less_stiff_s0[VIndex(2, :busbar₊u_r)]
+s0guess[EIndex(1, :branch₊i_i)] = less_stiff_s0[EIndex(1, :branch₊i_i)]
+s0guess[EIndex(1, :branch₊i_r)] = less_stiff_s0[EIndex(1, :branch₊i_r)]
+s0 = find_fixpoint(nw, s0guess; alg=DynamicSS(Rodas5P()))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NWState{Vector{Float64}} of Network (2 vertices, 1 edges)
+  ├─ VIndex(2, :busbar₊u_i) =&gt; -0.025390487677360737
+  ├─ VIndex(2, :busbar₊u_r) =&gt; 0.9745092559179812
+  ├─ EIndex(1, :branch₊i_i) =&gt; 0.002021837487855655
+  └─ EIndex(1, :branch₊i_r) =&gt; -1.0261048404519089<span class="sgr90">
+ p = NWParameter([1.0, 0.0, 1.0, 0.0, 8.06667e-5, 314.159, 0.0247934, 7.89198e-5, 314.159])
+ t = nothing</span></code></pre><h2 id="Disturbance-Setup"><a class="docs-heading-anchor" href="#Disturbance-Setup">Disturbance Setup</a><a id="Disturbance-Setup-1"></a><a class="docs-heading-anchor-permalink" href="#Disturbance-Setup" title="Permalink"></a></h2><p>Excellent! The initialization succeeded. Now we set up a disturbance to observe the system&#39;s transient response. We&#39;ll disable the load at t=0.1s to simulate a sudden load disconnection.</p><pre><code class="language-julia hljs">disable_load_affect = ComponentAffect([], [:load₊Pset]) do u, p, ctx
+    println(&quot;Disabling load at time $(ctx.t)&quot;)
+    p[:load₊Pset] = 0  ## Set load power to zero
+end
+set_callback!(loadbus, PresetTimeComponentCallback(0.1, disable_load_affect))</code></pre><h2 id="Dynamic-Simulation"><a class="docs-heading-anchor" href="#Dynamic-Simulation">Dynamic Simulation</a><a id="Dynamic-Simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Dynamic-Simulation" title="Permalink"></a></h2><p>With the system properly initialized and the disturbance configured, we can now run the electromagnetic transient simulation.</p><pre><code class="language-julia hljs">prob = ODEProblem(nw, uflat(s0), (0.0, 0.15), copy(pflat(s0)); callback=get_callbacks(nw))
+sol = solve(prob, Rodas5P());</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Disabling load at time 0.1</code></pre><h2 id="Results-and-Validation"><a class="docs-heading-anchor" href="#Results-and-Validation">Results and Validation</a><a id="Results-and-Validation-1"></a><a class="docs-heading-anchor-permalink" href="#Results-and-Validation" title="Permalink"></a></h2><p>We compare our EMT simulation results with PowerFactory reference data to validate the modeling approach. The comparison focuses on the three-phase voltages at bus 2 during the load disconnection transient.</p><p>The thick gray lines show the PowerFactory reference, while our PowerDynamics.jl results are overlaid in color. The close agreement validates our EMT modeling approach.</p><pre><code class="language-julia hljs">fig = let
+    fig = Figure()
+    ax = Axis(fig[1,1];
+        title=&quot;Three-Phase Voltage at Bus 2&quot;,
+        xlabel=&quot;Time [s]&quot;,
+        ylabel=&quot;Voltage [pu]&quot;)
+    ts = range(0.09, 0.13; length=2000)
+
+    # Load PowerFactory reference data
+    df = CSV.read(
+        joinpath(pkgdir(PowerDynamics),&quot;docs&quot;,&quot;examples&quot;, &quot;emt_data_minimal.csv.gz&quot;),
+        DataFrame
+    )
+    # Plot PowerFactory results (thick gray lines)
+    lines!(ax, df.t, df.u_2_a; label=&quot;PowerFactory A&quot;, color=:lightgray, linewidth=5)
+    lines!(ax, df.t, df.u_2_b; label=&quot;PowerFactory B&quot;, color=:lightgray, linewidth=5)
+    lines!(ax, df.t, df.u_2_c; label=&quot;PowerFactory C&quot;, color=:lightgray, linewidth=5)
+
+    # Extract and plot our simulation results
+    a = sol(ts, idxs=VIndex(2, :shunt₊u_a)).u
+    b = sol(ts, idxs=VIndex(2, :shunt₊u_b)).u
+    c = sol(ts, idxs=VIndex(2, :shunt₊u_c)).u
+    lines!(ax, ts, a, label=&quot;PowerDynamics A&quot;, color=Cycled(1))
+    lines!(ax, ts, b, label=&quot;PowerDynamics B&quot;, color=Cycled(2))
+    lines!(ax, ts, c, label=&quot;PowerDynamics C&quot;, color=Cycled(3))
+
+    axislegend(ax, position=:rt)
+    xlims!(ax, ts[begin], ts[end])
+    fig
+end</code></pre><img src="548522dc.png" alt="Example block output"/><h3 id="Detailed-View-of-Transient-Response"><a class="docs-heading-anchor" href="#Detailed-View-of-Transient-Response">Detailed View of Transient Response</a><a id="Detailed-View-of-Transient-Response-1"></a><a class="docs-heading-anchor-permalink" href="#Detailed-View-of-Transient-Response" title="Permalink"></a></h3><p>Let&#39;s zoom in on the critical period around the load disconnection to better observe the transient behavior and compare with the reference.</p><pre><code class="language-julia hljs">xlims!(0.0995, 0.105)
+fig</code></pre><img src="4a777b7d.png" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ieee39_part4/">« IEEE39 Part IV: Parameter Tuning</a><a class="docs-footer-nextpage" href="../../API/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Thursday 9 October 2025 08:00">Thursday 9 October 2025</span>. Using Julia version 1.12.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
