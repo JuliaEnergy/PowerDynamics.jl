@@ -227,7 +227,7 @@ Uses [`find_fixpoint`](@extref NetworkDynamics.find_fixpoint) from NetworkDynami
 See also [`initialize_from_pf`](@ref).
 """
 function solve_powerflow(
-    nw::Network;
+    nw::Union{Network,Nothing};
     pfnw = powerflow_model(nw),
     pfs0 = NWState(pfnw),
     fill_busbar_defaults=true,
@@ -251,18 +251,18 @@ function solve_powerflow(
     end
 
     if fill_busbar_defaults && any(isnan, uflat(pfs0))
-        urinds = generate_indices(nw, VIndex(:), :busbar₊u_r, s=true, obs=false, out=false, in=false, p=false)
+        urinds = generate_indices(pfnw, VIndex(:), :busbar₊u_r, s=true, obs=false, out=false, in=false, p=false)
         nanidx = findall(isnan, pfs0[urinds])
         pfs0[urinds[nanidx]] .= 1.0
-        uiinds = generate_indices(nw, VIndex(:), :busbar₊u_i, s=true, obs=false, out=false, in=false, p=false)
+        uiinds = generate_indices(pfnw, VIndex(:), :busbar₊u_i, s=true, obs=false, out=false, in=false, p=false)
         nanidx = findall(isnan, pfs0[uiinds])
-        pfs0[uiinds[nanidx]] .= 1.0
+        pfs0[uiinds[nanidx]] .= 0.0
     end
     if use_guesses && any(isnan, uflat(pfs0))
         for (i, idx) in enumerate(SII.variable_symbols(pfs0))
             isnan(uflat(pfs0)[i]) || continue
-            has_guess(nw, idx) || continue
-            uflat(pfs0)[i] = get_guess(nw, idx)
+            has_guess(pfnw, idx) || continue
+            uflat(pfs0)[i] = get_guess(pfnw, idx)
         end
     end
 
