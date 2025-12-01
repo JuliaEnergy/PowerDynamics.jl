@@ -64,6 +64,8 @@ end
         G, [guess=1, description="Shunt conductance [pu]"]
     end
     @variables begin
+        i_r(t), [guess=0.1, description="Current real part [pu]"]
+        i_i(t), [guess=0.1, description="Current imaginary part [pu]"]
         P(t), [description="Active Power [pu]"]
         Q(t), [description="Reactive Power [pu]"]
     end
@@ -73,12 +75,14 @@ end
     end
     @equations begin
         if !allow_zero_conductance
-            terminal.i_r ~ simplify(real(iload))
-            terminal.i_i ~ simplify(imag(iload))
+            i_r ~ simplify(real(iload))
+            i_i ~ simplify(imag(iload))
         else
-            @no_simplify terminal.i_r ~ simplify(real(iload))
-            @no_simplify terminal.i_i ~ simplify(imag(iload))
+            @no_simplify i_r ~ simplify(real(iload))
+            @no_simplify i_i ~ simplify(imag(iload))
         end
+        terminal.i_r ~ i_r
+        terminal.i_i ~ i_i
 
         # observables
         P ~ terminal.u_r*terminal.i_r + terminal.u_i*terminal.i_i

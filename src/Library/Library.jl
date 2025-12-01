@@ -199,6 +199,9 @@ include("Branches/PiLine.jl")
 export PiLine_fault
 include("Branches/PiLine_fault.jl")
 
+export Breaker
+include("Branches/Breaker.jl")
+
 ####
 #### Fault Models
 ####
