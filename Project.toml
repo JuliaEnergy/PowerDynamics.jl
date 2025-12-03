@@ -4,7 +4,7 @@ version = "4.3.1"
 authors = ["Hans Würfel", "Tim Kittel", "Jan Liße", "Sabine Auer", "Anton Plietzsch"]
 
 [workspace]
-projects = ["test", "docs"]
+projects = ["test", "benchmark", "docs"]
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"

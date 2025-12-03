@@ -6,7 +6,7 @@ Create a slack bus for power flow analysis.
 A slack bus maintains constant voltage magnitude and phase angle (or real and imaginary voltage components).
 Either provide voltage magnitude `V` and phase angle `δ`, or provide real and imaginary voltage components `u_r` and `u_i`.
 """
-function pfSlack(; V=missing, δ=missing, u_r=missing, u_i=missing, name=:slackbus)
+function pfSlack(; V=missing, δ=missing, u_r=missing, u_i=missing, name=:slackbus, kwargs...)
     if !ismissing(V) && ismissing(u_r) && ismissing(u_i)
         δ = ismissing(δ) ? 0 : δ
         @named slack = Library.VδConstraint(; V, δ)
@@ -19,7 +19,7 @@ function pfSlack(; V=missing, δ=missing, u_r=missing, u_i=missing, name=:slackb
     end
 
     mtkbus = MTKBus(slack; name)
-    b = compile_bus(mtkbus)
+    b = compile_bus(mtkbus; kwargs...)
     set_voltage!(b, u_r + im * u_i)
     b
 end
@@ -32,10 +32,10 @@ Create a PV bus for power flow analysis.
 A PV bus maintains constant active power injection and voltage magnitude.
 The reactive power and voltage phase angle are determined by the power flow solution.
 """
-function pfPV(; P, V, name=:pvbus)
+function pfPV(; P, V, name=:pvbus, kwargs...)
     @named pv = Library.PVConstraint(; P, V)
     mtkbus = MTKBus(pv; name)
-    b = compile_bus(mtkbus)
+    b = compile_bus(mtkbus; kwargs...)
     set_voltage!(b; mag=V, arg=0)
     b
 end
@@ -48,10 +48,10 @@ Create a PQ bus for power flow analysis.
 A PQ bus has specified active and reactive power injections.
 The voltage magnitude and phase angle are determined by the power flow solution.
 """
-function pfPQ(; P=0, Q=0, name=:pqbus)
+function pfPQ(; P=0, Q=0, name=:pqbus, kwargs...)
     @named pq = Library.PQConstraint(; P, Q)
     mtkbus = MTKBus(pq; name)
-    b = compile_bus(mtkbus)
+    b = compile_bus(mtkbus; kwargs...)
     set_voltage!(b; mag=1, arg=0)
     b
 end
@@ -233,21 +233,25 @@ function solve_powerflow(
     fill_busbar_defaults=true,
     use_guesses=true,
     sparse = nv(pfnw) > 50,
-    verbose=true
+    verbose=true,
+    alg = nothing,
+    kwargs...
 )
     # don't enforce this, check happes in `powerflow_model`
     # pfnw.mass_matrix == LinearAlgebra.UniformScaling(0) || error("Powerflow model must have a mass matrix of 0!")
 
-    if sparse && isnothing(pfnw.jac_prototype)
-        alg = try
-            set_jac_prototype!(pfnw)
-            NonlinearSolve.FastShortcutNLLSPolyalg(linsolve=NonlinearSolve.LinearSolve.KLUFactorization())
-        catch e
-            @warn "Could not set sparse jacobian prototype for powerflow model! Falling back to dense solver. Error: $e"
-            NonlinearSolve.FastShortcutNLLSPolyalg()
+    if isnothing(alg)
+        if sparse && isnothing(pfnw.jac_prototype)
+            alg = try
+                set_jac_prototype!(pfnw)
+                NonlinearSolve.FastShortcutNLLSPolyalg(linsolve=NonlinearSolve.LinearSolve.KLUFactorization())
+            catch e
+                @warn "Could not set sparse jacobian prototype for powerflow model! Falling back to dense solver. Error: $e"
+                NonlinearSolve.FastShortcutNLLSPolyalg()
+            end
+        else
+            alg = NonlinearSolve.FastShortcutNLLSPolyalg()
         end
-    else
-        alg = NonlinearSolve.FastShortcutNLLSPolyalg()
     end
 
     if fill_busbar_defaults && any(isnan, uflat(pfs0))
@@ -266,7 +270,7 @@ function solve_powerflow(
         end
     end
 
-    pfs = find_fixpoint(pfnw, pfs0; alg)
+    pfs = find_fixpoint(pfnw, pfs0; alg, kwargs...)
     verbose && show_powerflow(pfs)
 
     return pfs
