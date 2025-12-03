@@ -50,6 +50,8 @@ export solve_powerflow, initialize_from_pf!, initialize_from_pf, show_powerflow
 export powerflow_model, ispfmodel
 export has_pfmodel, get_pfmodel, set_pfmodel!, delete_pfmodel!
 include("powerflow.jl")
+export SlackType, PVType, PQType, YType, PQYType
+include("multi_powerflow.jl")
 
 export PFInitConstraint, @pfinitconstraint, PFInitFormula, @pfinitformula, copy_pf_parameters
 export add_pfinitconstraint!, add_pfinitformula!

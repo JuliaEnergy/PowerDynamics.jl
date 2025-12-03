@@ -100,12 +100,18 @@ See also: [`ispfmodel`](@ref), [`pfSlack`](@ref), [`pfPV`](@ref), [`pfPQ`](@ref)
 function powerflow_model(cf::NetworkDynamics.ComponentModel; check=:error)
     if has_pfmodel(cf)
         pfm = get_pfmodel(cf)
-        if !ispfmodel(pfm)
-            str = "Provided :pfmodel for :$(cf.name) is no valid powerflow model! You may overwrite this check by passing `check=:warn/:none`."
-            check == :error && error(str)
-            check == :warn && @warn str
+        if pfm isa AbstractDict
+            to_vertexmodel(pfm, cf)
+        elseif pfm isa PowerFlowType
+            to_vertexmodel(pfm, cf.name)
+        elseif pfm isa VertexModel
+            if !ispfmodel(pfm)
+                str = "Provided :pfmodel for :$(cf.name) is no valid powerflow model! You may overwrite this check by passing `check=:warn/:none`."
+                check == :error && error(str)
+                check == :warn && @warn str
+            end
+            return pfm
         end
-        return pfm
     end
     if !ispfmodel(cf)
         str = "Cannot create PF component model from :$(cf.name)! Please provide :pfmodel metadata! You may overwrite this check by passing `check=:warn/:none`."
