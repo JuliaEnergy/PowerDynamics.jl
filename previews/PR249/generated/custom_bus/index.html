@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Custom Generator Bus · PowerDynamics.jl</title><meta name="title" content="Custom Generator Bus · PowerDynamics.jl"/><meta property="og:title" content="Custom Generator Bus · PowerDynamics.jl"/><meta property="twitter:title" content="Custom Generator Bus · PowerDynamics.jl"/><meta name="description" content="Documentation for PowerDynamics.jl."/><meta property="og:description" content="Documentation for PowerDynamics.jl."/><meta property="twitter:description" content="Documentation for PowerDynamics.jl."/><meta property="og:url" content="https://juliaenergy.github.io/PowerDynamics.jl/generated/custom_bus/"/><meta property="twitter:url" content="https://juliaenergy.github.io/PowerDynamics.jl/generated/custom_bus/"/><link rel="canonical" href="https://juliaenergy.github.io/PowerDynamics.jl/generated/custom_bus/"/><meta property="og:image" content="https://juliaenergy.github.io/PowerDynamics.jl/assets/preview.png"/><meta property="twitter:image" content="https://juliaenergy.github.io/PowerDynamics.jl/assets/preview.png"/><meta property="twitter:card" content="summary_large_image"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="PowerDynamics.jl logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="PowerDynamics.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PowerDynamics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../ModelingConcepts/">Modeling Concepts</a></li><li><a class="tocitem" href="../../initialization/">Initialization</a></li><li><a class="tocitem" href="../../Library/">Component Library</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../../julia_setup/">Julia Setup for New Users</a></li><li><a class="tocitem" href="../getting_started/">Getting Started</a></li><li><a class="tocitem" href="../typical_simulation_workflow/">Typical Simulation Workflow</a></li><li class="is-active"><a class="tocitem" href>Custom Generator Bus</a><ul class="internal"><li><a class="tocitem" href="#Defining-the-Machine-as-Injector"><span>Defining the Machine as Injector</span></a></li><li><a class="tocitem" href="#Attaching-the-Machine-to-a-Busbar"><span>Attaching the Machine to a Busbar</span></a></li><li><a class="tocitem" href="#Compiling-bus-to-VertexModel"><span>Compiling bus to <code>VertexModel</code></span></a></li><li><a class="tocitem" href="#Defining-a-Simulation-Scenario"><span>Defining a Simulation Scenario</span></a></li><li><a class="tocitem" href="#Dynamic-Simulation"><span>Dynamic Simulation</span></a></li><li><a class="tocitem" href="#Visualizing-the-Results"><span>Visualizing the Results</span></a></li><li><a class="tocitem" href="#Observing-the-Poor-Damping-Problem"><span>Observing the Poor Damping Problem</span></a></li><li><a class="tocitem" href="#Adding-a-Power-System-Stabilizer-(PSS)"><span>Adding a Power System Stabilizer (PSS)</span></a></li><li><a class="tocitem" href="#Simulation-with-PSS"><span>Simulation with PSS</span></a></li><li><a class="tocitem" href="#Comparing-Results:-With-and-Without-PSS"><span>Comparing Results: With and Without PSS</span></a></li></ul></li><li><a class="tocitem" href="../custom_line/">Custom Transmission Line</a></li></ul></li><li><span class="tocitem">Advanced Examples</span><ul><li><a class="tocitem" href="../ieee9bus/">IEEE 9-Bus Example</a></li><li><a class="tocitem" href="../ieee39_part1/">IEEE39 Part I: Modeling</a></li><li><a class="tocitem" href="../ieee39_part2/">IEEE39 Part II: Initialization</a></li><li><a class="tocitem" href="../ieee39_part3/">IEEE39 Part III: Simulation</a></li><li><a class="tocitem" href="../ieee39_part4/">IEEE39 Part IV: Parameter Tuning</a></li><li><a class="tocitem" href="../emt_toymodel/">EMT Toymodel</a></li></ul></li><li><a class="tocitem" href="../../API/">API</a></li><li><a class="tocitem" href="../../networkdynamics_forward/">🔗 NetworkDynamics.jl Docs</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Custom Generator Bus</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Custom Generator Bus</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl/blob/main/docs/tutorials/custom_bus.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="custom-bus"><a class="docs-heading-anchor" href="#custom-bus">Define a Custom Bus Model</a><a id="custom-bus-1"></a><a class="docs-heading-anchor-permalink" href="#custom-bus" title="Permalink"></a></h1><p>This tutorial can be downloaded as a normal Julia script <a href="../custom_bus.jl">here</a>.</p><p>In this Tutorial, we will define a custom bus model that can be used in PowerDynamics.jl.</p><p>The model we set out to recreate is the classical machine from Chapter 15.1 from Milano&#39;s book</p><blockquote><p>F. Milano, Power System Modelling and Scripting,  Berlin, Heidelberg: Springer Berlin Heidelberg, 2010. doi: 10.1007/978-3-642-13669-6.</p></blockquote><h2 id="Defining-the-Machine-as-Injector"><a class="docs-heading-anchor" href="#Defining-the-Machine-as-Injector">Defining the Machine as Injector</a><a id="Defining-the-Machine-as-Injector-1"></a><a class="docs-heading-anchor-permalink" href="#Defining-the-Machine-as-Injector" title="Permalink"></a></h2><p>In order to use this model in a Bus, we need to define it in a way that it specifies the <a href="../../ModelingConcepts/#Injector-Interface">Injector Interface</a>.</p><pre><code class="nohighlight hljs">            ┌───────────────────┐
+terminal    │                   │
+   o←───────┤ Machine Equations │
+u_r, u_i    │                   │
+i_r, i_i    └───────────────────┘
+</code></pre><p>The received values for <span>$u_r$</span>, <span>$u_i$</span>, <span>$i_r$</span>, and <span>$i_i$</span> at the terminal are in the global synchronous dq frame. The internal state <span>$δ$</span> describes the rotor angle of the machine in this frame. In order to obtain the <strong>local</strong> dq-frame voltages and currents, we need to apply a Park transformation.</p><picture>
+<source srcset="../../assets/dqgrafic-dark.svg" media="(prefers-color-scheme: dark)">
+<img src="../../assets/dqgrafic.svg" width="70%" height="70%"/>
+</picture><p>In addition to the transformation, the model is defined by the following equations:</p><p class="math-container">\[\begin{aligned}
+\frac{d\delta}{dt} &amp;= \omega_b(\omega - 1) &amp;\text{(Milano 15.5)} \\
+2H \frac{d\omega}{dt} &amp;= \frac{P_m}{\omega} - \tau_e &amp;\text{(Power form of Milano 15.5)} \\
+\psi_d &amp;= V_q + R_s I_q &amp;\text{(Milano 15.11)} \\
+\psi_q &amp;= -V_d - R_s I_d &amp;\text{(Milano 15.11)} \\
+\tau_e &amp;= \psi_d I_q - \psi_q I_d &amp;\text{(Milano 15.6)} \\
+0 &amp;= V_q + R_s I_q + X&#39;_d I_d - v_{f,\text{set}} &amp;\text{(Milano 15.36)} \\
+0 &amp;= V_d + R_s I_d - X&#39;_d I_q &amp;\text{(Milano 15.36)}
+\end{aligned}\]</p><p>We can use the ModelingToolkit DSL to define the full injector model:</p><pre><code class="language-julia hljs">using PowerDynamics, NetworkDynamics, ModelingToolkit
+using PowerDynamics.Library
+using ModelingToolkit: t_nounits as t, D_nounits as Dt
+using ModelingToolkitStandardLibrary.Blocks
+using OrdinaryDiffEqRosenbrock, OrdinaryDiffEqNonlinearSolve
+using CairoMakie
+
+@mtkmodel MilanoClassicalMachine begin
+    @components begin
+        terminal=Terminal()
+    end
+    @parameters begin
+        R_s=0.000124, [description=&quot;stator resistance&quot;]
+        X′_d=0.0608, [description=&quot;d-axis transient reactance&quot;]
+        H=23.64, [description=&quot;inertia constant&quot;]
+        ω_b=2π*50, [description=&quot;System base frequency in rad/s&quot;]
+        vf_set, [guess=1, description=&quot;field voltage&quot;]
+        P_m, [guess=1, description=&quot;mechanical power&quot;]
+    end
+    @variables begin
+        δ(t), [guess=0, description=&quot;rotor angle&quot;]
+        ω(t), [guess=1, description=&quot;rotor speed&quot;]
+        τ_e(t), [description=&quot;electrical torque&quot;]
+        I_d(t), [description=&quot;d-axis current&quot;]
+        I_q(t), [description=&quot;q-axis current&quot;]
+        V_d(t), [description=&quot;d-axis voltage&quot;]
+        V_q(t), [description=&quot;q-axis voltage&quot;]
+        ψ_d(t), [description=&quot;d-axis flux linkage&quot;]
+        ψ_q(t), [description=&quot;q-axis flux linkage&quot;]
+    end
+    begin
+        T_to_loc(α)  = [ sin(α) -cos(α);
+                         cos(α)  sin(α)]
+        T_to_glob(α) = [ sin(α)  cos(α);
+                        -cos(α)  sin(α)]
+    end
+    @equations begin
+        # Park&#39;s transformations
+        [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q]
+        [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i]
+
+        # mechanical swing equation Milano 15.5
+        Dt(δ) ~ ω_b*(ω - 1)
+        2*H * Dt(ω) ~ P_m/ω - τ_e
+
+        # static flux linkage equations Milano 15.11
+        ψ_d ~  V_q + R_s*I_q
+        ψ_q ~ -V_d - R_s*I_d
+
+        # electrical torque Milano 15.6
+        τ_e ~ ψ_d*I_q - ψ_q*I_d
+
+        # magnetic equations from static model Milano 15.36
+        0 ~ V_q + R_s*I_q + X′_d*I_d - vf_set
+        0 ~ V_d + R_s*I_d - X′_d*I_q
+    end
+end
+
+
+@named machine = MilanoClassicalMachine();</code></pre><p>We can verify that the model satisfies the <a href="../../ModelingConcepts/#Injector-Interface">Injector Interface</a> by checking</p><pre><code class="language-julia hljs">isinjectormodel(machine)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><h2 id="Attaching-the-Machine-to-a-Busbar"><a class="docs-heading-anchor" href="#Attaching-the-Machine-to-a-Busbar">Attaching the Machine to a Busbar</a><a id="Attaching-the-Machine-to-a-Busbar-1"></a><a class="docs-heading-anchor-permalink" href="#Attaching-the-Machine-to-a-Busbar" title="Permalink"></a></h2><p>In order to use the machine model, we need to attach it to a busbar, thus forming a system which satisfies the <a href="../../ModelingConcepts/#MTKBus-Interface">MTKBus Interface</a>. There are two ways of doing so: manually and using the <code>MTKBus</code> constructor.</p><p><strong>Manual Construction</strong></p><p>We need to define a new MTK model, which has 2 components: a busbar and the machine. Both components have a <code>terminal</code> as a subcomponent, we can use the <code>connect</code> function to hook the machine on the busbar.</p><pre><code class="language-julia hljs">@mtkmodel MyMTKBus begin
+    @components begin
+        busbar = BusBar()
+        machine = MilanoClassicalMachine()
+    end
+    @equations begin
+        connect(busbar.terminal, machine.terminal)
+    end
+end
+mtkbus = MyMTKBus(name=:bus)
+isbusmodel(mtkbus) # assert that the created model satisfies the interface</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><p><strong>Automatic Construction</strong></p><p>We can also use the <a href="../../API/#PowerDynamics.MTKBus"><code>MTKBus</code></a> constructor to create a busbar with a machine attached. This constructor takes a list of <em>injector</em> models and hooks them all to the same busbar.</p><pre><code class="language-julia hljs">mtkbus = MTKBus(machine; name=:bus)
+isbusmodel(mtkbus) # assert that the created model satisfies the interface</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><h2 id="Compiling-bus-to-VertexModel"><a class="docs-heading-anchor" href="#Compiling-bus-to-VertexModel">Compiling bus to <code>VertexModel</code></a><a id="Compiling-bus-to-VertexModel-1"></a><a class="docs-heading-anchor-permalink" href="#Compiling-bus-to-VertexModel" title="Permalink"></a></h2><p>To actually simulate the system, we need to <em>compile</em> the model, i.e. transforming it from a purely symbolic representation to a numerical one.</p><pre><code class="language-julia hljs">compile_bus(mtkbus)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:bus</span> <span class="sgr94">PureStateMap()</span>
+ ├─ 2 inputs:  [busbar₊i_r, busbar₊i_i]
+ ├─ 4 states:  [machine₊ω<span class="sgr90">≈1</span>, machine₊δ<span class="sgr90">≈0</span>, busbar₊u_r=1, busbar₊u_i=0]
+ |    with diagonal mass matrix [1, 1, 0, 0]
+ ├─ 2 outputs: [busbar₊u_r=1, busbar₊u_i=0]
+ └─ 6 params:  [machine₊R_s=0.000124, machine₊X′_d=0.0608, machine₊H=23.64, machine₊ω_b=314.16, machine₊vf_set<span class="sgr90">≈1</span>, machine₊P_m<span class="sgr90">≈1</span>]</code></pre><h2 id="Defining-a-Simulation-Scenario"><a class="docs-heading-anchor" href="#Defining-a-Simulation-Scenario">Defining a Simulation Scenario</a><a id="Defining-a-Simulation-Scenario-1"></a><a class="docs-heading-anchor-permalink" href="#Defining-a-Simulation-Scenario" title="Permalink"></a></h2><p>To simulate the model, we need to define some kind of scenario. We&#39;ll create a simple two-bus system where our custom Milano machine is connected to a slack bus through a transmission line. This will allow us to observe the machine&#39;s dynamic behavior in response to a frequency disturbance.</p><p>First, we create a slack bus that provides the voltage and frequency reference for the system.</p><pre><code class="language-julia hljs">slackbus = compile_bus(
+    PowerDynamics.VariableFrequencySlack(name=:variable_slack),
+    vidx=1,
+    pf=pfSlack(V=1)
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:variable_slack</span> <span class="sgr94">NoFeedForward()</span> @ Vertex 1
+ ├─ 2 inputs:  [busbar₊i_r, busbar₊i_i]
+ ├─ 1 state:   [δ<span class="sgr90">≈0</span>]
+ ├─ 2 outputs: [busbar₊u_r=1, busbar₊u_i=0]
+ └─ 3 params:  [V<span class="sgr90">≈1</span>, ω=1, ω_b=314.16]
+<span class="sgr34"><span class="sgr1">Powerflow model </span></span>:slackbus with [slack₊V=1, slack₊δ=0]</code></pre><p>We define a frequency event that increases the system frequency at t=1 second (see ND docs on <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/callbacks/#Callbacks">Callbacks</a> for details). This disturbance will cause our machine to respond dynamically as it tries to maintain synchronism with the network.</p><pre><code class="language-julia hljs">freq_event = PresetTimeComponentCallback(
+    1, # trigger at time 1
+    ComponentAffect([],[:V,:ω]) do u, p, ctx
+        p[:ω] = 1.01 # set frequency to 1.01 pu
+    end
+)
+set_callback!(slackbus, freq_event)</code></pre><p>Next, we create the generator bus using our custom Milano machine model. We specify it as a PV bus for the power flow with 1 pu voltage and 1 pu active power.</p><pre><code class="language-julia hljs">genbus = compile_bus(
+    mtkbus,
+    vidx=2,
+    pf=pfPV(V=1, P=1)
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:bus</span> <span class="sgr94">PureStateMap()</span> @ Vertex 2
+ ├─ 2 inputs:  [busbar₊i_r, busbar₊i_i]
+ ├─ 4 states:  [machine₊ω<span class="sgr90">≈1</span>, machine₊δ<span class="sgr90">≈0</span>, busbar₊u_r=1, busbar₊u_i=0]
+ |    with diagonal mass matrix [1, 1, 0, 0]
+ ├─ 2 outputs: [busbar₊u_r=1, busbar₊u_i=0]
+ └─ 6 params:  [machine₊R_s=0.000124, machine₊X′_d=0.0608, machine₊H=23.64, machine₊ω_b=314.16, machine₊vf_set<span class="sgr90">≈1</span>, machine₊P_m<span class="sgr90">≈1</span>]
+<span class="sgr34"><span class="sgr1">Powerflow model </span></span>:pvbus with [pv₊P=1, pv₊V=1]</code></pre><p>We connect the two buses with a simple PI transmission line model.</p><pre><code class="language-julia hljs">line = compile_line(MTKLine(PiLine(; name=:piline)); src=1,dst=2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">EdgeModel <span class="sgr1">:line</span> <span class="sgr94">PureFeedForward()</span> @ Edge 1=&gt;2
+ ├─ 2/2 inputs:  src=[src₊u_r, src₊u_i] dst=[dst₊u_r, dst₊u_i]
+ ├─   0 states:  []  
+ ├─ 2/2 outputs: src=[src₊i_r, src₊i_i] dst=[dst₊i_r, dst₊i_i]
+ └─   9 params:  [piline₊R=0, piline₊X=0.1, piline₊G_src=0, piline₊B_src=0, piline₊G_dst=0, piline₊B_dst=0, piline₊r_src=1, piline₊r_dst=1, piline₊active=1]</code></pre><p>Now we can build the complete network with our two buses and the connecting line.</p><pre><code class="language-julia hljs">nw = Network([slackbus, genbus], line)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Network with 5 states and 18 parameters
+ ├─ 2 vertices (2 unique types)
+ └─ 1 edges (1 unique type)
+Edge-Aggregation using SequentialAggregator(+)
+1 callback set across 1 vertex and 0 edges</code></pre><p>Before running dynamic simulation, we initialize the system from power flow. This ensures that all dynamic states start from a steady-state condition.</p><p>To do so, we use the function <a href="../../API/#PowerDynamics.initialize_from_pf!"><code>initialize_from_pf!</code></a>, which does several steps:</p><ol><li>Calculate the powerflow according to the powerflow models.</li><li>Initialize the &quot;free&quot; states and parameters of the dynamical components, such that the system is in a steady state.</li></ol><p>More information on initialization can be found in the docs on <a href="../../initialization/#Powergrid-Initialization">Powergrid Initialization</a>.</p><pre><code class="language-julia hljs">initialize_from_pf!(nw)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Initialize VIndex(1) </span>-&gt; 0.0
+<span class="sgr1">Initialize VIndex(2) </span>-&gt; 1.3877787807814457e-17
+<span class="sgr1">Initialize EIndex(1) </span>-&gt; 0.0
+Initialized network with residual 1.3877787807814457e-17!</code></pre><p>Let&#39;s examine the initial state of our generator bus to verify proper initialization.</p><pre><code class="language-julia hljs">dump_initial_state(nw[VIndex(2)])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Inputs:</span>
+  busbar₊i_i           = <span class="sgr34">-0.050126</span>
+  busbar₊i_r           = <span class="sgr34">-1</span>
+<span class="sgr1">States:</span>
+  busbar₊u_i           = <span class="sgr34"> 0.1</span>
+  busbar₊u_r           = <span class="sgr34"> 0.99499</span>
+  machine₊δ            = <span class="sgr33"> 0.16069</span>  (guess  0)
+  machine₊ω            = <span class="sgr33"> 1</span>        (guess  1)
+<span class="sgr1">Outputs:</span>
+  busbar₊u_i           = <span class="sgr34"> 0.1</span>
+  busbar₊u_r           = <span class="sgr34"> 0.99499</span>
+<span class="sgr1">Parameters:</span>
+  machine₊H            = <span class="sgr34"> 23.64</span>
+  machine₊P_m          = <span class="sgr33"> 1.0001</span>   (guess  1)
+  machine₊R_s          = <span class="sgr34"> 0.000124</span>
+  machine₊X′_d         = <span class="sgr34"> 0.0608</span>
+  machine₊vf_set       = <span class="sgr33"> 1.005</span>    (guess  1)
+  machine₊ω_b          = <span class="sgr34"> 314.16</span>
+<span class="sgr1">Observed:</span>
+  busbar₊P             =  1
+  busbar₊Q             =  0.050126
+  busbar₊i_arg         = -3.0915
+  busbar₊i_mag         =  1.0013
+  busbar₊terminal₊i_i  = -0.050126
+  busbar₊terminal₊i_r  = -1
+  busbar₊terminal₊u_i  =  0.1
+  busbar₊terminal₊u_r  =  0.99499
+  busbar₊u_arg         =  0.10017
+  busbar₊u_mag         =  1
+  machine₊I_d          =  0.11052
+  machine₊I_q          =  0.99514
+  machine₊V_d          =  0.060491
+  machine₊V_q          =  0.99817
+  machine₊terminal₊i_i =  0.050126
+  machine₊terminal₊i_r =  1
+  machine₊terminal₊u_i =  0.1
+  machine₊terminal₊u_r =  0.99499
+  machine₊τ_e          =  1.0001
+  machine₊ψ_d          =  0.99829
+  machine₊ψ_q          = -0.060504</code></pre><p>The printout shows us several important aspects: The free internal states <span>$\delta$</span>, <span>$\omega$</span> and the free internal parameters <span>$P_{\mathrm m}$</span> and <span>$vf_{\mathrm{set}}$</span> have been initialized. We see, that both power and excitation voltage are slightly above the given (1,1) for the powerflow, which is expected since there are some losses in the model. However the initialized state matches the powerflow solution at the <strong>network interface</strong>, i.e. <code>busbar₊P</code> and <code>busbar₊u_mag</code> are both 1 pu.</p><h2 id="Dynamic-Simulation"><a class="docs-heading-anchor" href="#Dynamic-Simulation">Dynamic Simulation</a><a id="Dynamic-Simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Dynamic-Simulation" title="Permalink"></a></h2><p>With the system properly initialized, we can set up and solve the dynamic simulation. We simulate for 100 seconds to capture the machine&#39;s response to the frequency disturbance.</p><pre><code class="language-julia hljs">s0 = NWState(nw)
+prob = ODEProblem(nw, s0, (0,100))
+sol = solve(prob, Rodas5P())</code></pre><h2 id="Visualizing-the-Results"><a class="docs-heading-anchor" href="#Visualizing-the-Results">Visualizing the Results</a><a id="Visualizing-the-Results-1"></a><a class="docs-heading-anchor-permalink" href="#Visualizing-the-Results" title="Permalink"></a></h2><p>Now let&#39;s create comprehensive plots to visualize how our custom Milano machine responds to the frequency disturbance. We&#39;ll plot several key variables that demonstrate the machine&#39;s electromechanical dynamics.</p><pre><code class="language-julia hljs">let
+    fig = Figure(size=(800, 600));
+
+    ax1 = Axis(fig[1, 1];
+        title=&quot;Rotor Angle&quot;,
+        xlabel=&quot;Time [s]&quot;,
+        ylabel=&quot;Rotor Angle δ [rad]&quot;)
+    lines!(ax1, sol; idxs=VIndex(2, :machine₊δ), linewidth=2)
+    axislegend(ax1)
+
+    ax2 = Axis(fig[2, 1];
+        title=&quot;Rotor Speed&quot;,
+        xlabel=&quot;Time [s]&quot;,
+        ylabel=&quot;Rotor Speed ω [pu]&quot;)
+    lines!(ax2, sol; idxs=VIndex(2, :machine₊ω), linewidth=2)
+    axislegend(ax2)
+
+    ax3 = Axis(fig[3, 1];
+        title=&quot;Machine Voltages&quot;,
+        xlabel=&quot;Time [s]&quot;,
+        ylabel=&quot;Voltage [pu]&quot;)
+    lines!(ax3, sol; idxs=VIndex(2, :machine₊V_d), color=Cycled(1), linewidth=2)
+    lines!(ax3, sol; idxs=VIndex(2, :machine₊V_q), color=Cycled(2), linewidth=2)
+    axislegend(ax3)
+    fig
+end</code></pre><img src="2d502a49.png" alt="Example block output"/><h2 id="Observing-the-Poor-Damping-Problem"><a class="docs-heading-anchor" href="#Observing-the-Poor-Damping-Problem">Observing the Poor Damping Problem</a><a id="Observing-the-Poor-Damping-Problem-1"></a><a class="docs-heading-anchor-permalink" href="#Observing-the-Poor-Damping-Problem" title="Permalink"></a></h2><p>From the plots above, we can see that the Milano classical machine exhibits very lightly damped oscillations that persist for a very long time. The rotor angle and speed oscillate for hundreds of seconds without settling to a steady state.</p><p>This poor damping behavior occurs because:</p><ol><li><strong>No damper windings</strong>: The model lacks electromagnetic damping mechanisms</li><li><strong>Constant field voltage</strong>: No dynamic response to help stabilize the machine</li><li><strong>No mechanical damping</strong>: The swing equation has no friction losses</li></ol><p>The only source of damping here is, that we have specified a <em>constant mechanical power</em> rather than a constant mechanical torque.</p><p>To solve this problem, real power systems use control systems, particularly <strong>Power System Stabilizers (PSS)</strong> that are specifically designed to damp electromechanical oscillations.</p><h2 id="Adding-a-Power-System-Stabilizer-(PSS)"><a class="docs-heading-anchor" href="#Adding-a-Power-System-Stabilizer-(PSS)">Adding a Power System Stabilizer (PSS)</a><a id="Adding-a-Power-System-Stabilizer-(PSS)-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-a-Power-System-Stabilizer-(PSS)" title="Permalink"></a></h2><p>Let&#39;s create an improved machine model with controllable field voltage and add the simplest possible PSS to demonstrate the damping improvement.</p><p>The implemented PSS is a simple device, which adjusts the excitation voltage based on frequency deviation. It consists of a washout filter to remove steady-state errors and only react to frequency changes, and a gain to amplify the response.</p><p>To achieve this goal we will:</p><ol><li>Modify the Milano machine model to include a controllable field voltage input and a rotor frequency measurement output.</li><li>Create a simple PSS model that takes the frequency input and outputs a stabilizing signal to the field voltage.</li><li>Combine the machine and PSS into a new composite model that forms an injector.</li><li>Repeat the simulation above with our new controlled-generator model and compare the results.</li></ol><h3 id="Controllable-Machine-Model"><a class="docs-heading-anchor" href="#Controllable-Machine-Model">Controllable Machine Model</a><a id="Controllable-Machine-Model-1"></a><a class="docs-heading-anchor-permalink" href="#Controllable-Machine-Model" title="Permalink"></a></h3><p>First, we create a modified Milano machine with control inputs/outputs: <code>vf_in</code> for field voltage and <code>ω_out</code> for frequency output.</p><pre><code class="language-julia hljs">@mtkmodel MilanoControllableMachine begin
+    @components begin
+        terminal=Terminal()
+        # Control interface
+        vf_in = RealInput(guess=1)  # field voltage input
+        ω_out = RealOutput()        # frequency output for PSS
+    end
+    @parameters begin
+        R_s=0.000124, [description=&quot;stator resistance&quot;]
+        X′_d=0.0608, [description=&quot;d-axis transient reactance&quot;]
+        H=23.64, [description=&quot;inertia constant&quot;]
+        ω_b=2π*50, [description=&quot;System base frequency in rad/s&quot;]
+        P_m, [guess=1, description=&quot;mechanical power&quot;]
+    end
+    @variables begin
+        δ(t), [guess=0, description=&quot;rotor angle&quot;]
+        ω(t), [guess=1, description=&quot;rotor speed&quot;]
+        τ_e(t), [description=&quot;electrical torque&quot;]
+        I_d(t), [description=&quot;d-axis current&quot;]
+        I_q(t), [description=&quot;q-axis current&quot;]
+        V_d(t), [description=&quot;d-axis voltage&quot;]
+        V_q(t), [description=&quot;q-axis voltage&quot;]
+        ψ_d(t), [description=&quot;d-axis flux linkage&quot;]
+        ψ_q(t), [description=&quot;q-axis flux linkage&quot;]
+    end
+    begin
+        T_to_loc(α)  = [ sin(α) -cos(α);
+                         cos(α)  sin(α)]
+        T_to_glob(α) = [ sin(α)  cos(α);
+                        -cos(α)  sin(α)]
+    end
+    @equations begin
+        # Park&#39;s transformations
+        [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q]
+        [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i]
+
+        # mechanical swing equation Milano 15.5
+        Dt(δ) ~ ω_b*(ω - 1)
+        2*H * Dt(ω) ~ P_m/ω - τ_e
+
+        # static flux linkage equations Milano 15.11
+        ψ_d ~  V_q + R_s*I_q
+        ψ_q ~ -V_d - R_s*I_d
+
+        # electrical torque Milano 15.6
+        τ_e ~ ψ_d*I_q - ψ_q*I_d
+
+        # magnetic equations from static model Milano 15.36
+        0 ~ V_q + R_s*I_q + X′_d*I_d - vf_in.u  # Use controllable input
+        0 ~ V_d + R_s*I_d - X′_d*I_q
+
+        # Control interface - output frequency for PSS
+        ω_out.u ~ ω
+    end
+end</code></pre><h3 id="Simple-Power-System-Stabilizer"><a class="docs-heading-anchor" href="#Simple-Power-System-Stabilizer">Simple Power System Stabilizer</a><a id="Simple-Power-System-Stabilizer-1"></a><a class="docs-heading-anchor-permalink" href="#Simple-Power-System-Stabilizer" title="Permalink"></a></h3><p>The simplest PSS consists of a washout filter with gain. The washout filter ensures the PSS only responds to frequency changes, not steady-state errors.</p><pre><code class="language-julia hljs">@mtkmodel SimplePSS begin
+    @components begin
+        ω_in = RealInput() # frequency input from machine
+        vst = RealOutput() # stabilizer output signal
+    end
+    @parameters begin
+        Tw=10, [description=&quot;washout time constant&quot;]
+        Ks=20, [description=&quot;stabilizer gain&quot;]
+    end
+    @variables begin
+        y(t), [guess=0, description=&quot;washout filter output&quot;]
+    end
+    @equations begin
+        # Washout filter: dy/dt = (ω - y)/Tw
+        Dt(y) ~ (ω_in.u - y) / Tw
+        # output gain
+        vst.u ~ Ks * (ω_in.u - y)
+    end
+end</code></pre><h3 id="Complete-Generator-with-PSS"><a class="docs-heading-anchor" href="#Complete-Generator-with-PSS">Complete Generator with PSS</a><a id="Complete-Generator-with-PSS-1"></a><a class="docs-heading-anchor-permalink" href="#Complete-Generator-with-PSS" title="Permalink"></a></h3><p>The PSS only adds an <strong>offset</strong> to the field voltage based on the frequency input. Therefore, our combined injector model needs to look something like this:</p><pre><code class="language-asciiart hljs">    ┌───────────────────────────┐
+    │GeneratorWithPss           │
+    │         ╭─────→─────╮     │
+(t) │ ┌───────┴─┐ ω_out ┌─┴───┐ │
+ o──┼─┤ Machine │       │ PSS │ │
+    │ └───────┬─┘       └─┬───┘ │
+    │   vf_in ╰──←─(+)──←─╯ vst │
+    │               ↑           │
+    │            vf_base        │
+    └───────────────────────────┘</code></pre><p>Notably, similar to how we left <code>vf_set</code> free for initialization in the previous example, now we need to leave <code>vf_base</code> free.</p><p>We define a new mtkmodel which combines machine with controller and forms a new injector:</p><pre><code class="language-julia hljs">@mtkmodel GeneratorWithPSS begin
+    @components begin
+        terminal = Terminal()
+        machine = MilanoControllableMachine()
+        pss = SimplePSS()
+    end
+    @parameters begin
+        vf_base, [guess=1.0, description=&quot;base field voltage&quot;]
+    end
+    @equations begin
+        # Connect terminals
+        connect(terminal, machine.terminal)
+        # Connect control loop: machine frequency → PSS → back to machine field voltage
+        connect(machine.ω_out, pss.ω_in)
+        # Sum base field voltage with PSS output
+        machine.vf_in.u ~ vf_base + pss.vst.u
+    end
+end
+
+@named gen_with_pss = GeneratorWithPSS()
+isinjectormodel(gen_with_pss) # Verify it&#39;s still an injector</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><p>Since this is an injector, we can use <code>MTKBus(gen_with_pss)</code> to build the symbolic bus model. However, this leads to another level of namespacing, as the overall bus will have variable names like <code>gen_with_pss₊machine₊δ</code> due to the encapsulation.</p><p>Alternatively, we could define a model which directly implements the <code>MTKBus</code> interface:</p><pre><code class="language-asciiart hljs">┌─────────────────────────────────────┐
+│MyMTKBus                             │
+│                   ╭─────→─────╮     │
+│┌──────┐   ┌───────┴─┐ ω_out ┌─┴───┐ │
+││BusBar├─o─┤ Machine │       │ PSS │ │
+│└──────┘   └───────┬─┘       └─┬───┘ │
+│             vf_in ╰──←─(+)──←─╯ vst │
+│                         ↑           │
+│                      vf_base        │
+└─────────────────────────────────────┘</code></pre><pre><code class="language-julia hljs">@mtkmodel CustomMTKBus begin
+    @components begin
+        busbar = BusBar()
+        machine = MilanoControllableMachine()
+        pss = SimplePSS()
+    end
+    @parameters begin
+        vf_base, [guess=1.0, description=&quot;base field voltage&quot;]
+    end
+    @equations begin
+        connect(busbar.terminal, machine.terminal)
+        connect(machine.ω_out, pss.ω_in)
+        machine.vf_in.u ~ vf_base + pss.vst.u
+    end
+end
+@named genbus_custom = CustomMTKBus()
+@assert isbusmodel(genbus_custom)</code></pre><p>In practice, it doesn&#39;t really matter which approach you choose, as both will work. However this highlights the flexibility of the MTK modeling framework <strong>before</strong> you go to the compiled-model domain by calling <code>compile_bus</code> on the model fulfilling the <code>MTKBus</code> interface.</p><h2 id="Simulation-with-PSS"><a class="docs-heading-anchor" href="#Simulation-with-PSS">Simulation with PSS</a><a id="Simulation-with-PSS-1"></a><a class="docs-heading-anchor-permalink" href="#Simulation-with-PSS" title="Permalink"></a></h2><p>Now let&#39;s run the same simulation scenario with the PSS-equipped generator to observe the damping improvement.</p><p>Create the improved generator bus with simple PSS</p><pre><code class="language-julia hljs">genbus_pss = compile_bus(
+    MTKBus(gen_with_pss; name=:bus_pss),
+    vidx=2,
+    pf=pfPV(V=1, P=1)
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:bus_pss</span> <span class="sgr94">PureStateMap()</span> @ Vertex 2
+ ├─ 2 inputs:  [busbar₊i_r, busbar₊i_i]
+ ├─ 5 states:  [gen_with_pss₊pss₊y<span class="sgr90">≈0</span>, gen_with_pss₊machine₊ω<span class="sgr90">≈1</span>, gen_with_pss₊machine₊δ<span class="sgr90">≈0</span>, busbar₊u_r=1, busbar₊u_i=0]
+ |    with diagonal mass matrix [1, 1, 1, 0, 0]
+ ├─ 2 outputs: [busbar₊u_r=1, busbar₊u_i=0]
+ └─ 8 params:  [gen_with_pss₊vf_base<span class="sgr90">≈1</span>, gen_with_pss₊machine₊R_s=0.000124, gen_with_pss₊machine₊X′_d=0.0608, gen_with_pss₊machine₊H=23.64, gen_with_pss₊machine₊ω_b=314.16, gen_with_pss₊machine₊P_m<span class="sgr90">≈1</span>, gen_with_pss₊pss₊Tw=10, gen_with_pss₊pss₊Ks=20]
+<span class="sgr34"><span class="sgr1">Powerflow model </span></span>:pvbus with [pv₊P=1, pv₊V=1]</code></pre><p>Create network with PSS-equipped generator</p><pre><code class="language-julia hljs">nw_pss = Network([slackbus, genbus_pss], line)
+initialize_from_pf!(nw_pss)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Initialize VIndex(1) </span>-&gt; 0.0
+<span class="sgr1">Initialize VIndex(2) </span>-&gt; 1.3877787807814457e-17
+<span class="sgr1">Initialize EIndex(1) </span>-&gt; 0.0
+Initialized network with residual 1.3877787807814457e-17!</code></pre><p>Run simulation with simple PSS</p><pre><code class="language-julia hljs">s0_pss = NWState(nw_pss)
+prob_pss = ODEProblem(nw_pss, s0_pss, (0,100))
+sol_pss = solve(prob_pss, Rodas5P())</code></pre><h2 id="Comparing-Results:-With-and-Without-PSS"><a class="docs-heading-anchor" href="#Comparing-Results:-With-and-Without-PSS">Comparing Results: With and Without PSS</a><a id="Comparing-Results:-With-and-Without-PSS-1"></a><a class="docs-heading-anchor-permalink" href="#Comparing-Results:-With-and-Without-PSS" title="Permalink"></a></h2><p>Let&#39;s create comparison plots to clearly see the damping improvement:</p><pre><code class="language-julia hljs">let
+    fig = Figure(size=(800, 600));
+
+    # Compare rotor speeds
+    ax1 = Axis(fig[1, 1];
+        title=&quot;Rotor Speed Comparison: Effect of PSS on Damping&quot;,
+        xlabel=&quot;Time [s]&quot;,
+        ylabel=&quot;Rotor Speed ω [pu]&quot;)
+    lines!(ax1, sol; idxs=VIndex(2, :machine₊ω), label=&quot;No PSS&quot;, color=Cycled(2))
+    lines!(ax1, sol_pss; idxs=VIndex(2, :gen_with_pss₊machine₊ω), label=&quot;Simple PSS&quot;, color=Cycled(1), linewidth=2)
+    axislegend(ax1, position=:rt)
+    xlims!(ax1, 0, 30)  # Focus on first 30 seconds
+
+    # PSS Output - shows the actual stabilizer signal
+    ax2 = Axis(fig[2, 1];
+        title=&quot;PSS Output Signal&quot;,
+        xlabel=&quot;Time [s]&quot;,
+        ylabel=&quot;PSS Output [pu]&quot;)
+    lines!(ax2, sol_pss; idxs=VIndex(2, :gen_with_pss₊pss₊vst₊u), label=&quot;PSS Output&quot;, linewidth=2)
+    axislegend(ax2, position=:rt)
+    xlims!(ax2, 0, 30)
+
+    fig
+end</code></pre><img src="337ffcd1.png" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../typical_simulation_workflow/">« Typical Simulation Workflow</a><a class="docs-footer-nextpage" href="../custom_line/">Custom Transmission Line »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Monday 15 December 2025 08:55">Monday 15 December 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
