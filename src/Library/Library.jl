@@ -13,6 +13,7 @@ using NonlinearSolve: NonlinearProblem
 using SciMLBase: SciMLBase, solve
 using Symbolics: Symbolics
 using LinearAlgebra: LinearAlgebra
+using SparseConnectivityTracer: GradientTracer
 
 """
     simplify_barrier(x) = x

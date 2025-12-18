@@ -4,10 +4,14 @@
 Quadratic Saturation Function through two points (E1,SE1) and (E2,SE2).
 """
 function QUAD_SE(u, SE1, SE2, E1, E2)
+    if any(x -> x isa GradientTracer, (u, SE1, SE2, E1, E2))
+        return u+SE1+SE2+E1+E2
+    end
     # the check is annoying the model might get tested with arbitrary data...
     # if !(0 < SE1 < SE2) || !(0 < E1 < E2)
     #     throw(ArgumentError("QUAD_SE: Saturation values and voltage points must be positive and increasing! Got SE1=$SE1, SE2=$SE2, E1=$E1, E2=$E2"))
     # end
+    SE1 == SE2 && return SE1
 
     a = sqrt(SE1 * E1 / (SE2 * E2))
     A = E2 - (E1 - E2) / (a - 1)
@@ -26,16 +30,21 @@ ModelingToolkit.@register_symbolic QUAD_SE(u, SE1, SE2, E1, E2)
 Exponential Saturation Function through two points (E1,SE1) and (E2,SE2).
 """
 function EXP_SE(u, SE1, SE2, E1, E2)
+    if any(x -> x isa GradientTracer, (u, SE1, SE2, E1, E2))
+        return u+SE1+SE2+E1+E2
+    end
     # commented out check, to not register as symbolic
     # if !(0 < SE1 < SE2) || !(0 < E1 < E2)
     #     throw(ArgumentError("EXP_SE: Saturation values and voltage points must be positive and increasing! Got SE1=$SE1, SE2=$SE2, E1=$E1, E2=$E2"))
     # end
+    SE1 == SE2 && return SE1
 
     X = log(SE2/SE1) / log(E2/E1)
     k = SE1 / E1^X
 
     return k * u^X  # equivalently: SE1 * (u/E1)^X
 end
+ModelingToolkit.@register_symbolic EXP_SE(u, SE1, SE2, E1, E2)
 
 """
 SimpleLag block
