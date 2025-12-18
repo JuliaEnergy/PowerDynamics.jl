@@ -3,7 +3,7 @@
 ####
 
 """
-    compile_bus(sys::System; verbose=false, name=getname(sys), kwargs...)
+    compile_bus(sys::System; verbose=false, name=getname(sys), assume_io_coupling=false, check=true, kwargs...)
 
 Create a VertexModel from an `System` that satisfies the bus model interface.
 
@@ -11,6 +11,8 @@ Create a VertexModel from an `System` that satisfies the bus model interface.
 - `sys::System`: The system must satisfy the bus model interface (see [`isbusmodel`](@ref))
 - `verbose::Bool=false`: Enable verbose output during creation
 - `name`: Name for the bus (defaults to system name)
+- `assume_io_coupling::Bool=false`: If true, assume output depends on inputs (see NetworkDynamics.jl docs)
+- `check::Bool=true`: If false, skip component validation checks
 - `kwargs...`: Additional keyword arguments passed to the Bus constructor
 
 # Returns
@@ -33,7 +35,7 @@ compile_bus(││BusBar├o           │) =>            ║  ││BusBar├o 
 
 See also: [`MTKBus`](@ref)
 """
-function compile_bus(sys::System; verbose=false, name=getname(sys), assume_io_coupling=false, kwargs...)
+function compile_bus(sys::System; verbose=false, name=getname(sys), assume_io_coupling=false, check=true, kwargs...)
     if !isbusmodel(sys)
         msg = "The system must satisfy the bus model interface!"
         if isinjectormodel(sys)
@@ -42,19 +44,19 @@ function compile_bus(sys::System; verbose=false, name=getname(sys), assume_io_co
         throw(ArgumentError(msg))
     end
     io = _busio(sys, :busbar)
-    vertexf = VertexModel(sys, io.in, io.out; verbose, name, assume_io_coupling)
-    compile_bus(vertexf; copy=false, kwargs...)
+    vertexf = VertexModel(sys, io.in, io.out; verbose, name, assume_io_coupling, check)
+    compile_bus(vertexf; copy=false, check, kwargs...)
 end
 """
-    compile_bus(template::VertexModel; copy=true, pf=nothing, name=template.name, pairs...)
+    compile_bus(template::VertexModel; copy=true, pf=nothing, name=template.name, check=true, pairs...)
 
 Similar to the `Bus` constructor, but takes a pre-compiled `VertexModel`. It copies the VertexModel
 and applies the keyword arguments. This is useful when you want to create new bus models based on a template.
 """
-function compile_bus(template::VertexModel; copy=true, vidx=nothing, pf=nothing, name=template.name, pairs...)
+function compile_bus(template::VertexModel; copy=true, vidx=nothing, pf=nothing, name=template.name, check=true, pairs...)
     vertexf = copy ? Base.copy(template) : template
     if name != template.name
-        vertexf = VertexModel(vertexf; name, allow_output_sym_clash=true)
+        vertexf = VertexModel(vertexf; name, allow_output_sym_clash=true, check)
     end
 
     # is done in ND constructor too, but needs special handling because compile_line calls this
@@ -111,7 +113,7 @@ end
 #### Network level Line representation
 ####
 """
-    compile_line(sys::System; verbose=false, name=getname(sys), kwargs...)
+    compile_line(sys::System; verbose=false, name=getname(sys), assume_io_coupling=false, check=true, kwargs...)
 
 Create an EdgeModel from a `System` that satisfies the line model interface.
 
@@ -119,6 +121,8 @@ Create an EdgeModel from a `System` that satisfies the line model interface.
 - `sys::System`: The system must satisfy the line model interface (see [`islinemodel`](@ref))
 - `verbose::Bool=false`: Enable verbose output during creation
 - `name`: Name for the line (defaults to system name)
+- `assume_io_coupling::Bool=false`: If true, assume output depends on inputs (see NetworkDynamics.jl docs)
+- `check::Bool=true`: If false, skip component validation checks
 - `kwargs...`: Additional keyword arguments passed to the Line constructor
 
 # Returns
@@ -144,7 +148,7 @@ compile_line(││LineEnd├o         o┤LineEnd││) =>     ║ ││LineE
 
 See also: [`MTKLine`](@ref)
 """
-function compile_line(sys::System; verbose=false, name=getname(sys), assume_io_coupling=false, kwargs...)
+function compile_line(sys::System; verbose=false, name=getname(sys), assume_io_coupling=false, check=true, kwargs...)
     if !islinemodel(sys)
         msg = "The system must satisfy the line model interface!"
         if isbranchmodel(sys)
@@ -153,15 +157,15 @@ function compile_line(sys::System; verbose=false, name=getname(sys), assume_io_c
         throw(ArgumentError(msg))
     end
     io = _lineio(sys, :src, :dst)
-    edgef = EdgeModel(sys, io.srcin, io.dstin, io.srcout, io.dstout; verbose, name, assume_io_coupling)
-    compile_line(edgef; copy=false, kwargs...)
+    edgef = EdgeModel(sys, io.srcin, io.dstin, io.srcout, io.dstout; verbose, name, assume_io_coupling, check)
+    compile_line(edgef; copy=false, check, kwargs...)
 end
-function compile_line(edgef::EdgeModel; copy=true, src=nothing, dst=nothing, name=edgef.name, pairs...)
+function compile_line(edgef::EdgeModel; copy=true, src=nothing, dst=nothing, name=edgef.name, check=true, pairs...)
     if copy
         edgef = Base.copy(edgef)
     end
     if name != edgef.name
-        edgef = EdgeModel(edgef; name, allow_output_sym_clash=true)
+        edgef = EdgeModel(edgef; name, allow_output_sym_clash=true, check)
     end
 
     # is done in ND constructor too, but needs special handling because compile_line calls this
