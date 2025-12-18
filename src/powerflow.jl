@@ -206,7 +206,8 @@ delete_pfmodel!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfmodel!(get
                     fill_busbar_defaults=true,
                     use_guesses=true,
                     sparse=nv(pfnw) > 50,
-                    verbose=true)
+                    verbose=true,
+                    kwargs...)
 
 Solve the power flow equations for a given network.
 
@@ -220,6 +221,7 @@ Uses [`find_fixpoint`](@extref NetworkDynamics.find_fixpoint) from NetworkDynami
 - `use_guesses`: Whether to fall back to "guess" values instead of "default" values if available.
 - `sparse`: Whether to use a sparse solver (default: for networks with more than 50 buses)
 - `verbose`: Whether to print the power flow solution
+- `kwargs`: Additional keyword arguments passed to `find_fixpoint`
 
 ## Returns
 - A `NWState` containing the solved power flow solution
@@ -257,10 +259,14 @@ function solve_powerflow(
     if fill_busbar_defaults && any(isnan, uflat(pfs0))
         urinds = generate_indices(pfnw, VIndex(:), :busbar₊u_r, s=true, obs=false, out=false, in=false, p=false)
         nanidx = findall(isnan, pfs0[urinds])
-        pfs0[urinds[nanidx]] .= 1.0
+        if !isempty(nanidx)
+            pfs0[urinds[nanidx]] .= 1.0
+        end
         uiinds = generate_indices(pfnw, VIndex(:), :busbar₊u_i, s=true, obs=false, out=false, in=false, p=false)
         nanidx = findall(isnan, pfs0[uiinds])
-        pfs0[uiinds[nanidx]] .= 0.0
+        if !isempty(nanidx)
+            pfs0[uiinds[nanidx]] .= 0.0
+        end
     end
     if use_guesses && any(isnan, uflat(pfs0))
         for (i, idx) in enumerate(SII.variable_symbols(pfs0))
