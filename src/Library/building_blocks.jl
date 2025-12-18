@@ -206,19 +206,20 @@ function _generate_limint_callbacks(namespace)
     condition = ComponentCondition(_SatLim_condition, [min, max, out, forcing], [satmax, satmin])
 
     upcrossing_affect = ComponentAffect([], [satmax, satmin]) do u, p, eventidx, ctx
+        comp = get_compidx(ctx)
         if eventidx == 1
-            println("$namespace: /⎺ reached upper saturation at $(round(ctx.t, digits=4))s")
+            println("$comp: $namespace: /⎺ reached upper saturation at $(round(ctx.t, digits=4))s")
             p[satmax] = 1.0
             p[satmin] = 0.0
         elseif eventidx == 2
-            println("$namespace: \\_ reached lower saturation at $(round(ctx.t, digits=4))s")
+            println("$comp: $namespace: \\_ reached lower saturation at $(round(ctx.t, digits=4))s")
             p[satmax] = 0.0
             p[satmin] = 1.0
         elseif eventidx == 3
             # upcrossing means, forcing went from negative to positive, i.e. we leave lower saturation
             insatmin = !iszero(p[satmin])
             if insatmin
-                println("$namespace: _/ left lower saturation at $(round(ctx.t, digits=4))s")
+                println("$comp: $namespace: _/ left lower saturation at $(round(ctx.t, digits=4))s")
                 p[satmin] = 0.0
             end
         else
@@ -227,6 +228,7 @@ function _generate_limint_callbacks(namespace)
     end
 
     downcrossing_affect = ComponentAffect([],[satmax]) do u, p, eventidx, ctx
+        comp = get_compidx(ctx)
         if eventidx == 1 || eventidx == 2
             # in theory should never be hit
             return
@@ -234,7 +236,7 @@ function _generate_limint_callbacks(namespace)
             # downcrossing means, forcing went from positive to negative, i.e. we leave upper saturation
             insatmax = !iszero(p[satmax])
             if insatmax
-                println("$namespace: ⎺\\ left upper saturation at $(round(ctx.t, digits=4))s")
+                println("$comp: $namespace: ⎺\\ left upper saturation at $(round(ctx.t, digits=4))s")
                 p[satmax] = 0.0
             end
         else
@@ -248,6 +250,7 @@ function _generate_limint_callbacks(namespace)
         u[out] < u[min] - 1e-10 || u[out] > u[max] + 1e-10
     end
     discrete_affect = ComponentAffect([out],[satmin, satmax]) do u, p, ctx
+        comp = get_compidx(ctx)
         if ctx.model isa VertexModel
             minidx = VIndex(ctx.vidx, min)
             maxidx = VIndex(ctx.vidx, max)
@@ -257,13 +260,13 @@ function _generate_limint_callbacks(namespace)
         end
         _min, _max = NWState(ctx.integrator)[(minidx, maxidx)]
         if u[out] < _min
-            @warn "Sanity check cb for LagLim triggered! out=$(u[out]) < min=$_min at time $(ctx.t). Forcing out to min. \
+            @warn "$comp: Sanity check cb for LagLim triggered! out=$(u[out]) < min=$_min at time $(ctx.t). Forcing out to min. \
                    This might indicate a discrete jump in you model which was not picked up by the callback system!"
             u[out] = _min
             p[satmin] = 1.0
             p[satmax] = 0.0
         elseif u[out] > _max
-            @warn "Sanity check cb for LagLim triggered! out=$(u[out]) > max=$_max at time $(ctx.t). Forcing out to max. \
+            @warn "$comp: Sanity check cb for LagLim triggered! out=$(u[out]) > max=$_max at time $(ctx.t). Forcing out to max. \
                    This might indicate a discrete jump in you model which was not picked up by the callback system!"
             u[out] = _max
             p[satmin] = 0.0
@@ -278,13 +281,14 @@ function _generate_limint_callbacks(namespace)
         insatmin && u[forcing] > 0 || insatmax && u[forcing] < 0
     end
     discrete_unsat_affect = ComponentAffect([],[satmin, satmax]) do u, p, ctx
+        comp = get_compidx(ctx)
         insatmin = !iszero(p[satmin])
         insatmax = !iszero(p[satmax])
         if insatmin
-            println("$namespace: _/ left lower saturation at $(round(ctx.t, digits=4))s (triggered by discrete cb)")
+            println("$comp: $namespace: _/ left lower saturation at $(round(ctx.t, digits=4))s (triggered by discrete cb)")
             p[satmin] = 0.0
         elseif insatmax
-            println("$namespace: ⎺\\ left upper saturation at $(round(ctx.t, digits=4))s (triggered by discrete cb)")
+            println("$comp: $namespace: ⎺\\ left upper saturation at $(round(ctx.t, digits=4))s (triggered by discrete cb)")
             p[satmax] = 0.0
         else
             error("Sanity check was wrongfully triggered!")
@@ -323,6 +327,7 @@ function _SatLim_condition(_out, u, p, _)
             _out[3] = Inf
         end
 end
+get_compidx(nt::NamedTuple) = haskey(nt, :vidx) ? VIndex(nt.vidx) : EIndex(nt.eidx)
 
 """
 Simple gain block
