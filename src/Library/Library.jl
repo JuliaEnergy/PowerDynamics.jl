@@ -14,6 +14,7 @@ using SciMLBase: SciMLBase, solve
 using Symbolics: Symbolics
 using LinearAlgebra: LinearAlgebra
 using SparseConnectivityTracer: GradientTracer
+using ScopedValues: ScopedValue
 
 """
     simplify_barrier(x) = x

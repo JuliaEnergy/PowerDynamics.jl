@@ -113,6 +113,10 @@ but may not be used in all scenarios!
     end
 end
 
+
+const LimiterCallbackConfig = ScopedValue((; discrete=true, continuous=true))
+const LimiterCallbackVerbose = ScopedValue(true)
+
 function attach_limint_callback! end # needs to be defined before @mtkmodel
 @mtkmodel LimitedIntegratorBase begin
     @structural_parameters begin
@@ -203,103 +207,136 @@ function _generate_limint_callbacks(namespace)
     satmax = Symbol(namespace, "₊_callback_sat_max")
     satmin = Symbol(namespace, "₊_callback_sat_min")
 
-    condition = ComponentCondition(_SatLim_condition, [min, max, out, forcing], [satmax, satmin])
+    use_continuous_callback = LimiterCallbackConfig[].continuous
+    use_discrete_callback = LimiterCallbackConfig[].discrete
 
-    upcrossing_affect = ComponentAffect([], [satmax, satmin]) do u, p, eventidx, ctx
-        comp = get_compidx(ctx)
-        if eventidx == 1
-            println("$comp: $namespace: /⎺ reached upper saturation at $(round(ctx.t, digits=4))s")
-            p[satmax] = 1.0
-            p[satmin] = 0.0
-        elseif eventidx == 2
-            println("$comp: $namespace: \\_ reached lower saturation at $(round(ctx.t, digits=4))s")
-            p[satmax] = 0.0
-            p[satmin] = 1.0
-        elseif eventidx == 3
-            # upcrossing means, forcing went from negative to positive, i.e. we leave lower saturation
-            insatmin = !iszero(p[satmin])
-            if insatmin
-                println("$comp: $namespace: _/ left lower saturation at $(round(ctx.t, digits=4))s")
+    if use_continuous_callback
+        condition = ComponentCondition(_SatLim_condition, [min, max, out, forcing], [satmax, satmin])
+
+        upcrossing_affect = ComponentAffect([], [satmax, satmin]) do u, p, eventidx, ctx
+            comp = get_compidx(ctx)
+            verbose = LimiterCallbackVerbose[]
+            if eventidx == 1
+                verbose && println("$comp: $namespace: /⎺ reached upper saturation at $(round(ctx.t, digits=4))s")
+                p[satmax] = 1.0
                 p[satmin] = 0.0
-            end
-        else
-            error("Unknown event index $eventidx")
-        end
-    end
-
-    downcrossing_affect = ComponentAffect([],[satmax]) do u, p, eventidx, ctx
-        comp = get_compidx(ctx)
-        if eventidx == 1 || eventidx == 2
-            # in theory should never be hit
-            return
-        elseif eventidx == 3
-            # downcrossing means, forcing went from positive to negative, i.e. we leave upper saturation
-            insatmax = !iszero(p[satmax])
-            if insatmax
-                println("$comp: $namespace: ⎺\\ left upper saturation at $(round(ctx.t, digits=4))s")
+            elseif eventidx == 2
+                verbose && println("$comp: $namespace: \\_ reached lower saturation at $(round(ctx.t, digits=4))s")
                 p[satmax] = 0.0
+                p[satmin] = 1.0
+            elseif eventidx == 3
+                # upcrossing means, forcing went from negative to positive, i.e. we leave lower saturation
+                insatmin = !iszero(p[satmin])
+                if insatmin
+                    verbose && println("$comp: $namespace: _/ left lower saturation at $(round(ctx.t, digits=4))s")
+                    p[satmin] = 0.0
+                end
+            else
+                error("Unknown event index $eventidx")
             end
-        else
-            error("Unknown event index $eventidx")
         end
+
+        downcrossing_affect = ComponentAffect([],[satmax]) do u, p, eventidx, ctx
+            comp = get_compidx(ctx)
+            verbose = LimiterCallbackVerbose[]
+            if eventidx == 1 || eventidx == 2
+                # in theory should never be hit
+                return
+            elseif eventidx == 3
+                # downcrossing means, forcing went from positive to negative, i.e. we leave upper saturation
+                insatmax = !iszero(p[satmax])
+                if insatmax
+                    verbose && println("$comp: $namespace: ⎺\\ left upper saturation at $(round(ctx.t, digits=4))s")
+                    p[satmax] = 0.0
+                end
+            else
+                error("Unknown event index $eventidx")
+            end
+        end
+        continous_callback = VectorContinuousComponentCallback(condition, upcrossing_affect, 3; affect_neg! = downcrossing_affect)
     end
 
-    # TODO: merge both discrete conditions and move condition below function for performance
-    discrete_condition = ComponentCondition([out, min, max], []) do u, p, t
-        # account for nummerical innaccuracies at the boudaries
-        u[out] < u[min] - 1e-10 || u[out] > u[max] + 1e-10
-    end
-    discrete_affect = ComponentAffect([out],[satmin, satmax]) do u, p, ctx
-        comp = get_compidx(ctx)
-        if ctx.model isa VertexModel
-            minidx = VIndex(ctx.vidx, min)
-            maxidx = VIndex(ctx.vidx, max)
-        else
-            minidx = EIndex(ctx.eidx, min)
-            maxidx = EIndex(ctx.eidx, max)
+    if use_discrete_callback
+        # TODO: merge both discrete conditions and move condition below function for performance
+        function _discrete_cond(u,p,t)
+            # account for nummerical innaccuracies at the boudaries
+            u[1] < u[2] - 1e-10 || u[1] > u[3] + 1e-10
         end
-        _min, _max = NWState(ctx.integrator)[(minidx, maxidx)]
-        if u[out] < _min
-            @warn "$comp: Sanity check cb for LagLim triggered! out=$(u[out]) < min=$_min at time $(ctx.t). Forcing out to min. \
-                   This might indicate a discrete jump in you model which was not picked up by the callback system!"
-            u[out] = _min
-            p[satmin] = 1.0
-            p[satmax] = 0.0
-        elseif u[out] > _max
-            @warn "$comp: Sanity check cb for LagLim triggered! out=$(u[out]) > max=$_max at time $(ctx.t). Forcing out to max. \
-                   This might indicate a discrete jump in you model which was not picked up by the callback system!"
-            u[out] = _max
-            p[satmin] = 0.0
-            p[satmax] = 1.0
-        else
-            error("Sanity check was wrongfully triggered!")
+        discrete_condition = ComponentCondition(_discrete_cond, [out, min, max], [])
+        discrete_affect = ComponentAffect([out],[satmin, satmax]) do u, p, ctx
+            comp = get_compidx(ctx)
+            verbose = LimiterCallbackVerbose[]
+            if ctx.model isa VertexModel
+                minidx = VIndex(ctx.vidx, min)
+                maxidx = VIndex(ctx.vidx, max)
+            else
+                minidx = EIndex(ctx.eidx, min)
+                maxidx = EIndex(ctx.eidx, max)
+            end
+            _min, _max = NWState(ctx.integrator)[(minidx, maxidx)]
+            if u[out] < _min
+                if verbose || use_continuous_callback
+                    print("$comp: $namespace: \\_ reached lower saturation at $(round(ctx.t, digits=4))s")
+                    use_continuous_callback ? printstyled(" (triggered by discrete cb)\n", color=:yellow) : println()
+                end
+                u[out] = _min
+                p[satmin] = 1.0
+                p[satmax] = 0.0
+            elseif u[out] > _max
+                if verbose || use_continuous_callback
+                    print("$comp: $namespace: /⎺ reached upper saturation at $(round(ctx.t, digits=4))s")
+                    use_continuous_callback ? printstyled(" (triggered by discrete cb)\n", color=:yellow) : println()
+                end
+                u[out] = _max
+                p[satmin] = 0.0
+                p[satmax] = 1.0
+            else
+                error("Sanity check was wrongfully triggered!")
+            end
         end
-    end
-    discrete_unsat_condition = ComponentCondition([forcing],[satmin, satmax]) do u, p, t
-        insatmin = !iszero(p[satmin])
-        insatmax = !iszero(p[satmax])
-        insatmin && u[forcing] > 0 || insatmax && u[forcing] < 0
-    end
-    discrete_unsat_affect = ComponentAffect([],[satmin, satmax]) do u, p, ctx
-        comp = get_compidx(ctx)
-        insatmin = !iszero(p[satmin])
-        insatmax = !iszero(p[satmax])
-        if insatmin
-            println("$comp: $namespace: _/ left lower saturation at $(round(ctx.t, digits=4))s (triggered by discrete cb)")
-            p[satmin] = 0.0
-        elseif insatmax
-            println("$comp: $namespace: ⎺\\ left upper saturation at $(round(ctx.t, digits=4))s (triggered by discrete cb)")
-            p[satmax] = 0.0
-        else
-            error("Sanity check was wrongfully triggered!")
+        function _discrete_unsat_cond(u,p,t)
+            insatmin = !iszero(p[1])
+            insatmax = !iszero(p[2])
+            insatmin && u[1] > 0 || insatmax && u[1] < 0
         end
+        discrete_unsat_condition = ComponentCondition(_discrete_unsat_cond, [forcing],[satmin, satmax])
+        discrete_unsat_affect = ComponentAffect([],[satmin, satmax]) do u, p, ctx
+            comp = get_compidx(ctx)
+            verbose = LimiterCallbackVerbose[]
+            insatmin = !iszero(p[satmin])
+            insatmax = !iszero(p[satmax])
+            if insatmin
+                if verbose
+                    print("$comp: $namespace: _/ left lower saturation at $(round(ctx.t, digits=4))s")
+                    use_continuous_callback ? printstyled(" (triggered by discrete cb)\n", color=:yellow) : println()
+                end
+                p[satmin] = 0.0
+            elseif insatmax
+                if verbose
+                    print("$comp: $namespace: ⎺\\ left upper saturation at $(round(ctx.t, digits=4))s")
+                    use_continuous_callback ? printstyled(" (triggered by discrete cb)\n", color=:yellow) : println()
+                end
+                p[satmax] = 0.0
+            else
+                error("Sanity check was wrongfully triggered!")
+            end
+        end
+
+        discrete_callback = (
+            DiscreteComponentCallback(discrete_condition, discrete_affect),
+            DiscreteComponentCallback(discrete_unsat_condition, discrete_unsat_affect)
+        )
     end
 
-    (
-        VectorContinuousComponentCallback(condition, upcrossing_affect, 3; affect_neg! = downcrossing_affect),
-        DiscreteComponentCallback(discrete_condition, discrete_affect),
-        DiscreteComponentCallback(discrete_unsat_condition, discrete_unsat_affect)
-    )
+    if use_continuous_callback && use_discrete_callback
+        return (continous_callback, discrete_callback...)
+    elseif use_continuous_callback
+        return continous_callback
+    elseif use_discrete_callback
+        return discrete_callback
+    else
+        error("No callback type selected for LimiterCallbackConfig!")
+    end
 end
 function _SatLim_condition(_out, u, p, _)
         # define condition in separate function to avoid capturing and make them batch compatible
