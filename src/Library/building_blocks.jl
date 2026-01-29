@@ -114,45 +114,269 @@ but may not be used in all scenarios!
 end
 
 
-const LimiterCallbackConfig = ScopedValue((; discrete=true, continuous=true))
-const LimiterCallbackVerbose = ScopedValue(true)
+"""
+    SaturationConfig(method; discrete_cb=true, continuous_cb=true, regularization=0)
 
-function attach_limint_callback! end # needs to be defined before @mtkmodel
-@mtkmodel LimitedIntegratorBase begin
-    @structural_parameters begin
-        type # :lag or :int
-        K # Gain
-        T # Time constant
-        outMin # Lower limit
-        outMax # Upper limit
-        guess=0
+Configuration for saturation limiting and anti-windup in limited integrator blocks
+([`SimpleLagLim`](@ref), [`LimIntegrator`](@ref)).
+
+This controls how output limits are enforced and how integrator windup is prevented when
+limits are active. Different methods have different numerical properties and may affect
+initialization and simulation accuracy.
+
+# Supported methods
+- `:callback`: Use callbacks to detect and enforce limits, stopping integration when saturated (default)
+- `:complementary`: Use complementarity constraints (Fischer-Burmeister) with Lagrange multipliers
+- `:rhs_hard`: Clamp RHS with hard `ifelse` switching (discontinuous anti-windup)
+- `:rhs_soft`: Clamp RHS with smooth tanh-based saturation (smooth anti-windup)
+
+# Arguments
+- `method`: Saturation handling and anti-windup method
+- `discrete_cb=true`: Enable discrete callbacks (only for `:callback` method)
+- `continuous_cb=true`: Enable continuous callbacks (only for `:callback` method)
+- `regularization=0`: Regularization parameter (for `:complementary` and `:rhs_soft` methods)
+
+See also [`SaturationConfiguration`](@ref), [`set_saturation_config!`](@ref).
+"""
+struct SaturationConfig
+    method::Symbol
+    discrete_cb::Bool
+    continuous_cb::Bool
+    regularization::Float64
+end
+function SaturationConfig(method; discrete_cb=true, continuous_cb=true, regularization=0, verbose=true)
+    if method == :callback
+        @assert regularization == 0 "Regularization not supported for method :callback"
+        return SaturationConfig(method, discrete_cb, continuous_cb, regularization)
+    elseif method == :complementary
+        return SaturationConfig(method, false, false, regularization)
+    elseif method == :rhs_hard
+        return SaturationConfig(method, false, false, NaN)
+    elseif method == :rhs_soft
+        return SaturationConfig(method, false, false, regularization)
+    else
+        error("Unknown saturation config method :$method. Supported types are :callback, :complementary, :rhs_hard and :rhs_soft")
     end
+end
+
+"""
+    const SaturationConfiguration = ScopedValue(SaturationConfig(:callback))
+
+Global configuration for saturation handling in limited integrator blocks.
+See [`SaturationConfig`](@ref) for details on available options.
+
+Use [`set_saturation_config!`](@ref) to change globally or use
+```julia
+with(SaturationConfiguration => SaturationConfig(:complementary, regularization=1e-6)) do
+    # your code here
+end
+```
+to set temporarily via ScopedValue mechanism.
+"""
+const SaturationConfiguration = ScopedValue(SaturationConfig(:callback))
+
+"""
+    set_saturation_config!(style::Symbol; kwargs...)
+    set_saturation_config!(config::SaturationConfig)
+
+Sets [`SaturationConfiguration`](@ref) globally.
+See [`SaturationConfig`](@ref) for available options and styles.
+"""
+function set_saturation_config!(config::SaturationConfig)
+    SaturationConfiguration[] = config
+end
+function set_saturation_config!(style::Symbol; kwargs...)
+    config = SaturationConfig(style; kwargs...)
+    set_saturation_config!(config)
+end
+
+@component function LimitedIntegratorBase(; name, type, K, T, outMin, outMax, guess=0)
+    if type != :lag && type != :int
+        error("Unknown type $type for SimpleLagLim. Supported types are :lag and :int")
+    end
+    config = SaturationConfiguration[]
+    if config.method ∉ (:callback, :complementary, :rhs_hard, :rhs_soft)
+        error("Unknown saturation config method :$(config.method). Supported types are :callback, :complementary, :rhs_hard and :rhs_soft")
+    end
+
     @parameters begin
-        _callback_sat_max = 0
-        _callback_sat_min = 0
+        # only used for callbacks
+        _callback_sat_max, [guess=0, description="internal callback parameter indicating upper saturation state"]
+        _callback_sat_min, [guess=0, description="internal callback parameter indicating lower saturation state"]
+        # onlye used for rhs_soft and complementary
+        ϵ=config.regularization, [description="Regularization parameter for saturation handling"]
     end
     @variables begin
         in(t), [description="Input signal", input=true]
-        out(t), [guess=guess, description="limited integrator output state", output=true]
+        x(t), [guess=guess, description="limited integrator output state"]
+        out(t), [description="limited integrator output", output=true]
         min(t), [description="Lower limit"]
         max(t), [description="Upper limit"]
-        forcing(t)
+        forcing(t), [description="rhs of internal integrator"]
+        # only used in case of complementary constraints
+        λ⁻(t), [guess=0, description="lagrange multiplier for lower limit", bounds=(0, Inf)]
+        λ⁺(t), [guess=0, description="lagrange multiplier for upper limit", bounds=(0, Inf)]
     end
-    @equations begin
+
+    forcing_eqs = if type == :lag
+        forcing ~ K*in - x
+    elseif type == :int
+        forcing ~ K*in
+    end
+
+    eqs = [
         min ~ outMin
         max ~ outMax
-        if type == :lag
-            forcing ~ K*in - out
-        elseif type == :int
-            forcing ~ K*in
-        else
-            error("Unknown type $type for SimpleLagLim. Supported types are :lag and :int")
+        forcing_eqs
+    ]
+
+    # integrator eqations T*D(x) ~ forcing depend on config method
+    if config.method == :callback
+        neweqs = [
+            T*Dt(x) ~ (1 - _callback_sat_max - _callback_sat_min) * forcing
+            out ~ x
+        ]
+    elseif config.method == :complementary
+        # Fischer–Burmeister constraints
+        eqλ⁻ = 0 ~ sqrt(λ⁻^2 + (x - min)^2 + ϵ) - λ⁻ - (x - min)
+        eqλ⁺ = 0 ~ sqrt(λ⁺^2 + (max - x)^2 + ϵ) - λ⁺ - (max - x)
+        # Dynamics with multipliers depending on which limits are active
+        neweqs = if !_isneginf(outMin)  && !_isposinf(outMax)
+            [
+                T * Dt(x) ~ forcing - λ⁺ + λ⁻
+                eqλ⁻
+                eqλ⁺
+            ]
+        elseif _isneginf(outMin) && !_isposinf(outMax)
+            [
+                T * Dt(x) ~ forcing - λ⁺
+                eqλ⁺
+            ]
+        elseif !_isneginf(outMin)  && _isposinf(outMax)
+            [
+                T * Dt(x) ~ forcing + λ⁻
+                eqλ⁻
+            ]
+        elseif _isneginf(outMin) && _isposinf(outMax)
+            [
+                T * Dt(x) ~ forcing
+            ]
         end
-        T*Dt(out) ~ (1 - _callback_sat_max - _callback_sat_min) * forcing
+        push!(neweqs, out ~ x)
+    elseif config.method == :rhs_hard
+        neweqs = [
+            T*Dt(x) ~  _hard_clamped_rhs(forcing, x, min, max)
+            out ~ clamp(x, min, max)
+        ]
+    elseif config.method == :rhs_soft
+        neweqs = [
+            T*Dt(x) ~  _soft_clamped_rhs(forcing, x, min, max, ϵ)
+            out ~ clamp(x, min, max)
+        ]
     end
-    @metadata begin
-        ComponentPostprocessing = attach_limint_callback!
+    append!(eqs, neweqs)
+
+    sys = System(eqs, t; name)
+
+    sys = if config.method == :callback
+        setmetadata(sys, ComponentPostprocessing, attach_limint_postprocessing_callback!)
+    elseif config.method == :complementary
+        setmetadata(sys, ComponentPostprocessing, attach_limint_postprocessing_complementary!)
+    elseif config.method ∈ (:rhs_hard, :rhs_soft)
+        setmetadata(sys, ComponentPostprocessing, attach_limint_postprocessing_rhs!)
+    else
+        sys
     end
+    return sys
+end
+_isposinf(x::Num) = false
+_isneginf(x::Num) = false
+_isposinf(x::Float64) = x == Inf
+_isneginf(x::Float64) = x == -Inf
+_isposinf(x::Int) = x == typemax(Int)
+_isneginf(x::Int) = x == -typemin(Int)
+function _soft_clamped_rhs(u, x, xmin, xmax, ε)
+    s_hi = 0.5 * (1 - tanh((x - xmax)/ε))
+    s_lo = 0.5 * (1 + tanh((x - xmin)/ε))
+    # Only scale positive forcing by s_hi (upper limit)
+    # Only scale negative forcing by s_lo (lower limit)
+    return ifelse(u > 0, u * s_hi, u * s_lo)
+end
+function _hard_clamped_rhs(u, x, xmin, xmax)
+    # make compatible with sparacity tracing
+    if any(x -> x isa GradientTracer, (u, x, xmin, xmax))
+        return u+x+xmin+xmax
+    end
+    ifelse(((x ≥ xmax) && (u > 0)) || ((x ≤ xmin) && (u < 0)), 0.0, u)
+end
+Symbolics.@register_symbolic _hard_clamped_rhs(u, x, xmin, xmax)
+
+function attach_limint_postprocessing_callback!(cf, ns)
+    cb = _generate_limint_callbacks(ns)
+    NetworkDynamics.add_callback!(cf, cb)
+    NetworkDynamics.set_default!(cf, Symbol(ns, "₊_callback_sat_max"), 0.0)
+    NetworkDynamics.set_default!(cf, Symbol(ns, "₊_callback_sat_min"), 0.0)
+
+    #=
+    # TODO: Experiment: add constraints and out ~ clamp(x, min, max) here to enforce consistency at initialization
+    # maybe look into Juniper and solve als MINLP problem?
+    x = Symbol(ns, :₊x)
+    out = Symbol(ns, :₊out)
+    min = Symbol(ns, :₊min)
+    max = Symbol(ns, :₊max)
+    satmin = Symbol(ns, :₊_callback_sat_min)
+    satmax = Symbol(ns, :₊_callback_sat_max)
+
+    # Force x to be within bounds: combined with out=clamp(x,min,max), this ensures x∈[min,max]
+    # Saturation flags must be 0 or 1 to properly stop dynamics when saturated
+    forcing = Symbol(ns, :₊forcing)
+    ic = NetworkDynamics.InitConstraint([x, out, min, max, forcing, satmin, satmax], 2) do res, u
+        res[1] = u[x] - clamp(u[x], u[min], u[max])
+        # res[2] = u[satmax] - (u[x] >= u[max] > 0 ? 1.0 : 0.0)
+        # res[3] = u[satmin] - (u[x] <= u[min] < 0 ? 1.0 : 0.0)
+        res[2] = sqrt(u[satmin]^2 + u[satmax]^2 + 1e-6) - u[satmin] - u[satmax]
+        nothing
+    end
+    NetworkDynamics.add_initconstraint!(cf, ic)
+    =#
+end
+function attach_limint_postprocessing_complementary!(cf, ns)
+    # # add explicit limits
+    # soft_min(a, b, δ) = -δ * log(exp(-a/δ) + exp(-b/δ))
+
+    # λ⁺ = Symbol(ns, :₊λ⁺)
+    # λ⁻ = Symbol(ns, :₊λ⁻)
+    # min = Symbol(ns, :₊min)
+    # max = Symbol(ns, :₊max)
+    # x = Symbol(ns, :₊x)
+    # ϵ = Symbol(ns, :₊ϵ)
+
+    # if λ⁺ ∈ NetworkDynamics.sym(cf) # has upper bound
+    #     upperc = NetworkDynamics.InitConstraint([x, max, ϵ], 1) do res, u
+    #         # Logarithmic barrier: penalizes violations strongly
+    #         # Goes to +∞ as x approaches max from above
+    #         # res[1] = Base.min(0.0, u[max] - u[x])
+    #         res[1] = -log(u[max] - u[x] + sqrt(u[ϵ]))
+    #     end
+    #     NetworkDynamics.add_initconstraint!(cf, upperc)
+    # end
+    # if λ⁻ ∈ NetworkDynamics.sym(cf) # has lower bound
+    #     lowerc = NetworkDynamics.InitConstraint([x, min, ϵ], 1) do res, u
+    #         # Logarithmic barrier: penalizes violations strongly
+    #         # Goes to +∞ as x approaches min from below
+    #         # res[1] = Base.min(0.0, u[x] - u[min])
+    #         res[1] = -log(u[x] - u[min] + sqrt(u[ϵ]))
+    #     end
+    #     NetworkDynamics.add_initconstraint!(cf, lowerc)
+    # end
+end
+function attach_limint_postprocessing_rhs!(cf, ns)
+    x = Symbol(ns, :₊x)
+    out = Symbol(ns, :₊out)
+    ic = NetworkDynamics.InitConstraint([x, out], 1) do res, u
+        res[1] = u[out] - u[x]
+    end
+    NetworkDynamics.add_initconstraint!(cf, ic)
 end
 
 """
@@ -193,29 +417,23 @@ Additional structural parameters:
 """
 LimIntegrator(; kwargs...) = LimitedIntegratorBase(; type=:int, T=1, kwargs...)
 
-function attach_limint_callback!(cf, ns)
-    cb = _generate_limint_callbacks(ns)
-    NetworkDynamics.add_callback!(cf, cb)
-    NetworkDynamics.set_default!(cf, Symbol(ns, "₊_callback_sat_max"), 0.0)
-    NetworkDynamics.set_default!(cf, Symbol(ns, "₊_callback_sat_min"), 0.0)
-end
 function _generate_limint_callbacks(namespace)
     min = Symbol(namespace, "₊min")
     max = Symbol(namespace, "₊max")
-    out = Symbol(namespace, "₊out")
+    x = Symbol(namespace, "₊x")
     forcing = Symbol(namespace, "₊forcing")
     satmax = Symbol(namespace, "₊_callback_sat_max")
     satmin = Symbol(namespace, "₊_callback_sat_min")
 
-    use_continuous_callback = LimiterCallbackConfig[].continuous
-    use_discrete_callback = LimiterCallbackConfig[].discrete
+    use_continuous_callback = SaturationConfiguration[].continuous_cb
+    use_discrete_callback = SaturationConfiguration[].discrete_cb
 
     if use_continuous_callback
-        condition = ComponentCondition(_SatLim_condition, [min, max, out, forcing], [satmax, satmin])
+        condition = ComponentCondition(_SatLim_condition, [min, max, x, forcing], [satmax, satmin])
 
         upcrossing_affect = ComponentAffect([], [satmax, satmin]) do u, p, eventidx, ctx
             comp = get_compidx(ctx)
-            verbose = LimiterCallbackVerbose[]
+            verbose = CallbackVerbose[]
             if eventidx == 1
                 verbose && println("$comp: $namespace: /⎺ reached upper saturation at $(round(ctx.t, digits=4))s")
                 p[satmax] = 1.0
@@ -238,7 +456,7 @@ function _generate_limint_callbacks(namespace)
 
         downcrossing_affect = ComponentAffect([],[satmax]) do u, p, eventidx, ctx
             comp = get_compidx(ctx)
-            verbose = LimiterCallbackVerbose[]
+            verbose = CallbackVerbose[]
             if eventidx == 1 || eventidx == 2
                 # in theory should never be hit
                 return
@@ -262,10 +480,10 @@ function _generate_limint_callbacks(namespace)
             # account for nummerical innaccuracies at the boudaries
             u[1] < u[2] - 1e-10 || u[1] > u[3] + 1e-10
         end
-        discrete_condition = ComponentCondition(_discrete_cond, [out, min, max], [])
-        discrete_affect = ComponentAffect([out],[satmin, satmax]) do u, p, ctx
+        discrete_condition = ComponentCondition(_discrete_cond, [x, min, max], [])
+        discrete_affect = ComponentAffect([x],[satmin, satmax]) do u, p, ctx
             comp = get_compidx(ctx)
-            verbose = LimiterCallbackVerbose[]
+            verbose = CallbackVerbose[]
             if ctx.model isa VertexModel
                 minidx = VIndex(ctx.vidx, min)
                 maxidx = VIndex(ctx.vidx, max)
@@ -274,20 +492,20 @@ function _generate_limint_callbacks(namespace)
                 maxidx = EIndex(ctx.eidx, max)
             end
             _min, _max = NWState(ctx.integrator)[(minidx, maxidx)]
-            if u[out] < _min
+            if u[x] < _min
                 if verbose || use_continuous_callback
                     print("$comp: $namespace: \\_ reached lower saturation at $(round(ctx.t, digits=4))s")
                     use_continuous_callback ? printstyled(" (triggered by discrete cb)\n", color=:yellow) : println()
                 end
-                u[out] = _min
+                u[x] = _min
                 p[satmin] = 1.0
                 p[satmax] = 0.0
-            elseif u[out] > _max
+            elseif u[x] > _max
                 if verbose || use_continuous_callback
                     print("$comp: $namespace: /⎺ reached upper saturation at $(round(ctx.t, digits=4))s")
                     use_continuous_callback ? printstyled(" (triggered by discrete cb)\n", color=:yellow) : println()
                 end
-                u[out] = _max
+                u[x] = _max
                 p[satmin] = 0.0
                 p[satmax] = 1.0
             else
@@ -302,7 +520,7 @@ function _generate_limint_callbacks(namespace)
         discrete_unsat_condition = ComponentCondition(_discrete_unsat_cond, [forcing],[satmin, satmax])
         discrete_unsat_affect = ComponentAffect([],[satmin, satmax]) do u, p, ctx
             comp = get_compidx(ctx)
-            verbose = LimiterCallbackVerbose[]
+            verbose = CallbackVerbose[]
             insatmin = !iszero(p[satmin])
             insatmax = !iszero(p[satmax])
             if insatmin
@@ -340,7 +558,7 @@ function _generate_limint_callbacks(namespace)
 end
 function _SatLim_condition(_out, u, p, _)
         # define condition in separate function to avoid capturing and make them batch compatible
-        # expect u[min, max, out, forcing]
+        # expect u[min, max, x, forcing]
         # expect p[satmax, satmin]
         insatmax = !iszero(p[1])
         insatmin = !iszero(p[2])

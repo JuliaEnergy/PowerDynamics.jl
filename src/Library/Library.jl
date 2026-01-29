@@ -5,7 +5,8 @@ using ..PowerDynamics: PowerDynamics, Terminal, BusBase, Ibase
 using NetworkDynamics: NetworkDynamics, ComponentCondition, ComponentAffect,
                        VertexModel, VIndex, EIndex, NWState,
                        VectorContinuousComponentCallback, DiscreteComponentCallback, ComponentPostprocessing
-using ModelingToolkit: ModelingToolkit, @named, simplify, t_nounits as t, D_nounits as Dt
+using ModelingToolkit: ModelingToolkit, @named, simplify, t_nounits as t, D_nounits as Dt,
+                       @component
 # needed for @mtkmodel
 using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System, Equation, connect, setmetadata
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
@@ -15,6 +16,29 @@ using Symbolics: Symbolics
 using LinearAlgebra: LinearAlgebra
 using SparseConnectivityTracer: GradientTracer
 using ScopedValues: ScopedValue
+
+export CallbackVerbose, set_callback_verbosity!
+export SaturationConfiguration, SaturationConfig, set_saturation_config!
+"""
+    const CallbackVerbose = ScopedValue(true)
+
+Toggle verbosity of callbacks during simulation. Use [`set_callback_verbosity!`](@ref) to change
+globally or use
+```julia
+with(CallbackVerbose => false) do
+    # your code here
+end
+```
+to set temporarily via ScopedValue mechanism.
+"""
+const CallbackVerbose = ScopedValue(true)
+"""
+    set_callback_verbosity!(v::Bool)
+
+Sets [`CallbackVerbose`](@ref) to `v`.
+"""
+function set_callback_verbosity!(v::Bool) = CallbackVerbose[] = v
+
 
 """
     simplify_barrier(x) = x
