@@ -13,6 +13,8 @@ Create a VertexModel from an `System` that satisfies the bus model interface.
 - `name`: Name for the bus (defaults to system name)
 - `assume_io_coupling::Bool=false`: If true, assume output depends on inputs (see NetworkDynamics.jl docs)
 - `check::Bool=true`: If false, skip component validation checks
+- `current_source::Bool=false`: If true, compile for use as an injector node via a [`LoopbackConnection`](@extref NetworkDynamics.LoopbackConnection)
+  (i.e. switches from current in voltage out to voltage in current out)
 - `kwargs...`: Additional keyword arguments passed to the Bus constructor
 
 # Returns
@@ -35,7 +37,16 @@ compile_bus(││BusBar├o           │) =>            ║  ││BusBar├o 
 
 See also: [`MTKBus`](@ref)
 """
-function compile_bus(sys::System; verbose=false, name=getname(sys), assume_io_coupling=false, check=true, kwargs...)
+function compile_bus(
+    sys::System;
+    verbose=false,
+    name=getname(sys),
+    assume_io_coupling=false,
+    check=true,
+    current_source=false,
+    ff_to_constraint=!current_source,
+    extin=nothing,
+    kwargs...)
     if !isbusmodel(sys)
         msg = "The system must satisfy the bus model interface!"
         if isinjectormodel(sys)
@@ -43,8 +54,8 @@ function compile_bus(sys::System; verbose=false, name=getname(sys), assume_io_co
         end
         throw(ArgumentError(msg))
     end
-    io = _busio(sys, :busbar)
-    vertexf = VertexModel(sys, io.in, io.out; verbose, name, assume_io_coupling, check)
+    io = _busio(sys, :busbar, current_source)
+    vertexf = VertexModel(sys, io.in, io.out; verbose, name, assume_io_coupling, check, ff_to_constraint, extin)
     compile_bus(vertexf; copy=false, check, kwargs...)
 end
 """
@@ -95,17 +106,22 @@ Structurally simplify a bus model `System` by eliminating equations.
 Closely matches what `VertexModel` does, but returns the `System` after
 the simplifications rather than compiling it into a `VertexModel`.
 """
-function simplify_mtkbus(sys::System; busbar=:busbar)
+function simplify_mtkbus(sys::System; busbar=:busbar, current_source=false)
     @argcheck isbusmodel(sys) "The system must satisfy the bus model interface!"
-    io = _busio(sys, busbar)
+    io = _busio(sys, busbar, current_source)
     mtkcompile(sys; inputs=io.in, outputs=io.out, simplify=false)
 end
 
-function _busio(sys::System, busbar)
-    (;in=[getproperty(sys, busbar; namespace=false).i_r,
-          getproperty(sys, busbar; namespace=false).i_i],
-     out=[getproperty(sys, busbar; namespace=false).u_r,
-          getproperty(sys, busbar; namespace=false).u_i])
+function _busio(sys::System, busbar, current_source)
+    i = [getproperty(sys, busbar; namespace=false).i_r,
+         getproperty(sys, busbar; namespace=false).i_i]
+    u = [getproperty(sys, busbar; namespace=false).u_r,
+         getproperty(sys, busbar; namespace=false).u_i]
+    if current_source
+        (; in=u, out=i)
+    else
+        (; in=i, out=u)
+    end
 end
 
 
