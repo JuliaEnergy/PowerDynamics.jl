@@ -21,11 +21,11 @@ end
 
 @mtkmodel VoltageDependentLoad begin
     @parameters begin
-        Pset, [description="Active Power demand"]
-        Qset, [description="Reactive Power demand"]
+        Pset, [guess=-1, description="Active Power demand"]
+        Qset, [guess=0, description="Reactive Power demand"]
         αP, [description="Active Power exponent"]
         αQ, [description="Reactive Power exponent"]
-        Vn, [description="Nominal voltage (where real power equals set power)"]
+        Vn, [guess=1, description="Nominal voltage (where real power equals set power)"]
     end
     @components begin
         terminal = Terminal()
@@ -118,5 +118,23 @@ end
         # formulate equations for i_r and i_i instead
         terminal.i_r ~  simplify(real((P + im*Q)/(terminal.u_r + im*terminal.u_i)))
         terminal.i_i ~ -simplify(imag((P + im*Q)/(terminal.u_r + im*terminal.u_i)))
+    end
+end
+
+@mtkmodel ConstantCurrentLoad begin
+    @parameters begin
+        Iset, [guess=-1, description="Current magnitude setpoint"]
+        θset, [guess=0, description="Phase offset relative to voltage"]
+        ε = 1e-10, [description="Small regularization term to avoid division by zero"]
+    end
+    @components begin
+        terminal = Terminal()
+    end
+    begin
+        umag = sqrt(terminal.u_r^2 + terminal.u_i^2 + ε^2)
+    end
+    @equations begin
+        terminal.i_r ~ Iset * (terminal.u_r/umag * cos(θset) - terminal.u_i/umag * sin(θset))
+        terminal.i_i ~ Iset * (terminal.u_i/umag * cos(θset) + terminal.u_r/umag * sin(θset))
     end
 end
