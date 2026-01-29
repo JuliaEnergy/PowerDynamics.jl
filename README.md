@@ -4,6 +4,7 @@
 [![codecov](https://codecov.io/gh/JuliaEnergy/PowerDynamics.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaEnergy/PowerDynamics.jl)
 [![Stable Docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliaenergy.github.io/PowerDynamics.jl/stable/)
 [![Dev Docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliaenergy.github.io/PowerDynamics.jl/dev/)
+[![DOI](https://zenodo.org/badge/152428572.svg)](https://doi.org/10.5281/zenodo.18419369)
 
 PowerDynamics.jl: An Open-Source Framework Written in Julia for Dynamic Power Grid Modeling and Analysis.
 The main idea of this package is to turn dynamic power grid models into a right-hand-side function of a DAE system, which can then be solved using [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl).
