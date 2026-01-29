@@ -37,7 +37,9 @@ const CallbackVerbose = ScopedValue(true)
 
 Sets [`CallbackVerbose`](@ref) to `v`.
 """
-function set_callback_verbosity!(v::Bool) = CallbackVerbose[] = v
+function set_callback_verbosity!(v::Bool)
+    CallbackVerbose[] = v
+end
 
 
 """
