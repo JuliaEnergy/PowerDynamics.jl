@@ -197,8 +197,6 @@ function sim_network(nw)
     prob = ODEProblem(nw, s0, (0.0, 10.0); add_nw_cb=cb)
     sol = solve(prob, Rodas5P());
 end
-break
-
 
 @testset "Different saturation limiters" begin
     configs = Dict(
@@ -210,7 +208,7 @@ break
 
     sols = Dict(k => sim_network(build_test_network(v)) for (k, v) in configs);
 
-    ts = range(sol.t[begin], sol.t[end], length=1000)
+    ts = range(sols[:callback].t[begin], sols[:callback].t[end], length=1000)
     int_outs = Dict(k => sol(ts, idxs=VIndex(2, :injector₊integrator₊out)).u for (k, sol) in sols)
     @test maximum(map(row -> abs(-(extrema(row)...)), eachrow(hcat(values(int_outs)...)))) < 0.01
     lag_outs = Dict(k => sol(ts, idxs=VIndex(2, :injector₊lag₊out)).u for (k, sol) in sols)

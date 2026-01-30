@@ -161,7 +161,7 @@ BUS = let
             :ggov1₊R * fuel_flow
         end
         Pref_plus_int = -rsel_contribution
-        :ggov1₊pid_governor₊power_controller₊out = Pref_plus_int - :ggov1₊Pref
+        :ggov1₊pid_governor₊power_controller₊x = Pref_plus_int - :ggov1₊Pref
         :ggov1₊pid_governor₊power_transducer₊internal = Pe0 # power measurment
         :ggov1₊pid_governor₊pid_integral_state = fuel_flow # integral state
         # :ggov1₊pid_governor₊speed_derivative₊internal = 0
