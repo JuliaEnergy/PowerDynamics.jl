@@ -209,8 +209,8 @@ include("Controls/PSS/PSSE_IEEEST.jl")
 #### Load Models
 ####
 
-export PQLoad, VoltageDependentLoad, ConstantYLoad, ZIPLoad
-include("Loads/PQLoad.jl")
+export PQLoad, VoltageDependentLoad, ConstantYLoad, ZIPLoad, ConstantCurrentLoad
+include("Loads/StaticLoad.jl")
 
 # Static Load Models
 export PSSE_Load

@@ -94,6 +94,7 @@ PQLoad
 VoltageDependentLoad
 ConstantYLoad
 ZIPLoad
+ConstantCurrentLoad
 PSSE_Load
 ```
 
@@ -103,6 +104,7 @@ PSSE_Load
 ```@docs
 PiLine
 PiLine_fault
+Breaker
 ```
 
 ## Fault Models

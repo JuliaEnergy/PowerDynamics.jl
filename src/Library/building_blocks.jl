@@ -477,7 +477,7 @@ function _generate_limint_callbacks(namespace)
     if use_discrete_callback
         # TODO: merge both discrete conditions and move condition below function for performance
         function _discrete_cond(u,p,t)
-            # account for nummerical innaccuracies at the boudaries
+            # account for numerical inaccuracies at the boundaries
             u[1] < u[2] - 1e-10 || u[1] > u[3] + 1e-10
         end
         discrete_condition = ComponentCondition(_discrete_cond, [x, min, max], [])

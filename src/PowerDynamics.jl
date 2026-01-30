@@ -22,7 +22,7 @@ using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System,
 using Symbolics: Symbolics
 using SciMLBase: SciMLBase
 
-# imports to load sparcity extensions
+# imports to load sparsity extensions
 using SparseConnectivityTracer: SparseConnectivityTracer
 using SparseMatrixColorings: SparseMatrixColorings
 
