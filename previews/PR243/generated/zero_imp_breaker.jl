@@ -70,9 +70,9 @@ J2 = compile_bus(MTKBus(); name=:J2, vidx=6)
 #
 # > **Copy-Constructor of components**
 # >
-# > Here we use the "copy-constructor" of `EdgeModel` to create a new `EdgeModel` basend
-# > on a previous one. This is usefull to create multiple lines and is far mor efficient
-# > than goingh through the full compilation process each time.
+# > Here we use the "copy-constructor" of `EdgeModel` to create a new `EdgeModel` based
+# > on a previous one. This is useful to create multiple lines and is far more efficient
+# > than going through the full compilation process each time.
 
 @named pibranch = PiLine(;R=0.01, X=0.005, B_src=0.08, B_dst=0.08)
 line_template = compile_line(MTKLine(pibranch))
