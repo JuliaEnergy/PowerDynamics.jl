@@ -1,6 +1,5 @@
 module Library
 
-using ArgCheck: @argcheck
 using ..PowerDynamics: PowerDynamics, Terminal, BusBase, Ibase
 using NetworkDynamics: NetworkDynamics, ComponentCondition, ComponentAffect,
                        VertexModel, VIndex, EIndex, NWState,

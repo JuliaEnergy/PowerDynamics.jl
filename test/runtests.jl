@@ -23,7 +23,7 @@ using Main.PowerDynamicsTesting
             persistent_tasks=false)
         @test_broken isempty(Docs.undocumented_names(PowerDynamics))
 
-        MTKMODEL_SYMS = (:Num, :System, :Equation, :connect, :@unpack, :setmetadata, :ComponentPostprocessing)
+        MTKMODEL_SYMS = (:Num, :System, :Equation, :connect, Symbol("@unpack"), :setmetadata, :ComponentPostprocessing, Symbol("@named"))
         allow_unanalyzable = (PowerDynamics,)
 
         @test check_no_implicit_imports(PowerDynamics; skip=(Base, Core, NetworkDynamics), allow_unanalyzable) === nothing
