@@ -29,7 +29,8 @@ using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 using CairoMakie
 
-#= ## System Topology
+#=
+## System Topology
 
 The system consists of two generators (G1, G2) supplying two loads (L1, L2) through
 junction buses (J1, J2) connected by a breaker:
@@ -110,11 +111,11 @@ enforce `u_dst = u_src` with the current as an implicit output. When open, the e
 enforce `i = 0`.
 
 !!! note "Usage of `implicit_output`""
-   [`implicit_output`](@ref NetworkDynamics.implicit_output) evaluates to zero.
-   Including it is just a trick to convice MTK that the current variables `i_r` and `i_i`
-   are in some sense part of this constraint, because by chaging the current the solver
-   can satisfy the voltage equality.
-   This is necessary, because MTK does not know about the explicit feedback loop `u_src = f(i_src)`.
+    [`implicit_output`](@ref NetworkDynamics.implicit_output) evaluates to zero.
+    Including it is just a trick to convice MTK that the current variables `i_r` and `i_i`
+    are in some sense part of this constraint, because by chaging the current the solver
+    can satisfy the voltage equality.
+    This is necessary, because MTK does not know about the explicit feedback loop `u_src = f(i_src)`.
 =#
 
 @mtkmodel Breaker begin
@@ -209,9 +210,9 @@ nothing #hide #md
 
 #=
 !!! note "Angle Wrapping"
-   Be carfull: due to the wrapping behavior of `atan`, the angle difference can jump.
-   Therefore, this simple closing conditions won't work in many scenarios. Implementing a
-   robust synchronization detection algorithm is beyond the scope of this tutorial.
+    Be carfull: due to the wrapping behavior of `atan`, the angle difference can jump.
+    Therefore, this simple closing conditions won't work in many scenarios. Implementing a
+    robust synchronization detection algorithm is beyond the scope of this tutorial.
 
 ## Simulation
 
