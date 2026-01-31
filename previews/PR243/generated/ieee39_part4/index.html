@@ -159,7 +159,7 @@ sol_droop = solve(prob_droop, Rodas5P())
     end
 
     fig
-end</code></pre><img src="9dbecec6.png" alt="Example block output"/><p>We see that the overall system reacts similarly but distinctly differently to the identical disturbance.</p><h2 id="Parameter-Optimization"><a class="docs-heading-anchor" href="#Parameter-Optimization">Parameter Optimization</a><a id="Parameter-Optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Parameter-Optimization" title="Permalink"></a></h2><p>To showcase advanced capabilities of the SciML-ecosystem and the integration with PowerDynamics.jl, we now want to try to <em>tune</em> the droop inverter parameters so that the overall system behavior more closely resembles the original behavior, i.e., to reduce the difference between the system with generator and the system with droop inverter.</p><h3 id="Optimization-Problem-Formulation"><a class="docs-heading-anchor" href="#Optimization-Problem-Formulation">Optimization Problem Formulation</a><a id="Optimization-Problem-Formulation-1"></a><a class="docs-heading-anchor-permalink" href="#Optimization-Problem-Formulation" title="Permalink"></a></h3><p>We define a loss function that measures the deviation between the original system response and the modified system response:</p><p class="math-container">\[L(p) = \sum_{i,t} |x_{ref}(t)_i - x(t;p)_i|^2\]</p><p>Where we have</p><ul><li>Parameters <span>$p = [K_p, K_q, \tau]$</span> to be optimized</li><li>the reference solution <span>$x_{ref}(t)$</span> (original system)</li><li>the solution of the modified system <span>$x(t;p)$</span> with updated parameters <span>$p$</span></li></ul><p><strong>Goal:</strong> Find parameters <span>$p$</span> that minimize this loss function, making the droop inverter system behave as closely as possible to the original system.</p><h3 id="Setting-Up-the-Optimization"><a class="docs-heading-anchor" href="#Setting-Up-the-Optimization">Setting Up the Optimization</a><a id="Setting-Up-the-Optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Setting-Up-the-Optimization" title="Permalink"></a></h3><p>First, we define the reference solution and identify the tunable parameters.</p><p>We probe the original solution at fixed timepoints, exporting <code>u_r</code> and <code>u_i</code> for every bus:</p><pre><code class="language-julia hljs">opt_ref = sol(0.3:0.1:10, idxs=[VIndex(1:39, :busbar₊u_r), VIndex(1:39, :busbar₊u_i)])</code></pre><p>Next, we need to identify the &quot;tunable&quot; parameters. This is a bit tricky, because the overall <code>nw_droop</code> has 1271 parameters, so we need to find the indices of the parameters we want to tune in the flat parameter array. We can do so, by leveraging NetworkDynamics implementation of the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl">SymbolicIndexingInterface</a>: tunable_parameters = [:inverter₊Kp, :inverter₊Kq, :inverter₊τ]</p><pre><code class="language-julia hljs">tunable_parameters = [:inverter₊Kp, :inverter₊Kq, :inverter₊τ_p, :inverter₊τ_q]
+end</code></pre><img src="6b41d1b2.png" alt="Example block output"/><p>We see that the overall system reacts similarly but distinctly differently to the identical disturbance.</p><h2 id="Parameter-Optimization"><a class="docs-heading-anchor" href="#Parameter-Optimization">Parameter Optimization</a><a id="Parameter-Optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Parameter-Optimization" title="Permalink"></a></h2><p>To showcase advanced capabilities of the SciML-ecosystem and the integration with PowerDynamics.jl, we now want to try to <em>tune</em> the droop inverter parameters so that the overall system behavior more closely resembles the original behavior, i.e., to reduce the difference between the system with generator and the system with droop inverter.</p><h3 id="Optimization-Problem-Formulation"><a class="docs-heading-anchor" href="#Optimization-Problem-Formulation">Optimization Problem Formulation</a><a id="Optimization-Problem-Formulation-1"></a><a class="docs-heading-anchor-permalink" href="#Optimization-Problem-Formulation" title="Permalink"></a></h3><p>We define a loss function that measures the deviation between the original system response and the modified system response:</p><p class="math-container">\[L(p) = \sum_{i,t} |x_{ref}(t)_i - x(t;p)_i|^2\]</p><p>Where we have</p><ul><li>Parameters <span>$p = [K_p, K_q, \tau]$</span> to be optimized</li><li>the reference solution <span>$x_{ref}(t)$</span> (original system)</li><li>the solution of the modified system <span>$x(t;p)$</span> with updated parameters <span>$p$</span></li></ul><p><strong>Goal:</strong> Find parameters <span>$p$</span> that minimize this loss function, making the droop inverter system behave as closely as possible to the original system.</p><h3 id="Setting-Up-the-Optimization"><a class="docs-heading-anchor" href="#Setting-Up-the-Optimization">Setting Up the Optimization</a><a id="Setting-Up-the-Optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Setting-Up-the-Optimization" title="Permalink"></a></h3><p>First, we define the reference solution and identify the tunable parameters.</p><p>We probe the original solution at fixed timepoints, exporting <code>u_r</code> and <code>u_i</code> for every bus:</p><pre><code class="language-julia hljs">opt_ref = sol(0.3:0.1:10, idxs=[VIndex(1:39, :busbar₊u_r), VIndex(1:39, :busbar₊u_i)])</code></pre><p>Next, we need to identify the &quot;tunable&quot; parameters. This is a bit tricky, because the overall <code>nw_droop</code> has 1271 parameters, so we need to find the indices of the parameters we want to tune in the flat parameter array. We can do so, by leveraging NetworkDynamics implementation of the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl">SymbolicIndexingInterface</a>: tunable_parameters = [:inverter₊Kp, :inverter₊Kq, :inverter₊τ]</p><pre><code class="language-julia hljs">tunable_parameters = [:inverter₊Kp, :inverter₊Kq, :inverter₊τ_p, :inverter₊τ_q]
 tp_idx = SII.parameter_index(sol_droop, VIndex(DROOP_BUS_IDX, tunable_parameters))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4-element Vector{Int64}:
  503
  504
@@ -211,64 +211,64 @@ println(&quot;\nOptimization completed!&quot;)
 println(&quot;Initial parameters: &quot;, p0)
 println(&quot;Optimized parameters: &quot;, optsol.u)
 println(&quot;Initial loss: &quot;, loss(p0))
-println(&quot;Final loss: &quot;, loss(optsol.u))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Iteration 1: loss = 452.08072239412485	 p = [1.0, 0.1, 1.0, 1.0]
-Iteration 2: loss = 309.92288943208814	 p = [1.059999999999443, 0.15999999999971232, 0.9400000000065613, 0.9400000000258409]
-Iteration 3: loss = 226.8283762677499	 p = [1.1194298999023775, 0.21256940160637455, 0.8799295250409224, 0.9478688920587099]
-Iteration 4: loss = 175.64902046870276	 p = [1.1780147840558628, 0.2577764621612988, 0.8197515909197849, 0.9831253773403772]
-Iteration 5: loss = 128.07156874686004	 p = [1.2355547872327708, 0.2963606606936139, 0.7593807157597321, 1.0282550825586925]
-Iteration 6: loss = 89.87414956538684	 p = [1.2916704168797828, 0.3294265258282963, 0.6987841384323827, 1.0782158942688882]
-Iteration 7: loss = 59.397348590355406	 p = [1.3459519368298702, 0.35796169660275595, 0.6380836254670285, 1.1306462127307586]
-Iteration 8: loss = 35.55758597201737	 p = [1.3979563831865967, 0.3827887300580307, 0.5775666870048642, 1.1838819342305666]
-Iteration 9: loss = 19.289558834408766	 p = [1.447209588408263, 0.4045749265857044, 0.5176550378257215, 1.2364203738296051]
-Iteration 10: loss = 9.482569456488456	 p = [1.493229624858996, 0.4238524808310625, 0.45910386042473983, 1.286805865128117]
-Iteration 11: loss = 6.3068401912155565	 p = [1.535484424335758, 0.44102531600691247, 0.4034533522408589, 1.333621341652965]
-Iteration 12: loss = 9.408689610664098	 p = [1.5733917271434905, 0.4563830966060376, 0.3538267763057198, 1.3755900932867142]
-Iteration 13: loss = 16.75769373883417	 p = [1.6063789920983036, 0.4701023502097557, 0.3152009235481921, 1.4118237052337923]
-Iteration 14: loss = 24.668488562007322	 p = [1.6340650868279256, 0.4822826484287688, 0.2918118867779409, 1.4420158951360558]
-Iteration 15: loss = 30.727188898655793	 p = [1.656362044856869, 0.49300922453025764, 0.28445444073573994, 1.4662888300390764]
-Iteration 16: loss = 33.29000060332602	 p = [1.6734349070462788, 0.5023901878394847, 0.29107511468812414, 1.484961323989744]
-Iteration 17: loss = 32.58296723023557	 p = [1.6856810362643215, 0.5105773020740235, 0.3086431083819097, 1.4984056450163894]
-Iteration 18: loss = 29.820748620393147	 p = [1.6936402312596694, 0.5177506931151771, 0.33440697446763223, 1.507006798996241]
-Iteration 19: loss = 25.25340649101383	 p = [1.6979007102315982, 0.5240893562789354, 0.3661641139605159, 1.511186277256633]
-Iteration 20: loss = 20.472908219725937	 p = [1.6991165001825665, 0.5297598943968281, 0.4020002879600318, 1.5114530151233017]
-Iteration 21: loss = 15.731933897627371	 p = [1.697920725287664, 0.5349021983843205, 0.44034133249938573, 1.5083639107843665]
-Iteration 22: loss = 12.296658149475837	 p = [1.6949632919111364, 0.539614418833416, 0.47959654701663806, 1.5026306804643352]
-Iteration 23: loss = 9.812178838435877	 p = [1.690793329756314, 0.5439597850174013, 0.5184807093997789, 1.4949514055471504]
-Iteration 24: loss = 8.286578290737056	 p = [1.6858990458553982, 0.5479706234115647, 0.5559196499495103, 1.4860553046761602]
-Iteration 25: loss = 7.513454444797751	 p = [1.6806980237076465, 0.5516579024052725, 0.5910912039761785, 1.4766588646589394]
-Iteration 26: loss = 7.4774982971092845	 p = [1.6755315004538205, 0.5550205528760245, 0.6234503919254071, 1.467425219743661]
-Iteration 27: loss = 7.8318478524699096	 p = [1.6706693048580277, 0.5580509205383581, 0.6526304782334833, 1.4589417138843344]
-Iteration 28: loss = 8.384365300491694	 p = [1.66631908345424, 0.5607400626688303, 0.6784238349311649, 1.4517034181898276]
-Iteration 29: loss = 9.0523189247926	 p = [1.6626503579704344, 0.5630792775590452, 0.7007260131662123, 1.4461370919207877]
-Iteration 30: loss = 9.731202480452367	 p = [1.6597873919589479, 0.5650630624813952, 0.7195287663746223, 1.4425745287782779]
-Iteration 31: loss = 10.448713289585456	 p = [1.657809883380318, 0.566696003255098, 0.7349004836265675, 1.4412123119311868]
-Iteration 32: loss = 10.928095915862192	 p = [1.6567671341255843, 0.5679824351488706, 0.746976192910628, 1.442194846973926]
-Iteration 33: loss = 11.234274619917096	 p = [1.6566599093981864, 0.568934887319444, 0.7559280083086611, 1.445527045117607]
-Iteration 34: loss = 11.365835084823786	 p = [1.6574580429620347, 0.5695715669940644, 0.7619588418552482, 1.4511234940716067]
-Iteration 35: loss = 11.332205469205158	 p = [1.6591026711812336, 0.5699159187665899, 0.7652957590561882, 1.458818410831061]
-Iteration 36: loss = 11.155308703343788	 p = [1.661510358271761, 0.5699957782930927, 0.7661844769446077, 1.4683807314149782]
-Iteration 37: loss = 10.86657225267906	 p = [1.6645776990344938, 0.5698352860318242, 0.7648836234670826, 1.4795668501856643]
-Iteration 38: loss = 10.505743839853665	 p = [1.668185613137089, 0.5694688515082457, 0.7616619135376022, 1.4920566662138688]
-Iteration 39: loss = 10.110509360584718	 p = [1.6722042091900338, 0.5689317341933445, 0.7567925735412924, 1.505512166383189]
-Iteration 40: loss = 9.711341513533814	 p = [1.6764974695884987, 0.5682587307546083, 0.750549040132403, 1.5195917052808463]
-Iteration 41: loss = 9.33492128433506	 p = [1.6809281419260333, 0.567483002906879, 0.74320121508137, 1.5339629756143986]
-Iteration 42: loss = 9.004307918679434	 p = [1.6853617997737413, 0.5666351490187784, 0.7350130299002485, 1.5483133110986167]
-Iteration 43: loss = 8.68730338954962	 p = [1.689669896484559, 0.5657425159589664, 0.7262406218985167, 1.5623571971899366]
-Iteration 44: loss = 8.51102055511922	 p = [1.6937094829751618, 0.5648319676818314, 0.7171493915934279, 1.5757917072990675]
-Iteration 45: loss = 8.40440383366994	 p = [1.6973701532237624, 0.5639227655800668, 0.7079754248507105, 1.5884019301788996]
-Iteration 46: loss = 8.358934277803256	 p = [1.7005546501865492, 0.5630300773768832, 0.6989374792369258, 1.6000119427692614]
-Iteration 47: loss = 8.361023742635386	 p = [1.703180862843332, 0.5621651364249073, 0.6902331205099573, 1.6104858381905351]
-Iteration 48: loss = 8.393894506491291	 p = [1.705183270326628, 0.5613356039252275, 0.6820353197985386, 1.6197271009757357]
-Iteration 49: loss = 8.439860742592156	 p = [1.7065140552444868, 0.560546059891696, 0.6744888595573925, 1.6276768855134618]
-Iteration 50: loss = 8.483889660957054	 p = [1.7071438368439353, 0.5597985299248451, 0.6677066976768583, 1.634311607100071]
-Iteration 50: loss = 6.3068401912155565	 p = [1.535484424335758, 0.44102531600691247, 0.4034533522408589, 1.333621341652965]
- 41.474076 seconds (50.42 M allocations: 3.309 GiB, 5.70% gc time, 55.69% compilation time: &lt;1% of which was recompilation)
+println(&quot;Final loss: &quot;, loss(optsol.u))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Iteration 1: loss = 452.08075188374306	 p = [1.0, 0.1, 1.0, 1.0]
+Iteration 2: loss = 309.92291410422524	 p = [1.059999999999443, 0.15999999999971232, 0.9400000000065613, 0.9400000000258409]
+Iteration 3: loss = 226.82839704704162	 p = [1.1194298999367127, 0.21256940171440722, 0.8799295250438611, 0.9478688916905107]
+Iteration 4: loss = 175.64903864043885	 p = [1.178014784175565, 0.2577764624083744, 0.8197515909382995, 0.9831253769802683]
+Iteration 5: loss = 128.0715840763787	 p = [1.2355547875002935, 0.29636066108204123, 0.759380715796171, 1.0282550822294143]
+Iteration 6: loss = 89.87416214854404	 p = [1.291670417382681, 0.32942652634741043, 0.6987841384665605, 1.0782158940049669]
+Iteration 7: loss = 59.397358469214495	 p = [1.3459519376840672, 0.35796169723557525, 0.6380836254467022, 1.1306462126082828]
+Iteration 8: loss = 35.5575931130021	 p = [1.397956384539657, 0.3827887307862318, 0.5775666868256444, 1.1838819343881624]
+Iteration 9: loss = 19.28956338686372	 p = [1.4472095904450242, 0.4045749273936358, 0.5176550372902079, 1.2364203744906606]
+Iteration 10: loss = 9.482571512813696	 p = [1.4932296277996677, 0.42385248170895634, 0.4591038591566416, 1.2868058666043725]
+Iteration 11: loss = 6.306839966634129	 p = [1.535484428434321, 0.44102531695248126, 0.40345334951794426, 1.3336213443379024]
+Iteration 12: loss = 9.408687455705959	 p = [1.5733917326665088, 0.4563830976254706, 0.35382677085434494, 1.3755900975997195]
+Iteration 13: loss = 16.75769107134942	 p = [1.606378999354095, 0.47010235131565026, 0.31520091344667184, 1.4118237116343222]
+Iteration 14: loss = 24.66848726922834	 p = [1.6340650960419518, 0.4822826496228738, 0.29181187093930133, 1.4420159040054807]
+Iteration 15: loss = 30.727188599586544	 p = [1.6563620560765313, 0.4930092257761875, 0.2844544196683208, 1.4662888416759752]
+Iteration 16: loss = 33.29000163497426	 p = [1.6734349202546144, 0.5023901890777883, 0.29107508946938215, 1.4849613387007583]
+Iteration 17: loss = 32.58296667727425	 p = [1.6856810513711586, 0.5105773032215043, 0.3086430800475007, 1.498405663098944]
+Iteration 18: loss = 29.820749861063902	 p = [1.6936402483221928, 0.5177506941019113, 0.33440694343954286, 1.5070068208376346]
+Iteration 19: loss = 25.253408688749516	 p = [1.6979007291495705, 0.5240893570334252, 0.3661640809290778, 1.5111863030520662]
+Iteration 20: loss = 20.472909808545346	 p = [1.6991165207788936, 0.5297598948434447, 0.40200025356964547, 1.5114530449969372]
+Iteration 21: loss = 15.731935245282514	 p = [1.6979207474095215, 0.5349021984712394, 0.44034129709811004, 1.5083639447327433]
+Iteration 22: loss = 12.296658672929293	 p = [1.6949633153445707, 0.5396144185355409, 0.4795965112735145, 1.5026307183264547]
+Iteration 23: loss = 9.81217954858304	 p = [1.6907933543113247, 0.5439597843340138, 0.5184806739689014, 1.4949514470825669]
+Iteration 24: loss = 8.286578259450518	 p = [1.6858990712727258, 0.5479706223597196, 0.5559196154652648, 1.4860553494559048]
+Iteration 25: loss = 7.5134538448196215	 p = [1.6806980497814497, 0.5516579010158801, 0.5910911709872619, 1.4766589122651792]
+Iteration 26: loss = 7.477497658357123	 p = [1.6755315270311513, 0.555020551187506, 0.623450360688715, 1.467425269736832]
+Iteration 27: loss = 7.831846842114227	 p = [1.6706693317315087, 0.5580509186006258, 0.6526304490551511, 1.4589417656789396]
+Iteration 28: loss = 8.384364186757994	 p = [1.6663191104908328, 0.5607400605305708, 0.6784238079814082, 1.4517034712879626]
+Iteration 29: loss = 9.052317720860731	 p = [1.6626503850374248, 0.5630792752712006, 0.7007259885762418, 1.4461371457919605]
+Iteration 30: loss = 9.73120119637798	 p = [1.6597874189215598, 0.5650630600966269, 0.7195287442472509, 1.442574582862707]
+Iteration 31: loss = 10.448712166934477	 p = [1.657809910132763, 0.5666960008225659, 0.7349004640158944, 1.4412123657205758]
+Iteration 32: loss = 10.928094783672389	 p = [1.656767160597781, 0.5679824327103109, 0.7469761757947377, 1.4421949000475789]
+Iteration 33: loss = 11.234273611491364	 p = [1.6566599355098173, 0.568934884916142, 0.7559279936971296, 1.4455270970580028]
+Iteration 34: loss = 11.365834206425308	 p = [1.6574580686962597, 0.5695715646560928, 0.761958829687815, 1.4511235446178206]
+Iteration 35: loss = 11.332204741777929	 p = [1.6591026965349946, 0.5699159165178475, 0.7652957492533191, 1.4588184597889435]
+Iteration 36: loss = 11.15530814041428	 p = [1.6615103832203726, 0.5699957761561539, 0.7661844694740215, 1.4683807785968284]
+Iteration 37: loss = 10.866571765199792	 p = [1.6645777235929093, 0.5698352840187619, 0.7648836182401069, 1.479566895522818]
+Iteration 38: loss = 10.505743417938016	 p = [1.668185637371947, 0.5694688496208896, 0.7616619104079165, 1.4920567097683513]
+Iteration 39: loss = 10.110508970727711	 p = [1.6722042331903955, 0.5689317324268682, 0.756792572338638, 1.505512208292055]
+Iteration 40: loss = 9.711341150288353	 p = [1.676497493451951, 0.568258729100334, 0.7505490406815388, 1.519591745723671]
+Iteration 41: loss = 9.334920849025531	 p = [1.680928165776191, 0.5674830013500307, 0.7432012171753171, 1.533963014842531]
+Iteration 42: loss = 9.004307496831835	 p = [1.6853618237655361, 0.5666351475403621, 0.7350130333183978, 1.5483133494329813]
+Iteration 43: loss = 8.687302891999384	 p = [1.6896699207592485, 0.5657425145389037, 0.7262406264095816, 1.5623572349420232]
+Iteration 44: loss = 8.511020007425465	 p = [1.6937095076784385, 0.5648319662982724, 0.7171493969570344, 1.5757917447989878]
+Iteration 45: loss = 8.40440321350242	 p = [1.6973701785008746, 0.5639227642102765, 0.7079754308184422, 1.5884019677619843]
+Iteration 46: loss = 8.35893356892718	 p = [1.7005546761603765, 0.5630300760008734, 0.6989374855997164, 1.6000119807309567]
+Iteration 47: loss = 8.361022979856035	 p = [1.7031808896502239, 0.5621651350214943, 0.6902331270320846, 1.6104858768451646]
+Iteration 48: loss = 8.393893757449533	 p = [1.7051832980912078, 0.5613356024743993, 0.6820353262593767, 1.619727140614929]
+Iteration 49: loss = 8.439859946791039	 p = [1.706514084035778, 0.5605460583795465, 0.6744888658464135, 1.6276769263326527]
+Iteration 50: loss = 8.483888852674358	 p = [1.7071438667557024, 0.5597985283330715, 0.6677067036129484, 1.634311649337852]
+Iteration 50: loss = 6.306839966634129	 p = [1.535484428434321, 0.44102531695248126, 0.40345334951794426, 1.3336213443379024]
+ 44.303910 seconds (50.38 M allocations: 3.317 GiB, 4.32% gc time, 58.24% compilation time)
 
 Optimization completed!
 Initial parameters: [1.0, 0.1, 1.0, 1.0]
-Optimized parameters: [1.535484424335758, 0.44102531600691247, 0.4034533522408589, 1.333621341652965]
-Initial loss: 455.7282317497401
-Final loss: 6.273946122153885</code></pre><h3 id="Optimization-Results-Analysis"><a class="docs-heading-anchor" href="#Optimization-Results-Analysis">Optimization Results Analysis</a><a id="Optimization-Results-Analysis-1"></a><a class="docs-heading-anchor-permalink" href="#Optimization-Results-Analysis" title="Permalink"></a></h3><p>Let&#39;s visualize how the optimization improved the system behavior:</p><pre><code class="language-julia hljs">function plot_optimization_comparison(p_initial, p_current)
+Optimized parameters: [1.535484428434321, 0.44102531695248126, 0.40345334951794426, 1.3336213443379024]
+Initial loss: 455.72825980863786
+Final loss: 6.273945643683938</code></pre><h3 id="Optimization-Results-Analysis"><a class="docs-heading-anchor" href="#Optimization-Results-Analysis">Optimization Results Analysis</a><a id="Optimization-Results-Analysis-1"></a><a class="docs-heading-anchor-permalink" href="#Optimization-Results-Analysis" title="Permalink"></a></h3><p>Let&#39;s visualize how the optimization improved the system behavior:</p><pre><code class="language-julia hljs">function plot_optimization_comparison(p_initial, p_current)
     fig = Figure(; size=(1200, 800))
     selected_buses = [3, 4, 25, DROOP_BUS_IDX]
     ts = range(0, 10, length=1000)
@@ -347,4 +347,4 @@ end</code></pre><p><video src="../parameter_evolution.mp4" controls="true" title
         )
     end
     fig
-end</code></pre><img src="cc6e40b0.png" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ieee39_part3/">« IEEE39 Part III: Simulation</a><a class="docs-footer-nextpage" href="../emt_toymodel/">EMT Toymodel »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Friday 30 January 2026 15:16">Friday 30 January 2026</span>. Using Julia version 1.11.8.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre><img src="50779ef3.png" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ieee39_part3/">« IEEE39 Part III: Simulation</a><a class="docs-footer-nextpage" href="../emt_toymodel/">EMT Toymodel »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Saturday 31 January 2026 15:47">Saturday 31 January 2026</span>. Using Julia version 1.11.8.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -23,32 +23,31 @@ using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 using CairoMakie
 
-#= ## System Topology
-
-The system consists of two generators (G1, G2) supplying two loads (L1, L2) through
-junction buses (J1, J2) connected by a breaker:
-
-```asciiart
-G1 (~)─╂──╮J1 ╭───╂─▷ L1
-         ╺┷━┯━┷╸
-            │ Breaker
-         ╺┯━┷━┯╸
-G2 (~)─╂──╯J2 ╰───╂─▷ L2
-```
-
-The breaker can be opened and closed, allowing us to study transient behavior during
-switching operations.
-
-
-# Bus Definitions
-
-We define two swing generators with different power specifications:
-- **G1**: Slack bus (reference) with V=1.0 pu
-- **G2**: PV bus with V=0.95 pu and P=1.0 pu
-
-The system also has two constant admittance loads and two junction buses that serve
-as connection points for the breaker.
-=#
+# ## System Topology
+#
+# The system consists of two generators (G1, G2) supplying two loads (L1, L2) through
+# junction buses (J1, J2) connected by a breaker:
+#
+# ```asciiart
+# G1 (~)─╂──╮J1 ╭───╂─▷ L1
+#          ╺┷━┯━┷╸
+#             │ Breaker
+#          ╺┯━┷━┯╸
+# G2 (~)─╂──╯J2 ╰───╂─▷ L2
+# ```
+#
+# The breaker can be opened and closed, allowing us to study transient behavior during
+# switching operations.
+#
+#
+# ## Bus Definitions
+#
+# We define two swing generators with different power specifications:
+# - **G1**: Slack bus (reference) with V=1.0 pu
+# - **G2**: PV bus with V=0.95 pu and P=1.0 pu
+#
+# The system also has two constant admittance loads and two junction buses that serve
+# as connection points for the breaker.
 
 @named swing = Swing()
 G1 = compile_bus(MTKBus(swing); name=:G1, vidx=1, pf=pfSlack(V=1.), swing₊M=0.1, swing₊D=0.1)
@@ -97,12 +96,13 @@ lines = [
 # enforce `u_dst = u_src` with the current as an implicit output. When open, the equations
 # enforce `i = 0`.
 #
-# !!! note "Usage of `implicit_output`""
-#    `implicit_output` evaluates to zero.
-#    Including it is just a trick to convice MTK that the current variables `i_r` and `i_i`
-#    are in some sense part of this constraint, because by chaging the current the solver
-#    can satisfy the voltage equality.
-#    This is necessary, because MTK does not know about the explicit feedback loop `u_src = f(i_src)`.
+# > **Usage of `implicit_output`"**
+# >
+# > `implicit_output` evaluates to zero.
+# > Including it is just a trick to convice MTK that the current variables `i_r` and `i_i`
+# > are in some sense part of this constraint, because by chaging the current the solver
+# > can satisfy the voltage equality.
+# > This is necessary, because MTK does not know about the explicit feedback loop `u_src = f(i_src)`.
 
 @mtkmodel Breaker begin
     @parameters begin
@@ -185,10 +185,11 @@ close_cond = ComponentCondition([:src₊u_r, :src₊u_i, :dst₊u_r, :dst₊u_i]
 end
 close_breaker = ContinuousComponentCallback(close_cond, toggle_breaker)
 
-# !!! note "Angle Wrapping"
-#    Be carfull: due to the wrapping behavior of `atan`, the angle difference can jump.
-#    Therefore, this simple closing conditions won't work in many scenarios. Implementing a
-#    robust synchronization detection algorithm is beyond the scope of this tutorial.
+# > **Angle Wrapping**
+# >
+# > Be carfull: due to the wrapping behavior of `atan`, the angle difference can jump.
+# > Therefore, this simple closing conditions won't work in many scenarios. Implementing a
+# > robust synchronization detection algorithm is beyond the scope of this tutorial.
 #
 # ## Simulation
 #
