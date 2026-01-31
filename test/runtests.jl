@@ -23,7 +23,7 @@ using Main.PowerDynamicsTesting
             persistent_tasks=false)
         @test_broken isempty(Docs.undocumented_names(PowerDynamics))
 
-        MTKMODEL_SYMS = (:Num, :System, :Equation, :connect, :@unpack)
+        MTKMODEL_SYMS = (:Num, :System, :Equation, :connect, Symbol("@unpack"), :setmetadata, :ComponentPostprocessing, Symbol("@named"))
         allow_unanalyzable = (PowerDynamics,)
 
         @test check_no_implicit_imports(PowerDynamics; skip=(Base, Core, NetworkDynamics), allow_unanalyzable) === nothing
@@ -39,6 +39,7 @@ using Main.PowerDynamicsTesting
     end
 
     @safetestset "Library tests" begin include("Library_test.jl") end
+    @safetestset "Saturation tests" begin include("saturation_test.jl") end
     @safetestset "utils tests" begin include("utils_test.jl") end
     @safetestset "modeling_tools tests" begin include("modeling_tools_test.jl") end
     @safetestset "initialization tests" begin include("initialization_test.jl") end

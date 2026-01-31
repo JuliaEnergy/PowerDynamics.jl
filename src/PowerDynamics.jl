@@ -22,6 +22,10 @@ using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System,
 using Symbolics: Symbolics
 using SciMLBase: SciMLBase
 
+# imports to load sparsity extensions
+using SparseConnectivityTracer: SparseConnectivityTracer
+using SparseMatrixColorings: SparseMatrixColorings
+
 export Terminal, BusBar, LineEnd
 export MTKBus, MTKLine, CompositeInjector, Ibase, Zbase, Ybase
 include("modeling_tools.jl")

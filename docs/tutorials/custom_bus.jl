@@ -14,7 +14,7 @@ The model we set out to recreate is the classical machine from Chapter 15.1 from
 In order to use this model in a Bus, we need to define it in a way that it
 specifies the [Injector Interface](@ref).
 
-```
+```asciiart
             ┌───────────────────┐
 terminal    │                   │
    o←───────┤ Machine Equations │

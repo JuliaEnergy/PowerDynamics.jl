@@ -49,6 +49,7 @@ as those explain lots of the underlying functionality and concepts
 - **[IEEE 39-Bus System Part 3](@ref ieee39-part3)** - Runs dynamic simulation of the 39-bus system with a short circuit disturbance and fault clearing
 - **[IEEE 39-Bus System Part 4](@ref ieee39-part4)** - Implements a custom droop-controlled inverter model and performs parameter optimization using sensitivity analysis
 - **[EMT Toy Model Example](@ref emt-toymodel)** - Demonstrates very basic EMT modeling using dynamic shunt capacitor and RL transmission line components in rotating dq coordinates
+- **[Zero-Impedance Circuit Breaker](@ref zero_imp_breaker)** - Pedagogical example showing how to model switching components with zero-impedance connections.
 
 ## Reproducibility
 
