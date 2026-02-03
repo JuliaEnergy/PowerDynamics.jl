@@ -14,31 +14,60 @@ using SciMLBase: SciMLBase, solve
 using Symbolics: Symbolics
 using LinearAlgebra: LinearAlgebra
 using SparseConnectivityTracer: GradientTracer
-using ScopedValues: ScopedValue
+using ScopedValues: ScopedValue, with
 
-export CallbackVerbose, set_callback_verbosity!
-export SaturationConfiguration, SaturationConfig, set_saturation_config!
-"""
-    const CallbackVerbose = ScopedValue(true)
+export CallbackVerbosity, set_callback_verbosity!, get_callback_verbosity, with_callback_verbosity
+export SaturationConfiguration, SaturationConfig, set_saturation_config!, get_saturation_config, with_saturation_config
 
-Toggle verbosity of callbacks during simulation. Use [`set_callback_verbosity!`](@ref) to change
-globally or use
-```julia
-with(CallbackVerbose => false) do
-    # your code here
+mutable struct ConfigRef{T}
+    val::T
 end
-```
-to set temporarily via ScopedValue mechanism.
+Base.getindex(c::ConfigRef) = c.val
+Base.setindex!(c::ConfigRef, v) = (c.val = v)
+# Allow easy conversion to ConfigRef
+Base.convert(::Type{ConfigRef{T}}, config::T) where {T} = ConfigRef(config)
+
 """
-const CallbackVerbose = ScopedValue(true)
+    const CallbackVerbosity = ScopedValue(ConfigRef(true))
+
+Global configuration for callback verbosity during simulation.
+Wrapped in `ConfigRef` to enable both global mutation and scoped temporary changes.
+Access via [`get_callback_verbosity`](@ref), set via [`set_callback_verbosity!`](@ref)
+or [`with_callback_verbosity`](@ref).
+"""
+const CallbackVerbosity = ScopedValue(ConfigRef(true))
 """
     set_callback_verbosity!(v::Bool)
 
-Sets [`CallbackVerbose`](@ref) to `v`.
+Sets [`CallbackVerbosity`](@ref) to `v`.
 """
 function set_callback_verbosity!(v::Bool)
-    CallbackVerbose[] = v
+    CallbackVerbosity[][] = v
 end
+"""
+    get_callback_verbosity() -> Bool
+
+Get the current callback verbosity setting from [`CallbackVerbosity`](@ref).
+Returns `true` if callbacks should print messages, `false` otherwise.
+"""
+get_callback_verbosity() = CallbackVerbosity[][]
+
+"""
+    with_callback_verbosity(f, v::Bool)
+
+Execute function `f` with callback verbosity temporarily set to `v`.
+The setting is restored after `f` returns.
+
+# Example
+```julia
+with_callback_verbosity(false) do
+    solve(prob, Rodas5P())  # callbacks silenced
+end
+```
+
+See also [`CallbackVerbosity`](@ref), [`set_callback_verbosity!`](@ref), [`get_callback_verbosity`](@ref).
+"""
+with_callback_verbosity(f, v::Bool) = with(f, CallbackVerbosity => ConfigRef(v))
 
 
 """

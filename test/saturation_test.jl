@@ -15,6 +15,37 @@ using ScopedValues
 using DiffEqCallbacks: PresetTimeCallback
 using SciMLBase: auto_dt_reset!
 
+
+@testset "Test configuration stuff" begin
+    # Test SaturationConfiguration
+    set_saturation_config!(SaturationConfig(:rhs_soft, regularization=1e-6))
+    @test get_saturation_config().method == :rhs_soft
+    set_saturation_config!(:callback)
+    @test get_saturation_config().method == :callback
+
+    with_saturation_config(:rhs_soft) do
+       @test get_saturation_config().method == :rhs_soft
+    end
+    ScopedValues.with(SaturationConfiguration => SaturationConfig(:rhs_hard)) do
+       @test get_saturation_config().method == :rhs_hard
+    end
+    @test get_saturation_config().method == :callback
+
+    # Test CallbackVerbosity
+    set_callback_verbosity!(false)
+    @test get_callback_verbosity() == false
+    set_callback_verbosity!(true)
+    @test get_callback_verbosity() == true
+
+    with_callback_verbosity(false) do
+        @test get_callback_verbosity() == false
+    end
+    ScopedValues.with(CallbackVerbosity => false) do
+        @test get_callback_verbosity() == false
+    end
+    @test get_callback_verbosity() == true
+end
+
 @testset "clamp function tests" begin
     using PowerDynamics.Library: _soft_clamped_rhs, _hard_clamped_rhs
 
@@ -139,7 +170,7 @@ It contains both a lag limiter and an integrator limiter to test saturation beha
     end
 end
 
-function build_test_network(config=SaturationConfiguration[]; min=-0.5, max=1.0)
+function build_test_network(config=get_saturation_config(); min=-0.5, max=1.0)
     hub_vertex = pfSlack(; u_r=0, u_i=0, name=:slack_hub)
 
     sat_vertex = with(SaturationConfiguration => config) do

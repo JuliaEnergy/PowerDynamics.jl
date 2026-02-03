@@ -160,20 +160,14 @@ function SaturationConfig(method; discrete_cb=true, continuous_cb=true, regulari
 end
 
 """
-    const SaturationConfiguration = ScopedValue(SaturationConfig(:callback))
+    const SaturationConfiguration = ScopedValue(ConfigRef(SaturationConfig(:callback)))
 
 Global configuration for saturation handling in limited integrator blocks.
-See [`SaturationConfig`](@ref) for details on available options.
-
-Use [`set_saturation_config!`](@ref) to change globally or use
-```julia
-with(SaturationConfiguration => SaturationConfig(:complementary, regularization=1e-6)) do
-    # your code here
-end
-```
-to set temporarily via ScopedValue mechanism.
+Wrapped in `ConfigRef` to enable both global mutation and scoped temporary changes.
+Access via [`get_saturation_config`](@ref), set via [`set_saturation_config!`](@ref)
+or [`with_saturation_config`](@ref). See [`SaturationConfig`](@ref) for available options.
 """
-const SaturationConfiguration = ScopedValue(SaturationConfig(:callback))
+const SaturationConfiguration = ScopedValue(ConfigRef(SaturationConfig(:callback)))
 
 """
     set_saturation_config!(style::Symbol; kwargs...)
@@ -183,18 +177,45 @@ Sets [`SaturationConfiguration`](@ref) globally.
 See [`SaturationConfig`](@ref) for available options and styles.
 """
 function set_saturation_config!(config::SaturationConfig)
-    SaturationConfiguration[] = config
+    SaturationConfiguration[][] = config
 end
 function set_saturation_config!(style::Symbol; kwargs...)
     config = SaturationConfig(style; kwargs...)
     set_saturation_config!(config)
 end
 
+"""
+    get_saturation_config() -> SaturationConfig
+
+Get the current saturation configuration from [`SaturationConfiguration`](@ref).
+Returns the active [`SaturationConfig`](@ref) object.
+"""
+get_saturation_config() = SaturationConfiguration[][]
+
+"""
+    with_saturation_config(f, config::SaturationConfig)
+    with_saturation_config(f, method::Symbol; kwargs...)
+
+Execute function `f` with saturation configuration temporarily set to `config` or `method`.
+The configuration is restored after `f` returns.
+
+# Example
+```julia
+with_saturation_config(:rhs_soft, regularization=1e-6) do
+    nw = build_network()  # components use soft RHS saturation
+end
+```
+
+See also [`SaturationConfiguration`](@ref), [`SaturationConfig`](@ref), [`set_saturation_config!`](@ref), [`get_saturation_config`](@ref).
+"""
+with_saturation_config(f, config::SaturationConfig) = with(f, SaturationConfiguration => ConfigRef(config))
+with_saturation_config(f, method::Symbol; kwargs...) = with_saturation_config(f, SaturationConfig(method; kwargs...))
+
 @component function LimitedIntegratorBase(; name, type, K, T, outMin, outMax, guess=0)
     if type != :lag && type != :int
         error("Unknown type $type for SimpleLagLim. Supported types are :lag and :int")
     end
-    config = SaturationConfiguration[]
+    config = get_saturation_config()
     if config.method ∉ (:callback, :complementary, :rhs_hard, :rhs_soft)
         error("Unknown saturation config method :$(config.method). Supported types are :callback, :complementary, :rhs_hard and :rhs_soft")
     end
@@ -425,15 +446,15 @@ function _generate_limint_callbacks(namespace)
     satmax = Symbol(namespace, "₊_callback_sat_max")
     satmin = Symbol(namespace, "₊_callback_sat_min")
 
-    use_continuous_callback = SaturationConfiguration[].continuous_cb
-    use_discrete_callback = SaturationConfiguration[].discrete_cb
+    use_continuous_callback = get_saturation_config().continuous_cb
+    use_discrete_callback = get_saturation_config().discrete_cb
 
     if use_continuous_callback
         condition = ComponentCondition(_SatLim_condition, [min, max, x, forcing], [satmax, satmin])
 
         upcrossing_affect = ComponentAffect([], [satmax, satmin]) do u, p, eventidx, ctx
             comp = get_compidx(ctx)
-            verbose = CallbackVerbose[]
+            verbose = get_callback_verbosity()
             if eventidx == 1
                 verbose && println("$comp: $namespace: /⎺ reached upper saturation at $(round(ctx.t, digits=4))s")
                 p[satmax] = 1.0
@@ -456,7 +477,7 @@ function _generate_limint_callbacks(namespace)
 
         downcrossing_affect = ComponentAffect([],[satmax]) do u, p, eventidx, ctx
             comp = get_compidx(ctx)
-            verbose = CallbackVerbose[]
+            verbose = get_callback_verbosity()
             if eventidx == 1 || eventidx == 2
                 # in theory should never be hit
                 return
@@ -483,7 +504,7 @@ function _generate_limint_callbacks(namespace)
         discrete_condition = ComponentCondition(_discrete_cond, [x, min, max], [])
         discrete_affect = ComponentAffect([x],[satmin, satmax]) do u, p, ctx
             comp = get_compidx(ctx)
-            verbose = CallbackVerbose[]
+            verbose = get_callback_verbosity()
             if ctx.model isa VertexModel
                 minidx = VIndex(ctx.vidx, min)
                 maxidx = VIndex(ctx.vidx, max)
@@ -520,7 +541,7 @@ function _generate_limint_callbacks(namespace)
         discrete_unsat_condition = ComponentCondition(_discrete_unsat_cond, [forcing],[satmin, satmax])
         discrete_unsat_affect = ComponentAffect([],[satmin, satmax]) do u, p, ctx
             comp = get_compidx(ctx)
-            verbose = CallbackVerbose[]
+            verbose = get_callback_verbosity()
             insatmin = !iszero(p[satmin])
             insatmax = !iszero(p[satmax])
             if insatmin
