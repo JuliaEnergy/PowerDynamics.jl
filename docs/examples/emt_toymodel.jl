@@ -84,11 +84,13 @@ transforming from the dq-frame back to abc coordinates.
 The capacitor dynamics are given by:
 ```math
 \begin{aligned}
-\frac{du_r}{dt} &= \phantom{-}\omega_0 u_i + \frac{1}{C} i_r \\
-\frac{du_i}{dt} &= -\omega_0 u_r + \frac{1}{C} i_i
+\frac{du_r}{dt} &= \phantom{-}\omega_0 u_i - \frac{1}{C} i_r \\
+\frac{du_i}{dt} &= -\omega_0 u_r - \frac{1}{C} i_i
 \end{aligned}
 ```
-where the $\omega_0 u_i$ and $-\omega_0 u_r$ terms account for the rotating dq-frame.
+where the $\omega_0 u_i$ and $-\omega_0 u_r$ terms account for the rotating dq-frame. 
+The terminal currents $i_r$ and $i_i$ follow the injector current sign convention: a positive current is defined to flow out of the injector and into the terminal.
+
 =#
 
 @mtkmodel DynamicShunt begin
@@ -115,8 +117,8 @@ where the $\omega_0 u_i$ and $-\omega_0 u_r$ terms account for the rotating dq-f
     end
     @equations begin
         ## Capacitor dynamics in rotating dq-frame
-        Dt(u_r) ~  ω0*u_i + 1/C * terminal.i_r
-        Dt(u_i) ~ -ω0*u_r + 1/C * terminal.i_i
+        Dt(u_r) ~  ω0*u_i - 1/C * terminal.i_r
+        Dt(u_i) ~ -ω0*u_r - 1/C * terminal.i_i
         ## Terminal connections
         terminal.u_r ~ u_r
         terminal.u_i ~ u_i
@@ -135,7 +137,7 @@ The load bus combines two components:
 2. A dynamic shunt capacitor representing line charging
 =#
 
-@named load = PQLoad(Pset=-Pload_pu, Qset=0)
+@named load = PQLoad(Pset=Pload_pu, Qset=0)
 @named shunt = DynamicShunt(C=Cline_pu, ω0=ω0)
 loadbus = compile_bus(
     MTKBus(load, shunt);
@@ -151,11 +153,13 @@ The transmission line is modeled as a dynamic RL branch in the dq-frame.
 The line current dynamics are given by:
 ```math
 \begin{aligned}
-\frac{di_r}{dt} &= \phantom{-}\omega_0 i_i - \frac{R}{L} i_r + \frac{1}{L}(u_{\text{dst},r} - u_{\text{src},r}) \\
-\frac{di_i}{dt} &= -\omega_0 i_r - \frac{R}{L} i_i + \frac{1}{L}(u_{\text{dst},i} - u_{\text{src},i})
+\frac{di_r}{dt} &= \phantom{-}\omega_0 i_i - \frac{R}{L} i_r + \frac{1}{L}(u_{\text{src},r} - u_{\text{dst},r}) \\
+\frac{di_i}{dt} &= -\omega_0 i_r - \frac{R}{L} i_i + \frac{1}{L}(u_{\text{src},i} - u_{\text{dst},i})
 \end{aligned}
 ```
 where the voltage difference drives the current through the line impedance.
+Similarly, the line model follows the injector interface at both ends: 
+a positive current is defined as leaving the device and flowing toward the terminals.
 =#
 
 @mtkmodel DynamicRLBranch begin
@@ -174,8 +178,8 @@ where the voltage difference drives the current through the line impedance.
     end
     @equations begin
         ## RL line dynamics in rotating dq-frame
-        Dt(i_r) ~  ω0 * i_i  - R/L * i_r + 1/L*(dst.u_r - src.u_r)
-        Dt(i_i) ~ -ω0 * i_r  - R/L * i_i + 1/L*(dst.u_i - src.u_i)
+        Dt(i_r) ~  ω0 * i_i  - R/L * i_r + 1/L*(src.u_r - dst.u_r)
+        Dt(i_i) ~ -ω0 * i_r  - R/L * i_i + 1/L*(src.u_i - dst.u_i)
         ## Terminal current connections (KCL enforcement)
         src.i_r ~ -i_r  ## Current flows out of source
         src.i_i ~ -i_i
@@ -240,8 +244,8 @@ This approaches the algebraic PQ load behavior but avoids initialization issues.
     end
     @equations begin
         ## First-order dynamics with fast time constant
-        Dt(i_r) ~ 1e3*(Pset * terminal.u_r/(terminal.u_r^2 + terminal.u_i^2) - i_r)
-        Dt(i_i) ~ 1e3*(Pset * terminal.u_i/(terminal.u_r^2 + terminal.u_i^2) - i_i)
+        Dt(i_r) ~ 1e3*(-Pset * terminal.u_r/(terminal.u_r^2 + terminal.u_i^2) - i_r)
+        Dt(i_i) ~ 1e3*(-Pset * terminal.u_i/(terminal.u_r^2 + terminal.u_i^2) - i_i)
         terminal.i_r ~ i_r
         terminal.i_i ~ i_i
     end
