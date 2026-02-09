@@ -1,6 +1,15 @@
 module ComposableInverter
 
+using ModelingToolkit: ModelingToolkit, @named, simplify, t_nounits as t, D_nounits as Dt,
+                       @component
+# needed for @mtkmodel
+using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System, Equation, connect, setmetadata
+using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
+
+using ..PowerDynamics: Terminal
+
 export LCFilter, LCLFilter, VC, CC1, CC2, SimplePLL, VoltageSource, CurrentSource
+export DroopOuter, DroopInverter
 
 @mtkmodel LCFilter begin
     @components begin
@@ -98,7 +107,7 @@ end
     end
 end
 
-@component function CC1(; name, X_f, F, KP, KI)
+@component function CC1(; name, X_f, F, Fcoupl=1, KP, KI)
     vars = @variables begin
         γ_d(t), [guess=0]
         γ_q(t), [guess=0]
@@ -122,12 +131,12 @@ end
 
     eqs = vcat(
         Dt.(γ) .~ i_f_ref - i_f,
-        V_I .~ -X_f*W*i_f + KP*(i_f_ref - i_f) + KI*γ + F*V_C
+        V_I .~ -Fcoupl*X_f*W*i_f + KP*(i_f_ref - i_f) + KI*γ + F*V_C
     )
     System(eqs, t; name)
 end
 
-@component function VC(; name, B_c, F, KP, KI)
+@component function VC(; name, B_c, F, Fcoupl=1, KP, KI)
     vars = @variables begin
         γ_d(t), [guess=0]
         γ_q(t), [guess=0]
@@ -151,7 +160,7 @@ end
 
     eqs = vcat(
         Dt.(γ) .~ V_C_ref - V_C,
-        i_f_ref .~ -B_c*W*V_C + KP*(V_C_ref - V_C) + KI*γ + F*i_g
+        i_f_ref .~ -Fcoupl*B_c*W*V_C + KP*(V_C_ref - V_C) + KI*γ + F*i_g
     )
     System(eqs, t; name)
 end
@@ -177,7 +186,7 @@ end
     System(eqs, t; name)
 end
 
-@component function CC2(; name, X_g, F, KP, KI)
+@component function CC2(; name, X_g, F, Fcoupl=1, KP, KI)
     vars = @variables begin
         γ_d(t), [guess=0]
         γ_q(t), [guess=0]
@@ -201,7 +210,7 @@ end
 
     eqs = vcat(
         Dt.(γ) .~ i_g_ref - i_g,
-        V_C_ref .~ -X_g*W*i_g + KP*(i_g_ref - i_g) + KI*γ + F*V_g
+        V_C_ref .~ -Fcoupl*X_g*W*i_g + KP*(i_g_ref - i_g) + KI*γ + F*V_g
     )
     System(eqs, t; name)
 end
@@ -210,18 +219,20 @@ end
 @component function VoltageSource(; name, Vset_input=false, filter_type=:LC)
     @parameters begin
         # Filter parameters (actual electrical components in per-unit)
-        Rf  = 0.01,
+        Rf  = 0.01
         X_f = 0.007, [description="Inverter-side reactance (pu Ω)"]
         B_c = 0.5,  [description="Capacitive susceptance (pu S)"]
-        ω0  = 2π*50,
+        ω0  = 2π*50
         # cc1
         CC1_KP = 0.063
         CC1_KI = 63
         CC1_F  = 0
+        CC1_Fcoupl = 1
         # vc
         VC_KP = 0.952
         VC_KI = 317.4
         VC_F = 0
+        VC_Fcoupl = 1
         # virtual inductance
         R_virt = 0, [description="Virtual resistance (feedforward of i_g) (pu Ω)"]
         X_virt = 0, [description="Virtual inductance (feedforward of i_g) for feedforward (pu Ω)"]
@@ -229,8 +240,8 @@ end
     # Grid-side inductor parameters (only for LCL)
     if filter_type == :LCL
         @parameters begin
-            Rg  = LCL.Rg
-            X_g = ustrip(u"rad/s", BASE.ω0) * LCL.Lg, [description="Grid-side reactance (pu Ω)"]
+            Rg  = 0.01
+            X_g = 0.007, [description="Grid-side reactance (pu Ω)"]
         end
     end
     if !Vset_input
@@ -247,16 +258,16 @@ end
         @named filter = LCLFilter(; ω0, Rf, X_f, B_c, Rg, X_g)
     end
 
-    @named cc1 = CC1(; X_f=X_f, F=CC1_F, KP=CC1_KP, KI=CC1_KI)
+    @named cc1 = CC1(; X_f=X_f, F=CC1_F, Fcoupl=CC1_Fcoupl, KP=CC1_KP, KI=CC1_KI)
     systems = @named begin
         terminal = Terminal()
-        vc = VC(; B_c=B_c, F=VC_F, KP=VC_KP, KI=VC_KI)
+        vc = VC(; B_c=B_c, F=VC_F, Fcoupl=VC_Fcoupl, KP=VC_KP, KI=VC_KI)
     end
     push!(systems, filter)
     push!(systems, cc1)
     if Vset_input
-        @named Vset_in = Blocks.RealInput()
-        @named δset_in = Blocks.RealInput()
+        @named Vset_in = RealInput()
+        @named δset_in = RealInput()
         append!(systems, [Vset_in, δset_in])
     end
     _Vset = Vset_input ? Vset_in.u : Vset
@@ -277,8 +288,8 @@ end
         cc1.i_f_ref_d ~ vc.i_f_ref_d
         cc1.i_f_ref_q ~ vc.i_f_ref_q
         # connect vc reference to setpoint/input (q-axis aligned: Vset goes into q)
-        vc.V_C_ref_d ~         (vc.i_g_d * R_virt - vc.i_g_q * X_virt)
-        vc.V_C_ref_q ~ _Vset + (vc.i_g_q * R_virt + vc.i_g_d * X_virt)
+        vc.V_C_ref_d ~       - (vc.i_g_d * R_virt - vc.i_g_q * X_virt)
+        vc.V_C_ref_q ~ _Vset - (vc.i_g_q * R_virt + vc.i_g_d * X_virt)
     ]
     System(eqs, t; name, systems)
 end
@@ -286,10 +297,10 @@ end
 @component function CurrentSource(; name, iset_input=false)
     @parameters begin
         # LCL Filter parameters (actual electrical components in per-unit)
-        Rf  = 0.01,
+        Rf  = 0.01
         X_f = 0.007, [description="Inverter-side reactance (pu Ω)"]
         B_c = 0.5,  [description="Capacitive susceptance (pu S)"]
-        ω0  = ustrip(u"rad/s", BASE.ω0)
+        ω0  = 2π*50
         Rg  = 0.01
         X_g = 0.007, [description="Grid-side reactance (pu Ω)"]
 
@@ -301,16 +312,19 @@ end
         CC1_KP = 0.063
         CC1_KI = 63
         CC1_F  = 0
+        CC1_Fcoupl = 1
 
         # VC (voltage loop)
         VC_KP = 0.952
         VC_KI = 317.4
         VC_F = 0
+        VC_Fcoupl = 1
 
         # CC2 (outer current loop)
         CC2_KP = 0.189
         CC2_KI = 0.630
         CC2_F  = 1  # Grid voltage feedforward
+        CC2_Fcoupl = 1
     end
 
     # Current setpoint parameters (when not using inputs)
@@ -328,20 +342,20 @@ end
     @named pll = SimplePLL(; Kp=PLL_Kp, Ki=PLL_Ki)
 
     # Create controller subsystems
-    @named cc1 = CC1(; X_f=X_f, F=CC1_F, KP=CC1_KP, KI=CC1_KI)
+    @named cc1 = CC1(; X_f=X_f, F=CC1_F, Fcoupl=CC1_Fcoupl, KP=CC1_KP, KI=CC1_KI)
 
     systems = @named begin
         terminal = Terminal()
-        vc = VC(; B_c=B_c, F=VC_F, KP=VC_KP, KI=VC_KI)
-        cc2 = CC2(; X_g=X_g, F=CC2_F, KP=CC2_KP, KI=CC2_KI)
+        vc = VC(; B_c=B_c, F=VC_F, Fcoupl=VC_Fcoupl, KP=VC_KP, KI=VC_KI)
+        cc2 = CC2(; X_g=X_g, F=CC2_F, Fcoupl=CC2_Fcoupl, KP=CC2_KP, KI=CC2_KI)
     end
     push!(systems, filter)
     push!(systems, pll)
     push!(systems, cc1)
 
     if iset_input
-        @named iset_d_in = Blocks.RealInput()
-        @named iset_q_in = Blocks.RealInput()
+        @named iset_d_in = RealInput()
+        @named iset_q_in = RealInput()
         append!(systems, [iset_d_in, iset_q_in])
     end
 
@@ -397,6 +411,85 @@ function _dq_to_ri(_d, _q, δ)
     _r =  sin(δ)*_d + cos(δ)*_q
     _i = -cos(δ)*_d + sin(δ)*_q
     return _r, _i
+end
+
+
+@component function DroopOuter(; name, pq_input=false, Pset=nothing, Qset=nothing)
+    @parameters begin
+        Vset, [description = "Voltage magnitude setpoint [pu]", guess=1]
+        ω0=2π*50, [guess=2π*50, description = "Nominal frequency [pu]"]
+        Kp = 0.4, [description = "Active power droop coefficient"]
+        Kq = 0.04, [description = "Reactive power droop coefficient"]
+        τ_p = 0.1, [description = "Active Power filter time constant [s]"]
+        τ_q = 0.1, [description = "Reactive Power filter time constant [s]"]
+    end
+    systems = @named begin
+        V_out = RealOutput()
+        δ_out = RealOutput()
+        P_meas_in = RealInput()
+        Q_meas_in = RealInput()
+    end
+
+    if pq_input
+        @named P_in = RealInput()
+        @named Q_in = RealInput()
+        append!(systems, (P_in, Q_in))
+    else
+        @parameters begin
+            Pset=Pset, [guess=1, description = "Active power setpoint [pu]"]
+            Qset=Qset, [guess=0, description = "Reactive power setpoint [pu]"]
+        end
+    end
+    _Pset = pq_input ? P_in.u : Pset
+    _Qset = pq_input ? Q_in.u : Qset
+
+    @variables begin
+        Pmeas(t), [description = "Measured active power [pu]", guess = 1]
+        Qmeas(t), [description = "Measured reactive power [pu]", guess = 0]
+        Pfilt(t), [description = "Filtered active power [pu]", guess = 1]
+        Qfilt(t), [description = "Filtered reactive power [pu]", guess = 0]
+        ω(t), [description = "Frequency [pu]", guess = 0]
+        δ(t), [description = "Voltage angle [rad]", guess = 0]
+        V(t), [description = "Voltage magnitude [pu]", guess = 1]
+    end
+
+    eqs = [
+        # Power measurement from terminal quantities
+        # Pmeas need to be calculated extenrally and connected as input!
+        Pmeas ~ P_meas_in.u
+        Qmeas ~ Q_meas_in.u
+
+        # First-order low-pass filtering
+        τ_p * Dt(Pfilt) ~ Pmeas - Pfilt
+        τ_q * Dt(Qfilt) ~ Qmeas - Qfilt
+
+        # Droop control equations
+        ω ~ ω0 - Kp * (Pfilt - _Pset)
+        V ~ Vset - Kq * (Qfilt - _Qset)
+
+        # Voltage angle dynamics
+        Dt(δ) ~ ω - ω0
+        V_out.u ~ V
+        δ_out.u ~ δ
+    ]
+
+    return System(eqs, t; name, systems)
+end
+
+function DroopInverter(; name=:droop_inv, filter_type)
+    @named droop = DroopOuter(; pq_input=false)
+    @named vsrc = VoltageSource(; Vset_input=true, filter_type)
+    @named terminal = Terminal()
+
+    eqs = [
+        connect(vsrc.Vset_in, droop.V_out)
+        connect(vsrc.δset_in, droop.δ_out)
+        connect(vsrc.terminal, terminal)
+        droop.P_meas_in.u ~ vsrc.filter.V_C_r * vsrc.filter.i_g_r + vsrc.filter.V_C_i * vsrc.filter.i_g_i
+        droop.Q_meas_in.u ~ vsrc.filter.V_C_i * vsrc.filter.i_g_r - vsrc.filter.V_C_r * vsrc.filter.i_g_i
+    ]
+
+    System(eqs, t; name, systems=[droop, vsrc, terminal])
 end
 
 end
