@@ -315,5 +315,81 @@ NetworkDynamics.show_mode_participation(nw, s0, 16)
 =#
 
 ####
-#### GFL inverter Example
+#### GFL inverter Example (SimplusGT Type 11: constant V_dc)
 ####
+using PowerDynamics.Library.ComposableInverter
+gfl_bus = let
+    @named gfl = ComposableInverter.SimpleGFL()
+    @named shunt = DynamicShunt(B=0.02, ω0=2*pi*50) # self-branch from JSON: wC=0.02
+    bus = compile_bus(MTKBus([gfl, shunt]; name=:gfl_bus))
+
+    # Parameters from GflInverterInfiniteBus.json
+    w0 = 314.15926535897933
+    xwLf = 0.05
+    Rf = 0.001
+    f_pll = 10
+    f_tau_pll = 300
+    f_i_dq = 250
+
+    # Derived PLL parameters (matching MATLAB)
+    w_pll = f_pll*2*pi
+    kp_pll = w_pll
+    ki_pll = w_pll^2/4
+    tau_pll = 1/(f_tau_pll*2*pi)
+
+    # Derived current control parameters
+    Lf = xwLf/w0
+    w_i_dq = f_i_dq*2*pi
+    kp_i_dq = Lf * w_i_dq
+    ki_i_dq = Lf * w_i_dq^2 / 4
+
+    set_default!(bus, :gfl₊ω0, w0)
+    set_default!(bus, :gfl₊X_f, xwLf)
+    set_default!(bus, :gfl₊Rf, Rf)
+    set_default!(bus, :gfl₊PLL_Kp, kp_pll)
+    set_default!(bus, :gfl₊PLL_Ki, ki_pll)
+    set_default!(bus, :gfl₊PLL_τ_lpf, tau_pll)
+    set_default!(bus, :gfl₊CC1_KP, kp_i_dq)
+    set_default!(bus, :gfl₊CC1_KI, ki_i_dq)
+    set_default!(bus, :gfl₊CC1_F, 0)
+    set_default!(bus, :gfl₊CC1_Fcoupl, 0)
+
+    # Bus 2: PQ bus (type 3), PGi=0.5, QGi=0 (generator convention)
+    @named pq = Library.PQConstraint(P=0.5, Q=0)
+    pfmod = compile_bus(MTKBus(pq); name=:gfl_bus_pfmod)
+
+    set_pfmodel!(bus, pfmod)
+    bus
+end
+
+slack_bus = pfSlack(V=1, name=:slack_bus)
+
+line = let
+    # Line from JSON: R=0.06, wL=0.3, wC=0
+    @named branch = DynRLLine(R=0.06, L=0.3, ωbase=2*pi*50)
+    lm = compile_line(MTKLine(branch); name=:l12, src=:slack_bus, dst=:gfl_bus)
+    @named branch = PiLine(R=0.06, X=0.3)
+    pfmod = compile_line(MTKLine(branch); name=:l12_pfmod)
+    set_pfmodel!(lm, pfmod)
+    lm
+end
+
+nw = Network([slack_bus, gfl_bus], [line])
+show_powerflow(solve_powerflow(nw))
+s0 = initialize_from_pf!(nw; subverbose=true, tol=1e-7, nwtol=1e-7)
+dump_initial_state(gfl_bus)
+
+eigenvalues = jacobian_eigenvals(nw, s0) ./ (2 * pi)
+println("GFL Eigenvalues:")
+display(eigenvalues)
+
+let
+    fig = Figure(size=(800,400))
+    ax1 = Axis(fig[1, 1], xlabel="Real Part [Hz]", ylabel="Imaginary Part [Hz]", title="GFL Eigenvalues")
+    scatter!(ax1, real.(eigenvalues), imag.(eigenvalues), marker=:xcross)
+    ax2 = Axis(fig[1, 2], xlabel="Real Part [Hz]", ylabel="Imaginary Part [Hz]", title="Zoomed Eigenvalues")
+    scatter!(ax2, real.(eigenvalues), imag.(eigenvalues), marker=:xcross)
+    xlims!(ax2, -80, 20)
+    ylims!(ax2, -150, 150)
+    fig
+end |> display

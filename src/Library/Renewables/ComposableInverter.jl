@@ -8,7 +8,7 @@ using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 
 using ..PowerDynamics: Terminal
 
-export LCFilter, LCLFilter, VC, CC1, CC2, SimplePLL, VoltageSource, CurrentSource
+export LCFilter, LCLFilter, LFilter, VC, CC1, CC2, SimplePLL, PLLLPF, VoltageSource, CurrentSource, SimpleGFL
 export DroopOuter, DroopInverter
 
 @mtkmodel LCFilter begin
@@ -490,6 +490,116 @@ function DroopInverter(; name=:droop_inv, filter_type)
     ]
 
     System(eqs, t; name, systems=[droop, vsrc, terminal])
+end
+
+####
+#### Simple Grid-Following Inverter (matching SimplusGT Type 11)
+####
+
+@mtkmodel LFilter begin
+    @components begin
+        terminal = Terminal()
+    end
+    @structural_parameters begin
+        ω0
+        Rf
+        X_f
+    end
+    @variables begin
+        i_f_r(t), [guess=0]
+        i_f_i(t), [guess=0]
+        i_f_mag(t)
+        V_I_r(t)
+        V_I_i(t)
+    end
+    @equations begin
+        (X_f/ω0) * Dt(i_f_r) ~ V_I_r - terminal.u_r - Rf*i_f_r + X_f*i_f_i
+        (X_f/ω0) * Dt(i_f_i) ~ V_I_i - terminal.u_i - Rf*i_f_i - X_f*i_f_r
+        terminal.i_r ~ i_f_r
+        terminal.i_i ~ i_f_i
+        i_f_mag ~ sqrt(i_f_r^2 + i_f_i^2)
+    end
+end
+
+@component function PLLLPF(; name, Kp, Ki, τ_lpf)
+    vars = @variables begin
+        w_pll_i(t), [guess=0]
+        w(t), [guess=2π*50]
+        θ(t), [guess=0]
+        e_ang(t)
+        u_r(t)
+        u_i(t)
+    end
+
+    eqs = [
+        # Error signal: v_q in MATLAB d-axis aligned convention = -v_d in our q-axis convention
+        e_ang ~ -sin(θ)*u_r + cos(θ)*u_i
+        Dt(w_pll_i) ~ e_ang * Ki
+        Dt(w) ~ (w_pll_i + e_ang*Kp - w) / τ_lpf
+        Dt(θ) ~ w
+    ]
+    System(eqs, t; name)
+end
+
+@component function SimpleGFL(; name, iset_input=false)
+    @parameters begin
+        Rf  = 0.01
+        X_f = 0.05, [description="Filter reactance wLf (pu Ω)"]
+        ω0  = 2π*50
+        # PLL
+        PLL_Kp = 2π*10
+        PLL_Ki = (2π*10)^2/4
+        PLL_τ_lpf = 1/(2π*300)
+        # CC1 (no decoupling FF by default, matching MATLAB)
+        CC1_KP = 0.6
+        CC1_KI = 565.5
+        CC1_F  = 0
+        CC1_Fcoupl = 0
+    end
+
+    if !iset_input
+        @parameters begin
+            iset_d, [guess=0, description="dq-frame current setpoint (d-axis)"]
+            iset_q, [guess=0, description="dq-frame current setpoint (q-axis)"]
+        end
+    end
+
+    @named filter = LFilter(; ω0, Rf, X_f)
+    @named pll = PLLLPF(; Kp=PLL_Kp, Ki=PLL_Ki, τ_lpf=PLL_τ_lpf)
+    @named cc1 = CC1(; X_f=X_f, F=CC1_F, Fcoupl=CC1_Fcoupl, KP=CC1_KP, KI=CC1_KI)
+
+    systems = @named begin
+        terminal = Terminal()
+    end
+    push!(systems, filter)
+    push!(systems, pll)
+    push!(systems, cc1)
+
+    if iset_input
+        @named iset_d_in = RealInput()
+        @named iset_q_in = RealInput()
+        append!(systems, [iset_d_in, iset_q_in])
+    end
+
+    _iset_d = iset_input ? iset_d_in.u : iset_d
+    _iset_q = iset_input ? iset_q_in.u : iset_q
+
+    eqs = [
+        # Terminal connection
+        connect(terminal, filter.terminal)
+        # PLL measures terminal voltage
+        pll.u_r ~ terminal.u_r
+        pll.u_i ~ terminal.u_i
+        # CC1 measurements in dq frame (using PLL angle)
+        [cc1.i_f_d, cc1.i_f_q] .~ _ri_to_dq(filter.i_f_r, filter.i_f_i, pll.θ)
+        [cc1.V_C_d, cc1.V_C_q] .~ _ri_to_dq(terminal.u_r, terminal.u_i, pll.θ)
+        # CC1 output → filter voltage input
+        [filter.V_I_r, filter.V_I_i] .~ _dq_to_ri(cc1.V_I_d, cc1.V_I_q, pll.θ)
+        # Current setpoint
+        cc1.i_f_ref_d ~ _iset_d
+        cc1.i_f_ref_q ~ _iset_q
+    ]
+    System(eqs, t; name, systems)
 end
 
 end
