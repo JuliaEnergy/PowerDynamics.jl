@@ -317,6 +317,7 @@ NetworkDynamics.show_mode_participation(nw, s0, 16)
 ####
 #### GFL inverter Example (SimplusGT Type 11: constant V_dc)
 ####
+#=
 using PowerDynamics.Library.ComposableInverter
 gfl_bus = let
     @named gfl = ComposableInverter.SimpleGFL()
@@ -393,3 +394,8 @@ let
     ylims!(ax2, -150, 150)
     fig
 end |> display
+=#
+
+####
+####  4 Bus example
+####
