@@ -198,6 +198,7 @@ very damped in this julia model.
 ####
 #### GFM inverter Example
 ####
+#=
 using PowerDynamics.Library.ComposableInverter
 gfm_bus = let
     @named droop = ComposableInverter.DroopInverter(filter_type=:LCL)
@@ -239,7 +240,7 @@ gfm_bus = let
     set_default!(bus, :droop₊droop₊ω0, w0)
     set_default!(bus, :droop₊droop₊Kq, 0)
     set_default!(bus, :droop₊droop₊τ_q, Inf) # not needed?
-    set_default!(bus, :droop₊droop₊τ_p, 1/wf) # Dw/wf
+    set_default!(bus, :droop₊droop₊τ_p, 1/wf) # wf
     set_default!(bus, :droop₊vsrc₊CC1_F, 0)
     set_default!(bus, :droop₊vsrc₊CC1_KI, ki_i_ldq)
     set_default!(bus, :droop₊vsrc₊CC1_KP, kp_i_ldq)
@@ -311,3 +312,8 @@ end |> display
 eigenvalues = jacobian_eigenvals(nw, s0) ./ (2 * pi)
 NetworkDynamics.show_mode_participation(nw, s0, 15)
 NetworkDynamics.show_mode_participation(nw, s0, 16)
+=#
+
+####
+#### GFL inverter Example
+####
