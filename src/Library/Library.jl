@@ -272,6 +272,9 @@ include("Faults/Faults.jl")
 export IdealDroopInverter
 include("Renewables/IdealDroopInverter.jl")
 
+export ComposableInverter
+include("Renewables/ComposableInverter.jl")
+
 ####
 #### Powerflow models
 ####

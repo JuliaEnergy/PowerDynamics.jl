@@ -102,6 +102,19 @@ end
     end
 end
 
+@mtkmodel ConstantRShunt begin
+    @parameters begin
+        R
+    end
+    @components begin
+        terminal = Terminal()
+    end
+    @equations begin
+        terminal.i_r ~ terminal.u_r / R
+        terminal.i_i ~ terminal.u_i / R
+    end
+end
+
 ####
 #### Testcase 1: sg connected to infinite bus through RL line
 ####
