@@ -106,7 +106,7 @@ function set_current!(cf::VertexModel; P, Q)
     set_current!(cf, -i)
 end
 # set_current!(cf::VertexModel; mag, arg) = set_current!(cf, mag * exp(im * arg))
-function set_current!(cf::VertexModel, c::Complex)
+function set_current!(cf::VertexModel, c::Number)
     set_default!(cf, :busbar₊i_r, real(c))
     set_default!(cf, :busbar₊i_i, imag(c))
     c

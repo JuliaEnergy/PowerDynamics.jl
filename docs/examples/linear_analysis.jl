@@ -176,37 +176,39 @@ using PowerDynamics.Library.ComposableInverter
 w0 = 2π*50
 
 ## ===== Bus 1: SG Type 0 (Slack for PF) =====
-sg1_bus = let
+sg1_bus, bus1, loop1 = let
     @named sm = SyncMachineStatorDynamics(J=3.5, D=1, wL=0.05, R=0.01, w0=w0)
-    @named shunt = DynamicShunt(G=0.6, B=1e-5, ω0=w0)
-    bus = compile_bus(MTKBus([sm, shunt]; name=:bus1))
+    @named sg1_bus = compile_bus(MTKBus(sm); current_source=true)
+    set_pfmodel!(sg1_bus, pfSlack(V=1, δ=0; current_source=true, assume_io_coupling=true))
 
-    @named slack = Library.VδConstraint(V=1, δ=0)
-    @named shunt_pf = StaticShunt(G=0.6, B=1e-5)
-    pfmod = compile_bus(MTKBus([slack, shunt_pf]); name=:bus1_pfmod)
-    set_pfmodel!(bus, pfmod)
-    bus
+    @named shunt = DynamicShunt(G=0.6, B=1e-5, ω0=w0)
+    @named bus1 = compile_bus(MTKBus(shunt))
+    set_pfmodel!(bus1, pfShunt(G=0.6, B=1e-5))
+
+    loop1 = LoopbackConnection(; potential=[:u_r, :u_i], flow=[:i_r, :i_i], src=:sg1_bus, dst=:bus1)
+
+    sg1_bus, bus1, loop1
 end
 
 ## ===== Bus 2: SG Type 0 (PV for PF) =====
-sg2_bus = let
+sg2_bus, bus2, loop2 = let
     @named sm = SyncMachineStatorDynamics(J=3.5, D=1, wL=0.05, R=0.01, w0=w0)
-    @named shunt = DynamicShunt(G=0.6, B=1e-5, ω0=w0)
-    bus = compile_bus(MTKBus([sm, shunt]; name=:bus2))
+    @named sg2_bus = compile_bus(MTKBus(sm); current_source=true)
+    set_pfmodel!(sg2_bus, pfPV(P=0.5, V=1; current_source=true, assume_io_coupling=true))
 
-    @named pv = Library.PVConstraint(P=0.5, V=1)
-    @named shunt_pf = StaticShunt(G=0.6, B=1e-5)
-    pfmod = compile_bus(MTKBus([pv, shunt_pf]); name=:bus2_pfmod)
-    set_pfmodel!(bus, pfmod)
-    set_voltage!(bus; mag=1, arg=0)
-    bus
+    @named shunt = DynamicShunt(G=0.6, B=1e-5, ω0=w0)
+    @named bus2 = compile_bus(MTKBus(shunt))
+    set_pfmodel!(bus2, pfShunt(G=0.6, B=1e-5))
+
+    loop2 = LoopbackConnection(; potential=[:u_r, :u_i], flow=[:i_r, :i_i], src=:sg2_bus, dst=:bus2)
+
+    sg2_bus, bus2, loop2
 end
 
 ## ===== Bus 3: GFM Type 20 (PV for PF) =====
-gfm_bus = let
+gfm_bus, bus3, loop3 = let
     @named droop = ComposableInverter.DroopInverter(filter_type=:LCL)
-    @named shunt = DynamicShunt(G=0.75, B=1e-5, ω0=w0)
-    bus = compile_bus(MTKBus([droop, shunt]; name=:bus3))
+    @named gfm_bus = compile_bus(MTKBus(droop); current_source=true)
 
     # Parameters from JSON
     xwLf=0.05; Rf=0.01; xwCf=0.02; xwLc=0.01; Rc=0.002
@@ -218,41 +220,44 @@ gfm_bus = let
     kp_i_ldq = w_i_ldq*Lf; ki_i_ldq = w_i_ldq^2*Lf/4
     kp_v_odq = w_v_odq*Cf; ki_v_odq = w_v_odq^2*Cf/4*50
 
-    set_default!(bus, :droop₊droop₊Kp, Dw)
-    set_default!(bus, :droop₊droop₊ω0, w0)
-    set_default!(bus, :droop₊droop₊Kq, 0)
-    set_default!(bus, :droop₊droop₊τ_q, Inf)
-    set_default!(bus, :droop₊droop₊τ_p, 1/wf)
-    set_default!(bus, :droop₊vsrc₊CC1_F, 0)
-    set_default!(bus, :droop₊vsrc₊CC1_KI, ki_i_ldq)
-    set_default!(bus, :droop₊vsrc₊CC1_KP, kp_i_ldq)
-    set_default!(bus, :droop₊vsrc₊CC1_Fcoupl, 0)
-    set_default!(bus, :droop₊vsrc₊VC_KP, kp_v_odq)
-    set_default!(bus, :droop₊vsrc₊VC_KI, ki_v_odq)
-    set_default!(bus, :droop₊vsrc₊VC_F, 0)
-    set_default!(bus, :droop₊vsrc₊VC_Fcoupl, 0)
-    set_default!(bus, :droop₊vsrc₊X_virt, Xov)
-    set_default!(bus, :droop₊vsrc₊R_virt, 0)
-    set_default!(bus, :droop₊vsrc₊X_g, xwLc)
-    set_default!(bus, :droop₊vsrc₊B_c, xwCf)
-    set_default!(bus, :droop₊vsrc₊Rf, Rf)
-    set_default!(bus, :droop₊vsrc₊X_f, xwLf)
-    set_default!(bus, :droop₊vsrc₊ω0, w0)
-    set_default!(bus, :droop₊vsrc₊Rg, Rc)
+    set_default!(gfm_bus, :droop₊droop₊Qset, 0)
+    set_default!(gfm_bus, :droop₊droop₊Kp, Dw)
+    set_default!(gfm_bus, :droop₊droop₊ω0, w0)
+    set_default!(gfm_bus, :droop₊droop₊Kq, 0)
+    set_default!(gfm_bus, :droop₊droop₊τ_q, Inf)
+    set_default!(gfm_bus, :droop₊droop₊τ_p, 1/wf)
+    set_default!(gfm_bus, :droop₊vsrc₊CC1_F, 0)
+    set_default!(gfm_bus, :droop₊vsrc₊CC1_KI, ki_i_ldq)
+    set_default!(gfm_bus, :droop₊vsrc₊CC1_KP, kp_i_ldq)
+    set_default!(gfm_bus, :droop₊vsrc₊CC1_Fcoupl, 0)
+    set_default!(gfm_bus, :droop₊vsrc₊VC_KP, kp_v_odq)
+    set_default!(gfm_bus, :droop₊vsrc₊VC_KI, ki_v_odq)
+    set_default!(gfm_bus, :droop₊vsrc₊VC_F, 0)
+    set_default!(gfm_bus, :droop₊vsrc₊VC_Fcoupl, 0)
+    set_default!(gfm_bus, :droop₊vsrc₊X_virt, Xov)
+    set_default!(gfm_bus, :droop₊vsrc₊R_virt, 0)
+    set_default!(gfm_bus, :droop₊vsrc₊X_g, xwLc)
+    set_default!(gfm_bus, :droop₊vsrc₊B_c, xwCf)
+    set_default!(gfm_bus, :droop₊vsrc₊Rf, Rf)
+    set_default!(gfm_bus, :droop₊vsrc₊X_f, xwLf)
+    set_default!(gfm_bus, :droop₊vsrc₊ω0, w0)
+    set_default!(gfm_bus, :droop₊vsrc₊Rg, Rc)
 
-    @named pv = Library.PVConstraint(P=0.5, V=1)
-    @named shunt_pf = StaticShunt(G=0.75, B=1e-5)
-    pfmod = compile_bus(MTKBus([pv, shunt_pf]); name=:bus3_pfmod)
-    set_pfmodel!(bus, pfmod)
-    set_voltage!(bus; mag=1, arg=0)
-    bus
+    set_pfmodel!(gfm_bus, pfPV(P=0.5, V=1; current_source=true, assume_io_coupling=true))
+
+    @named shunt = DynamicShunt(G=0.75, B=1e-5, ω0=w0)
+    @named bus3 = compile_bus(MTKBus(shunt))
+    set_pfmodel!(bus3, pfShunt(G=0.75, B=1e-5))
+
+    loop3 = LoopbackConnection(; potential=[:u_r, :u_i], flow=[:i_r, :i_i], src=:gfm_bus, dst=:bus3)
+
+    gfm_bus, bus3, loop3
 end
 
 ## ===== Bus 4: GFL Type 10 with DC-link (PQ for PF) =====
-gfl_bus = let
+gfl_bus, bus4, loop4 = let
     @named gfl = ComposableInverter.SimpleGFLDC()
-    @named shunt = DynamicShunt(G=0.05, B=1e-5, ω0=w0)
-    bus = compile_bus(MTKBus([gfl, shunt]; name=:bus4))
+    @named gfl_bus = compile_bus(MTKBus(gfl); current_source=true)
 
     # Parameters from JSON
     V_dc=2.5; C_dc=1.25; f_v_dc=5
@@ -273,27 +278,30 @@ gfl_bus = let
     kp_i_dq = Lf * w_i_dq
     ki_i_dq = Lf * w_i_dq^2 / 4
 
-    set_default!(bus, :gfl₊ω0, w0)
-    set_default!(bus, :gfl₊X_f, xwLf)
-    set_default!(bus, :gfl₊Rf, Rf)
-    set_default!(bus, :gfl₊PLL_Kp, kp_pll)
-    set_default!(bus, :gfl₊PLL_Ki, ki_pll)
-    set_default!(bus, :gfl₊PLL_τ_lpf, tau_pll)
-    set_default!(bus, :gfl₊CC1_KP, kp_i_dq)
-    set_default!(bus, :gfl₊CC1_KI, ki_i_dq)
-    set_default!(bus, :gfl₊CC1_F, 0)
-    set_default!(bus, :gfl₊CC1_Fcoupl, 0)
-    set_default!(bus, :gfl₊C_dc, C_dc)
-    set_default!(bus, :gfl₊V_dc, V_dc)
-    set_default!(bus, :gfl₊kp_v_dc, kp_v_dc)
-    set_default!(bus, :gfl₊ki_v_dc, ki_v_dc)
+    set_default!(gfl_bus, :gfl₊ω0, w0)
+    set_default!(gfl_bus, :gfl₊X_f, xwLf)
+    set_default!(gfl_bus, :gfl₊Rf, Rf)
+    set_default!(gfl_bus, :gfl₊PLL_Kp, kp_pll)
+    set_default!(gfl_bus, :gfl₊PLL_Ki, ki_pll)
+    set_default!(gfl_bus, :gfl₊PLL_τ_lpf, tau_pll)
+    set_default!(gfl_bus, :gfl₊CC1_KP, kp_i_dq)
+    set_default!(gfl_bus, :gfl₊CC1_KI, ki_i_dq)
+    set_default!(gfl_bus, :gfl₊CC1_F, 0)
+    set_default!(gfl_bus, :gfl₊CC1_Fcoupl, 0)
+    set_default!(gfl_bus, :gfl₊C_dc, C_dc)
+    set_default!(gfl_bus, :gfl₊V_dc, V_dc)
+    set_default!(gfl_bus, :gfl₊kp_v_dc, kp_v_dc)
+    set_default!(gfl_bus, :gfl₊ki_v_dc, ki_v_dc)
 
-    @named pq = Library.PQConstraint(P=0.5, Q=-0.2)
-    @named shunt_pf = StaticShunt(G=0.05, B=1e-5)
-    pfmod = compile_bus(MTKBus([pq, shunt_pf]); name=:bus4_pfmod)
-    set_pfmodel!(bus, pfmod)
-    set_voltage!(bus; mag=1, arg=0)
-    bus
+    set_pfmodel!(gfl_bus, pfPQ(P=0.5, Q=-0.2; current_source=true))
+
+    @named shunt = DynamicShunt(G=0.05, B=1e-5, ω0=w0)
+    @named bus4 = compile_bus(MTKBus(shunt))
+    set_pfmodel!(bus4, pfShunt(G=0.05, B=1e-5))
+
+    loop4 = LoopbackConnection(; potential=[:u_r, :u_i], flow=[:i_r, :i_i], src=:gfl_bus, dst=:bus4)
+
+    gfl_bus, bus4, loop4
 end
 
 ## ===== Lines =====
@@ -336,12 +344,19 @@ end
 break
 
 ## ===== Network =====
-nw = Network([sg1_bus, sg2_bus, gfm_bus, gfl_bus], [line12, line23, line31, line34])
-pfs0 = NWState(powerflow_model(nw))
-uflat(pfs0) .= -0.1
-pfs = solve_powerflow(nw; pfs0, abstol=1e-10, reltol=1e-10)
+nw = Network([sg1_bus, bus1, sg2_bus, bus2, gfm_bus, bus3, gfl_bus, bus4],
+             [loop1, loop2, loop3, loop4, line12, line23, line31, line34]; warn_order=false)
+# pfs0 = NWState(powerflow_model(nw))
+# uflat(pfs0) .= -0.1
+
+pfnw = powerflow_model(nw)
+pfs0 = NWState(pfnw)
+
+pfs = solve_powerflow(nw; abstol=1e-10, reltol=1e-10)
 show_powerflow(pfs)
 s0 = initialize_from_pf!(nw; pfs, subverbose=true, tol=1e-7, nwtol=1e-7)
+
+dump_initial_state(gfm_bus)
 
 # The format below is "| bus | P | Q | V | angle | omega |". P and Q are in load convention.
 
@@ -361,14 +376,14 @@ println("4-Bus Eigenvalues:")
 display(eigenvalues)
 
 let
-    fig = Figure(size=(1200,400))
-    ax1 = Axis(fig[1, 1], xlabel="Real Part [Hz]", ylabel="Imaginary Part [Hz]", title="All Eigenvalues")
-    scatter!(ax1, real.(eigenvalues), imag.(eigenvalues), marker=:xcross)
-    ax2 = Axis(fig[1, 2], xlabel="Real Part [Hz]", ylabel="Imaginary Part [Hz]", title="Zoomed")
+    fig = Figure(size=(600,500))
+    # ax1 = Axis(fig[1, 1], xlabel="Real Part [Hz]", ylabel="Imaginary Part [Hz]", title="All Eigenvalues")
+    # scatter!(ax1, real.(eigenvalues), imag.(eigenvalues), marker=:xcross)
+    ax2 = Axis(fig[1, 1], xlabel="Real Part [Hz]", ylabel="Imaginary Part [Hz]", title="Zoomed")
     scatter!(ax2, real.(eigenvalues), imag.(eigenvalues), marker=:xcross)
     xlims!(ax2, -4e6, 0)
-    ylims!(ax2, -2550, 2550)
-    ax3 = Axis(fig[1, 3], xlabel="Real Part [Hz]", ylabel="Imaginary Part [Hz]", title="Low-Frequency Modes")
+    ylims!(ax2, -2500, 2500)
+    ax3 = Axis(fig[1, 2], xlabel="Real Part [Hz]", ylabel="Imaginary Part [Hz]", title="Low-Frequency Modes")
     scatter!(ax3, real.(eigenvalues), imag.(eigenvalues), marker=:xcross)
     xlims!(ax3, -80, 20); ylims!(ax3, -150, 150)
     fig
@@ -380,33 +395,52 @@ end
 ####
 
 function bode_plot(Gs, title="", labels=["Bus $i" for i in 1:length(Gs)])
-    fig = Figure(; size=(800, 600))
-    Label(fig[1, 1], title*"Bode Plot", fontsize=16, halign=:center, tellwidth=false)
-    ax1 = Axis(fig[2, 1], xlabel="Frequency (rad/s)", ylabel="Gain (dB)", xscale=log10)
-    ax2 = Axis(fig[3, 1], xlabel="Frequency (rad/s)", ylabel="Phase (deg)", xscale=log10)
+    with_theme(Theme(palette = (; color = Makie.wong_colors()[[1, 6, 2, 4]]))) do
+        fig = Figure(; size=(800, 600))
+        Label(fig[1, 1], title*"Bode Plot", fontsize=16, halign=:center, tellwidth=false)
+        ax1 = Axis(fig[2, 1], xlabel="Frequency (rad/s)", ylabel="Gain (dB)", xscale=log10)
+        ax2 = Axis(fig[3, 1], xlabel="Frequency (rad/s)", ylabel="Phase (deg)", xscale=log10)
 
-    for (G, label) in zip(Gs, labels)
-        fs = 10 .^ (range(log10(1e-1), log10(1e4); length=1000))
-        ωs = 2π * fs
-        ss = im .* ωs
-        output, input = 1, 1
-        gains = map(s -> 20 * log10(abs(G(s)[output, input])), ss)
-        phases = map(s -> angle(G(s)[output, input]) * 180 / pi, ss)
+        for (G, label) in zip(Gs, labels)
+            fs = 10 .^ (range(log10(1e-1), log10(1e4); length=1000))
+            ωs = 2π * fs
+            ss = im .* ωs
+            output, input = 1, 1
+            gains = map(s -> 20 * log10(abs(G(s)[output, input])), ss)
+            phases = map(s -> angle(G(s)[output, input]) * 180 / pi, ss)
 
-        lines!(ax1, fs, gains; label)
-        lines!(ax2, fs, phases; label)
+            lines!(ax1, fs, gains; label, linewidth=2)
+            lines!(ax2, fs, simple_unwrap(phases); label, linewidth=2)
+        end
+        axislegend(ax1)
+        fig
     end
-    axislegend(ax1)
-    fig
+end
+function simple_unwrap(angles; threshold=250.0)
+    unwrapped = similar(angles)
+    unwrapped[1] = angles[1]
+    cumulative_offset = 0.0
+
+    for i in 2:length(angles)
+        diff = angles[i] - angles[i-1]
+
+        # Detect jumps greater than threshold and accumulate corrections
+        if diff > threshold
+            cumulative_offset -= 360.0
+        elseif diff < -threshold
+            cumulative_offset += 360.0
+        end
+
+        unwrapped[i] = angles[i] + cumulative_offset
+    end
+
+    unwrapped
 end
 
-Gs = map(1:4) do COMP
+Gs = map([:sg1_bus, :sg2_bus, :gfm_bus, :gfl_bus]) do COMP
     vs = VIndex(COMP, [:busbar₊u_r, :busbar₊u_i])
     cs = [VIndex(COMP, :busbar₊i_r), VIndex(COMP, :busbar₊i_i)]
     G = NetworkDynamics.linearized_model(nw, s0; in=vs, out=cs)
-    s -> -G(s)
+    # s -> -G(s)
 end
-
-bode_plot(Gs, "Y_dd")
-
-dump_initial_state(nw[VIndex(3)])
+bode_plot(Gs, "Y_dd ")

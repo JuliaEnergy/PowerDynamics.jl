@@ -45,7 +45,7 @@ include("network_components.jl")
 
 using DataFrames: DataFrame
 using OrderedCollections: OrderedDict
-export pfSlack, pfPV, pfPQ
+export pfSlack, pfPV, pfPQ, pfShunt
 export solve_powerflow, initialize_from_pf!, initialize_from_pf, show_powerflow
 export powerflow_model, ispfmodel
 export has_pfmodel, get_pfmodel, set_pfmodel!, delete_pfmodel!
