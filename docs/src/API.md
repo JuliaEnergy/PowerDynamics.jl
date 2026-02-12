@@ -98,6 +98,8 @@ copy_pf_parameters
 ## Utils
 ```@docs
 refine_timeseries
+unwrap_deg
+unwrap_rad
 CallbackVerbosity
 set_callback_verbosity!
 get_callback_verbosity

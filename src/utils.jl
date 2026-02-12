@@ -175,3 +175,36 @@ function refine_timeseries(ts, factor=10)
     end
     push!(newts, ts[end])
 end
+
+
+"""
+    unwrap_deg(angles)
+
+Unwrap phase angles in degrees. Detects and corrects discontinuities
+greater than 180° to produce continuous phase trajectories.
+
+Useful for Bode plots and other frequency response visualizations.
+"""
+unwrap_deg(angles) = _unwrap(angles, 360.0)
+
+"""
+    unwrap_rad(angles)
+
+Unwrap phase angles in radians. Detects and corrects discontinuities
+greater than π to produce continuous phase trajectories.
+"""
+unwrap_rad(angles) = _unwrap(angles, 2π)
+
+function _unwrap(angles, range)
+    unwrapped = similar(angles)
+    unwrapped[1] = angles[1]
+
+    for i in 2:length(angles)
+        diff = angles[i] - unwrapped[i-1]
+        # Round to nearest multiple of range and subtract to unwrap
+        correction = round(diff / range) * range
+        unwrapped[i] = angles[i] - correction
+    end
+
+    unwrapped
+end

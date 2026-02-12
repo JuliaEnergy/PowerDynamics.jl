@@ -33,7 +33,7 @@ include("modeling_tools.jl")
 export isinjectormodel, isbusmodel, isbranchmodel, islinemodel
 include("interfaces.jl")
 
-export @attach_metadata!, set_voltage!, set_current!, refine_timeseries
+export @attach_metadata!, set_voltage!, set_current!, refine_timeseries, unwrap_deg, unwrap_rad
 include("utils.jl")
 include("Library/Library.jl")
 using .Library
