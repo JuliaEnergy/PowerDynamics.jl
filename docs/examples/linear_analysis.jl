@@ -81,89 +81,6 @@ using CairoMakie
     end
 end
 
-@mtkmodel DynRLLine begin
-    @parameters begin
-        R
-        L
-        ωbase
-        r_src = 1, [description="Transformer ratio at source"]
-        r_dst = 1, [description="Transformer ratio at destination"]
-    end
-    @components begin
-        src = Terminal()
-        dst = Terminal()
-    end
-    @variables begin
-        i_line_r(t), [guess=0, description="Series RL current (real)"]
-        i_line_i(t), [guess=0, description="Series RL current (imag)"]
-        i_mag(t)
-    end
-    @equations begin
-        # Series RL current dynamics
-        Dt(i_line_r) ~ ωbase / L * (r_src*src.u_r - r_dst*dst.u_r) - R / L * ωbase * i_line_r + ωbase * i_line_i
-        Dt(i_line_i) ~ ωbase / L * (r_src*src.u_i - r_dst*dst.u_i) - R / L * ωbase * i_line_i - ωbase * i_line_r
-
-        # Terminal currents scaled by transformer ratios
-        dst.i_r ~ i_line_r * r_dst
-        dst.i_i ~ i_line_i * r_dst
-        src.i_r ~ -i_line_r * r_src
-        src.i_i ~ -i_line_i * r_src
-
-        i_mag ~ sqrt(dst.i_r^2 + dst.i_i^2)
-    end
-end
-
-@mtkmodel StaticShunt begin
-    @parameters begin
-        G, [description="Shunt conductance [pu]"]
-        B, [description="Shunt susceptance [pu]"]
-    end
-    @components begin
-        terminal = Terminal()
-    end
-    begin
-        Y = G + im*B
-        iload = -Y * (terminal.u_r + im*terminal.u_i)
-    end
-    @equations begin
-        terminal.i_r ~ real(iload)
-        terminal.i_i ~ imag(iload)
-    end
-end
-
-@mtkmodel DynamicShunt begin
-    @components begin
-        terminal = Terminal()
-    end
-    @parameters begin
-        ω0=2π*50
-        G, [description="Shunt conductance [pu]"]
-        B, [description="Shunt susceptance [pu]"]
-    end
-    @variables begin
-        V_C_r(t), [guess=1]
-        V_C_i(t), [guess=0]
-        i_C_r(t), [guess=0]
-        i_C_i(t), [guess=0]
-        i_G_r(t), [guess=0]
-        i_G_i(t), [guess=0]
-    end
-    @equations begin
-        # Capacitor dynamics
-        B/ω0 * Dt(V_C_r) ~ -i_C_r + B*V_C_i
-        B/ω0 * Dt(V_C_i) ~ -i_C_i - B*V_C_r
-        # Conductance current
-        i_G_r ~ -G * terminal.u_r
-        i_G_i ~ -G * terminal.u_i
-        # Terminal voltage = capacitor voltage
-        terminal.u_r ~ V_C_r
-        terminal.u_i ~ V_C_i
-        # Grid current: capacitor + conductance
-        terminal.i_r ~ i_C_r + i_G_r
-        terminal.i_i ~ i_C_i + i_G_i
-    end
-end
-
 ####
 ####  4 Bus example
 ####
@@ -181,7 +98,7 @@ sg1_bus, bus1, loop1 = let
     @named sg1_bus = compile_bus(MTKBus(sm); current_source=true)
     set_pfmodel!(sg1_bus, pfSlack(V=1, δ=0; current_source=true, assume_io_coupling=true))
 
-    @named shunt = DynamicShunt(G=0.6, B=1e-5, ω0=w0)
+    @named shunt = DynamicRCShunt(R=1/0.6, C=1e-5, ω0=w0)
     @named bus1 = compile_bus(MTKBus(shunt))
     set_pfmodel!(bus1, pfShunt(G=0.6, B=1e-5))
 
@@ -196,7 +113,7 @@ sg2_bus, bus2, loop2 = let
     @named sg2_bus = compile_bus(MTKBus(sm); current_source=true)
     set_pfmodel!(sg2_bus, pfPV(P=0.5, V=1; current_source=true, assume_io_coupling=true))
 
-    @named shunt = DynamicShunt(G=0.6, B=1e-5, ω0=w0)
+    @named shunt = DynamicRCShunt(R=1/0.6, C=1e-5, ω0=w0)
     @named bus2 = compile_bus(MTKBus(shunt))
     set_pfmodel!(bus2, pfShunt(G=0.6, B=1e-5))
 
@@ -245,7 +162,7 @@ gfm_bus, bus3, loop3 = let
 
     set_pfmodel!(gfm_bus, pfPV(P=0.5, V=1; current_source=true, assume_io_coupling=true))
 
-    @named shunt = DynamicShunt(G=0.75, B=1e-5, ω0=w0)
+    @named shunt = DynamicRCShunt(R=1/0.75, C=1e-5, ω0=w0)
     @named bus3 = compile_bus(MTKBus(shunt))
     set_pfmodel!(bus3, pfShunt(G=0.75, B=1e-5))
 
@@ -295,7 +212,7 @@ gfl_bus, bus4, loop4 = let
 
     set_pfmodel!(gfl_bus, pfPQ(P=0.5, Q=-0.2; current_source=true))
 
-    @named shunt = DynamicShunt(G=0.05, B=1e-5, ω0=w0)
+    @named shunt = DynamicRCShunt(R=1/0.05, C=1e-5, ω0=w0)
     @named bus4 = compile_bus(MTKBus(shunt))
     set_pfmodel!(bus4, pfShunt(G=0.05, B=1e-5))
 
@@ -306,7 +223,7 @@ end
 
 ## ===== Lines =====
 line12 = let
-    @named branch = DynRLLine(R=0.01, L=0.3, ωbase=w0)
+    @named branch = DynamicRLBranch(R=0.01, L=0.3, ω0=w0)
     lm = compile_line(MTKLine(branch); name=:l12, src=:bus1, dst=:bus2)
     @named branch_pf = PiLine(R=0.01, X=0.3)
     pfmod = compile_line(MTKLine(branch_pf); name=:l12_pfmod)
@@ -315,7 +232,7 @@ line12 = let
 end
 
 line23 = let
-    @named branch = DynRLLine(R=0.01, L=0.3, ωbase=w0)
+    @named branch = DynamicRLBranch(R=0.01, L=0.3, ω0=w0)
     lm = compile_line(MTKLine(branch); name=:l23, src=:bus2, dst=:bus3)
     @named branch_pf = PiLine(R=0.01, X=0.3)
     pfmod = compile_line(MTKLine(branch_pf); name=:l23_pfmod)
@@ -324,7 +241,7 @@ line23 = let
 end
 
 line31 = let
-    @named branch = DynRLLine(R=0.01, L=0.3, ωbase=w0)
+    @named branch = DynamicRLBranch(R=0.01, L=0.3, ω0=w0)
     lm = compile_line(MTKLine(branch); name=:l31, src=:bus3, dst=:bus1)
     @named branch_pf = PiLine(R=0.01, X=0.3)
     pfmod = compile_line(MTKLine(branch_pf); name=:l31_pfmod)
@@ -333,7 +250,7 @@ line31 = let
 end
 
 line34 = let
-    @named branch = DynRLLine(R=0.01, L=0.3, ωbase=w0, r_dst=0.99)
+    @named branch = DynamicRLBranch(R=0.01, L=0.3, ω0=w0, r_dst=0.99)
     lm = compile_line(MTKLine(branch); name=:l34, src=:bus3, dst=:bus4)
     @named branch_pf = PiLine(R=0.01, X=0.3, r_dst=0.99)
     pfmod = compile_line(MTKLine(branch_pf); name=:l34_pfmod)
@@ -341,7 +258,6 @@ line34 = let
     lm
 end
 
-break
 
 ## ===== Network =====
 nw = Network([sg1_bus, bus1, sg2_bus, bus2, gfm_bus, bus3, gfl_bus, bus4],
@@ -355,20 +271,8 @@ pfs0 = NWState(pfnw)
 pfs = solve_powerflow(nw; abstol=1e-10, reltol=1e-10)
 show_powerflow(pfs)
 s0 = initialize_from_pf!(nw; pfs, subverbose=true, tol=1e-7, nwtol=1e-7)
+break
 
-dump_initial_state(gfm_bus)
-
-# The format below is "| bus | P | Q | V | angle | omega |". P and Q are in load convention.
-
-    # 1.0000   -0.4972   -0.0050    1.0000         0  314.1593
-    # 2.0000   -0.5000   -0.0049    1.0000    0.0003  314.1593
-    # 3.0000   -0.5000   -0.2804    1.0000    0.0306  314.1593
-    # 4.0000   -0.5000    0.2000    0.9403    0.1772  314.1593
-# s0.v(4, "terminal")
-# s0[@obsex(VIndex(1, :busbar₊u_r) * VIndex(1, :sm₊terminal₊i_r) + VIndex(1, :busbar₊u_i) * VIndex(1, :sm₊terminal₊i_i))]
-# s0[@obsex(VIndex(2, :busbar₊u_r) * VIndex(2, :sm₊terminal₊i_r) + VIndex(2, :busbar₊u_i) * VIndex(2, :sm₊terminal₊i_i))]
-# s0[@obsex(VIndex(3, :busbar₊u_r) * VIndex(3, :droop₊terminal₊i_r) + VIndex(3, :busbar₊u_i) * VIndex(3, :droop₊terminal₊i_i))]
-# s0[@obsex(VIndex(4, :busbar₊u_r) * VIndex(4, :gfl₊terminal₊i_r) + VIndex(4, :busbar₊u_i) * VIndex(4, :gfl₊terminal₊i_i))]
 
 ## ===== Eigenvalue analysis =====
 eigenvalues = jacobian_eigenvals(nw, s0) ./ (2 * pi)
@@ -377,15 +281,11 @@ display(eigenvalues)
 
 let
     fig = Figure(size=(600,500))
-    # ax1 = Axis(fig[1, 1], xlabel="Real Part [Hz]", ylabel="Imaginary Part [Hz]", title="All Eigenvalues")
-    # scatter!(ax1, real.(eigenvalues), imag.(eigenvalues), marker=:xcross)
-    ax2 = Axis(fig[1, 1], xlabel="Real Part [Hz]", ylabel="Imaginary Part [Hz]", title="Zoomed")
+    ax1 = Axis(fig[1, 1], xlabel="Real Part [Hz]", ylabel="Imaginary Part [Hz]", title="Global Pole Map")
+    scatter!(ax1, real.(eigenvalues), imag.(eigenvalues), marker=:xcross)
+    ax2 = Axis(fig[1, 2], xlabel="Real Part [Hz]", ylabel="Imaginary Part [Hz]", title="Zoomed In")
     scatter!(ax2, real.(eigenvalues), imag.(eigenvalues), marker=:xcross)
-    xlims!(ax2, -4e6, 0)
-    ylims!(ax2, -2500, 2500)
-    ax3 = Axis(fig[1, 2], xlabel="Real Part [Hz]", ylabel="Imaginary Part [Hz]", title="Low-Frequency Modes")
-    scatter!(ax3, real.(eigenvalues), imag.(eigenvalues), marker=:xcross)
-    xlims!(ax3, -80, 20); ylims!(ax3, -150, 150)
+    xlims!(ax2, -80, 20); ylims!(ax2, -150, 150)
     fig
 end
 
@@ -407,7 +307,7 @@ function bode_plot(Gs, title="", labels=["Bus $i" for i in 1:length(Gs)])
             ss = im .* ωs
             output, input = 1, 1
             gains = map(s -> 20 * log10(abs(G(s)[output, input])), ss)
-            phases = map(s -> angle(G(s)[output, input]) * 180 / pi, ss)
+            phases = rad2deg.(unwprap_rad(map(s -> angle(G(s)[output, input]), ss)))
 
             lines!(ax1, fs, gains; label, linewidth=2)
             lines!(ax2, fs, simple_unwrap(phases); label, linewidth=2)
@@ -416,31 +316,11 @@ function bode_plot(Gs, title="", labels=["Bus $i" for i in 1:length(Gs)])
         fig
     end
 end
-function simple_unwrap(angles; threshold=250.0)
-    unwrapped = similar(angles)
-    unwrapped[1] = angles[1]
-    cumulative_offset = 0.0
-
-    for i in 2:length(angles)
-        diff = angles[i] - angles[i-1]
-
-        # Detect jumps greater than threshold and accumulate corrections
-        if diff > threshold
-            cumulative_offset -= 360.0
-        elseif diff < -threshold
-            cumulative_offset += 360.0
-        end
-
-        unwrapped[i] = angles[i] + cumulative_offset
-    end
-
-    unwrapped
-end
 
 Gs = map([:sg1_bus, :sg2_bus, :gfm_bus, :gfl_bus]) do COMP
     vs = VIndex(COMP, [:busbar₊u_r, :busbar₊u_i])
-    cs = [VIndex(COMP, :busbar₊i_r), VIndex(COMP, :busbar₊i_i)]
-    G = NetworkDynamics.linearized_model(nw, s0; in=vs, out=cs)
+    cs = VIndex(COMP, [:busbar₊i_r, :busbar₊i_i])
+    G = NetworkDynamics.linearize_network(nw, s0; in=vs, out=cs).G
     # s -> -G(s)
 end
 bode_plot(Gs, "Y_dd ")

@@ -105,6 +105,15 @@ PSSE_Load
 PiLine
 PiLine_fault
 Breaker
+DynamicRLBranch
+```
+
+## Shunt Models
+
+### Static and Dynamic Shunts
+```@docs
+StaticShunt
+DynamicRCShunt
 ```
 
 ## Fault Models

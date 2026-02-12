@@ -68,7 +68,7 @@ end
 Create a bus with pure static shunt admittance for power flow analysis.
 """
 function pfShunt(; B, G=0, name=:Shunt, kwargs...)
-    @named shunt = Library.ConstantYLoad(; B, G)
+    @named shunt = Library.StaticShunt(; B, G)
     mtkbus = MTKBus(shunt; name)
     b = compile_bus(mtkbus; kwargs...)
     set_voltage!(b; mag=1, arg=0)
