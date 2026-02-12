@@ -153,10 +153,10 @@ gfm_bus, bus3, loop3 = let
     set_default!(gfm_bus, :droop₊vsrc₊VC_Fcoupl, 0)
     set_default!(gfm_bus, :droop₊vsrc₊X_virt, Xov)
     set_default!(gfm_bus, :droop₊vsrc₊R_virt, 0)
-    set_default!(gfm_bus, :droop₊vsrc₊X_g, xwLc)
-    set_default!(gfm_bus, :droop₊vsrc₊B_c, xwCf)
+    set_default!(gfm_bus, :droop₊vsrc₊Lg, xwLc)
+    set_default!(gfm_bus, :droop₊vsrc₊C, xwCf)
     set_default!(gfm_bus, :droop₊vsrc₊Rf, Rf)
-    set_default!(gfm_bus, :droop₊vsrc₊X_f, xwLf)
+    set_default!(gfm_bus, :droop₊vsrc₊Lf, xwLf)
     set_default!(gfm_bus, :droop₊vsrc₊ω0, w0)
     set_default!(gfm_bus, :droop₊vsrc₊Rg, Rc)
 
@@ -196,7 +196,7 @@ gfl_bus, bus4, loop4 = let
     ki_i_dq = Lf * w_i_dq^2 / 4
 
     set_default!(gfl_bus, :gfl₊ω0, w0)
-    set_default!(gfl_bus, :gfl₊X_f, xwLf)
+    set_default!(gfl_bus, :gfl₊Lf, xwLf)
     set_default!(gfl_bus, :gfl₊Rf, Rf)
     set_default!(gfl_bus, :gfl₊PLL_Kp, kp_pll)
     set_default!(gfl_bus, :gfl₊PLL_Ki, ki_pll)

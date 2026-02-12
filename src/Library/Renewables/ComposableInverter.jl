@@ -5,11 +5,37 @@ using ModelingToolkit: ModelingToolkit, @named, simplify, t_nounits as t, D_noun
 # needed for @mtkmodel
 using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System, Equation, connect, setmetadata
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
+using NetworkDynamics: set_mtk_defaults!
 
 using ..PowerDynamics: Terminal
 
-export LCFilter, LCLFilter, LFilter, VC, CC1, CC2, SimplePLL, PLLLPF, VoltageSource, CurrentSource, SimpleGFL, SimpleGFLDC
+export LCFilter, LCLFilter, LFilter, VC, CC1, CC2, SimplePLL, PLL_LPF, VoltageSource, CurrentSource, SimpleGFL, SimpleGFLDC
 export DroopOuter, DroopInverter
+
+@mtkmodel LFilter begin
+    @components begin
+        terminal = Terminal()
+    end
+    @structural_parameters begin
+        ω0
+        Rf
+        Lf  # Filter reactance [pu] (frequency-normalized inductance)
+    end
+    @variables begin
+        i_f_r(t), [guess=0]
+        i_f_i(t), [guess=0]
+        i_f_mag(t)
+        V_I_r(t)
+        V_I_i(t)
+    end
+    @equations begin
+        (Lf/ω0) * Dt(i_f_r) ~ V_I_r - terminal.u_r - Rf*i_f_r + Lf*i_f_i
+        (Lf/ω0) * Dt(i_f_i) ~ V_I_i - terminal.u_i - Rf*i_f_i - Lf*i_f_r
+        terminal.i_r ~ i_f_r
+        terminal.i_i ~ i_f_i
+        i_f_mag ~ sqrt(i_f_r^2 + i_f_i^2)
+    end
+end
 
 @mtkmodel LCFilter begin
     @components begin
@@ -18,8 +44,8 @@ export DroopOuter, DroopInverter
     @structural_parameters begin
         ω0
         Rf
-        X_f  # Inductive reactance (pu Ω)
-        B_c  # Capacitive susceptance (pu S)
+        Lf  # Filter reactance [pu] (frequency-normalized inductance)
+        C   # Filter susceptance [pu] (frequency-normalized capacitance)
     end
     @variables begin
         i_f_r(t), [guess=0]
@@ -35,12 +61,12 @@ export DroopOuter, DroopInverter
         i_g_mag(t)
     end
     @equations begin
-        # Inductor: (X_f/ω0)*di_f/dt = V_I - V_C - Rf*i_f + X_f*W*i_f
-        (X_f/ω0) * Dt(i_f_r) ~ V_I_r - V_C_r - Rf*i_f_r + X_f*i_f_i
-        (X_f/ω0) * Dt(i_f_i) ~ V_I_i - V_C_i - Rf*i_f_i - X_f*i_f_r
-        # Capacitor: (B_c/ω0)*dV_C/dt = i_f - i_g + B_c*W*V_C
-        (B_c/ω0) * Dt(V_C_r) ~ i_f_r - i_g_r + B_c*V_C_i
-        (B_c/ω0) * Dt(V_C_i) ~ i_f_i - i_g_i - B_c*V_C_r
+        # Inductor: (Lf/ω0)*di_f/dt = V_I - V_C - Rf*i_f + Lf*W*i_f
+        (Lf/ω0) * Dt(i_f_r) ~ V_I_r - V_C_r - Rf*i_f_r + Lf*i_f_i
+        (Lf/ω0) * Dt(i_f_i) ~ V_I_i - V_C_i - Rf*i_f_i - Lf*i_f_r
+        # Capacitor: (C/ω0)*dV_C/dt = i_f - i_g + C*W*V_C
+        (C/ω0) * Dt(V_C_r) ~ i_f_r - i_g_r + C*V_C_i
+        (C/ω0) * Dt(V_C_i) ~ i_f_i - i_g_i - C*V_C_r
         # Terminal voltage = capacitor voltage
         terminal.u_r ~ V_C_r
         terminal.u_i ~ V_C_i
@@ -61,10 +87,10 @@ end
     @structural_parameters begin
         ω0
         Rf
-        X_f  # Inverter-side inductive reactance (pu Ω)
-        B_c  # Capacitive susceptance (pu S)
+        Lf  # Inverter-side reactance [pu] (frequency-normalized inductance)
+        C   # Filter susceptance [pu] (frequency-normalized capacitance)
         Rg
-        X_g  # Grid-side inductive reactance (pu Ω)
+        Lg  # Grid-side reactance [pu] (frequency-normalized inductance)
     end
     @parameters begin
         connected = 1
@@ -86,14 +112,14 @@ end
     end
     @equations begin
         # Inverter-side inductor
-        (X_f/ω0) * Dt(i_f_r) ~ V_I_r - V_C_r - Rf*i_f_r + X_f*i_f_i
-        (X_f/ω0) * Dt(i_f_i) ~ V_I_i - V_C_i - Rf*i_f_i - X_f*i_f_r
+        (Lf/ω0) * Dt(i_f_r) ~ V_I_r - V_C_r - Rf*i_f_r + Lf*i_f_i
+        (Lf/ω0) * Dt(i_f_i) ~ V_I_i - V_C_i - Rf*i_f_i - Lf*i_f_r
         # Capacitor
-        (B_c/ω0) * Dt(V_C_r) ~ i_f_r - i_g_r + B_c*V_C_i
-        (B_c/ω0) * Dt(V_C_i) ~ i_f_i - i_g_i - B_c*V_C_r
+        (C/ω0) * Dt(V_C_r) ~ i_f_r - i_g_r + C*V_C_i
+        (C/ω0) * Dt(V_C_i) ~ i_f_i - i_g_i - C*V_C_r
         # Grid-side inductor
-        (X_g/ω0) * Dt(i_g_r) ~ V_C_r - connected*terminal.u_r - Rg*i_g_r + X_g*i_g_i
-        (X_g/ω0) * Dt(i_g_i) ~ V_C_i - connected*terminal.u_i - Rg*i_g_i - X_g*i_g_r
+        (Lg/ω0) * Dt(i_g_r) ~ V_C_r - connected*terminal.u_r - Rg*i_g_r + Lg*i_g_i
+        (Lg/ω0) * Dt(i_g_i) ~ V_C_i - connected*terminal.u_i - Rg*i_g_i - Lg*i_g_r
         # Current flows out through terminal
         terminal.i_r ~ connected*i_g_r
         terminal.i_i ~ connected*i_g_i
@@ -107,7 +133,7 @@ end
     end
 end
 
-@component function CC1(; name, X_f, F, Fcoupl=1, KP, KI)
+@component function CC1(; name, Lf, F, Fcoupl=1, KP, KI)
     vars = @variables begin
         γ_d(t), [guess=0]
         γ_q(t), [guess=0]
@@ -131,12 +157,12 @@ end
 
     eqs = vcat(
         Dt.(γ) .~ i_f_ref - i_f,
-        V_I .~ -Fcoupl*X_f*W*i_f + KP*(i_f_ref - i_f) + KI*γ + F*V_C
+        V_I .~ -Fcoupl*Lf*W*i_f + KP*(i_f_ref - i_f) + KI*γ + F*V_C
     )
     System(eqs, t; name)
 end
 
-@component function VC(; name, B_c, F, Fcoupl=1, KP, KI)
+@component function VC(; name, C, F, Fcoupl=1, KP, KI)
     vars = @variables begin
         γ_d(t), [guess=0]
         γ_q(t), [guess=0]
@@ -160,33 +186,12 @@ end
 
     eqs = vcat(
         Dt.(γ) .~ V_C_ref - V_C,
-        i_f_ref .~ -Fcoupl*B_c*W*V_C + KP*(V_C_ref - V_C) + KI*γ + F*i_g
+        i_f_ref .~ -Fcoupl*C*W*V_C + KP*(V_C_ref - V_C) + KI*γ + F*i_g
     )
     System(eqs, t; name)
 end
 
-@component function SimplePLL(; name, Kp, Ki)
-    vars = @variables begin
-        δ_pll(t), [guess=0]    # PLL angle output
-        ω_pll(t), [guess=0]    # PLL frequency output
-        u_q(t)                  # q-axis voltage (internal)
-        u_r(t)                  # measured voltage (real)
-        u_i(t)                  # measured voltage (imag)
-    end
-
-    # u_q drives to zero when δ_pll tracks grid angle
-    # u_q = (u_r*sin(-δ) + u_i*cos(-δ)) / |u|
-    u_mag = sqrt(u_r^2 + u_i^2)
-
-    eqs = [
-        u_q ~ (u_r*sin(-δ_pll) + u_i*cos(-δ_pll)) / u_mag
-        Dt(δ_pll) ~ ω_pll + Kp*u_q
-        Dt(ω_pll) ~ Ki*u_q
-    ]
-    System(eqs, t; name)
-end
-
-@component function CC2(; name, X_g, F, Fcoupl=1, KP, KI)
+@component function CC2(; name, Lg, F, Fcoupl=1, KP, KI)
     vars = @variables begin
         γ_d(t), [guess=0]
         γ_q(t), [guess=0]
@@ -210,18 +215,39 @@ end
 
     eqs = vcat(
         Dt.(γ) .~ i_g_ref - i_g,
-        V_C_ref .~ -Fcoupl*X_g*W*i_g + KP*(i_g_ref - i_g) + KI*γ + F*V_g
+        V_C_ref .~ -Fcoupl*Lg*W*i_g + KP*(i_g_ref - i_g) + KI*γ + F*V_g
     )
     System(eqs, t; name)
 end
 
 
-@component function VoltageSource(; name, Vset_input=false, filter_type=:LC)
+"""
+    VoltageSource(; name, Vset_input=false, filter_type=:LC, defaults...)
+
+Grid-forming voltage source inverter with cascaded voltage and current control.
+
+Implements two-loop control with voltage controller (VC) commanding current references
+to inner current controller (CC1). Operates in a fixed dq-frame (no PLL). Suitable for:
+- Grid-forming inverters establishing voltage and frequency
+- Islanded or weak-grid operation
+- Droop-controlled systems (via DroopInverter wrapper)
+
+# Parameters
+- `Vset_input`: If true, voltage setpoint comes from RealInput ports. If false, uses internal Vset/δset parameters.
+- `filter_type`: `:LC` for LC filter or `:LCL` for LCL filter.
+- `Lf`: Inverter-side filter reactance [pu]. Related to physical inductance by Lf = ω0 * Lf_actual.
+- `C`: Filter susceptance [pu]. Related to physical capacitance by C = ω0 * C_actual.
+- `Lg`: Grid-side filter reactance [pu] (LCL only). Related to physical inductance by Lg = ω0 * Lg_actual.
+- `ω0`: Frame angular frequency [rad/s]. Default: 2π*50 rad/s.
+- Various PI controller gains (CC1_KP, CC1_KI, VC_KP, VC_KI)
+- `defaults...`: Additional parameter/variable defaults (e.g., `Lf=0.01, CC1_KP=0.1`)
+"""
+@component function VoltageSource(; name, Vset_input=false, filter_type=:LC, defaults...)
     @parameters begin
-        # Filter parameters (actual electrical components in per-unit)
+        # Filter parameters
         Rf  = 0.01
-        X_f = 0.007, [description="Inverter-side reactance (pu Ω)"]
-        B_c = 0.5,  [description="Capacitive susceptance (pu S)"]
+        Lf = 0.007, [description="Inverter-side filter reactance [pu] (frequency-normalized inductance)"]
+        C = 0.5,  [description="Filter susceptance [pu] (frequency-normalized capacitance)"]
         ω0  = 2π*50
         # cc1
         CC1_KP = 0.063
@@ -241,7 +267,7 @@ end
     if filter_type == :LCL
         @parameters begin
             Rg  = 0.01
-            X_g = 0.007, [description="Grid-side reactance (pu Ω)"]
+            Lg = 0.007, [description="Grid-side filter reactance [pu] (frequency-normalized inductance)"]
         end
     end
     if !Vset_input
@@ -253,15 +279,15 @@ end
 
     # Create filter subsystem based on filter_type
     if filter_type == :LC
-        @named filter = LCFilter(; ω0, Rf, X_f, B_c)
+        @named filter = LCFilter(; ω0, Rf, Lf, C)
     else  # :LCL
-        @named filter = LCLFilter(; ω0, Rf, X_f, B_c, Rg, X_g)
+        @named filter = LCLFilter(; ω0, Rf, Lf, C, Rg, Lg)
     end
 
-    @named cc1 = CC1(; X_f=X_f, F=CC1_F, Fcoupl=CC1_Fcoupl, KP=CC1_KP, KI=CC1_KI)
+    @named cc1 = CC1(; Lf=Lf, F=CC1_F, Fcoupl=CC1_Fcoupl, KP=CC1_KP, KI=CC1_KI)
     systems = @named begin
         terminal = Terminal()
-        vc = VC(; B_c=B_c, F=VC_F, Fcoupl=VC_Fcoupl, KP=VC_KP, KI=VC_KI)
+        vc = VC(; C=C, F=VC_F, Fcoupl=VC_Fcoupl, KP=VC_KP, KI=VC_KI)
     end
     push!(systems, filter)
     push!(systems, cc1)
@@ -291,18 +317,40 @@ end
         vc.V_C_ref_d ~       - (vc.i_g_d * R_virt - vc.i_g_q * X_virt)
         vc.V_C_ref_q ~ _Vset - (vc.i_g_q * R_virt + vc.i_g_d * X_virt)
     ]
-    System(eqs, t; name, systems)
+    sys = System(eqs, t; name, systems)
+    set_mtk_defaults!(sys, defaults)
+    return sys
 end
 
-@component function CurrentSource(; name, iset_input=false)
+"""
+    CurrentSource(; name, iset_input=false, defaults...)
+
+Grid-following current source inverter with triple-loop cascaded control and PLL.
+
+Implements three-loop control: outer current controller (CC2) → voltage controller (VC)
+→ inner current controller (CC1). Uses PLL for grid synchronization. Suitable for:
+- Grid-following inverters injecting controlled current
+- Renewable energy sources (solar, wind) in grid-connected mode
+- Active/reactive power control applications
+
+# Parameters
+- `iset_input`: If true, current setpoint comes from RealInput ports. If false, uses internal iset_d/iset_q parameters.
+- `Lf`: Inverter-side filter reactance [pu]. Related to physical inductance by Lf = ω0 * Lf_actual.
+- `C`: Filter susceptance [pu]. Related to physical capacitance by C = ω0 * C_actual.
+- `Lg`: Grid-side filter reactance [pu]. Related to physical inductance by Lg = ω0 * Lg_actual.
+- `ω0`: Frame angular frequency [rad/s]. Default: 2π*50 rad/s.
+- PLL and controller gains (PLL_Kp, PLL_Ki, CC1_*, VC_*, CC2_*)
+- `defaults...`: Additional parameter/variable defaults (e.g., `Lf=0.01, PLL_Kp=100`)
+"""
+@component function CurrentSource(; name, iset_input=false, defaults...)
     @parameters begin
-        # LCL Filter parameters (actual electrical components in per-unit)
+        # LCL Filter parameters
         Rf  = 0.01
-        X_f = 0.007, [description="Inverter-side reactance (pu Ω)"]
-        B_c = 0.5,  [description="Capacitive susceptance (pu S)"]
+        Lf = 0.007, [description="Inverter-side filter reactance [pu] (frequency-normalized inductance)"]
+        C = 0.5,  [description="Filter susceptance [pu] (frequency-normalized capacitance)"]
         ω0  = 2π*50
         Rg  = 0.01
-        X_g = 0.007, [description="Grid-side reactance (pu Ω)"]
+        Lg = 0.007, [description="Grid-side filter reactance [pu] (frequency-normalized inductance)"]
 
         # PLL parameters
         PLL_Kp = 250
@@ -336,18 +384,18 @@ end
     end
 
     # Create filter subsystem (always LCL for current control)
-    @named filter = LCLFilter(; ω0, Rf, X_f, B_c, Rg, X_g)
+    @named filter = LCLFilter(; ω0, Rf, Lf, C, Rg, Lg)
 
     # Create PLL subsystem
     @named pll = SimplePLL(; Kp=PLL_Kp, Ki=PLL_Ki)
 
     # Create controller subsystems
-    @named cc1 = CC1(; X_f=X_f, F=CC1_F, Fcoupl=CC1_Fcoupl, KP=CC1_KP, KI=CC1_KI)
+    @named cc1 = CC1(; Lf=Lf, F=CC1_F, Fcoupl=CC1_Fcoupl, KP=CC1_KP, KI=CC1_KI)
 
     systems = @named begin
         terminal = Terminal()
-        vc = VC(; B_c=B_c, F=VC_F, Fcoupl=VC_Fcoupl, KP=VC_KP, KI=VC_KI)
-        cc2 = CC2(; X_g=X_g, F=CC2_F, Fcoupl=CC2_Fcoupl, KP=CC2_KP, KI=CC2_KI)
+        vc = VC(; C=C, F=VC_F, Fcoupl=VC_Fcoupl, KP=VC_KP, KI=VC_KI)
+        cc2 = CC2(; Lg=Lg, F=CC2_F, Fcoupl=CC2_Fcoupl, KP=CC2_KP, KI=CC2_KI)
     end
     push!(systems, filter)
     push!(systems, pll)
@@ -397,7 +445,9 @@ end
         cc2.i_g_ref_d ~ _iset_d
         cc2.i_g_ref_q ~ _iset_q
     ]
-    System(eqs, t; name, systems)
+    sys = System(eqs, t; name, systems)
+    set_mtk_defaults!(sys, defaults)
+    return sys
 end
 
 # q-axis aligned convention (q-axis aligned with phase a)
@@ -476,6 +526,22 @@ end
     return System(eqs, t; name, systems)
 end
 
+"""
+    DroopInverter(; name=:droop_inv, filter_type)
+
+Grid-forming inverter with droop control for frequency and voltage regulation.
+
+Wraps VoltageSource with DroopOuter controller implementing P-f and Q-V droop characteristics.
+Suitable for:
+- Grid-forming inverters in microgrids
+- Virtual synchronous machine (VSM) implementations
+- Parallel inverter operation with power sharing
+
+# Parameters
+- `filter_type`: `:LC` or `:LCL` filter topology (passed to VoltageSource)
+- Droop controller parameters: `Kp` (P-f droop), `Kq` (Q-V droop), `τ_p`, `τ_q` (power filter time constants)
+- Filter parameters inherited from VoltageSource: `Lf`, `C`, `Lg`, `ω0`
+"""
 function DroopInverter(; name=:droop_inv, filter_type)
     @named droop = DroopOuter(; pq_input=false)
     @named vsrc = VoltageSource(; Vset_input=true, filter_type)
@@ -492,39 +558,53 @@ function DroopInverter(; name=:droop_inv, filter_type)
     System(eqs, t; name, systems=[droop, vsrc, terminal])
 end
 
-####
-#### Simple Grid-Following Inverter (matching SimplusGT Type 11)
-####
+"""
+    SimplePLL(; name, Kp, Ki)
 
-@mtkmodel LFilter begin
-    @components begin
-        terminal = Terminal()
+Basic PLL that tracks the grid voltage angle by driving the q-axis voltage to zero.
+Uses a PI controller on the angle error signal `u_q`.
+
+# Parameters
+- `Kp`: Proportional gain
+- `Ki`: Integral gain
+"""
+@component function SimplePLL(; name, Kp, Ki)
+    vars = @variables begin
+        δ_pll(t), [guess=0]    # PLL angle output
+        ω_pll(t), [guess=0]    # PLL frequency output
+        u_q(t)                  # q-axis voltage (internal)
+        u_r(t)                  # measured voltage (real)
+        u_i(t)                  # measured voltage (imag)
     end
-    @structural_parameters begin
-        ω0
-        Rf
-        X_f
-    end
-    @variables begin
-        i_f_r(t), [guess=0]
-        i_f_i(t), [guess=0]
-        i_f_mag(t)
-        V_I_r(t)
-        V_I_i(t)
-    end
-    @equations begin
-        (X_f/ω0) * Dt(i_f_r) ~ V_I_r - terminal.u_r - Rf*i_f_r + X_f*i_f_i
-        (X_f/ω0) * Dt(i_f_i) ~ V_I_i - terminal.u_i - Rf*i_f_i - X_f*i_f_r
-        terminal.i_r ~ i_f_r
-        terminal.i_i ~ i_f_i
-        i_f_mag ~ sqrt(i_f_r^2 + i_f_i^2)
-    end
+
+    # u_q drives to zero when δ_pll tracks grid angle
+    # u_q = (u_r*sin(-δ) + u_i*cos(-δ)) / |u|
+    u_mag = sqrt(u_r^2 + u_i^2)
+
+    eqs = [
+        u_q ~ (u_r*sin(-δ_pll) + u_i*cos(-δ_pll)) / u_mag
+        Dt(δ_pll) ~ ω_pll + Kp*u_q
+        Dt(ω_pll) ~ Ki*u_q
+    ]
+    System(eqs, t; name)
 end
 
-@component function PLLLPF(; name, Kp, Ki, τ_lpf)
+"""
+    PLL_LPF(; name, Kp, Ki, τ_lpf)
+
+PLL with an additional low-pass filter on the frequency output.
+Uses a PI controller on the angle error, followed by a first-order LPF on the
+estimated frequency `ω`. Matches the SimplusGT MATLAB PLL structure.
+
+# Parameters
+- `Kp`: Proportional gain
+- `Ki`: Integral gain
+- `τ_lpf`: Low-pass filter time constant [s]
+"""
+@component function PLL_LPF(; name, Kp, Ki, τ_lpf)
     vars = @variables begin
-        w_pll_i(t), [guess=0]
-        w(t), [guess=2π*50]
+        ω_pll_i(t), [guess=0]
+        ω(t), [guess=2π*50]
         θ(t), [guess=0]
         e_ang(t)
         u_r(t)
@@ -534,23 +614,41 @@ end
     eqs = [
         # Error signal: v_q in MATLAB d-axis aligned convention = -v_d in our q-axis convention
         e_ang ~ -sin(θ)*u_r + cos(θ)*u_i
-        Dt(w_pll_i) ~ e_ang * Ki
-        Dt(w) ~ (w_pll_i + e_ang*Kp - w) / τ_lpf
-        Dt(θ) ~ w
+        Dt(ω_pll_i) ~ e_ang * Ki
+        Dt(ω) ~ (ω_pll_i + e_ang*Kp - ω) / τ_lpf
+        Dt(θ) ~ ω
     ]
     System(eqs, t; name)
 end
 
-@component function SimpleGFL(; name, iset_input=false)
+"""
+    SimpleGFL(; name, iset_input=false, defaults...)
+
+Simplified grid-following inverter with L-filter, current control, and PLL.
+
+Implements single-loop current control (CC1) with PLL synchronization and simple L-filter.
+Suitable for:
+- Basic grid-following inverter models
+- Simplified renewable energy source representation
+- Studies where detailed filter dynamics are not critical
+
+# Parameters
+- `iset_input`: If true, current setpoint comes from RealInput ports. If false, uses internal iset_d/iset_q parameters.
+- `Lf`: Filter reactance [pu]. Related to physical inductance by Lf = ω0 * Lf_actual.
+- `ω0`: Frame angular frequency [rad/s]. Default: 2π*50 rad/s.
+- PLL and CC1 controller gains
+- `defaults...`: Additional parameter/variable defaults (e.g., `Lf=0.05, PLL_Kp=50`)
+"""
+@component function SimpleGFL(; name, iset_input=false, defaults...)
     @parameters begin
         Rf  = 0.01
-        X_f = 0.05, [description="Filter reactance wLf (pu Ω)"]
+        Lf = 0.05, [description="Filter reactance [pu] (frequency-normalized inductance)"]
         ω0  = 2π*50
         # PLL
         PLL_Kp = 2π*10
         PLL_Ki = (2π*10)^2/4
         PLL_τ_lpf = 1/(2π*300)
-        # CC1 (no decoupling FF by default, matching MATLAB)
+        # CC1
         CC1_KP = 0.6
         CC1_KI = 565.5
         CC1_F  = 0
@@ -564,9 +662,9 @@ end
         end
     end
 
-    @named filter = LFilter(; ω0, Rf, X_f)
-    @named pll = PLLLPF(; Kp=PLL_Kp, Ki=PLL_Ki, τ_lpf=PLL_τ_lpf)
-    @named cc1 = CC1(; X_f=X_f, F=CC1_F, Fcoupl=CC1_Fcoupl, KP=CC1_KP, KI=CC1_KI)
+    @named filter = LFilter(; ω0, Rf, Lf)
+    @named pll = PLL_LPF(; Kp=PLL_Kp, Ki=PLL_Ki, τ_lpf=PLL_τ_lpf)
+    @named cc1 = CC1(; Lf=Lf, F=CC1_F, Fcoupl=CC1_Fcoupl, KP=CC1_KP, KI=CC1_KI)
 
     systems = @named begin
         terminal = Terminal()
@@ -599,17 +697,36 @@ end
         cc1.i_f_ref_d ~ _iset_d
         cc1.i_f_ref_q ~ _iset_q
     ]
-    System(eqs, t; name, systems)
+    sys = System(eqs, t; name, systems)
+    set_mtk_defaults!(sys, defaults)
+    return sys
 end
 
-####
-#### Grid-Following Inverter with DC-Link Dynamics (SimplusGT Type 10)
-####
+"""
+    SimpleGFLDC(; name, defaults...)
 
-@component function SimpleGFLDC(; name)
+Grid-following inverter with DC-link dynamics and active power control.
+
+Extends SimpleGFL with DC-link capacitor model and PI controller for DC voltage regulation.
+The DC voltage controller generates active current reference (q-axis). Suitable for:
+- Inverters with significant DC-link capacitance
+- Renewable sources with DC power input (solar PV, battery storage)
+- Studies requiring DC-side transient analysis
+
+# Parameters
+- `Lf`: Filter reactance [pu]. Related to physical inductance by Lf = ω0 * Lf_actual.
+- `ω0`: Frame angular frequency [rad/s]. Default: 2π*50 rad/s.
+- `C_dc`: DC-link capacitance [pu]
+- `V_dc`: DC voltage reference [pu]
+- `kp_v_dc`, `ki_v_dc`: DC voltage PI controller gains
+- `P_dc`: External DC power draw [pu] (solved at initialization)
+- PLL and CC1 controller gains
+- `defaults...`: Additional parameter/variable defaults (e.g., `Lf=0.03, V_dc=2.0`)
+"""
+@component function SimpleGFLDC(; name, defaults...)
     @parameters begin
         Rf  = 0.01
-        X_f = 0.03, [description="Filter reactance wLf (pu Ω)"]
+        Lf = 0.03, [description="Filter reactance [pu] (frequency-normalized inductance)"]
         ω0  = 2π*50
         # PLL
         PLL_Kp = 2π*5
@@ -636,9 +753,9 @@ end
         v_dc_i(t), [guess=0, description="DC voltage PI integrator"]
     end
 
-    @named filter = LFilter(; ω0, Rf, X_f)
-    @named pll = PLLLPF(; Kp=PLL_Kp, Ki=PLL_Ki, τ_lpf=PLL_τ_lpf)
-    @named cc1 = CC1(; X_f=X_f, F=CC1_F, Fcoupl=CC1_Fcoupl, KP=CC1_KP, KI=CC1_KI)
+    @named filter = LFilter(; ω0, Rf, Lf)
+    @named pll = PLL_LPF(; Kp=PLL_Kp, Ki=PLL_Ki, τ_lpf=PLL_τ_lpf)
+    @named cc1 = CC1(; Lf=Lf, F=CC1_F, Fcoupl=CC1_Fcoupl, KP=CC1_KP, KI=CC1_KI)
 
     systems = @named begin
         terminal = Terminal()
@@ -671,7 +788,9 @@ end
         C_dc * Dt(v_dc_state) ~ (P_ac - P_dc) / v_dc_state
         Dt(v_dc_i) ~ (V_dc - v_dc_state) * ki_v_dc
     ]
-    System(eqs, t; name, systems)
+    sys = System(eqs, t; name, systems)
+    set_mtk_defaults!(sys, defaults)
+    return sys
 end
 
 end
