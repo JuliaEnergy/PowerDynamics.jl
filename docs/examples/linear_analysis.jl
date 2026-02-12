@@ -124,9 +124,6 @@ end
 
 ## ===== Bus 3: GFM Type 20 (PV for PF) =====
 gfm_bus, bus3, loop3 = let
-    @named droop = ComposableInverter.DroopInverter(filter_type=:LCL)
-    @named gfm_bus = compile_bus(MTKBus(droop); current_source=true)
-
     # Parameters from JSON
     xwLf=0.05; Rf=0.01; xwCf=0.02; xwLc=0.01; Rc=0.002
     Xov=0.01; xDw=0.05; xfdroop=5; xfvdq=300; xfidq=600
@@ -137,28 +134,34 @@ gfm_bus, bus3, loop3 = let
     kp_i_ldq = w_i_ldq*Lf; ki_i_ldq = w_i_ldq^2*Lf/4
     kp_v_odq = w_v_odq*Cf; ki_v_odq = w_v_odq^2*Cf/4*50
 
-    set_default!(gfm_bus, :droop₊droop₊Qset, 0)
-    set_default!(gfm_bus, :droop₊droop₊Kp, Dw)
-    set_default!(gfm_bus, :droop₊droop₊ω0, w0)
-    set_default!(gfm_bus, :droop₊droop₊Kq, 0)
-    set_default!(gfm_bus, :droop₊droop₊τ_q, Inf)
-    set_default!(gfm_bus, :droop₊droop₊τ_p, 1/wf)
-    set_default!(gfm_bus, :droop₊vsrc₊CC1_F, 0)
-    set_default!(gfm_bus, :droop₊vsrc₊CC1_KI, ki_i_ldq)
-    set_default!(gfm_bus, :droop₊vsrc₊CC1_KP, kp_i_ldq)
-    set_default!(gfm_bus, :droop₊vsrc₊CC1_Fcoupl, 0)
-    set_default!(gfm_bus, :droop₊vsrc₊VC_KP, kp_v_odq)
-    set_default!(gfm_bus, :droop₊vsrc₊VC_KI, ki_v_odq)
-    set_default!(gfm_bus, :droop₊vsrc₊VC_F, 0)
-    set_default!(gfm_bus, :droop₊vsrc₊VC_Fcoupl, 0)
-    set_default!(gfm_bus, :droop₊vsrc₊X_virt, Xov)
-    set_default!(gfm_bus, :droop₊vsrc₊R_virt, 0)
-    set_default!(gfm_bus, :droop₊vsrc₊Lg, xwLc)
-    set_default!(gfm_bus, :droop₊vsrc₊C, xwCf)
-    set_default!(gfm_bus, :droop₊vsrc₊Rf, Rf)
-    set_default!(gfm_bus, :droop₊vsrc₊Lf, xwLf)
-    set_default!(gfm_bus, :droop₊vsrc₊ω0, w0)
-    set_default!(gfm_bus, :droop₊vsrc₊Rg, Rc)
+    @named droop = ComposableInverter.DroopInverter(;
+        filter_type=:LCL,
+        droop₊Qset = 0,
+        droop₊Kp = Dw,
+        droop₊ω0 = w0,
+        droop₊Kq = 0,
+        droop₊τ_q = Inf,
+        droop₊τ_p = 1/wf,
+        vsrc₊CC1_F = 0,
+        vsrc₊CC1_KI = ki_i_ldq,
+        vsrc₊CC1_KP = kp_i_ldq,
+        vsrc₊CC1_Fcoupl = 0,
+        vsrc₊VC_KP = kp_v_odq,
+        vsrc₊VC_KI = ki_v_odq,
+        vsrc₊VC_F = 0,
+        vsrc₊VC_Fcoupl = 0,
+        vsrc₊X_virt = Xov,
+        vsrc₊R_virt = 0,
+        vsrc₊Lg = xwLc,
+        vsrc₊C = xwCf,
+        vsrc₊Rf = Rf,
+        vsrc₊Lf = xwLf,
+        vsrc₊ω0 = w0,
+        vsrc₊Rg = Rc,
+    )
+    @named gfm_bus = compile_bus(MTKBus(droop); current_source=true)
+
+
 
     set_pfmodel!(gfm_bus, pfPV(P=0.5, V=1; current_source=true, assume_io_coupling=true))
 
@@ -173,9 +176,6 @@ end
 
 ## ===== Bus 4: GFL Type 10 with DC-link (PQ for PF) =====
 gfl_bus, bus4, loop4 = let
-    @named gfl = ComposableInverter.SimpleGFLDC()
-    @named gfl_bus = compile_bus(MTKBus(gfl); current_source=true)
-
     # Parameters from JSON
     V_dc=2.5; C_dc=1.25; f_v_dc=5
     xwLf=0.03; Rf=0.01
@@ -195,20 +195,24 @@ gfl_bus, bus4, loop4 = let
     kp_i_dq = Lf * w_i_dq
     ki_i_dq = Lf * w_i_dq^2 / 4
 
-    set_default!(gfl_bus, :gfl₊ω0, w0)
-    set_default!(gfl_bus, :gfl₊Lf, xwLf)
-    set_default!(gfl_bus, :gfl₊Rf, Rf)
-    set_default!(gfl_bus, :gfl₊PLL_Kp, kp_pll)
-    set_default!(gfl_bus, :gfl₊PLL_Ki, ki_pll)
-    set_default!(gfl_bus, :gfl₊PLL_τ_lpf, tau_pll)
-    set_default!(gfl_bus, :gfl₊CC1_KP, kp_i_dq)
-    set_default!(gfl_bus, :gfl₊CC1_KI, ki_i_dq)
-    set_default!(gfl_bus, :gfl₊CC1_F, 0)
-    set_default!(gfl_bus, :gfl₊CC1_Fcoupl, 0)
-    set_default!(gfl_bus, :gfl₊C_dc, C_dc)
-    set_default!(gfl_bus, :gfl₊V_dc, V_dc)
-    set_default!(gfl_bus, :gfl₊kp_v_dc, kp_v_dc)
-    set_default!(gfl_bus, :gfl₊ki_v_dc, ki_v_dc)
+    @named gfl = ComposableInverter.SimpleGFLDC(;
+        ω0 = w0,
+        Lf = xwLf,
+        Rf = Rf,
+        PLL_Kp = kp_pll,
+        PLL_Ki = ki_pll,
+        PLL_τ_lpf = tau_pll,
+        CC1_KP = kp_i_dq,
+        CC1_KI = ki_i_dq,
+        CC1_F = 0,
+        CC1_Fcoupl = 0,
+        C_dc = C_dc,
+        V_dc = V_dc,
+        kp_v_dc = kp_v_dc,
+        ki_v_dc = ki_v_dc,
+    )
+    @named gfl_bus = compile_bus(MTKBus(gfl); current_source=true)
+
 
     set_pfmodel!(gfl_bus, pfPQ(P=0.5, Q=-0.2; current_source=true))
 
@@ -307,10 +311,10 @@ function bode_plot(Gs, title="", labels=["Bus $i" for i in 1:length(Gs)])
             ss = im .* ωs
             output, input = 1, 1
             gains = map(s -> 20 * log10(abs(G(s)[output, input])), ss)
-            phases = rad2deg.(unwprap_rad(map(s -> angle(G(s)[output, input]), ss)))
+            phases = rad2deg.(unwrap_rad(map(s -> angle(G(s)[output, input]), ss)))
 
             lines!(ax1, fs, gains; label, linewidth=2)
-            lines!(ax2, fs, simple_unwrap(phases); label, linewidth=2)
+            lines!(ax2, fs, phases; label, linewidth=2)
         end
         axislegend(ax1)
         fig
@@ -324,3 +328,31 @@ Gs = map([:sg1_bus, :sg2_bus, :gfm_bus, :gfl_bus]) do COMP
     # s -> -G(s)
 end
 bode_plot(Gs, "Y_dd ")
+
+# perturbation
+affect = ComponentAffect([], [:shunt₊R]) do u, p, ctx
+    if ctx.t == 0.1
+        println("Short Circuit at Bus 1 at t=1.0s")
+        p[:shunt₊R] = 1e-6 # prevent singularity
+    elseif ctx.t == 0.2
+        println("Clearing Short Circuit at Bus 1 at t=1.1s")
+        p[:shunt₊R] = 1/0.6
+    end
+end
+short = PresetTimeComponentCallback([0.1, 0.2], affect)
+
+prob = ODEProblem(nw, s0, (0,30); add_comp_cb=VIndex(:bus1)=>short)
+sol = solve(prob, Rodas5P())
+
+let
+    fig = Figure()
+    ax = Axis(fig[1,1])
+    ts = refine_timeseries(sol.t)
+    lines!(ax, ts, sol(ts, idxs=VIndex(:bus1, :busbar₊u_mag)).u; label="Bus 1")
+    lines!(ax, ts, sol(ts, idxs=VIndex(:bus2, :busbar₊u_mag)).u; label="Bus 2")
+    lines!(ax, ts, sol(ts, idxs=VIndex(:bus3, :busbar₊u_mag)).u; label="Bus 3")
+    lines!(ax, ts, sol(ts, idxs=VIndex(:bus4, :busbar₊u_mag)).u; label="Bus 4")
+    ylims!(ax, 0.0, 1.2)
+    axislegend(ax; position=:rb)
+    fig
+end

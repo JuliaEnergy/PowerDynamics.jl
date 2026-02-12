@@ -133,7 +133,7 @@ end
     end
 end
 
-@component function CC1(; name, Lf, F, Fcoupl=1, KP, KI)
+@component function CC1(; name, Lf, F, Fcoupl=1, KP, KI, defaults...)
     vars = @variables begin
         γ_d(t), [guess=0]
         γ_q(t), [guess=0]
@@ -159,10 +159,12 @@ end
         Dt.(γ) .~ i_f_ref - i_f,
         V_I .~ -Fcoupl*Lf*W*i_f + KP*(i_f_ref - i_f) + KI*γ + F*V_C
     )
-    System(eqs, t; name)
+    sys = System(eqs, t; name)
+    set_mtk_defaults!(sys, defaults)
+    return sys
 end
 
-@component function VC(; name, C, F, Fcoupl=1, KP, KI)
+@component function VC(; name, C, F, Fcoupl=1, KP, KI, defaults...)
     vars = @variables begin
         γ_d(t), [guess=0]
         γ_q(t), [guess=0]
@@ -188,10 +190,12 @@ end
         Dt.(γ) .~ V_C_ref - V_C,
         i_f_ref .~ -Fcoupl*C*W*V_C + KP*(V_C_ref - V_C) + KI*γ + F*i_g
     )
-    System(eqs, t; name)
+    sys = System(eqs, t; name)
+    set_mtk_defaults!(sys, defaults)
+    return sys
 end
 
-@component function CC2(; name, Lg, F, Fcoupl=1, KP, KI)
+@component function CC2(; name, Lg, F, Fcoupl=1, KP, KI, defaults...)
     vars = @variables begin
         γ_d(t), [guess=0]
         γ_q(t), [guess=0]
@@ -217,7 +221,9 @@ end
         Dt.(γ) .~ i_g_ref - i_g,
         V_C_ref .~ -Fcoupl*Lg*W*i_g + KP*(i_g_ref - i_g) + KI*γ + F*V_g
     )
-    System(eqs, t; name)
+    sys = System(eqs, t; name)
+    set_mtk_defaults!(sys, defaults)
+    return sys
 end
 
 
@@ -313,9 +319,9 @@ to inner current controller (CC1). Operates in a fixed dq-frame (no PLL). Suitab
         # connect vc to cc1 reference
         cc1.i_f_ref_d ~ vc.i_f_ref_d
         cc1.i_f_ref_q ~ vc.i_f_ref_q
-        # connect vc reference to setpoint/input (q-axis aligned: Vset goes into q)
-        vc.V_C_ref_d ~       - (vc.i_g_d * R_virt - vc.i_g_q * X_virt)
-        vc.V_C_ref_q ~ _Vset - (vc.i_g_q * R_virt + vc.i_g_d * X_virt)
+        # connect vc reference to setpoint/input (d-axis aligned: Vset goes into d)
+        vc.V_C_ref_d ~ _Vset - (vc.i_g_d * R_virt - vc.i_g_q * X_virt)
+        vc.V_C_ref_q ~       - (vc.i_g_q * R_virt + vc.i_g_d * X_virt)
     ]
     sys = System(eqs, t; name, systems)
     set_mtk_defaults!(sys, defaults)
@@ -450,21 +456,21 @@ Implements three-loop control: outer current controller (CC2) → voltage contro
     return sys
 end
 
-# q-axis aligned convention (q-axis aligned with phase a)
-# At δ=0: q = r (real/phase-a), d = -i (90° behind)
+# d-axis aligned convention (d-axis aligned with phase a)
+# At δ=0: d = r (real/phase-a), q = i (90° behind)
 function _ri_to_dq(_r, _i, δ)
-    _d =  sin(δ)*_r - cos(δ)*_i
-    _q =  cos(δ)*_r + sin(δ)*_i
+    _d =  cos(δ)*_r + sin(δ)*_i
+    _q = -sin(δ)*_r + cos(δ)*_i
     return _d, _q
 end
 function _dq_to_ri(_d, _q, δ)
-    _r =  sin(δ)*_d + cos(δ)*_q
-    _i = -cos(δ)*_d + sin(δ)*_q
+    _r =  cos(δ)*_d - sin(δ)*_q
+    _i =  sin(δ)*_d + cos(δ)*_q
     return _r, _i
 end
 
 
-@component function DroopOuter(; name, pq_input=false, Pset=nothing, Qset=nothing)
+@component function DroopOuter(; name, pq_input=false, Pset=nothing, Qset=nothing, defaults...)
     @parameters begin
         Vset, [description = "Voltage magnitude setpoint [pu]", guess=1]
         ω0=2π*50, [guess=2π*50, description = "Nominal frequency [pu]"]
@@ -523,11 +529,13 @@ end
         δ_out.u ~ δ
     ]
 
-    return System(eqs, t; name, systems)
+    sys = System(eqs, t; name, systems)
+    set_mtk_defaults!(sys, defaults)
+    return sys
 end
 
 """
-    DroopInverter(; name=:droop_inv, filter_type)
+    DroopInverter(; name=:droop_inv, filter_type, defaults...)
 
 Grid-forming inverter with droop control for frequency and voltage regulation.
 
@@ -541,8 +549,9 @@ Suitable for:
 - `filter_type`: `:LC` or `:LCL` filter topology (passed to VoltageSource)
 - Droop controller parameters: `Kp` (P-f droop), `Kq` (Q-V droop), `τ_p`, `τ_q` (power filter time constants)
 - Filter parameters inherited from VoltageSource: `Lf`, `C`, `Lg`, `ω0`
+- `defaults...`: Additional parameter/variable defaults (e.g., `Kp=0.5, τ_p=0.2`)
 """
-function DroopInverter(; name=:droop_inv, filter_type)
+@component function DroopInverter(; name=:droop_inv, filter_type, defaults...)
     @named droop = DroopOuter(; pq_input=false)
     @named vsrc = VoltageSource(; Vset_input=true, filter_type)
     @named terminal = Terminal()
@@ -555,11 +564,13 @@ function DroopInverter(; name=:droop_inv, filter_type)
         droop.Q_meas_in.u ~ vsrc.filter.V_C_i * vsrc.filter.i_g_r - vsrc.filter.V_C_r * vsrc.filter.i_g_i
     ]
 
-    System(eqs, t; name, systems=[droop, vsrc, terminal])
+    sys = System(eqs, t; name, systems=[droop, vsrc, terminal])
+    set_mtk_defaults!(sys, defaults)
+    return sys
 end
 
 """
-    SimplePLL(; name, Kp, Ki)
+    SimplePLL(; name, Kp, Ki, defaults...)
 
 Basic PLL that tracks the grid voltage angle by driving the q-axis voltage to zero.
 Uses a PI controller on the angle error signal `u_q`.
@@ -567,8 +578,9 @@ Uses a PI controller on the angle error signal `u_q`.
 # Parameters
 - `Kp`: Proportional gain
 - `Ki`: Integral gain
+- `defaults...`: Additional parameter/variable defaults
 """
-@component function SimplePLL(; name, Kp, Ki)
+@component function SimplePLL(; name, Kp, Ki, defaults...)
     vars = @variables begin
         δ_pll(t), [guess=0]    # PLL angle output
         ω_pll(t), [guess=0]    # PLL frequency output
@@ -586,22 +598,25 @@ Uses a PI controller on the angle error signal `u_q`.
         Dt(δ_pll) ~ ω_pll + Kp*u_q
         Dt(ω_pll) ~ Ki*u_q
     ]
-    System(eqs, t; name)
+    sys = System(eqs, t; name)
+    set_mtk_defaults!(sys, defaults)
+    return sys
 end
 
 """
-    PLL_LPF(; name, Kp, Ki, τ_lpf)
+    PLL_LPF(; name, Kp, Ki, τ_lpf, defaults...)
 
 PLL with an additional low-pass filter on the frequency output.
 Uses a PI controller on the angle error, followed by a first-order LPF on the
-estimated frequency `ω`. Matches the SimplusGT MATLAB PLL structure.
+estimated frequency `ω`.
 
 # Parameters
 - `Kp`: Proportional gain
 - `Ki`: Integral gain
 - `τ_lpf`: Low-pass filter time constant [s]
+- `defaults...`: Additional parameter/variable defaults
 """
-@component function PLL_LPF(; name, Kp, Ki, τ_lpf)
+@component function PLL_LPF(; name, Kp, Ki, τ_lpf, defaults...)
     vars = @variables begin
         ω_pll_i(t), [guess=0]
         ω(t), [guess=2π*50]
@@ -612,13 +627,15 @@ estimated frequency `ω`. Matches the SimplusGT MATLAB PLL structure.
     end
 
     eqs = [
-        # Error signal: v_q in MATLAB d-axis aligned convention = -v_d in our q-axis convention
+        # Error signal: v_q in d-axis aligned convention (drives q→0 at lock)
         e_ang ~ -sin(θ)*u_r + cos(θ)*u_i
         Dt(ω_pll_i) ~ e_ang * Ki
         Dt(ω) ~ (ω_pll_i + e_ang*Kp - ω) / τ_lpf
         Dt(θ) ~ ω
     ]
-    System(eqs, t; name)
+    sys = System(eqs, t; name)
+    set_mtk_defaults!(sys, defaults)
+    return sys
 end
 
 """
@@ -743,7 +760,7 @@ The DC voltage controller generates active current reference (q-axis). Suitable 
         kp_v_dc, [description="DC voltage PI proportional gain"]
         ki_v_dc, [description="DC voltage PI integral gain"]
         # Reactive current setpoint (constant, from PF)
-        iset_d, [guess=0, description="dq-frame reactive current setpoint"]
+        iset_q, [guess=0, description="dq-frame reactive current setpoint"]
         # External DC power (solved at initialization)
         P_dc, [guess=0, description="External DC power draw"]
     end
@@ -764,8 +781,8 @@ The DC voltage controller generates active current reference (q-axis). Suitable 
     push!(systems, pll)
     push!(systems, cc1)
 
-    # DC PI output → active current reference (q-axis in Julia convention)
-    iset_q_dc = (V_dc - v_dc_state)*kp_v_dc + v_dc_i
+    # DC PI output → active current reference (d-axis in d-aligned convention)
+    iset_d_dc = (V_dc - v_dc_state)*kp_v_dc + v_dc_i
 
     # P_ac: power from converter to AC filter (V_I · i_f in dq frame)
     P_ac = cc1.V_I_d * cc1.i_f_d + cc1.V_I_q * cc1.i_f_q
@@ -781,9 +798,9 @@ The DC voltage controller generates active current reference (q-axis). Suitable 
         [cc1.V_C_d, cc1.V_C_q] .~ _ri_to_dq(terminal.u_r, terminal.u_i, pll.θ)
         # CC1 output → filter voltage input
         [filter.V_I_r, filter.V_I_i] .~ _dq_to_ri(cc1.V_I_d, cc1.V_I_q, pll.θ)
-        # Current setpoint: d from parameter (reactive), q from DC PI (active)
-        cc1.i_f_ref_d ~ iset_d
-        cc1.i_f_ref_q ~ iset_q_dc
+        # Current setpoint: d from DC PI (active), q from parameter (reactive)
+        cc1.i_f_ref_d ~ iset_d_dc
+        cc1.i_f_ref_q ~ iset_q
         # DC link dynamics
         C_dc * Dt(v_dc_state) ~ (P_ac - P_dc) / v_dc_state
         Dt(v_dc_i) ~ (V_dc - v_dc_state) * ki_v_dc
