@@ -128,26 +128,20 @@ gfm_bus, bus3, loop3 = let
     xwLf=0.05; Rf=0.01; xwCf=0.02; xwLc=0.01; Rc=0.002
     Xov=0.01; xDw=0.05; xfdroop=5; xfvdq=300; xfidq=600
 
-    Lf = xwLf/w0; Cf = xwCf/w0
-    Dw = xDw*w0; wf = xfdroop*2*pi
-    w_v_odq = xfvdq*2*pi; w_i_ldq = xfidq*2*pi
-    kp_i_ldq = w_i_ldq*Lf; ki_i_ldq = w_i_ldq^2*Lf/4
-    kp_v_odq = w_v_odq*Cf; ki_v_odq = w_v_odq^2*Cf/4*50
-
     @named droop = ComposableInverter.DroopInverter(;
         filter_type=:LCL,
         droop₊Qset = 0,
-        droop₊Kp = Dw,
+        droop₊Kp = xDw*w0,
         droop₊ω0 = w0,
         droop₊Kq = 0,
         droop₊τ_q = Inf,
-        droop₊τ_p = 1/wf,
+        droop₊τ_p = 1/(xfdroop*2*pi),
         vsrc₊CC1_F = 0,
-        vsrc₊CC1_KI = ki_i_ldq,
-        vsrc₊CC1_KP = kp_i_ldq,
+        vsrc₊CC1_KI = (xfidq*2*pi)^2*(xwLf/w0)/4,
+        vsrc₊CC1_KP = (xfidq*2*pi)*(xwLf/w0),
         vsrc₊CC1_Fcoupl = 0,
-        vsrc₊VC_KP = kp_v_odq,
-        vsrc₊VC_KI = ki_v_odq,
+        vsrc₊VC_KP = (xfvdq*2*pi)*(xwCf/w0),
+        vsrc₊VC_KI = (xfvdq*2*pi)^2*(xwCf/w0)/4*50,
         vsrc₊VC_F = 0,
         vsrc₊VC_Fcoupl = 0,
         vsrc₊X_virt = Xov,
@@ -181,35 +175,21 @@ gfl_bus, bus4, loop4 = let
     xwLf=0.03; Rf=0.01
     f_pll=5; f_tau_pll=300; f_i_dq=600
 
-    Lf = xwLf/w0
-    w_vdc = f_v_dc*2*pi
-    kp_v_dc = V_dc*C_dc*w_vdc
-    ki_v_dc = kp_v_dc*w_vdc/4
-
-    w_pll = f_pll*2*pi
-    kp_pll = w_pll
-    ki_pll = w_pll^2/4
-    tau_pll = 1/(f_tau_pll*2*pi)
-
-    w_i_dq = f_i_dq*2*pi
-    kp_i_dq = Lf * w_i_dq
-    ki_i_dq = Lf * w_i_dq^2 / 4
-
     @named gfl = ComposableInverter.SimpleGFLDC(;
         ω0 = w0,
         Lf = xwLf,
         Rf = Rf,
-        PLL_Kp = kp_pll,
-        PLL_Ki = ki_pll,
-        PLL_τ_lpf = tau_pll,
-        CC1_KP = kp_i_dq,
-        CC1_KI = ki_i_dq,
+        PLL_Kp = f_pll*2*pi,
+        PLL_Ki = (f_pll*2*pi)^2/4,
+        PLL_τ_lpf = 1/(f_tau_pll*2*pi),
+        CC1_KP = (xwLf/w0) * (f_i_dq*2*pi),
+        CC1_KI = (xwLf/w0) * (f_i_dq*2*pi)^2 / 4,
         CC1_F = 0,
         CC1_Fcoupl = 0,
         C_dc = C_dc,
         V_dc = V_dc,
-        kp_v_dc = kp_v_dc,
-        ki_v_dc = ki_v_dc,
+        kp_v_dc = V_dc*C_dc*(f_v_dc*2*pi),
+        ki_v_dc = V_dc*C_dc*(f_v_dc*2*pi) * (f_v_dc*2*pi)/4,
     )
     @named gfl_bus = compile_bus(MTKBus(gfl); current_source=true)
 
@@ -275,7 +255,6 @@ pfs0 = NWState(pfnw)
 pfs = solve_powerflow(nw; abstol=1e-10, reltol=1e-10)
 show_powerflow(pfs)
 s0 = initialize_from_pf!(nw; pfs, subverbose=true, tol=1e-7, nwtol=1e-7)
-break
 
 
 ## ===== Eigenvalue analysis =====
@@ -344,15 +323,19 @@ short = PresetTimeComponentCallback([0.1, 0.2], affect)
 prob = ODEProblem(nw, s0, (0,30); add_comp_cb=VIndex(:bus1)=>short)
 sol = solve(prob, Rodas5P())
 
-let
+with_theme(Theme(palette = (; color = Makie.wong_colors()[[1, 6, 2, 4]]))) do
     fig = Figure()
-    ax = Axis(fig[1,1])
+    ax = Axis(fig[1,1], title="Voltage Magnitude", limits=((0,0.5), (0.0, 1.2)))
     ts = refine_timeseries(sol.t)
     lines!(ax, ts, sol(ts, idxs=VIndex(:bus1, :busbar₊u_mag)).u; label="Bus 1")
     lines!(ax, ts, sol(ts, idxs=VIndex(:bus2, :busbar₊u_mag)).u; label="Bus 2")
     lines!(ax, ts, sol(ts, idxs=VIndex(:bus3, :busbar₊u_mag)).u; label="Bus 3")
     lines!(ax, ts, sol(ts, idxs=VIndex(:bus4, :busbar₊u_mag)).u; label="Bus 4")
-    ylims!(ax, 0.0, 1.2)
-    axislegend(ax; position=:rb)
+    ax2 = Axis(fig[2,1], limits=((0,30), (0.0, 1.2)))
+    lines!(ax2, ts, sol(ts, idxs=VIndex(:bus1, :busbar₊u_mag)).u; label="Bus 1")
+    lines!(ax2, ts, sol(ts, idxs=VIndex(:bus2, :busbar₊u_mag)).u; label="Bus 2")
+    lines!(ax2, ts, sol(ts, idxs=VIndex(:bus3, :busbar₊u_mag)).u; label="Bus 3")
+    lines!(ax2, ts, sol(ts, idxs=VIndex(:bus4, :busbar₊u_mag)).u; label="Bus 4")
+    axislegend(ax2; position=:rb)
     fig
 end
