@@ -1,4 +1,7 @@
 @mtkmodel VδConstraint begin
+    @structural_parameters begin
+        force_constraint=false
+    end
     @components begin
         terminal = Terminal()
     end
@@ -7,8 +10,13 @@
         δ=0
     end
     @equations begin
-        terminal.u_r ~ V*cos(δ)
-        terminal.u_i ~ V*sin(δ)
+        if force_constraint
+            @no_simplify terminal.u_r ~ V*cos(δ)
+            @no_simplify terminal.u_i ~ V*sin(δ)
+        else
+            terminal.u_r ~ V*cos(δ)
+            terminal.u_i ~ V*sin(δ)
+        end
     end
 end
 
@@ -45,8 +53,8 @@ end
         terminal = Terminal()
     end
     @parameters begin
-        P
-        Q
+        P, [guess=0.1, description="Active Power [pu]"]
+        Q, [guess=0, description="Reactive Power [pu]"]
     end
     begin
         S = P + im*Q

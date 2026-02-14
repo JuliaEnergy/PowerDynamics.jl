@@ -98,4 +98,13 @@ copy_pf_parameters
 ## Utils
 ```@docs
 refine_timeseries
+CallbackVerbosity
+set_callback_verbosity!
+get_callback_verbosity
+with_callback_verbosity
+SaturationConfig
+SaturationConfiguration
+set_saturation_config!
+get_saturation_config
+with_saturation_config
 ```

@@ -24,7 +24,7 @@
     end
     @equations begin
         Dt(EFD) ~ 1/T_E * (I_C - feedback)
-        feedback ~ K_E * EFD + (EFD * PSSE_QUAD_SE(EFD, S_EE_1, S_EE_2, E_1, E_2))
+        feedback ~ K_E * EFD + (EFD * QUAD_SE(EFD, S_EE_1, S_EE_2, E_1, E_2))
     end
 end
 

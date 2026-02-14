@@ -7,6 +7,34 @@ This page documents all the pre-built components available in the PowerDynamics.
 
     While PowerDynamics itself follows semantic versioning, the Library submodule's API is highly unstable and variable names, function signatures, and model interfaces may change frequently without notice. If you are using specific models from PowerDynamics.Library in their current state, we strongly recommend copying them to your own source code to avoid breaking changes in future updates.
 
+## Building Blocks
+
+The following building blocks can be used to construct custom control systems and machine models.
+
+### Basic Blocks
+```@docs
+SimpleLag
+SimpleLead
+LeadLag
+Derivative
+SimpleGain
+SimpleLagLim
+LimIntegrator
+DeadZone
+```
+
+### Utility Functions
+```@docs
+ss_to_mtkmodel
+siso_tf_to_ss
+```
+
+### Saturation Functions
+```@docs
+QUAD_SE
+EXP_SE
+```
+
 ## Slack Models
 
 ### Algebraic and Differential Slack
@@ -66,6 +94,7 @@ PQLoad
 VoltageDependentLoad
 ConstantYLoad
 ZIPLoad
+ConstantCurrentLoad
 PSSE_Load
 ```
 
@@ -75,6 +104,7 @@ PSSE_Load
 ```@docs
 PiLine
 PiLine_fault
+Breaker
 ```
 
 ## Fault Models

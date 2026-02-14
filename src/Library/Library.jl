@@ -1,18 +1,74 @@
 module Library
 
-using ArgCheck: @argcheck
 using ..PowerDynamics: PowerDynamics, Terminal, BusBase, Ibase
 using NetworkDynamics: NetworkDynamics, ComponentCondition, ComponentAffect,
                        VertexModel, VIndex, EIndex, NWState,
-                       VectorContinuousComponentCallback, DiscreteComponentCallback
-using ModelingToolkit: ModelingToolkit, @named, simplify, t_nounits as t, D_nounits as Dt
+                       VectorContinuousComponentCallback, DiscreteComponentCallback, ComponentPostprocessing
+using ModelingToolkit: ModelingToolkit, @named, simplify, t_nounits as t, D_nounits as Dt,
+                       @component
 # needed for @mtkmodel
-using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System, Equation, connect
+using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System, Equation, connect, setmetadata
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using NonlinearSolve: NonlinearProblem
 using SciMLBase: SciMLBase, solve
 using Symbolics: Symbolics
 using LinearAlgebra: LinearAlgebra
+using SparseConnectivityTracer: GradientTracer
+using ScopedValues: ScopedValue, with
+
+export CallbackVerbosity, set_callback_verbosity!, get_callback_verbosity, with_callback_verbosity
+export SaturationConfiguration, SaturationConfig, set_saturation_config!, get_saturation_config, with_saturation_config
+
+mutable struct ConfigRef{T}
+    val::T
+end
+Base.getindex(c::ConfigRef) = c.val
+Base.setindex!(c::ConfigRef, v) = (c.val = v)
+# Allow easy conversion to ConfigRef
+Base.convert(::Type{ConfigRef{T}}, config::T) where {T} = ConfigRef(config)
+
+"""
+    const CallbackVerbosity = ScopedValue(ConfigRef(true))
+
+Global configuration for callback verbosity during simulation.
+Wrapped in `ConfigRef` to enable both global mutation and scoped temporary changes.
+Access via [`get_callback_verbosity`](@ref), set via [`set_callback_verbosity!`](@ref)
+or [`with_callback_verbosity`](@ref).
+"""
+const CallbackVerbosity = ScopedValue(ConfigRef(true))
+"""
+    set_callback_verbosity!(v::Bool)
+
+Sets [`CallbackVerbosity`](@ref) to `v`.
+"""
+function set_callback_verbosity!(v::Bool)
+    CallbackVerbosity[][] = v
+end
+"""
+    get_callback_verbosity() -> Bool
+
+Get the current callback verbosity setting from [`CallbackVerbosity`](@ref).
+Returns `true` if callbacks should print messages, `false` otherwise.
+"""
+get_callback_verbosity() = CallbackVerbosity[][]
+
+"""
+    with_callback_verbosity(f, v::Bool)
+
+Execute function `f` with callback verbosity temporarily set to `v`.
+The setting is restored after `f` returns.
+
+# Example
+```julia
+with_callback_verbosity(false) do
+    solve(prob, Rodas5P())  # callbacks silenced
+end
+```
+
+See also [`CallbackVerbosity`](@ref), [`set_callback_verbosity!`](@ref), [`get_callback_verbosity`](@ref).
+"""
+with_callback_verbosity(f, v::Bool) = with(f, CallbackVerbosity => ConfigRef(v))
+
 
 """
     simplify_barrier(x) = x
@@ -109,8 +165,13 @@ end
 #### Machine Models
 ####
 
-# Building blocks for PSSE models
+export SimpleLag, SimpleLead, LeadLag, Derivative, SimpleGain
+export SimpleLagLim, LimIntegrator
+export DeadZone
+export QUAD_SE, EXP_SE
+export ss_to_mtkmodel, siso_tf_to_ss
 include("building_blocks.jl")
+
 include("Machines/PSSE_BaseMachine.jl")
 
 # Synchronous Machine Models
@@ -176,8 +237,8 @@ include("Controls/PSS/PSSE_IEEEST.jl")
 #### Load Models
 ####
 
-export PQLoad, VoltageDependentLoad, ConstantYLoad, ZIPLoad
-include("Loads/PQLoad.jl")
+export PQLoad, VoltageDependentLoad, ConstantYLoad, ZIPLoad, ConstantCurrentLoad
+include("Loads/StaticLoads.jl")
 
 # Static Load Models
 export PSSE_Load
@@ -193,6 +254,9 @@ include("Branches/PiLine.jl")
 
 export PiLine_fault
 include("Branches/PiLine_fault.jl")
+
+export Breaker
+include("Branches/Breaker.jl")
 
 ####
 #### Fault Models

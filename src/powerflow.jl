@@ -6,7 +6,7 @@ Create a slack bus for power flow analysis.
 A slack bus maintains constant voltage magnitude and phase angle (or real and imaginary voltage components).
 Either provide voltage magnitude `V` and phase angle `δ`, or provide real and imaginary voltage components `u_r` and `u_i`.
 """
-function pfSlack(; V=missing, δ=missing, u_r=missing, u_i=missing, name=:slackbus)
+function pfSlack(; V=missing, δ=missing, u_r=missing, u_i=missing, name=:slackbus, kwargs...)
     if !ismissing(V) && ismissing(u_r) && ismissing(u_i)
         δ = ismissing(δ) ? 0 : δ
         @named slack = Library.VδConstraint(; V, δ)
@@ -19,7 +19,7 @@ function pfSlack(; V=missing, δ=missing, u_r=missing, u_i=missing, name=:slackb
     end
 
     mtkbus = MTKBus(slack; name)
-    b = compile_bus(mtkbus)
+    b = compile_bus(mtkbus; kwargs...)
     set_voltage!(b, u_r + im * u_i)
     b
 end
@@ -32,10 +32,10 @@ Create a PV bus for power flow analysis.
 A PV bus maintains constant active power injection and voltage magnitude.
 The reactive power and voltage phase angle are determined by the power flow solution.
 """
-function pfPV(; P, V, name=:pvbus)
+function pfPV(; P, V, name=:pvbus, kwargs...)
     @named pv = Library.PVConstraint(; P, V)
     mtkbus = MTKBus(pv; name)
-    b = compile_bus(mtkbus)
+    b = compile_bus(mtkbus; kwargs...)
     set_voltage!(b; mag=V, arg=0)
     b
 end
@@ -48,10 +48,10 @@ Create a PQ bus for power flow analysis.
 A PQ bus has specified active and reactive power injections.
 The voltage magnitude and phase angle are determined by the power flow solution.
 """
-function pfPQ(; P=0, Q=0, name=:pqbus)
+function pfPQ(; P=0, Q=0, name=:pqbus, kwargs...)
     @named pq = Library.PQConstraint(; P, Q)
     mtkbus = MTKBus(pq; name)
-    b = compile_bus(mtkbus)
+    b = compile_bus(mtkbus; kwargs...)
     set_voltage!(b; mag=1, arg=0)
     b
 end
@@ -203,8 +203,11 @@ delete_pfmodel!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfmodel!(get
     solve_powerflow(nw::Network;
                     pfnw = powerflow_model(nw),
                     pfs0 = NWState(pfnw),
-                    fill_busbar_defaults=true
-                    verbose=true)
+                    fill_busbar_defaults=true,
+                    use_guesses=true,
+                    sparse=nv(pfnw) > 50,
+                    verbose=true,
+                    kwargs...)
 
 Solve the power flow equations for a given network.
 
@@ -215,7 +218,10 @@ Uses [`find_fixpoint`](@extref NetworkDynamics.find_fixpoint) from NetworkDynami
 - `pfnw`: The power flow network model (default: created from `nw`)
 - `pfs0`: Initial state for the power flow calculation
 - `fill_busbar_defaults`: Whether to fill missing default values for busbar states (i.e. u_r=1 u_i=0)
+- `use_guesses`: Whether to fall back to "guess" values instead of "default" values if available.
+- `sparse`: Whether to use a sparse solver (default: for networks with more than 50 buses)
 - `verbose`: Whether to print the power flow solution
+- `kwargs`: Additional keyword arguments passed to `find_fixpoint`
 
 ## Returns
 - A `NWState` containing the solved power flow solution
@@ -223,25 +229,54 @@ Uses [`find_fixpoint`](@extref NetworkDynamics.find_fixpoint) from NetworkDynami
 See also [`initialize_from_pf`](@ref).
 """
 function solve_powerflow(
-    nw::Network;
+    nw::Union{Network,Nothing};
     pfnw = powerflow_model(nw),
     pfs0 = NWState(pfnw),
     fill_busbar_defaults=true,
-    verbose=true
+    use_guesses=true,
+    sparse = nv(pfnw) > 50,
+    verbose=true,
+    alg = nothing,
+    kwargs...
 )
     # don't enforce this, check happes in `powerflow_model`
     # pfnw.mass_matrix == LinearAlgebra.UniformScaling(0) || error("Powerflow model must have a mass matrix of 0!")
 
-    if fill_busbar_defaults && any(isnan, uflat(pfs0))
-        urinds = generate_indices(nw, VIndex(:), :busbar₊u_r, s=true, obs=false, out=false, in=false, p=false)
-        nanidx = findall(isnan, pfs0[urinds])
-        pfs0[urinds[nanidx]] .= 1.0
-        uiinds = generate_indices(nw, VIndex(:), :busbar₊u_i, s=true, obs=false, out=false, in=false, p=false)
-        nanidx = findall(isnan, pfs0[uiinds])
-        pfs0[uiinds[nanidx]] .= 1.0
+    if isnothing(alg)
+        if sparse && isnothing(pfnw.jac_prototype)
+            alg = try
+                set_jac_prototype!(pfnw)
+                NonlinearSolve.FastShortcutNLLSPolyalg(linsolve=NonlinearSolve.LinearSolve.KLUFactorization())
+            catch e
+                @warn "Could not set sparse jacobian prototype for powerflow model! Falling back to dense solver. Error: $e"
+                NonlinearSolve.FastShortcutNLLSPolyalg()
+            end
+        else
+            alg = NonlinearSolve.FastShortcutNLLSPolyalg()
+        end
     end
 
-    pfs = find_fixpoint(pfnw, pfs0)
+    if fill_busbar_defaults && any(isnan, uflat(pfs0))
+        urinds = generate_indices(pfnw, VIndex(:), :busbar₊u_r, s=true, obs=false, out=false, in=false, p=false)
+        nanidx = findall(isnan, pfs0[urinds])
+        if !isempty(nanidx)
+            pfs0[urinds[nanidx]] .= 1.0
+        end
+        uiinds = generate_indices(pfnw, VIndex(:), :busbar₊u_i, s=true, obs=false, out=false, in=false, p=false)
+        nanidx = findall(isnan, pfs0[uiinds])
+        if !isempty(nanidx)
+            pfs0[uiinds[nanidx]] .= 0.0
+        end
+    end
+    if use_guesses && any(isnan, uflat(pfs0))
+        for (i, idx) in enumerate(SII.variable_symbols(pfs0))
+            isnan(uflat(pfs0)[i]) || continue
+            has_guess(pfnw, idx) || continue
+            uflat(pfs0)[i] = get_guess(pfnw, idx)
+        end
+    end
+
+    pfs = find_fixpoint(pfnw, pfs0; alg, kwargs...)
     verbose && show_powerflow(pfs)
 
     return pfs
@@ -255,6 +290,7 @@ initialize_from_pf_docstring = raw"""
         pfnw = powerflow_model(nw),
         pfs0 = NWState(pfnw),
         pfs = solve_powerflow(nw; pfnw, pfs0, verbose),
+        sparsepf = nv(nw) > 50,
         kwargs...
     )
 
@@ -286,6 +322,7 @@ state again, as it is stored in the metadata.
 - `pfnw`: Power flow network model (default: created from `nw` using `powerflow_model`)
 - `pfs0`: Initial state for power flow calculation (default: created from `pfnw`)
 - `pfs`: Power flow solution (default: calculated using `solve_powerflow`)
+- `sparsepf`: Whether to use a sparse solver for power flow (default: for networks with more than 50 buses)
 - Additional keyword arguments are passed to `initialize_componentwise[!]`
 
 ## Returns
@@ -304,12 +341,13 @@ function _init_from_pf(
     pfnw = nothing,
     pfs0 = nothing,
     pfs = nothing,
+    sparsepf = nv(nw) > 50,
     kwargs...
 )
     if isnothing(pfs)
         pfnw = isnothing(pfnw) ? powerflow_model(nw) : pfnw
         pfs0 = isnothing(pfs0) ? NWState(pfnw) : pfnw
-        pfs = solve_powerflow(nw; pfnw, pfs0, verbose)
+        pfs = solve_powerflow(nw; pfnw, pfs0, verbose, sparse=sparsepf)
     end
 
     interface_vals = interface_values(pfs)

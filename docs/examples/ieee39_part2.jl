@@ -20,8 +20,8 @@ For comprehensive documentation on initialization, see:
     If you're looking for the practical initialization approach without diving into implementation details,
     jump directly to the [Initialize all Components](@ref initialize-all-components) section at the end.
 
-This tutorial goes deep into the initialization internals for educational purposes. In practice, 
-you'll typically use the high-level functions shown at the end rather than the detailed step-by-step 
+This tutorial goes deep into the initialization internals for educational purposes. In practice,
+you'll typically use the high-level functions shown at the end rather than the detailed step-by-step
 process demonstrated here.
 
 As a prerequisite, we load part I of the tutorial, which contains the network model:
@@ -37,7 +37,7 @@ The initialization process in PowerDynamics.jl is a two-step process: first we
 solve the power flow, then we use the power flow results to initialize the
 individual network components.
 
-There are shortcut functions to do this (as shown [later](@ref initialize-all-components)), 
+There are shortcut functions to do this (as shown [later](@ref initialize-all-components)),
 but we will go through the steps in detail for educational purposes.
 
 ## Power Flow
@@ -195,7 +195,7 @@ However, in practice it's not always so easy.
 Recalling from [Part 1](@ref ieee39-part1), we have an uncontrolled machine
 together with a load on bus 39.
 
-```
+```asciiart
             ╔════════════════════════════════╗
             ║ Unctr. Ma. Load Bus (compiled) ║
             ║  ┌────────────────────────┐    ║
