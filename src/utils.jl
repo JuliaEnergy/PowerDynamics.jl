@@ -134,6 +134,17 @@ function _unwrap(angles, range)
 end
 
 const GITHUB_REPO = "JuliaEnergy/PowerDynamics.jl"
+
+# GITHUB_REF is evaluated at *precompile time* and baked into the compiled
+# module.  ref_source_file uses it to embed source links in docstrings.
+# Intended values per CI context:
+#   - locally          → "v{version}" read from Project.toml
+#   - PR build         → commit SHA (GITHUB_REF_NAME is "{number}/merge")
+#   - push to main     → "main"
+#   - tag push         → the tag name, e.g. "v4.4.0"
+# IMPORTANT: the docs CI job must wipe the PowerDynamics precompile cache after
+# restoring the depot cache and before building, so that each run re-precompiles
+# with the correct GITHUB_REF_NAME rather than reusing a stale cached value.
 const GITHUB_REF = let
     if haskey(ENV, "GITHUB_REF_NAME")
         ref_name = ENV["GITHUB_REF_NAME"]
@@ -149,6 +160,22 @@ const GITHUB_REF = let
         "v"*versionstring
     end
 end
+"""
+    ref_source_file(f, line)
+
+Generate a documentation string that points readers to the model's source code.
+Intended to be called via string interpolation in a docstring, e.g.:
+
+    \$(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
+
+The GitHub ref embedded in the link is determined by [`GITHUB_REF`](@ref) which
+is fixed at precompile time (see its definition for the per-context mapping):
+
+- **locally**: `v{version}` from `Project.toml`
+- **PR build**: commit SHA
+- **push to `main`**: `"main"` (dev docs, always up to date)
+- **tag push**: tag name (e.g. `"v4.4.0"`), so links stay valid in archived versions
+"""
 function ref_source_file(f, line)
     subf = match(r"PowerDynamics.*/(src/.*)", f)[1]
 
