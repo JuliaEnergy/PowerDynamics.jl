@@ -78,8 +78,8 @@ function bus(;p, l, r)
     rect(xmin, ymin, l+r, height, :fill)
 end
 
-function load(; p)
-    length = 90
+function load(; p, load_scale=1.0)
+    length = 90 * load_scale
     arrowwidth = 40
     linewidth = 8
     gsave()
@@ -154,7 +154,8 @@ function gen(; p, α=0)
     grestore()
 end
 
-function powerdynamics_logo(; p=Point(0,0), s=1.0, foreground="black")
+function powerdynamics_logo(; p=Point(0,0), s=1.0, foreground="black",
+                              wt_phase=-0.2, gen_phase=0.0, load_scale=1.0)
     gsave()
 
     translate(p)
@@ -181,16 +182,16 @@ function powerdynamics_logo(; p=Point(0,0), s=1.0, foreground="black")
 
     sethue(Luxor.julia_green)
     bus(p=p_wt_con, l=2units, r=.75units)
-    windturbine(; p=p_wt_con - Point(1.25*units,0), s=.75, α=-0.2)
+    windturbine(; p=p_wt_con - Point(1.25*units,0), s=.75, α=wt_phase)
     # windturbine(; p=p_wt_con - Point(1.25*units,0), s=.75, α=-π/6)
 
     sethue(Luxor.julia_purple)
     bus(p=p_load_con, l=.75units, r=2units)
-    load(p=p_load_con + Point(1.25*units, 0))
+    load(p=p_load_con + Point(1.25*units, 0), load_scale=load_scale)
 
     sethue(Luxor.julia_red)
     bus(p=p_gen_conl, l=.75units, r=2.75units)
-    gen(p=(p_gen_conl + p_gen_conr)/2, α=0)
+    gen(p=(p_gen_conl + p_gen_conr)/2, α=gen_phase)
 
     grestore()
 end
