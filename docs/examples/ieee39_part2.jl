@@ -324,12 +324,31 @@ set_initformula!(nw[VIndex(39)], formula)
 nothing #hide #md
 
 #=
-With that, the componentwise initialization of the whole network is possible:
+With that, the componentwise initialization of the whole network is possible.
+
+We start by with [`solve_powerflow`](@ref), which extracts the powerflow models from each component,
+builds the (static) power flow network and solves the problem using a root-finding algorithm.
+=#
+pfs = solve_powerflow(nw)
+nothing #hide #md
+#=
+Next, we get the voltages and the currents at the buses from the powerflow
+state. Those [`interface_values`](@extref NetworkDynamics.interface_values) are the shared state between the power flow
+model and the full dynamic model.
+=#
+interf = interface_values(pfs)
+nothing #hide #md
+#=
+Lastly, we initialize the components one by one around the state prescribed by
+the power flow solution (i.e. we initialize the components, such that their
+steady state reproduces the bus voltages and currents from the power flow
+solution). For that we use [`initialize_componentwise!`](@extref NetworkDynamics.initialize_componentwise!).
 =#
 initialize_componentwise!(nw; default_overrides=interf)
 nothing #hide #md
 #=
-Even shorter, we can just use [`initialize_from_pf!`](@ref) to do everything from
-exporting the power flow model, finding the fixpoint and initializing all components:
+Since this init flow is so typical, there is a power dynamics specific wrapper around it.
+We can just use [`initialize_from_pf!`](@ref) to do everything from
+exporting the power flow model, finding the fixpoint and initializing all components based on the PF solution:
 =#
 s0 = initialize_from_pf!(nw)
