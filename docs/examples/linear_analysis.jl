@@ -42,6 +42,7 @@ using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 using NetworkDynamics
 using CairoMakie
+using Test #src
 
 @mtkmodel SyncMachineStatorDynamics begin
     @components begin
@@ -365,7 +366,7 @@ end;
 </div></details> #md
 ``` #md
 =#
-fig # hide
+fig # hide #md
 
 #=
 The results match what we get from SimplusGT for that system.
@@ -481,7 +482,7 @@ Gs = map([:sg1_bus, :sg2_bus, :gfm_bus, :gfl_bus]) do COMP
     cs = VIndex(COMP, :busbar₊i_r)
     G = NetworkDynamics.linearize_network(s0; in=vs, out=cs)
 end
-nothing # hide
+nothing # hide #md
 #=
 ```@raw html #md
 <details class="admonition is-details"> #md
@@ -665,6 +666,174 @@ Once again we match the results obtained from SimplusGT for the same analysis.
 =#
 
 #=
+## Open-Loop Decomposition (Alternative Approach)
+
+The analyses above linearize the *closed-loop* nonlinear system directly.
+An alternative — and sometimes more insightful — approach is to first
+**decompose** the network into open-loop subsystems, get a linear representation of those
+and then reconnect them using LTI feedback algebra.
+
+The function [`open_loop_linearization`](@extref NetworkDynamics.open_loop_linearization)
+splits the linearized system into three transfer-function blocks in double-feedback loop:
+
+```asciiart
+                     ╔══════════════════════╗
+                 ╭──→╢ "normal" Nodes Zbus  ╟→──╮
+ stacked         │   ╚══════════════════════╝   │ stacked
+ aggregated node │   ╭──────────────────────╮   │ node
+ flow input¹    (+)─←┤ Network Coupling Ynw ├←──┤ potentials¹
+                 │   ╰──────────────────────╯   │
+                 │   ╭──────────────────────╮   │
+                 ╰──←┤ Injector Nodes Yinj  ├←──╯
+                     ╰──────────────────────╯
+¹ Only considering "normal" i.e. non-injector nodes
+```
+
+- **`Zbus`**: the bus impedance (shunt vertices). Maps summed current injections → bus voltages.
+- **`Ynw`**: the network admittance (all transmission lines). Maps bus voltages → current injections.
+- **`Yinj`**: the injector admittance (device models connected via [`LoopbackConnection`](@extref NetworkDynamics.LoopbackConnection)). Maps bus voltages → current injections.
+
+The closed-loop system is recovered by placing `Zbus` in the forward path
+and the sum `Ynw + Yinj` in the feedback path:
+=#
+
+(; Ynw, Zbus, Yinj) = open_loop_linearization(s0)
+nothing #hide #md
+
+#=
+Each of these is a [`NetworkDescriptorSystem`](@extref NetworkDynamics.NetworkDescriptorSystem) and can be composed
+using the standard LTI operations `+`, `*`, and [`feedback`](@extref NetworkDynamics.feedback).
+
+To reconstruct the full closed-loop system:
+=#
+
+full_closed_loop = feedback(Zbus, Ynw + Yinj; pos=true)
+
+#=
+!!! note "Positive Feedback Convention"
+    We use `pos=true` here because the block diagram shows positive feedback:
+    the flows from `Ynw` and `Yinj` are *added* to the external input at the summing junction.
+
+The object `full_closed_loop` is again a `NetworkDescriptorSystem`. It is similar
+to the linearization we obtained earlier via `linearize_network`, just assembled differently.
+The only difference are the selected input/output channels.
+
+The `feedback` operator keeps the inputs/outputs from the forward pass.
+We can close the loop differently in order to reconstruct a full closed loop network
+with suitable inputs/outputs for the $Y_{dd}$ admittance again
+(i.e. device voltage perturbation to device current perturbation).
+
+```asciiart
+              ╭──────────────────────────────────╮
+δu_dq ╶───(+)→┤  Injector Nodes Yinj             ├→─┬────╴δi_dq
+           │  ╰──────────────────────────────────╯  │
+           │                                        │
+           │  ╔══════════════════════════════════╗  │
+           │  ║ NW + Shunt Impedance             ║  │
+           │  ║    ╔══════════════════════╗      ║  │
+           ╰────┬─←╢ "normal" Nodes Zbus  ╟←─(+)────╯
+              ║ │  ╚══════════════════════╝   │  ║
+              ║ │  ╭──────────────────────╮   │  ║
+              ║ ╰─→┤ Network Coupling Ynw ├→──╯  ║
+              ║    ╰──────────────────────╯      ║
+              ╚══════════════════════════════════╝
+```
+Which is equivalent to what happens in SimplusGT internally.
+=#
+nw_with_shunts = feedback(Zbus, Ynw; pos=true)              # close Zbus with network only
+inj_closed_loop = feedback(Yinj, nw_with_shunts; pos=true)  # close device with network+shunts
+
+#=
+### Sanity Check: Eigenvalue Comparison
+
+Let's verify that the closed-loop eigenvalues from the open-loop composition match the
+eigenvalues we computed earlier from the full nonlinear system.
+
+```@raw html #md
+<details class="admonition is-details"> #md
+<summary class="admonition-header">Sanity Check: Eigenvalue comparison (click to expand)</summary> #md
+<div class="admonition-body"> #md
+``` #md
+=#
+
+eigenvalues_ol = jacobian_eigenvals(full_closed_loop) ./ (2 * pi)
+let evs_sorted = sort(eigenvalues, by=ev->(round(imag(ev),digits=4), round(real(ev),digits=4))) #src
+    evs_ol_sorted = sort(eigenvalues_ol, by=ev->(round(imag(ev),digits=4), round(real(ev),digits=4))) #src
+    @test evs_sorted ≈ evs_ol_sorted rtol=1e-6 #src
+end #src
+fig = let
+    fig = Figure(size=(600,400))
+    ax = Axis(fig[1, 1], xlabel="Real Part [Hz]", ylabel="Imaginary Part [Hz]",
+              title="Eigenvalue Comparison: Direct vs Open-Loop Composition")
+    scatter!(ax, real.(eigenvalues), imag.(eigenvalues), marker=:xcross, markersize=14,
+             label="Direct (linearize_network)")
+    scatter!(ax, real.(eigenvalues_ol), imag.(eigenvalues_ol), marker=:circle, markersize=8,
+             label="Open-loop composition")
+    xlims!(ax, -80, 20); ylims!(ax, -150, 150)
+    axislegend(ax; position=:lt)
+    fig
+end
+nothing #hide #md
+#=
+```@raw html #md
+</div></details> #md
+``` #md
+=#
+fig #hide #md
+
+#=
+The eigenvalues match exactly, confirming that linearizing first and then composing
+via feedback gives the same result as linearizing the full closed-loop nonlinear system.
+
+### Sanity Check: ``Y_{dd}`` Bode Plot Comparison
+
+Similarly, we can verify the ``Y_{dd}`` admittance Bode plot. The `inj_closed_loop` system
+maps bus voltages to device current injections (a MIMO system with stacked dq channels for all 4 buses).
+We extract the `u_r → i_r` channel for Bus 1 and compare it to the direct ``Y_{dd}`` computed earlier.
+
+```@raw html #md
+<details class="admonition is-details"> #md
+<summary class="admonition-header">Sanity Check: Y_dd Bode comparison (click to expand)</summary> #md
+<div class="admonition-body"> #md
+``` #md
+=#
+
+fig = let
+    ## The inj_closed_loop channels use bus node indices (even numbers: 2,4,6,8).
+    ## Bus 1's bus node is vertex 2 in the network.
+    icl_in_r = findfirst(==(VIndex(2, :busbar₊u_r)), inj_closed_loop.insym)
+    icl_out_r = findfirst(==(VIndex(2, :busbar₊i_r)), inj_closed_loop.outsym)
+
+    fs = 10 .^ (range(log10(1e-1), log10(1e4); length=500))
+    jωs = 2π * fs * im
+
+    ## Direct Y_dd from earlier
+    gains_direct = map(s -> 20 * log10(abs(Gs[1](s))), jωs)
+    ## Open-loop composition: select the Bus 1 u_r → i_r element from inj_closed_loop
+    gains_ol = map(s -> 20 * log10(abs(inj_closed_loop(s)[icl_out_r, icl_in_r])), jωs)
+    @test gains_direct ≈ gains_ol rtol=1e-10 #src
+
+    fig = Figure(size=(600,300))
+    ax = Axis(fig[1, 1], xlabel="Frequency (rad/s)", ylabel="Gain (dB)",
+              title="Y_dd Bus 1: Direct vs Open-Loop", xscale=log10)
+    lines!(ax, fs, gains_direct; label="Direct", linewidth=3)
+    lines!(ax, fs, gains_ol; label="Open-loop composition", linewidth=2, linestyle=:dash)
+    axislegend(ax; position=:rt)
+    fig
+end
+nothing #hide #md
+#=
+```@raw html #md
+</div></details> #md
+``` #md
+=#
+fig #hide #md
+
+#=
+The Bode plots are identical, confirming the equivalence of both approaches.
+=#
+
+#=
 ## Time-Domain Simulation
 
 Since we have the full nonlinear model at hand, let's also do a time-domain simulation.
@@ -683,7 +852,7 @@ end
 short = PresetTimeComponentCallback([0.1, 0.2], affect)
 prob = ODEProblem(nw, s0, (0,30); add_comp_cb=VIndex(:bus1)=>short)
 sol = solve(prob, Rodas5P())
-nothing # hide
+nothing # hide #md
 
 #=
 Let's compare the results against a similar EMT simulation done in the Simulink model generated by SimplusGT.
@@ -788,7 +957,7 @@ fig = let
     axislegend(ax1; position=:rb)
     fig
 end
-nothing #hide
+nothing #hide #md
 #=
 ```@raw html #md
 </div></details> #md
@@ -862,7 +1031,7 @@ default_overrides = Dict(
     VIndex(5, :droop₊vsrc₊VC_KI) => 3.0*s0.v[:gfm_bus, :droop₊vsrc₊VC_KI]
 )
 s0_tuned = initialize_from_pf(nw; pfs, default_overrides, tol=1e-7, nwtol=1e-7)
-nothing # hide
+nothing # hide #md
 
 #=
 We can plot the new eigenvalues together with the old ones to see the effect of our tuning:
