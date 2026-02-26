@@ -19,6 +19,7 @@ jobs:
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
       actions: write
       contents: read
+      pull-requests: read
     strategy:
       fail-fast: false
       matrix:
@@ -39,6 +40,9 @@ jobs:
       - name: Load Julia packages from cache
         id: julia-cache
         uses: julia-actions/cache@v2
+      - uses: hexaeder/julia-buildpkg@main
+        with:
+          project: test
       - name: Test with specific test dep versions
         shell: julia --project=testenv --color=yes {0}
         run: |
@@ -97,7 +101,9 @@ jobs:
         run: |
           using Pkg
           Pkg.instantiate()
-      - uses: julia-actions/julia-buildpkg@v1
+      - uses: hexaeder/julia-buildpkg@main
+        with:
+          project: docs
       - uses: julia-actions/julia-docdeploy@v1
         # continue-on-error: true
         env:
