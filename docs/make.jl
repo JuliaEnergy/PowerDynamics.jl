@@ -36,7 +36,7 @@ for dir in (example_dir, tutorial_dir)
     end
 end
 
-kwargs = (;
+doc = makedocs(;
     # linear_analysis must run before ieee39_part4, because loading SciMLSensitivity
     # (used in part4) before linear_analysis breaks the linear analysis examples.
     # vs_and_cs_models.md also uses initialize_from_pf, so it needs to run before
@@ -86,26 +86,15 @@ kwargs = (;
         "https://marketplace.visualstudio.com/items?itemName=julialang.language-julia", # curl blocked?
         ],
     # FIXME temporarily disable the cross references check
-    warnonly=[:missing_docs, :external_cross_references],
+    warnonly=true,
+    debug=true, # return doc object
 )
-kwargs_warnonly = (; kwargs..., warnonly=true)
 
-if haskey(ENV,"GITHUB_ACTIONS")
-    success = true
-    thrown_ex = nothing
-    try
-        makedocs(; kwargs...)
-    catch e
-        @info "Strict doc build failed, try again with warnonly=true"
-        global success = false
-        global thrown_ex = e
-        makedocs(; kwargs_warnonly...)
-    end
-
+if haskey(ENV, "GITHUB_ACTIONS")
     deploydocs(; repo="github.com/JuliaEnergy/PowerDynamics.jl.git",
             devbranch="main", push_preview=true)
-
-    success || throw(thrown_ex)
-else # local build
-    makedocs(; kwargs_warnonly...)
+    errors = setdiff(doc.internal.errors, [:missing_docs])
+    if !isempty(errors)
+        error("makedocs encountered errors: $(errors)")
+    end
 end
