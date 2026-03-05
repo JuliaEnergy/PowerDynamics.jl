@@ -95,7 +95,7 @@ jobs:
         # main-branch build with GITHUB_REF="main" reused for a tag build).
         # Always wiping the artefact here lets julia-buildpkg re-precompile with
         # the correct GITHUB_REF_NAME for the current event (branch / tag / PR).
-        run: find "$HOME/.julia/compiled" -name "PowerDynamics*" -type f -delete -print
+        run: find "$HOME/.julia/compiled" -name "PowerDynamics*" -type f -delete -print 2>/dev/null || true
       - name: Configure doc environment
         shell: julia --project=docs --color=yes {0}
         run: |
