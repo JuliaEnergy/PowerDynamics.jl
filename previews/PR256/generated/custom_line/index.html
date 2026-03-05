@@ -261,23 +261,23 @@ new_edgemodels = protected_line_from_line.(old_edgemodels);</code></pre><p>We ca
  └─ 46 edges (1 unique type)
 Edge-Aggregation using SequentialAggregator(+)
 6 callback sets across 0 vertices and 46 edges</code></pre><p>... and initialize it!</p><pre><code class="language-julia hljs">s0_protected = initialize_from_pf!(nw_protected; verbose=false)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NWState{Vector{Float64}} of Network (39 vertices, 46 edges)
-  ├─ VIndex(1, :busbar₊u_i)                      =&gt; -0.1537005168018229
-  ├─ VIndex(1, :busbar₊u_r)                      =&gt; 1.0360171229045203
-  ├─ VIndex(2, :busbar₊u_i)                      =&gt; -0.10513936683885863
-  ├─ VIndex(2, :busbar₊u_r)                      =&gt; 1.0434526576051297
-  ├─ VIndex(5, :busbar₊u_i)                      =&gt; -0.15053530762365022
-  ├─ VIndex(5, :busbar₊u_r)                      =&gt; 0.993976368877831
-  ├─ VIndex(6, :busbar₊u_i)                      =&gt; -0.1393645217247641
-  ├─ VIndex(6, :busbar₊u_r)                      =&gt; 0.9979886162106123
+  ├─ VIndex(1, :busbar₊u_i)                      =&gt; -0.15370051680181876
+  ├─ VIndex(1, :busbar₊u_r)                      =&gt; 1.0360171229045214
+  ├─ VIndex(2, :busbar₊u_i)                      =&gt; -0.10513936683885401
+  ├─ VIndex(2, :busbar₊u_r)                      =&gt; 1.0434526576051306
+  ├─ VIndex(5, :busbar₊u_i)                      =&gt; -0.15053530762364778
+  ├─ VIndex(5, :busbar₊u_r)                      =&gt; 0.9939763688778301
+  ├─ VIndex(6, :busbar₊u_i)                      =&gt; -0.13936452172476174
+  ├─ VIndex(6, :busbar₊u_r)                      =&gt; 0.9979886162106114
   ⋮
-  ├─ VIndex(39, :machine₊terminal₊i_i)           =&gt; -2.538683831099698
-  ├─ VIndex(39, :machine₊terminal₊i_r)           =&gt; 9.410063917554226
-  ├─ VIndex(39, :machine₊ψ″_q)                   =&gt; -0.1505993365374145
+  ├─ VIndex(39, :machine₊terminal₊i_i)           =&gt; -2.538683831099678
+  ├─ VIndex(39, :machine₊terminal₊i_r)           =&gt; 9.410063917554245
+  ├─ VIndex(39, :machine₊ψ″_q)                   =&gt; -0.15059933653741467
   ├─ VIndex(39, :machine₊ψ″_d)                   =&gt; 1.0219450150609855
-  ├─ VIndex(39, :machine₊E′_d)                   =&gt; 0.10353704204613715
-  ├─ VIndex(39, :machine₊E′_q)                   =&gt; 1.029534387321863
+  ├─ VIndex(39, :machine₊E′_d)                   =&gt; 0.10353704204613726
+  ├─ VIndex(39, :machine₊E′_q)                   =&gt; 1.0295343873218632
   ├─ VIndex(39, :machine₊ω)                      =&gt; 1.0
-  └─ VIndex(39, :machine₊δ)                      =&gt; -0.0009449613162717396<span class="sgr90">
+  └─ VIndex(39, :machine₊δ)                      =&gt; -0.0009449613162678472<span class="sgr90">
  p = NWParameter([-3.22, -0.024, 1.03017, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, -5.0  …  0.97561, 1.0, 0.5, 1.0, 0.0, 0.0, 1.0, Inf, Inf, 0.1])
  t = nothing</span></code></pre><p>As a short sanity check, lets compare the initialized values of both networks: we do so by extracting the <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.interface_values"><code>interface_values</code></a> for both solutions (a dictionary of all currents and voltages (inputs and outputs of the models))) Then we compare their values.</p><pre><code class="language-julia hljs">collect(values(interface_values(s0))) ≈ collect(values(interface_values(s0_protected)))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><p>They are identical! If we would have made an error in our transmission line model, the steady state would be most certainly different.</p><h3 id="Simulate-with-the-Protected-Line-Models"><a class="docs-heading-anchor" href="#Simulate-with-the-Protected-Line-Models">Simulate with the Protected Line Models</a><a id="Simulate-with-the-Protected-Line-Models-1"></a><a class="docs-heading-anchor-permalink" href="#Simulate-with-the-Protected-Line-Models" title="Permalink"></a></h3><p>Now that we have our protected transmission line models ready, we need to configure them for the simulation. First, we set the current threshold <code>I_max</code> for overcurrent protection.</p><p>We set the threshold to 130% of the power flow solution:</p><pre><code class="language-julia hljs">AFFECTED_LINE = 24
 
@@ -312,8 +312,8 @@ set_callback!(nw_protected, EIndex(AFFECTED_LINE), (shortcircuit_cb, known_cbs..
 sol = solve(prob, Rodas5P());</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr36"><span class="sgr1">[ Info: </span></span>Short circuit activated on branch A of line 14→15 at t = 0.1s
 pibranchA of line 14→15 overcurrent at t=0.100001, scheduling cutoff at t=0.200001
 pibranchA of line 14→15 cutoff at t=0.200001
-pibranchB of line 14→15 overcurrent at t=1.6246088465309767, scheduling cutoff at t=1.7246088465309768
-pibranchB of line 14→15 cutoff at t=1.7246088465309768</code></pre><p>When we run this simulation, the console output will show that the short circuit on Branch A activates at t=0.1s and leads to a line shutdown at t=0.2s (after the 0.1s delay), which clears the fault. However, due to the introduced dynamics in the system, branch B of the affected line also experiences a current magnitude exceeding the threshold, which leads to a shutdown of the line at around 1.5 seconds.</p><p>Let&#39;s look at the current magnitude evolution during the simulation:</p><pre><code class="language-julia hljs">fig = let fig = Figure()
+pibranchB of line 14→15 overcurrent at t=1.624608846527958, scheduling cutoff at t=1.724608846527958
+pibranchB of line 14→15 cutoff at t=1.724608846527958</code></pre><p>When we run this simulation, the console output will show that the short circuit on Branch A activates at t=0.1s and leads to a line shutdown at t=0.2s (after the 0.1s delay), which clears the fault. However, due to the introduced dynamics in the system, branch B of the affected line also experiences a current magnitude exceeding the threshold, which leads to a shutdown of the line at around 1.5 seconds.</p><p>Let&#39;s look at the current magnitude evolution during the simulation:</p><pre><code class="language-julia hljs">fig = let fig = Figure()
     ax = Axis(fig[1, 1];
         title=&quot;Current Magnitude Across All Lines&quot;,
         xlabel=&quot;Time [s]&quot;,
@@ -346,4 +346,4 @@ pibranchB of line 14→15 cutoff at t=1.7246088465309768</code></pre><p>When we 
     fig
 end</code></pre><img src="bdb607b2.png" alt="Example block output"/><p>We can also zoom into the time range around the short circuit to see how the current of branch B crosses the threshold and the branch is disabled shortly after.</p><pre><code class="language-julia hljs">xlims!(0, 2)
 ylims!(0.8, 1.5)
-fig</code></pre><img src="09c96ce0.png" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../custom_bus/">« Custom Generator Bus</a><a class="docs-footer-nextpage" href="../ieee9bus/">IEEE 9-Bus Example »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Thursday 26 February 2026 14:24">Thursday 26 February 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+fig</code></pre><img src="09c96ce0.png" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../custom_bus/">« Custom Generator Bus</a><a class="docs-footer-nextpage" href="../ieee9bus/">IEEE 9-Bus Example »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Thursday 5 March 2026 21:45">Thursday 5 March 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Home · PowerDynamics.jl</title><meta name="title" content="Home · PowerDynamics.jl"/><meta property="og:title" content="Home · PowerDynamics.jl"/><meta property="twitter:title" content="Home · PowerDynamics.jl"/><meta name="description" content="Documentation for PowerDynamics.jl."/><meta property="og:description" content="Documentation for PowerDynamics.jl."/><meta property="twitter:description" content="Documentation for PowerDynamics.jl."/><meta property="og:url" content="https://juliaenergy.github.io/PowerDynamics.jl/"/><meta property="twitter:url" content="https://juliaenergy.github.io/PowerDynamics.jl/"/><link rel="canonical" href="https://juliaenergy.github.io/PowerDynamics.jl/"/><meta property="og:image" content="https://juliaenergy.github.io/PowerDynamics.jl/assets/preview.png"/><meta property="twitter:image" content="https://juliaenergy.github.io/PowerDynamics.jl/assets/preview.png"/><meta property="twitter:card" content="summary_large_image"/><script data-outdated-warner src="assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="search_index.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script><link href="assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href><img class="docs-light-only" src="assets/logo.svg" alt="PowerDynamics.jl logo"/><img class="docs-dark-only" src="assets/logo-dark.svg" alt="PowerDynamics.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href>PowerDynamics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li class="is-active"><a class="tocitem" href>Home</a><ul class="internal"><li><a class="tocitem" href="#Getting-Started"><span>Getting Started</span></a></li><li><a class="tocitem" href="#Reproducibility"><span>Reproducibility</span></a></li><li><a class="tocitem" href="#Funding"><span>Funding</span></a></li></ul></li><li><a class="tocitem" href="ModelingConcepts/">Modeling Concepts</a></li><li><a class="tocitem" href="initialization/">Initialization</a></li><li><a class="tocitem" href="Library/">Component Library</a></li><li><a class="tocitem" href="vs_and_cs_models/">On Voltage and Current Sources</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="julia_setup/">Julia Setup for New Users</a></li><li><a class="tocitem" href="generated/getting_started/">Getting Started</a></li><li><a class="tocitem" href="generated/typical_simulation_workflow/">Typical Simulation Workflow</a></li><li><a class="tocitem" href="generated/custom_bus/">Custom Generator Bus</a></li><li><a class="tocitem" href="generated/custom_line/">Custom Transmission Line</a></li></ul></li><li><span class="tocitem">Advanced Examples</span><ul><li><a class="tocitem" href="generated/ieee9bus/">IEEE 9-Bus Example</a></li><li><a class="tocitem" href="generated/ieee39_part1/">IEEE39 Part I: Modeling</a></li><li><a class="tocitem" href="generated/ieee39_part2/">IEEE39 Part II: Initialization</a></li><li><a class="tocitem" href="generated/ieee39_part3/">IEEE39 Part III: Simulation</a></li><li><a class="tocitem" href="generated/ieee39_part4/">IEEE39 Part IV: Parameter Tuning</a></li><li><a class="tocitem" href="generated/linear_analysis/">Linear Analysis of 4-Bus EMT System</a></li><li><a class="tocitem" href="generated/emt_toymodel/">EMT Toymodel</a></li><li><a class="tocitem" href="generated/zero_imp_breaker/">Zero-Impedance Circuit Breaker</a></li></ul></li><li><a class="tocitem" href="API/">API</a></li><li><a class="tocitem" href="networkdynamics_forward/">🔗 NetworkDynamics.jl Docs</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Home</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Home</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl/blob/main/docs/src/index.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="PowerDynamics"><a class="docs-heading-anchor" href="#PowerDynamics">PowerDynamics</a><a id="PowerDynamics-1"></a><a class="docs-heading-anchor-permalink" href="#PowerDynamics" title="Permalink"></a></h1><p>PowerDynamics.jl is a Julia package for modeling and simulating power grid dynamics. It provides a comprehensive framework for analyzing electrical power systems, including synchronous machines, loads, lines, and various control elements. The package is built on top of <a href="https://github.com/JuliaDynamics/NetworkDynamics.jl">NetworkDynamics.jl</a> and offers both predefined component models and the flexibility to create custom power system components.</p><div class="admonition is-warning" id="PowerDynamics.Library-Under-Active-Development-c4ba7ef4131baa47"><header class="admonition-header">PowerDynamics.Library Under Active Development<a class="admonition-anchor" href="#PowerDynamics.Library-Under-Active-Development-c4ba7ef4131baa47" title="Permalink"></a></header><div class="admonition-body"><p><strong>The PowerDynamics.Library component library is currently excluded from semantic versioning and is under heavy development.</strong></p><p>While PowerDynamics itself follows semantic versioning, the Library submodule&#39;s API is highly unstable and variable names, function signatures, and model interfaces may change frequently without notice. If you are using specific models from PowerDynamics.Library in their current state, we strongly recommend copying them to your own source code to avoid breaking changes in future updates.</p></div></div><h2 id="Getting-Started"><a class="docs-heading-anchor" href="#Getting-Started">Getting Started</a><a id="Getting-Started-1"></a><a class="docs-heading-anchor-permalink" href="#Getting-Started" title="Permalink"></a></h2><p>The documentation is roughly split into 3 parts: we have the reference and concepts documentation, which contains technical descriptions of different aspects of PowerDynamics.jl. We have the Tutorials, which are pedagogical examples which aim to show a specific aspect of working with the package and we have the advanced examples, which are less focused than the tutorials but also consist of copy-pastable examples showing different aspects of modeling and simulation.</p><p>If you&#39;re new to Julia, start with the <a href="julia_setup/#julia-setup">Julia Setup</a> guide to set up your development environment.</p><p>As a first step, it is advised to read through the <a href="generated/getting_started/#getting-started">Getting Started</a> tutorial to understand the core philosophy and SciML integration. Then, work through the <a href="generated/typical_simulation_workflow/#typical-simulation-workflow">Typical Simulation Workflow</a> tutorial for a hands-on walkthrough of building and simulating a power system. Afterwards, it&#39;s a good idea to read on the <a href="ModelingConcepts/#Modeling-Concepts">Modeling Concepts</a>.</p><p>It is also highly recommended to check out the docs on <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/">NetworkDynamics.jl</a> as those explain lots of the underlying functionality and concepts</p><h3 id="Reference-and-Concepts"><a class="docs-heading-anchor" href="#Reference-and-Concepts">Reference &amp; Concepts</a><a id="Reference-and-Concepts-1"></a><a class="docs-heading-anchor-permalink" href="#Reference-and-Concepts" title="Permalink"></a></h3><ul><li><strong><a href="ModelingConcepts/#Modeling-Concepts">Modeling Concepts</a></strong> - Learn the fundamental concepts behind PowerDynamics modeling</li><li><strong><a href="vs_and_cs_models/#vc-and-cs">On Voltage and Current Sources</a></strong> - Understand how voltage source and current source models interact with the network</li><li><strong><a href="Library/#Component-Library">Component Library</a></strong> - Explore the available power system component models</li><li><strong><a href="initialization/#Powergrid-Initialization">Powergrid Initialization</a></strong> - Understand how to properly initialize power system simulations</li><li><strong><a href="API/#API">API Reference</a></strong> - Complete function and type documentation</li></ul><h3 id="Tutorials"><a class="docs-heading-anchor" href="#Tutorials">Tutorials</a><a id="Tutorials-1"></a><a class="docs-heading-anchor-permalink" href="#Tutorials" title="Permalink"></a></h3><ul><li><strong><a href="julia_setup/#julia-setup">Julia Setup for New Users</a></strong> - Set up your Julia development environment for working with PowerDynamics.jl</li><li><strong><a href="generated/getting_started/#getting-started">Getting Started</a></strong> - Introduction to the core philosophy behind PowerDynamics.jl and its integration with the SciML ecosystem</li><li><strong><a href="generated/typical_simulation_workflow/#typical-simulation-workflow">Typical Simulation Workflow</a></strong> - Hands-on walkthrough of a small 3-bus example system, covering all stages from modeling to simulation</li><li><strong><a href="generated/custom_bus/#custom-bus">Custom Components</a></strong> - Shows how to implement Milano&#39;s classical synchronous machine model with a power system stabilizer (PSS)</li><li><strong><a href="generated/custom_line/#custom-line">Custom Transmission Lines</a></strong> - Demonstrates creating a PI-branch transmission line model with overcurrent protection that can trip during faults</li></ul><h3 id="Advanced-Examples"><a class="docs-heading-anchor" href="#Advanced-Examples">Advanced Examples</a><a id="Advanced-Examples-1"></a><a class="docs-heading-anchor-permalink" href="#Advanced-Examples" title="Permalink"></a></h3><ul><li><strong><a href="generated/ieee9bus/#ieee9bus">IEEE 9-Bus System</a></strong> - Simulates the complete 9-bus IEEE test system with synchronous generators and dynamic load changes</li><li><strong><a href="generated/ieee39_part1/#ieee39-part1">IEEE 39-Bus System Part 1</a></strong> - Shows how to build the 39-bus New England test system from custom CSV data files with proper component modeling</li><li><strong><a href="generated/ieee39_part2/#ieee39-part2">IEEE 39-Bus System Part 2</a></strong> - Demonstrates the detailed initialization process for the 39-bus system including power flow and initialization of dynamic models</li><li><strong><a href="generated/ieee39_part3/#ieee39-part3">IEEE 39-Bus System Part 3</a></strong> - Runs dynamic simulation of the 39-bus system with a short circuit disturbance and fault clearing</li><li><strong><a href="generated/ieee39_part4/#ieee39-part4">IEEE 39-Bus System Part 4</a></strong> - Implements a custom droop-controlled inverter model and performs parameter optimization using sensitivity analysis</li><li><strong><a href="generated/linear_analysis/#linear-analysis">Linear Analysis of a 4-Bus System</a></strong> - Performs linearization and eigenvalue analysis of a mixed SG/GFM/GFL EMT system and validates against reference results</li><li><strong><a href="generated/emt_toymodel/#emt-toymodel">EMT Toy Model Example</a></strong> - Demonstrates very basic EMT modeling using dynamic shunt capacitor and RL transmission line components in rotating dq coordinates</li><li><strong><a href="generated/zero_imp_breaker/#zero_imp_breaker">Zero-Impedance Circuit Breaker</a></strong> - Pedagogical example showing how to model switching components with zero-impedance connections.</li></ul><h2 id="Reproducibility"><a class="docs-heading-anchor" href="#Reproducibility">Reproducibility</a><a id="Reproducibility-1"></a><a class="docs-heading-anchor-permalink" href="#Reproducibility" title="Permalink"></a></h2><details><summary>Direct dependencies used for this documentation:</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr32"><span class="sgr1">Status</span></span> `~/work/PowerDynamics.jl/PowerDynamics.jl/docs/Project.toml`
   <span class="sgr90">[336ed68f] </span>CSV v0.10.16
-  <span class="sgr90">[13f3f980] </span>CairoMakie v0.15.8
+  <span class="sgr90">[13f3f980] </span>CairoMakie v0.15.9
   <span class="sgr90">[a93c6f00] </span>DataFrames v1.8.1
   <span class="sgr90">[459566f4] </span>DiffEqCallbacks v4.12.0
   <span class="sgr90">[e30172f5] </span>Documenter v1.17.0
   <span class="sgr90">[d12716ef] </span>DocumenterInterLinks v1.1.0
   <span class="sgr90">[b86e33f2] </span>FFTA v0.3.1
-  <span class="sgr90">[86223c79] </span>Graphs v1.13.4
+  <span class="sgr90">[86223c79] </span>Graphs v1.14.0
   <span class="sgr90">[682c06a0] </span>JSON v1.4.0
   <span class="sgr90">[98b081ad] </span>Literate v2.21.0
 <span class="sgr33">⌅</span> <span class="sgr90">[961ee093] </span>ModelingToolkit v10.32.1
 <span class="sgr32">⌃</span> <span class="sgr90">[16a59e39] </span>ModelingToolkitStandardLibrary v2.25.0
-  <span class="sgr90">[22e9dc34] </span>NetworkDynamics v0.10.16 `https://github.com/JuliaDynamics/NetworkDynamics.jl.git#hw/open_loop_linearization`
+  <span class="sgr90">[22e9dc34] </span>NetworkDynamics v0.10.16 `https://github.com/JuliaDynamics/NetworkDynamics.jl.git#main`
   <span class="sgr90">[7f7a1694] </span>Optimization v5.5.0
   <span class="sgr90">[42dfb2eb] </span>OptimizationOptimisers v0.3.16
   <span class="sgr90">[bac558e1] </span>OrderedCollections v1.8.1
@@ -30,9 +30,9 @@ Build Info:
   Official https://julialang.org/ release
 Platform Info:
   OS: Linux (x86_64-linux-gnu)
-  CPU: 4 × AMD EPYC 7763 64-Core Processor
+  CPU: 4 × Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz
   WORD_SIZE: 64
-  LLVM: libLLVM-16.0.6 (ORCJIT, znver3)
+  LLVM: libLLVM-16.0.6 (ORCJIT, icelake-server)
 Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)
 Environment:
   JULIA_PKG_SERVER_REGISTRY_PREFERENCE = eager</code></pre></details><details><summary>Full Manifest:</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr32"><span class="sgr1">Status</span></span> `~/work/PowerDynamics.jl/PowerDynamics.jl/docs/Manifest.toml`
@@ -41,7 +41,7 @@ Environment:
   <span class="sgr90">[621f4979] </span>AbstractFFTs v1.5.0
   <span class="sgr90">[1520ce14] </span>AbstractTrees v0.4.5
   <span class="sgr90">[7d9f7c33] </span>Accessors v0.1.43
-  <span class="sgr90">[79e6a3ab] </span>Adapt v4.4.0
+  <span class="sgr90">[79e6a3ab] </span>Adapt v4.5.0
   <span class="sgr90">[35492f91] </span>AdaptivePredicates v1.2.0
   <span class="sgr90">[66dad0bd] </span>AliasTables v1.1.3
   <span class="sgr90">[27a7e980] </span>Animations v0.4.2
@@ -57,13 +57,13 @@ Environment:
   <span class="sgr90">[e2ed5e7c] </span>Bijections v0.2.2
   <span class="sgr90">[62783981] </span>BitTwiddlingConvenienceFunctions v0.1.6
   <span class="sgr90">[8e7c35d0] </span>BlockArrays v1.9.3
-  <span class="sgr90">[70df07ce] </span>BracketingNonlinearSolve v1.10.0
+  <span class="sgr90">[70df07ce] </span>BracketingNonlinearSolve v1.11.0
   <span class="sgr90">[fa961155] </span>CEnum v0.5.0
   <span class="sgr90">[2a0fbf3d] </span>CPUSummary v0.2.7
   <span class="sgr90">[96374032] </span>CRlibm v1.0.2
   <span class="sgr90">[336ed68f] </span>CSV v0.10.16
   <span class="sgr90">[159f3aea] </span>Cairo v1.1.1
-  <span class="sgr90">[13f3f980] </span>CairoMakie v0.15.8
+  <span class="sgr90">[13f3f980] </span>CairoMakie v0.15.9
   <span class="sgr90">[7057c7e9] </span>Cassette v0.3.14
   <span class="sgr90">[082447d4] </span>ChainRules v1.73.0
   <span class="sgr90">[d360d2e6] </span>ChainRulesCore v1.26.0
@@ -82,7 +82,7 @@ Environment:
   <span class="sgr90">[34da2185] </span>Compat v4.18.1
   <span class="sgr90">[b152e2b5] </span>CompositeTypes v0.1.4
   <span class="sgr90">[a33af91c] </span>CompositionsBase v0.1.2
-  <span class="sgr90">[95dc2771] </span>ComputePipeline v0.1.6
+  <span class="sgr90">[95dc2771] </span>ComputePipeline v0.1.7
   <span class="sgr90">[2569d6c7] </span>ConcreteStructs v0.2.3
   <span class="sgr90">[88cd18e8] </span>ConsoleProgressMonitor v0.1.2
   <span class="sgr90">[187b0558] </span>ConstructionBase v1.6.0
@@ -94,7 +94,7 @@ Environment:
   <span class="sgr90">[864edb3b] </span>DataStructures v0.19.3
   <span class="sgr90">[e2d170a0] </span>DataValueInterfaces v1.0.0
   <span class="sgr90">[927a84f5] </span>DelaunayTriangulation v1.6.6
-  <span class="sgr90">[2b5f629d] </span>DiffEqBase v6.210.0
+  <span class="sgr90">[2b5f629d] </span>DiffEqBase v6.210.1
   <span class="sgr90">[459566f4] </span>DiffEqCallbacks v4.12.0
   <span class="sgr90">[77a26b50] </span>DiffEqNoiseProcess v5.27.0
   <span class="sgr90">[163ba53b] </span>DiffResults v1.1.0
@@ -141,7 +141,7 @@ Environment:
   <span class="sgr90">[d7ba0133] </span>Git v1.5.0
   <span class="sgr90">[c27321d9] </span>Glob v1.4.0
   <span class="sgr90">[a2bd30eb] </span>Graphics v1.1.3
-  <span class="sgr90">[86223c79] </span>Graphs v1.13.4
+  <span class="sgr90">[86223c79] </span>Graphs v1.14.0
   <span class="sgr90">[3955a311] </span>GridLayoutBase v0.11.2
   <span class="sgr90">[42e2da0e] </span>Grisu v1.0.2
   <span class="sgr90">[076d061b] </span>HashArrayMappedTries v0.2.0
@@ -154,7 +154,7 @@ Environment:
   <span class="sgr90">[a09fc81d] </span>ImageCore v0.10.5
   <span class="sgr90">[82e4d734] </span>ImageIO v0.6.9
   <span class="sgr90">[bc367c6b] </span>ImageMetadata v0.9.10
-  <span class="sgr90">[3263718b] </span>ImplicitDiscreteSolve v1.7.0
+  <span class="sgr90">[3263718b] </span>ImplicitDiscreteSolve v1.8.0
   <span class="sgr90">[9b13fd28] </span>IndirectArrays v1.0.0
   <span class="sgr90">[d25df0c9] </span>Inflate v0.1.5
   <span class="sgr90">[842dd82b] </span>InlineStrings v1.4.5
@@ -174,7 +174,7 @@ Environment:
   <span class="sgr90">[b835a17e] </span>JpegTurbo v0.1.6
   <span class="sgr90">[98e50ef6] </span>JuliaFormatter v2.3.0
 <span class="sgr33">⌅</span> <span class="sgr90">[70703baa] </span>JuliaSyntax v0.4.10
-  <span class="sgr90">[ccbc3e58] </span>JumpProcesses v9.22.2
+  <span class="sgr90">[ccbc3e58] </span>JumpProcesses v9.23.1
   <span class="sgr90">[63c18a36] </span>KernelAbstractions v0.9.40
   <span class="sgr90">[5ab0869b] </span>KernelDensity v0.6.11
   <span class="sgr90">[ba0b0d4f] </span>Krylov v0.10.5
@@ -186,13 +186,13 @@ Environment:
   <span class="sgr90">[8cdb02fc] </span>LazyModules v0.3.1
   <span class="sgr90">[1d6d02ad] </span>LeftChildRightSiblingTrees v0.2.1
   <span class="sgr90">[87fe0de2] </span>LineSearch v0.1.6
-  <span class="sgr90">[7ed4a6bd] </span>LinearSolve v3.59.1
+  <span class="sgr90">[7ed4a6bd] </span>LinearSolve v3.63.0
   <span class="sgr90">[98b081ad] </span>Literate v2.21.0
   <span class="sgr90">[2ab3a3ac] </span>LogExpFunctions v0.3.29
   <span class="sgr90">[e6f89c97] </span>LoggingExtras v1.2.0
   <span class="sgr90">[d8e11817] </span>MLStyle v0.4.17
   <span class="sgr90">[1914dd2f] </span>MacroTools v0.5.16
-  <span class="sgr90">[ee78f7c6] </span>Makie v0.24.8
+  <span class="sgr90">[ee78f7c6] </span>Makie v0.24.9
   <span class="sgr90">[d125e4d3] </span>ManualMemory v0.1.8
   <span class="sgr90">[dbb5928d] </span>MappedArrays v0.4.3
   <span class="sgr90">[d0879d2d] </span>MarkdownAST v0.1.3
@@ -210,10 +210,10 @@ Environment:
   <span class="sgr90">[872c559c] </span>NNlib v0.9.33
   <span class="sgr90">[77ba4419] </span>NaNMath v1.1.3
   <span class="sgr90">[f09324ee] </span>Netpbm v1.1.1
-  <span class="sgr90">[22e9dc34] </span>NetworkDynamics v0.10.16 `https://github.com/JuliaDynamics/NetworkDynamics.jl.git#hw/open_loop_linearization`
-<span class="sgr32">⌃</span> <span class="sgr90">[8913a72c] </span>NonlinearSolve v4.15.0
+  <span class="sgr90">[22e9dc34] </span>NetworkDynamics v0.10.16 `https://github.com/JuliaDynamics/NetworkDynamics.jl.git#main`
+  <span class="sgr90">[8913a72c] </span>NonlinearSolve v4.16.0
 <span class="sgr32">⌃</span> <span class="sgr90">[be0214bd] </span>NonlinearSolveBase v2.11.2
-<span class="sgr33">⌅</span> <span class="sgr90">[5959db7a] </span>NonlinearSolveFirstOrder v1.11.1
+  <span class="sgr90">[5959db7a] </span>NonlinearSolveFirstOrder v2.0.0
   <span class="sgr90">[9a2c21bd] </span>NonlinearSolveQuasiNewton v1.12.0
   <span class="sgr90">[26075421] </span>NonlinearSolveSpectralMethods v1.6.0
   <span class="sgr90">[d8793406] </span>ObjectFile v0.5.0
@@ -225,8 +225,8 @@ Environment:
   <span class="sgr90">[bca83a33] </span>OptimizationBase v5.0.0
   <span class="sgr90">[42dfb2eb] </span>OptimizationOptimisers v0.3.16
   <span class="sgr90">[bac558e1] </span>OrderedCollections v1.8.1
-  <span class="sgr90">[bbf590c4] </span>OrdinaryDiffEqCore v3.9.0
-  <span class="sgr90">[4302a76b] </span>OrdinaryDiffEqDifferentiation v2.1.0
+  <span class="sgr90">[bbf590c4] </span>OrdinaryDiffEqCore v3.16.0
+  <span class="sgr90">[4302a76b] </span>OrdinaryDiffEqDifferentiation v2.2.1
   <span class="sgr90">[127b3ac7] </span>OrdinaryDiffEqNonlinearSolve v1.23.0
   <span class="sgr90">[43230ef6] </span>OrdinaryDiffEqRosenbrock v1.25.0
   <span class="sgr90">[b1df2697] </span>OrdinaryDiffEqTsit5 v1.9.0
@@ -271,7 +271,7 @@ Environment:
   <span class="sgr90">[9dfe8606] </span>SCCNonlinearSolve v1.11.0
   <span class="sgr90">[fdea26ae] </span>SIMD v3.7.2
   <span class="sgr90">[94e857df] </span>SIMDTypes v0.1.0
-  <span class="sgr90">[0bca4576] </span>SciMLBase v2.144.2
+  <span class="sgr90">[0bca4576] </span>SciMLBase v2.148.0
   <span class="sgr90">[19f34311] </span>SciMLJacobianOperators v0.1.12
   <span class="sgr90">[a6db7da4] </span>SciMLLogging v1.9.1
   <span class="sgr90">[c0aeaf25] </span>SciMLOperators v1.15.1
@@ -291,7 +291,7 @@ Environment:
   <span class="sgr90">[a2af1166] </span>SortingAlgorithms v1.2.2
   <span class="sgr90">[9f842d2f] </span>SparseConnectivityTracer v1.2.1
   <span class="sgr90">[dc90abb0] </span>SparseInverseSubset v0.1.2
-  <span class="sgr90">[0a514795] </span>SparseMatrixColorings v0.4.23
+  <span class="sgr90">[0a514795] </span>SparseMatrixColorings v0.4.24
   <span class="sgr90">[e56a9233] </span>Sparspak v0.3.14
   <span class="sgr90">[276daf66] </span>SpecialFunctions v2.7.1
   <span class="sgr90">[860ef19b] </span>StableRNGs v1.0.4
@@ -322,7 +322,7 @@ Environment:
   <span class="sgr90">[5d786b92] </span>TerminalLoggers v0.1.7
   <span class="sgr90">[1c621080] </span>TestItems v1.0.0
   <span class="sgr90">[8290d209] </span>ThreadingUtilities v0.5.5
-  <span class="sgr90">[731e570b] </span>TiffImages v0.11.6
+  <span class="sgr90">[731e570b] </span>TiffImages v0.11.8
   <span class="sgr90">[a759f4b9] </span>TimerOutputs v0.5.29
   <span class="sgr90">[9f7883ad] </span>Tracker v0.2.38
   <span class="sgr90">[e689c965] </span>Tracy v0.1.6
@@ -455,4 +455,4 @@ Environment:
   <span class="sgr90">[8e850b90] </span>libblastrampoline_jll v5.11.0+0
   <span class="sgr90">[8e850ede] </span>nghttp2_jll v1.59.0+0
   <span class="sgr90">[3f19e933] </span>p7zip_jll v17.4.0+2
-<span class="sgr36"><span class="sgr1">Info</span></span> Packages marked with <span class="sgr32">⌃</span> and <span class="sgr33">⌅</span> have new versions available. Those with <span class="sgr32">⌃</span> may be upgradable, but those with <span class="sgr33">⌅</span> are restricted by compatibility constraints from upgrading. To see why use `status --outdated -m`</code></pre></details><h2 id="Funding"><a class="docs-heading-anchor" href="#Funding">Funding</a><a id="Funding-1"></a><a class="docs-heading-anchor-permalink" href="#Funding" title="Permalink"></a></h2><p>Development of this project was in part funded by the <em>German Federal Ministry for Economic Affairs and Climate Action</em> as part of the <em>OpPoDyn</em>-Project (Project ID 01258425/1, 2024-2027).</p><img src="assets/bmwk_logo_en.svg" width="300"/></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="ModelingConcepts/">Modeling Concepts »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Thursday 26 February 2026 14:24">Thursday 26 February 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+<span class="sgr36"><span class="sgr1">Info</span></span> Packages marked with <span class="sgr32">⌃</span> and <span class="sgr33">⌅</span> have new versions available. Those with <span class="sgr32">⌃</span> may be upgradable, but those with <span class="sgr33">⌅</span> are restricted by compatibility constraints from upgrading. To see why use `status --outdated -m`</code></pre></details><h2 id="Funding"><a class="docs-heading-anchor" href="#Funding">Funding</a><a id="Funding-1"></a><a class="docs-heading-anchor-permalink" href="#Funding" title="Permalink"></a></h2><p>Development of this project was in part funded by the <em>German Federal Ministry for Economic Affairs and Climate Action</em> as part of the <em>OpPoDyn</em>-Project (Project ID 01258425/1, 2024-2027).</p><img src="assets/bmwk_logo_en.svg" width="300"/></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="ModelingConcepts/">Modeling Concepts »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Thursday 5 March 2026 21:45">Thursday 5 March 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

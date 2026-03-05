@@ -33,6 +33,7 @@ using ModelingToolkit: t_nounits as t, D_nounits as Dt
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 using NetworkDynamics
+using NetworkDynamics: feedback
 using CairoMakie
 
 @mtkmodel SyncMachineStatorDynamics begin
