@@ -215,43 +215,43 @@ end</code></pre><h2 id="Network-Assembly-and-Initialization"><a class="docs-head
     [loop1, loop2, loop3, loop4, line12, line23, line31, line34]; warn_order=false)
 
 pfs = solve_powerflow(nw; abstol=1e-10, reltol=1e-10)
-s0 = initialize_from_pf!(nw; pfs, tol=1e-7, nwtol=1e-7)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Initialize VIndex(1) </span>-&gt; 2.1799178112553947e-14
-<span class="sgr1">Initialize VIndex(2) </span>-&gt; 6.683981394422974e-10
-<span class="sgr1">Initialize VIndex(3) </span>-&gt; 2.2640520624119103e-14
-<span class="sgr1">Initialize VIndex(4) </span>-&gt; 5.367131359191088e-10
-<span class="sgr1">Initialize VIndex(5) </span>-&gt; 9.164176282894048e-13
-<span class="sgr1">Initialize VIndex(6) </span>-&gt; 1.8521760972766347e-8
-<span class="sgr1">Initialize VIndex(7) </span>-&gt; 1.63745949118559e-13
-<span class="sgr1">Initialize VIndex(8) </span>-&gt; 1.5811023826206772e-8
+s0 = initialize_from_pf!(nw; pfs, tol=1e-7, nwtol=1e-7)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Initialize VIndex(1) </span>-&gt; 6.114655223365241e-15
+<span class="sgr1">Initialize VIndex(2) </span>-&gt; 4.2315738567606557e-10
+<span class="sgr1">Initialize VIndex(3) </span>-&gt; 2.2640520640733482e-14
+<span class="sgr1">Initialize VIndex(4) </span>-&gt; 5.120412652869021e-10
+<span class="sgr1">Initialize VIndex(5) </span>-&gt; 8.944416269384488e-13
+<span class="sgr1">Initialize VIndex(6) </span>-&gt; 1.17030094251339e-8
+<span class="sgr1">Initialize VIndex(7) </span>-&gt; 1.649300367088534e-12
+<span class="sgr1">Initialize VIndex(8) </span>-&gt; 1.41779809440649e-8
 <span class="sgr1">Initialize EIndex(1) </span>-&gt; 0.0
-<span class="sgr1">Initialize EIndex(2) </span>-&gt; 1.5593990275355747e-16
+<span class="sgr1">Initialize EIndex(2) </span>-&gt; 1.5757357078607168e-16
 <span class="sgr1">Initialize EIndex(3) </span>-&gt; 0.0
-<span class="sgr1">Initialize EIndex(4) </span>-&gt; 4.688169066113751e-15
+<span class="sgr1">Initialize EIndex(4) </span>-&gt; 6.240178189820104e-15
 <span class="sgr1">Initialize EIndex(5) </span>-&gt; 0.0
-<span class="sgr1">Initialize EIndex(6) </span>-&gt; 7.126568764716842e-15
-<span class="sgr1">Initialize EIndex(7) </span>-&gt; 2.842268519560941e-14
+<span class="sgr1">Initialize EIndex(6) </span>-&gt; 7.198844511193468e-15
+<span class="sgr1">Initialize EIndex(7) </span>-&gt; 4.019578521369299e-14
 <span class="sgr1">Initialize EIndex(8) </span>-&gt; 0.0
-Initialized network with residual 3.7005630676090934e-8!</code></pre><h2 id="Eigenvalue-Analysis"><a class="docs-heading-anchor" href="#Eigenvalue-Analysis">Eigenvalue Analysis</a><a id="Eigenvalue-Analysis-1"></a><a class="docs-heading-anchor-permalink" href="#Eigenvalue-Analysis" title="Permalink"></a></h2><p>The ND.jl function <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.jacobian_eigenvals"><code>jacobian_eigenvals</code></a> linearizes the system around an operation point, eliminates algebraic constraints via Schur complement, and returns the eigenvalues of the reduced state matrix. We divide by <span>$2\pi$</span> to convert from rad/s to Hz. We plot the eigenvalues in the complex plane to get the global pole map of the system.</p><pre><code class="language-julia hljs">eigenvalues = jacobian_eigenvals(s0) ./ (2 * pi)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">46-element Vector{ComplexF64}:
- -3.7426524047789145e6 - 49.99999999895495im
- -3.7426524047789145e6 + 49.99999999895495im
-  -2.998054079741758e6 - 50.00000000027044im
-  -2.998054079741758e6 + 50.00000000027044im
-  -2.997497907153572e6 - 49.999999999881354im
-  -2.997497907153572e6 + 49.999999999881354im
-   -205304.73448214208 - 50.00016871032713im
-   -205304.73448214208 + 50.00016871032713im
-    -45279.47355592106 - 49.99857780811944im
-    -45279.47355592106 + 49.99857780811944im
+Initialized network with residual 4.6211848419994314e-8!</code></pre><h2 id="Eigenvalue-Analysis"><a class="docs-heading-anchor" href="#Eigenvalue-Analysis">Eigenvalue Analysis</a><a id="Eigenvalue-Analysis-1"></a><a class="docs-heading-anchor-permalink" href="#Eigenvalue-Analysis" title="Permalink"></a></h2><p>The ND.jl function <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.jacobian_eigenvals"><code>jacobian_eigenvals</code></a> linearizes the system around an operation point, eliminates algebraic constraints via Schur complement, and returns the eigenvalues of the reduced state matrix. We divide by <span>$2\pi$</span> to convert from rad/s to Hz. We plot the eigenvalues in the complex plane to get the global pole map of the system.</p><pre><code class="language-julia hljs">eigenvalues = jacobian_eigenvals(s0) ./ (2 * pi)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">46-element Vector{ComplexF64}:
+ -3.7426524047789173e6 - 49.99999999865849im
+ -3.7426524047789173e6 + 49.99999999865849im
+  -2.998054079741754e6 - 49.99999999999252im
+  -2.998054079741754e6 + 49.99999999999252im
+   -2.99749790715357e6 - 49.99999999977018im
+   -2.99749790715357e6 + 49.99999999977018im
+   -205304.73448214168 - 50.000168710271545im
+   -205304.73448214168 + 50.000168710271545im
+   -45279.473555920966 - 49.998577808140304im
+   -45279.473555920966 + 49.998577808140304im
                        ⋮
-   -1.6666666666661598 + 50.000000000000234im
-   -1.6535848232917518 - 1.262982779768247im
-   -1.6535848232917518 + 1.262982779768247im
-    -1.507661038806366 + 0.0im
-   -0.2559252828281124 + 0.0im
- -0.007794285520644509 - 2.748665768814132im
- -0.007794285520644509 + 2.748665768814132im
- -6.267728802854419e-9 + 0.0im
-                  -0.0 + 0.0im</code></pre><details class="admonition is-details">
+   -1.6666666666670493 + 49.999999999999815im
+   -1.6535848233396733 - 1.2629827797815658im
+   -1.6535848233396733 + 1.2629827797815658im
+   -1.5076610387017564 + 0.0im
+  -0.25592529337267667 + 0.0im
+ -0.007794285519987495 - 2.7486657692270686im
+ -0.007794285519987495 + 2.7486657692270686im
+                  -0.0 + 0.0im
+  4.328144717208554e-9 + 0.0im</code></pre><details class="admonition is-details">
 <summary class="admonition-header">Plotting code: Pole Map</summary>
 <div class="admonition-body"><pre><code class="language-julia hljs">fig = let
     fig = Figure(size=(600,400))
@@ -292,7 +292,7 @@ end;</code></pre></div></details><img src="7e29bc52.png" alt="Example block outp
 )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">NetworkDescriptorSystem</span> with
  ├─ 46 states  
  ├─  1 input:  VIndex(:sg1_bus, :busbar₊u_r)
- └─  1 output: VIndex(:sg1_bus, :busbar₊i_r)</code></pre><p>The return value is a <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.NetworkDescriptorSystem"><code>NetworkDescriptorSystem</code></a>, which is a relatively simple wrapper around the matrices of a linearized system. In addition to accessing the matrices via <code>sys.A</code>, <code>sys.B</code>, <code>sys.C</code> and <code>sys.D</code>, the system also acts like a transfer function which can be evaluated at a complex frequency:</p><pre><code class="language-julia hljs">sys(im * 2π*50)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">19.448992762891464 - 2.065340289229313im</code></pre><p>NetworkDynamics/PowerDynamics itself does not provide lots of functionality around LTIs. However you may just access the system matrices <code>sys.A</code> and so on to construct systems from specialized libraries such as <a href="https://github.com/JuliaControl/ControlSystems.jl">ControlSystems.jl</a> or <a href="https://github.com/andreasvarga/DescriptorSystems.jl">DescriptorSystems.jl</a>, or you can directly work with the matrices for your own custom analysis. Since we just want to generate a bode plot, we avoid additional dependencies in this example and sample and plot the transferfunction manually.</p><p>First, we need to obtain the admittance transfer functions for all 4 devices, then we can generate the bode plot.</p><pre><code class="language-julia hljs">Gs = map([:sg1_bus, :sg2_bus, :gfm_bus, :gfl_bus]) do COMP
+ └─  1 output: VIndex(:sg1_bus, :busbar₊i_r)</code></pre><p>The return value is a <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.NetworkDescriptorSystem"><code>NetworkDescriptorSystem</code></a>, which is a relatively simple wrapper around the matrices of a linearized system. In addition to accessing the matrices via <code>sys.A</code>, <code>sys.B</code>, <code>sys.C</code> and <code>sys.D</code>, the system also acts like a transfer function which can be evaluated at a complex frequency:</p><pre><code class="language-julia hljs">sys(im * 2π*50)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">19.448992762891475 - 2.0653402892272394im</code></pre><p>NetworkDynamics/PowerDynamics itself does not provide lots of functionality around LTIs. However you may just access the system matrices <code>sys.A</code> and so on to construct systems from specialized libraries such as <a href="https://github.com/JuliaControl/ControlSystems.jl">ControlSystems.jl</a> or <a href="https://github.com/andreasvarga/DescriptorSystems.jl">DescriptorSystems.jl</a>, or you can directly work with the matrices for your own custom analysis. Since we just want to generate a bode plot, we avoid additional dependencies in this example and sample and plot the transferfunction manually.</p><p>First, we need to obtain the admittance transfer functions for all 4 devices, then we can generate the bode plot.</p><pre><code class="language-julia hljs">Gs = map([:sg1_bus, :sg2_bus, :gfm_bus, :gfl_bus]) do COMP
     vs = VIndex(COMP, :busbar₊u_r)
     cs = VIndex(COMP, :busbar₊i_r)
     G = NetworkDynamics.linearize_network(s0; in=vs, out=cs)
@@ -473,7 +473,7 @@ Clearing Short Circuit at Bus 1 at t=0.2s</code></pre><p>Let&#39;s compare the r
     lines!(ax3, ts, sol(ts, idxs=VIndex(:bus4, :busbar₊u_mag)).u; label=&quot;Bus 4&quot;)
     axislegend(ax1; position=:rb)
     fig
-end</code></pre></div></details><img src="f3142918.png" alt="Example block output"/><details class="admonition is-details is-success">
+end</code></pre></div></details><img src="55434de6.png" alt="Example block output"/><details class="admonition is-details is-success">
 <summary class="admonition-header">Reference: Short Circuit Response (click to reveal)</summary>
 <div class="admonition-body"><p><img src="../../assets/SimplusGTPlots/Voltage_Trajectory.png" alt="image"/></p></div></details><p>The initial state calculated by SimplusGT is slightly off, that&#39;s why we see some small oscillations in the MATLAB reference in the first 0.05 seconds. Besides that, we nicely replicate the results from SimplusGT, even for EMT transients.</p><h3 id="Identification-of-Critical-Eigenmodes"><a class="docs-heading-anchor" href="#Identification-of-Critical-Eigenmodes">Identification of Critical Eigenmodes</a><a id="Identification-of-Critical-Eigenmodes-1"></a><a class="docs-heading-anchor-permalink" href="#Identification-of-Critical-Eigenmodes" title="Permalink"></a></h3><p>In the time-domain simulation we see some relatively high oscillations of both inverter-based resources during the fault. Let&#39;s try to damp them! First, we need to identify the critical eigenmode here. For that we take the power spectrum of the magnitude of both affected buses and look for dominant frequencies.</p><p>We use basic NetworkDynamics functionality to sample <code>:busbar₊u_mag</code> for bus 3 and 4 in the first second. Then we perform a basic FFT on those to obtain the power spectrum:</p><pre><code class="language-julia hljs">using FFTA
 using Statistics
@@ -549,23 +549,23 @@ end</code></pre></div></details><img src="285b3c30.png" alt="Example block outpu
     VIndex(5, :droop₊vsrc₊VC_KP) =&gt; 3.0*s0.v[:gfm_bus, :droop₊vsrc₊VC_KP],
     VIndex(5, :droop₊vsrc₊VC_KI) =&gt; 3.0*s0.v[:gfm_bus, :droop₊vsrc₊VC_KI]
 )
-s0_tuned = initialize_from_pf(nw; pfs, default_overrides, tol=1e-7, nwtol=1e-7)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Initialize VIndex(1) </span>-&gt; 2.1799178112553947e-14
-<span class="sgr1">Initialize VIndex(2) </span>-&gt; 6.683981394422974e-10
-<span class="sgr1">Initialize VIndex(3) </span>-&gt; 2.2640520624119103e-14
-<span class="sgr1">Initialize VIndex(4) </span>-&gt; 5.367131359191088e-10
-<span class="sgr1">Initialize VIndex(5) </span>-&gt; 9.16417629970673e-13
-<span class="sgr1">Initialize VIndex(6) </span>-&gt; 1.8521760972766347e-8
-<span class="sgr1">Initialize VIndex(7) </span>-&gt; 1.63745949118559e-13
-<span class="sgr1">Initialize VIndex(8) </span>-&gt; 1.5811023826206772e-8
+s0_tuned = initialize_from_pf(nw; pfs, default_overrides, tol=1e-7, nwtol=1e-7)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Initialize VIndex(1) </span>-&gt; 6.114655223365241e-15
+<span class="sgr1">Initialize VIndex(2) </span>-&gt; 4.2315738567606557e-10
+<span class="sgr1">Initialize VIndex(3) </span>-&gt; 2.2640520640733482e-14
+<span class="sgr1">Initialize VIndex(4) </span>-&gt; 5.120412652869021e-10
+<span class="sgr1">Initialize VIndex(5) </span>-&gt; 8.944416269384488e-13
+<span class="sgr1">Initialize VIndex(6) </span>-&gt; 1.17030094251339e-8
+<span class="sgr1">Initialize VIndex(7) </span>-&gt; 1.649300367088534e-12
+<span class="sgr1">Initialize VIndex(8) </span>-&gt; 1.41779809440649e-8
 <span class="sgr1">Initialize EIndex(1) </span>-&gt; 0.0
-<span class="sgr1">Initialize EIndex(2) </span>-&gt; 1.5593990275355747e-16
+<span class="sgr1">Initialize EIndex(2) </span>-&gt; 1.5757357078607168e-16
 <span class="sgr1">Initialize EIndex(3) </span>-&gt; 0.0
-<span class="sgr1">Initialize EIndex(4) </span>-&gt; 4.688169066113751e-15
+<span class="sgr1">Initialize EIndex(4) </span>-&gt; 6.240178189820104e-15
 <span class="sgr1">Initialize EIndex(5) </span>-&gt; 0.0
-<span class="sgr1">Initialize EIndex(6) </span>-&gt; 7.126568764716842e-15
-<span class="sgr1">Initialize EIndex(7) </span>-&gt; 2.842268519560941e-14
+<span class="sgr1">Initialize EIndex(6) </span>-&gt; 7.198844511193468e-15
+<span class="sgr1">Initialize EIndex(7) </span>-&gt; 4.019578521369299e-14
 <span class="sgr1">Initialize EIndex(8) </span>-&gt; 0.0
-Initialized network with residual 3.7005630676090934e-8!</code></pre><p>We can plot the new eigenvalues together with the old ones to see the effect of our tuning:</p><details class="admonition is-details">
+Initialized network with residual 4.6211848419994314e-8!</code></pre><p>We can plot the new eigenvalues together with the old ones to see the effect of our tuning:</p><details class="admonition is-details">
 <summary class="admonition-header">Plotting code: Pole Map (Tuned)</summary>
 <div class="admonition-body"><pre><code class="language-julia hljs">fig = let
     fig = Figure(size=(600,400))
@@ -601,4 +601,4 @@ Clearing Short Circuit at Bus 1 at t=0.2s</code></pre><p>When we plot the tuned 
     end
     axislegend(ax2; position=:rb)
     fig
-end</code></pre></div></details><img src="cdd072ab.png" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ieee39_part4/">« IEEE39 Part IV: Parameter Tuning</a><a class="docs-footer-nextpage" href="../emt_toymodel/">EMT Toymodel »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Thursday 5 March 2026 21:45">Thursday 5 March 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre></div></details><img src="9b8d7fec.png" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ieee39_part4/">« IEEE39 Part IV: Parameter Tuning</a><a class="docs-footer-nextpage" href="../emt_toymodel/">EMT Toymodel »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Friday 6 March 2026 10:47">Friday 6 March 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

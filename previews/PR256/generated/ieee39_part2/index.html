@@ -44,31 +44,31 @@ powerflow_model(nw[EIndex(1)]) === nw[EIndex(1)]</code></pre><pre class="documen
   └─ VIndex(39, :busbar₊u_i) =&gt; 0.0<span class="sgr90">
  p = NWParameter([0.0, 0.0, 0.0, 0.0, -3.22, -0.024, -5.0, -1.84, 0.0, 0.0  …  0.97561, 1.0, 0.0, 0.0, 0.0, 0.0, 0.5, 1.0, 0.0, 0.0])
  t = nothing</span></code></pre><p>With the default state, we can call <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.find_fixpoint"><code>find_fixpoint</code></a>, which keeps <span>$p$</span> constant and tries to find an <span>$x$</span> such that the root-finding problem stated above is fulfilled:</p><pre><code class="language-julia hljs">pfs = find_fixpoint(pfnw, pfs0)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NWState{Vector{Float64}} of Network (39 vertices, 46 edges)
-  ├─ VIndex(1, :busbar₊u_i)  =&gt; -0.15370051680181876
-  ├─ VIndex(1, :busbar₊u_r)  =&gt; 1.0360171229045214
-  ├─ VIndex(2, :busbar₊u_i)  =&gt; -0.10513936683885401
-  ├─ VIndex(2, :busbar₊u_r)  =&gt; 1.0434526576051306
-  ├─ VIndex(3, :busbar₊u_i)  =&gt; -0.15402146042174716
-  ├─ VIndex(3, :busbar₊u_r)  =&gt; 1.0185938884459307
-  ├─ VIndex(4, :busbar₊u_i)  =&gt; -0.16752811347984048
+  ├─ VIndex(1, :busbar₊u_i)  =&gt; -0.1537005168018229
+  ├─ VIndex(1, :busbar₊u_r)  =&gt; 1.0360171229045203
+  ├─ VIndex(2, :busbar₊u_i)  =&gt; -0.10513936683885863
+  ├─ VIndex(2, :busbar₊u_r)  =&gt; 1.0434526576051297
+  ├─ VIndex(3, :busbar₊u_i)  =&gt; -0.15402146042175108
+  ├─ VIndex(3, :busbar₊u_r)  =&gt; 1.0185938884459298
+  ├─ VIndex(4, :busbar₊u_i)  =&gt; -0.16752811347984345
   ├─ VIndex(4, :busbar₊u_r)  =&gt; 0.989785207542011
   ⋮
-  ├─ VIndex(36, :busbar₊u_r) =&gt; 1.052299231576932
-  ├─ VIndex(36, :busbar₊u_i) =&gt; 0.1539437449765303
-  ├─ VIndex(37, :busbar₊u_r) =&gt; 1.0268824837830113
-  ├─ VIndex(37, :busbar₊u_i) =&gt; 0.04341808836807866
-  ├─ VIndex(38, :busbar₊u_r) =&gt; 1.0169838480457405
-  ├─ VIndex(38, :busbar₊u_i) =&gt; 0.13944918574007883
-  ├─ VIndex(39, :busbar₊u_r) =&gt; 1.0141861967677506
-  └─ VIndex(39, :busbar₊u_i) =&gt; -0.1797951594139664<span class="sgr90">
+  ├─ VIndex(36, :busbar₊u_r) =&gt; 1.0522992315769326
+  ├─ VIndex(36, :busbar₊u_i) =&gt; 0.15394374497652633
+  ├─ VIndex(37, :busbar₊u_r) =&gt; 1.0268824837830115
+  ├─ VIndex(37, :busbar₊u_i) =&gt; 0.043418088368074
+  ├─ VIndex(38, :busbar₊u_r) =&gt; 1.0169838480457412
+  ├─ VIndex(38, :busbar₊u_i) =&gt; 0.13944918574007406
+  ├─ VIndex(39, :busbar₊u_r) =&gt; 1.01418619676775
+  └─ VIndex(39, :busbar₊u_i) =&gt; -0.17979515941397015<span class="sgr90">
  p = NWParameter([0.0, 0.0, 0.0, 0.0, -3.22, -0.024, -5.0, -1.84, 0.0, 0.0  …  0.97561, 1.0, 0.0, 0.0, 0.0, 0.0, 0.5, 1.0, 0.0, 0.0])
  t = nothing</span></code></pre><p>As a result, we get a <code>NWState</code> object which contains the <strong>full state</strong> for the power flow model.</p><p>Since power flow model and dynamic model share the same topology and the same <em>network interface</em> (i.e. nodes create voltages, edges create currents), we can extract the interface values from the power flow model state and apply them to the dynamic model:</p><pre><code class="language-julia hljs">interf = interface_values(pfs)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">OrderedCollections.OrderedDict{NetworkDynamics.SymbolicIndex{Int64, Symbol}, Float64} with 524 entries:
-  VIndex(1, :busbar₊i_r) =&gt; -2.22045e-16
-  VIndex(1, :busbar₊i_i) =&gt; 1.20459e-14
+  VIndex(1, :busbar₊i_r) =&gt; 2.22045e-15
+  VIndex(1, :busbar₊i_i) =&gt; -1.58762e-14
   VIndex(1, :busbar₊u_r) =&gt; 1.03602
   VIndex(1, :busbar₊u_i) =&gt; -0.153701
-  VIndex(2, :busbar₊i_r) =&gt; -1.28786e-14
-  VIndex(2, :busbar₊i_i) =&gt; -1.42109e-14
+  VIndex(2, :busbar₊i_r) =&gt; -2.22045e-15
+  VIndex(2, :busbar₊i_i) =&gt; -9.54792e-15
   VIndex(2, :busbar₊u_r) =&gt; 1.04345
   VIndex(2, :busbar₊u_i) =&gt; -0.105139
   VIndex(3, :busbar₊i_r) =&gt; 3.08707
@@ -79,8 +79,8 @@ powerflow_model(nw[EIndex(1)]) === nw[EIndex(1)]</code></pre><pre class="documen
   VIndex(4, :busbar₊i_i) =&gt; -2.63842
   VIndex(4, :busbar₊u_r) =&gt; 0.989785
   VIndex(4, :busbar₊u_i) =&gt; -0.167528
-  VIndex(5, :busbar₊i_r) =&gt; -1.77636e-15
-  VIndex(5, :busbar₊i_i) =&gt; -5.24025e-14
+  VIndex(5, :busbar₊i_r) =&gt; 0.0
+  VIndex(5, :busbar₊i_i) =&gt; -2.22045e-14
   VIndex(5, :busbar₊u_r) =&gt; 0.993976
   ⋮                      =&gt; ⋮</code></pre><p>The interface values give us the <strong>inputs</strong> and <strong>outputs</strong> for every component in the network, i.e. for all buses we get values for</p><ul><li><code>busbar₊i_r</code> and <code>busbar₊i_i</code>: current input</li><li><code>busbar₊u_r</code> and <code>busbar₊u_i</code>: voltage output</li></ul><p>For all branches we get:</p><ul><li><code>src₊u_r</code> and <code>src₊u_i</code>: source side voltage input</li><li><code>dst₊u_r</code> and <code>dst₊u_i</code>: destination side voltage input</li><li><code>src₊i_r</code> and <code>src₊i_i</code>: source side current output</li><li><code>dst₊i_r</code> and <code>dst₊i_i</code>: destination side current output</li></ul><p>With those interface values fixed, we can go over to the second step of the initialization process: the initialization of the dynamic component.</p><h2 id="Initialization-of-Dynamic-Components"><a class="docs-heading-anchor" href="#Initialization-of-Dynamic-Components">Initialization of Dynamic Components</a><a id="Initialization-of-Dynamic-Components-1"></a><a class="docs-heading-anchor-permalink" href="#Initialization-of-Dynamic-Components" title="Permalink"></a></h2><p>Initialization of a bus model means, we want to find a <strong>steady state</strong> of the dynamics given the interface values from the power flow model.</p><p>Therefore, the equations for the bus models (recall from <a href="../../ModelingConcepts/#Modeling-Concepts">Modeling Concepts</a>) become</p><p class="math-container">\[\begin{aligned}
 M_{\mathrm v}\,\frac{\mathrm{d}}{\mathrm{d}t}x_{\mathrm v} = \color{red}{0} &amp;= f^{\mathrm v}\left(x^{\mathrm v}, \color{red}{\sum_k\begin{bmatrix}i^k_r\\ i^k_i\end{bmatrix}}, p_{\mathrm v}, t\right)\\
@@ -184,20 +184,20 @@ initialize_component(gen; default_overrides=interf_v30)</code></pre><pre class="
    - ctrld_gen₊machine₊δ (guess=0.0)
    - ctrld_gen₊avr₊vref (guess=1.0)
    - ctrld_gen₊gov₊p_ref (guess=1.0)
- - Initialization successful with residual 2.2361642522587527e-14
+ - Initialization successful with residual 2.2358126609832515e-14
    - ctrld_gen₊gov₊τ_m₊u =&gt; 0.2500007071212
    - ctrld_gen₊gov₊xg1 =&gt; 0.2500007071212
    - ctrld_gen₊gov₊xg2 =&gt; 0.2500007071212
    - ctrld_gen₊avr₊vfout =&gt; 1.2089294414023377
-   - ctrld_gen₊avr₊v_fb =&gt; 9.911536314204906e-23
+   - ctrld_gen₊avr₊v_fb =&gt; 7.232678053079793e-23
    - ctrld_gen₊avr₊vr =&gt; -0.05863307790801338
    - ctrld_gen₊avr₊vm =&gt; 1.0475029036205294
-   - ctrld_gen₊machine₊ψ″_q =&gt; -0.12223407988697593
+   - ctrld_gen₊machine₊ψ″_q =&gt; -0.1222340798869759
    - ctrld_gen₊machine₊ψ″_d =&gt; 1.0583265036403948
-   - ctrld_gen₊machine₊E′_d =&gt; 0.04110526546035268
+   - ctrld_gen₊machine₊E′_d =&gt; 0.04110526546035266
    - ctrld_gen₊machine₊E′_q =&gt; 1.090168268034709
    - ctrld_gen₊machine₊ω =&gt; 1.0
-   - ctrld_gen₊machine₊δ =&gt; 0.08480526654610776
+   - ctrld_gen₊machine₊δ =&gt; 0.08480526654610773
    - ctrld_gen₊avr₊vref =&gt; 1.0357762880389267
    - ctrld_gen₊gov₊p_ref =&gt; 0.012500035356059999</code></pre><div class="admonition is-info" id="Mutating-vs-non-mutating-Initialization-f4e5ff2b80c318cb"><header class="admonition-header">Mutating vs non-mutating Initialization<a class="admonition-anchor" href="#Mutating-vs-non-mutating-Initialization-f4e5ff2b80c318cb" title="Permalink"></a></header><div class="admonition-body"><p>The non mutating <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.initialize_component"><code>initialize_component</code></a> returns a dictionary containing a full initialized component state. That can be useful for certain purposes, often it is easier to work with the <em>mutating</em> version of initialization function, which will write the initialized values back to the component metadata (i.e setting the <code>:init</code> property for the symbols).</p></div></div><p>Let&#39;s call the mutating <code>initialize_component!</code> function to write the initialized values back to the component and inspect the initial state using <code>dump_initial_state</code>:</p><pre><code class="language-julia hljs">initialize_component!(gen; default_overrides=interf_v30)
 dump_initial_state(gen; obs=false)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"> - Set additional default for busbar₊u_r: 1.04573
@@ -221,20 +221,20 @@ dump_initial_state(gen; obs=false)</code></pre><pre class="documenter-example-ou
    - ctrld_gen₊machine₊δ (guess=0.0)
    - ctrld_gen₊avr₊vref (guess=1.0)
    - ctrld_gen₊gov₊p_ref (guess=1.0)
- - Initialization successful with residual 2.2361642522587527e-14
+ - Initialization successful with residual 2.2358126609832515e-14
    - ctrld_gen₊gov₊τ_m₊u =&gt; 0.2500007071212
    - ctrld_gen₊gov₊xg1 =&gt; 0.2500007071212
    - ctrld_gen₊gov₊xg2 =&gt; 0.2500007071212
    - ctrld_gen₊avr₊vfout =&gt; 1.2089294414023377
-   - ctrld_gen₊avr₊v_fb =&gt; 9.911536314204906e-23
+   - ctrld_gen₊avr₊v_fb =&gt; 7.232678053079793e-23
    - ctrld_gen₊avr₊vr =&gt; -0.05863307790801338
    - ctrld_gen₊avr₊vm =&gt; 1.0475029036205294
-   - ctrld_gen₊machine₊ψ″_q =&gt; -0.12223407988697593
+   - ctrld_gen₊machine₊ψ″_q =&gt; -0.1222340798869759
    - ctrld_gen₊machine₊ψ″_d =&gt; 1.0583265036403948
-   - ctrld_gen₊machine₊E′_d =&gt; 0.04110526546035268
+   - ctrld_gen₊machine₊E′_d =&gt; 0.04110526546035266
    - ctrld_gen₊machine₊E′_q =&gt; 1.090168268034709
    - ctrld_gen₊machine₊ω =&gt; 1.0
-   - ctrld_gen₊machine₊δ =&gt; 0.08480526654610776
+   - ctrld_gen₊machine₊δ =&gt; 0.08480526654610773
    - ctrld_gen₊avr₊vref =&gt; 1.0357762880389267
    - ctrld_gen₊gov₊p_ref =&gt; 0.012500035356059999
 <span class="sgr1">Inputs:</span>
@@ -243,7 +243,7 @@ dump_initial_state(gen; obs=false)</code></pre><pre class="documenter-example-ou
 <span class="sgr1">States:</span>
   busbar₊u_i                     = <span class="sgr34">-0.060919</span>
   busbar₊u_r                     = <span class="sgr34"> 1.0457</span>
-  ctrld_gen₊avr₊v_fb             = <span class="sgr33"> 9.9115e-23</span> (guess  0)
+  ctrld_gen₊avr₊v_fb             = <span class="sgr33"> 7.2327e-23</span> (guess  0)
   ctrld_gen₊avr₊vfout            = <span class="sgr33"> 1.2089</span>     (guess  1) (bounds 0.0..Inf)
   ctrld_gen₊avr₊vm               = <span class="sgr33"> 1.0475</span>     (guess  1)
   ctrld_gen₊avr₊vr               = <span class="sgr33">-0.058633</span>   (guess  0)
@@ -359,15 +359,15 @@ initialize_component!(vm_manual)</code></pre><pre class="documenter-example-outp
    - machine₊δ (guess=0.0)
    - machine₊vf_set (guess=1.0)
    - machine₊τ_m_set (guess=1.0)
- - Initialization successful with residual 1.814553427419503e-15
-   - machine₊terminal₊i_i =&gt; -2.5386611539413724
+ - Initialization successful with residual 1.3004649587409996e-15
+   - machine₊terminal₊i_i =&gt; -2.538661153941371
    - machine₊terminal₊i_r =&gt; 9.410031019165157
    - machine₊ψ″_q =&gt; -0.15059882743968386
    - machine₊ψ″_d =&gt; 1.0219488157577499
    - machine₊E′_d =&gt; 0.10353669204145349
    - machine₊E′_q =&gt; 1.0295381077888894
    - machine₊ω =&gt; 1.0
-   - machine₊δ =&gt; -0.0009453966114083919
+   - machine₊δ =&gt; -0.0009453966114083882
    - machine₊vf_set =&gt; 1.0649548005163987
    - machine₊τ_m_set =&gt; 0.099999979415</code></pre><p>The initialization succeeded now!</p><div class="admonition is-info" id="No-more-default_overrides-d1d2d98c65ddf3b3"><header class="admonition-header">No more default_overrides<a class="admonition-anchor" href="#No-more-default_overrides-d1d2d98c65ddf3b3" title="Permalink"></a></header><div class="admonition-body"><p>Note how we can skip the <code>default_overrides</code> keyword argument, since the first (failing) call of <code>initialize_component!</code> already &quot;burned in&quot; the default overrides! Mutating state is a powerful tool, but it needs care!</p></div></div><h3 id="Method-2:-Adding-an-init_formula"><a class="docs-heading-anchor" href="#Method-2:-Adding-an-init_formula">Method 2: Adding an <code>init_formula</code></a><a id="Method-2:-Adding-an-init_formula-1"></a><a class="docs-heading-anchor-permalink" href="#Method-2:-Adding-an-init_formula" title="Permalink"></a></h3><p>The problem with the previous method is that it is quite manual. In reality, we would never go through this very manual initialization process. The fact that the model is structurally underconstrained is a property of the model and should therefore be handled by the model. To do so, NetworkDynamics.jl provides the <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.InitFormula"><code>InitFormula</code></a> mechanism.</p><p>An <code>InitFormula</code> is a symbolic formula that is evaluated during the initialization process. It is attached to the VertexModel so it can be evaluated automatically during the initialization process. The &quot;formula&quot; we want to apply is simply the equation</p><p class="math-container">\[V_\mathrm{set} = \sqrt{u_r^2 + u_i^2}\]</p><pre><code class="language-julia hljs">vm_formula = copy(nw[VIndex(39)])
 formula = @initformula :ZIPLoad₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
@@ -391,15 +391,15 @@ set_initformula!(vm_formula, formula)</code></pre><pre class="documenter-example
    - machine₊δ (guess=0.0)
    - machine₊vf_set (guess=1.0)
    - machine₊τ_m_set (guess=1.0)
- - Initialization successful with residual 1.814553427419503e-15
-   - machine₊terminal₊i_i =&gt; -2.5386611539413724
+ - Initialization successful with residual 1.3004649587409996e-15
+   - machine₊terminal₊i_i =&gt; -2.538661153941371
    - machine₊terminal₊i_r =&gt; 9.410031019165157
    - machine₊ψ″_q =&gt; -0.15059882743968386
    - machine₊ψ″_d =&gt; 1.0219488157577499
    - machine₊E′_d =&gt; 0.10353669204145349
    - machine₊E′_q =&gt; 1.0295381077888894
    - machine₊ω =&gt; 1.0
-   - machine₊δ =&gt; -0.0009453966114083919
+   - machine₊δ =&gt; -0.0009453966114083882
    - machine₊vf_set =&gt; 1.0649548005163987
    - machine₊τ_m_set =&gt; 0.099999979415</code></pre><p>The init formula is applied early in the initialization process, essentially writing a new <code>default</code> for <code>ZIPLoad₊Vset</code> based on the other defaults.</p><p>This reduced the number of free variables to 10, thus the system was solvable.</p><h3 id="Method-3:-Using-an-InitConstraint"><a class="docs-heading-anchor" href="#Method-3:-Using-an-InitConstraint">Method 3: Using an <code>InitConstraint</code></a><a id="Method-3:-Using-an-InitConstraint-1"></a><a class="docs-heading-anchor-permalink" href="#Method-3:-Using-an-InitConstraint" title="Permalink"></a></h3><p>Sometimes, your additional initialization needs are more complicated. Similar to defining a <em>formula</em>, which is evaluated <em>before</em> the actual initialization, NetworkDynamics provides a mechanism for injecting additional constraints into the initialization process.</p><p>In contrast to the formula, the constraint does not need to be explicitly solvable, as it defines a residual equation</p><p class="math-container">\[0 = c(x) = V_\mathrm{set} - \sqrt{u_r^2 + u_i^2}\]</p><pre><code class="language-julia hljs">vm_constraint = copy(nw[VIndex(39)])
 constraint = @initconstraint begin
@@ -433,28 +433,28 @@ set_initconstraint!(vm_constraint, constraint)</code></pre><pre class="documente
    - machine₊E′_d =&gt; 0.10353669204145349
    - machine₊E′_q =&gt; 1.0295381077888897
    - machine₊ω =&gt; 1.0
-   - machine₊δ =&gt; -0.0009453966114083653
+   - machine₊δ =&gt; -0.0009453966114083674
    - machine₊vf_set =&gt; 1.0649548005163991
    - machine₊τ_m_set =&gt; 0.09999997941499997
    - ZIPLoad₊Vset =&gt; 1.0300036884035901</code></pre><p>For this particular case, method (2) is the way to go. However there are cases where the constraint is more complex and cannot be expressed as a formula.</p><p>See NetworkDynamics docs on <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/initialization/#Advanced-Component-Initialization%3A-Formulas-and-Constraints">Advanced Component Initialization: Formulas and Constraints</a> and the PowerDynamics specific extension <a href="../../initialization/#Advanced-Component-Initialization">Advanced Component Initialization</a> for more information on method 2 and 3.</p><h2 id="initialize-all-components"><a class="docs-heading-anchor" href="#initialize-all-components">Automatic Initialization of Full Network</a><a id="initialize-all-components-1"></a><a class="docs-heading-anchor-permalink" href="#initialize-all-components" title="Permalink"></a></h2><p>Let&#39;s return from our excursion into individual component initialization and focus on the whole network again. As we&#39;ve just seen, we have structurally underconstrained components in the network. Let&#39;s define the init formulas for the two buses which have loads and machines:</p><pre><code class="language-julia hljs">formula = @initformula :ZIPLoad₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
 set_initformula!(nw[VIndex(31)], formula)
 set_initformula!(nw[VIndex(39)], formula)</code></pre><p>With that, the componentwise initialization of the whole network is possible.</p><p>We start by with <a href="../../API/#PowerDynamics.solve_powerflow"><code>solve_powerflow</code></a>, which extracts the powerflow models from each component, builds the (static) power flow network and solves the problem using a root-finding algorithm.</p><pre><code class="language-julia hljs">pfs = solve_powerflow(nw)</code></pre><p>Next, we get the voltages and the currents at the buses from the powerflow state. Those <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.interface_values"><code>interface_values</code></a> are the shared state between the power flow model and the full dynamic model.</p><pre><code class="language-julia hljs">interf = interface_values(pfs)</code></pre><p>Lastly, we initialize the components one by one around the state prescribed by the power flow solution (i.e. we initialize the components, such that their steady state reproduces the bus voltages and currents from the power flow solution). For that we use <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.initialize_componentwise%21"><code>initialize_componentwise!</code></a>.</p><pre><code class="language-julia hljs">initialize_componentwise!(nw; default_overrides=interf)</code></pre><p>Since this init flow is so typical, there is a power dynamics specific wrapper around it. We can just use <a href="../../API/#PowerDynamics.initialize_from_pf!"><code>initialize_from_pf!</code></a> to do everything from exporting the power flow model, finding the fixpoint and initializing all components based on the PF solution:</p><pre><code class="language-julia hljs">s0 = initialize_from_pf!(nw)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NWState{Vector{Float64}} of Network (39 vertices, 46 edges)
-  ├─ VIndex(1, :busbar₊u_i)                      =&gt; -0.15370051680181876
-  ├─ VIndex(1, :busbar₊u_r)                      =&gt; 1.0360171229045214
-  ├─ VIndex(2, :busbar₊u_i)                      =&gt; -0.10513936683885401
-  ├─ VIndex(2, :busbar₊u_r)                      =&gt; 1.0434526576051306
-  ├─ VIndex(5, :busbar₊u_i)                      =&gt; -0.15053530762364778
-  ├─ VIndex(5, :busbar₊u_r)                      =&gt; 0.9939763688778301
-  ├─ VIndex(6, :busbar₊u_i)                      =&gt; -0.13936452172476174
-  ├─ VIndex(6, :busbar₊u_r)                      =&gt; 0.9979886162106114
+  ├─ VIndex(1, :busbar₊u_i)                      =&gt; -0.1537005168018229
+  ├─ VIndex(1, :busbar₊u_r)                      =&gt; 1.0360171229045203
+  ├─ VIndex(2, :busbar₊u_i)                      =&gt; -0.10513936683885863
+  ├─ VIndex(2, :busbar₊u_r)                      =&gt; 1.0434526576051297
+  ├─ VIndex(5, :busbar₊u_i)                      =&gt; -0.15053530762365022
+  ├─ VIndex(5, :busbar₊u_r)                      =&gt; 0.993976368877831
+  ├─ VIndex(6, :busbar₊u_i)                      =&gt; -0.1393645217247641
+  ├─ VIndex(6, :busbar₊u_r)                      =&gt; 0.9979886162106123
   ⋮
-  ├─ VIndex(39, :machine₊terminal₊i_i)           =&gt; -2.538683831099678
-  ├─ VIndex(39, :machine₊terminal₊i_r)           =&gt; 9.410063917554245
-  ├─ VIndex(39, :machine₊ψ″_q)                   =&gt; -0.15059933653741467
+  ├─ VIndex(39, :machine₊terminal₊i_i)           =&gt; -2.5386838310996986
+  ├─ VIndex(39, :machine₊terminal₊i_r)           =&gt; 9.410063917554226
+  ├─ VIndex(39, :machine₊ψ″_q)                   =&gt; -0.1505993365374145
   ├─ VIndex(39, :machine₊ψ″_d)                   =&gt; 1.0219450150609855
-  ├─ VIndex(39, :machine₊E′_d)                   =&gt; 0.10353704204613726
-  ├─ VIndex(39, :machine₊E′_q)                   =&gt; 1.0295343873218632
+  ├─ VIndex(39, :machine₊E′_d)                   =&gt; 0.10353704204613715
+  ├─ VIndex(39, :machine₊E′_q)                   =&gt; 1.029534387321863
   ├─ VIndex(39, :machine₊ω)                      =&gt; 1.0
-  └─ VIndex(39, :machine₊δ)                      =&gt; -0.0009449613162678472<span class="sgr90">
+  └─ VIndex(39, :machine₊δ)                      =&gt; -0.0009449613162717244<span class="sgr90">
  p = NWParameter([-3.22, -0.024, 1.03017, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, -5.0  …  0.97561, 1.0, 0.0, 0.0, 0.0, 0.0, 0.5, 1.0, 0.0, 0.0])
- t = nothing</span></code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ieee39_part1/">« IEEE39 Part I: Modeling</a><a class="docs-footer-nextpage" href="../ieee39_part3/">IEEE39 Part III: Simulation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Thursday 5 March 2026 21:45">Thursday 5 March 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ t = nothing</span></code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ieee39_part1/">« IEEE39 Part I: Modeling</a><a class="docs-footer-nextpage" href="../ieee39_part3/">IEEE39 Part III: Simulation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Friday 6 March 2026 10:47">Friday 6 March 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
