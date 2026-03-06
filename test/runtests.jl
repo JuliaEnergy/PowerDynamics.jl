@@ -19,6 +19,7 @@ using Main.PowerDynamicsTesting
     @testset "Package Quality Tests" begin
         @info "Begin Package quatlity tests"
         Aqua.test_all(PowerDynamics;
+            deps_compat=VERSION ≥ v"1.11", # don't check compat on LTS
             ambiguities=false,
             persistent_tasks=false)
         @test_broken isempty(Docs.undocumented_names(PowerDynamics))
