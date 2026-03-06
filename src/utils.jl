@@ -157,7 +157,7 @@ const GITHUB_REF = let
     else
         projecttoml = read(joinpath(pkgdir(PowerDynamics), "Project.toml"), String)
         versionstring = match(r"version\s?=\s?\"(.*)\"", projecttoml)[1]
-        "v"*versionstring
+        "v" * string(VersionNumber(versionstring))
     end
 end
 """
