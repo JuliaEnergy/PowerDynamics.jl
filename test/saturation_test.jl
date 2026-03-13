@@ -339,7 +339,7 @@ end
     int = (; in=0.0, out=0.0, res=0.0)
     lag = (; in=1.5, out=1.0, res=1.0)
     @test_broken test_init(vms[:callback], int, lag, verbose=false) # callbacks do not respect bounds
-    @test_broken test_init(vms[:complementary], int, lag, tol=1e-7)
+    @test test_init(vms[:complementary], int, lag, tol=1e-7)
     @test test_init(vms[:rhs_hard], int, lag)
     @test test_init(vms[:rhs_soft], int, lag, tol=1e-7) # soft rhs might lead to reduce accuracy
 
@@ -347,7 +347,7 @@ end
     int = (; in=1, out=1.0, res=1.0)
     lag = (; in=0, out=0.0, res=0.0)
     @test_broken test_init(vms[:callback], int, lag, verbose=false) # callbacks do not respect bounds
-    @test_broken test_init(vms[:complementary], int, lag, tol=1e-7)
+    @test test_init(vms[:complementary], int, lag, tol=1e-7)
     @test test_init(vms[:rhs_hard], int, lag)
     @test test_init(vms[:rhs_soft], int, lag, tol=1e-6) # soft rhs might lead to reduce accuracy
 
@@ -355,7 +355,7 @@ end
     int = (; in=-1.0, out=-0.5, res=-0.5)
     lag = (; in=-1.0, out=-0.5, res=-0.5)
     @test_broken test_init(vms[:callback], int, lag, verbose=false) # callbacks do not respect bounds
-    @test_broken test_init(vms[:complementary], int, lag, tol=1e-7)
+    @test test_init(vms[:complementary], int, lag, tol=1e-7)
     @test test_init(vms[:rhs_hard], int, lag)
     @test test_init(vms[:rhs_soft], int, lag, tol=1e-6) # soft rhs might lead to reduce accuracy
 end
