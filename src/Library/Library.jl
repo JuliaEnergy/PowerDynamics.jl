@@ -10,8 +10,7 @@ using ModelingToolkitBase: ModelingToolkitBase, @named, simplify, t_nounits as t
 using ModelingToolkitBase: @variables, @parameters, @unpack, Num, System, Equation, connect, setmetadata
 using SciCompDSL: SciCompDSL, @mtkmodel
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
-using NonlinearSolve: NonlinearProblem
-using SciMLBase: SciMLBase, solve
+using SciMLBase: SciMLBase
 using Symbolics: Symbolics
 using LinearAlgebra: LinearAlgebra
 using SparseConnectivityTracer: GradientTracer

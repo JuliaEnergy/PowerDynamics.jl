@@ -91,8 +91,8 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     end
     @equations begin
         # Park's transformations
-        [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q] * Vn/V_b
-        [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i] * Ibase(S_b, V_b)/Ibase(Sn, Vn)
+        [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q] * (Vn/V_b)
+        [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i] * (Ibase(S_b, V_b)/Ibase(Sn, Vn))
 
         τ_e ~ ψ_d*I_q - ψ_q*I_d
         # for static ψ, this becomes which makes sense!

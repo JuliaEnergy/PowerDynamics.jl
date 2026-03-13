@@ -60,10 +60,8 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     end
     @equations begin
         # Park's transformations
-        [terminal.u_r, terminal.u_i] .~ T_park(δ)*[V_d, V_q] * V_b/Vn
-        # [terminal.i_r, terminal.i_i] .~ T_park(δ)*[I_d, I_q] * Ibase(S_b, V_b)/Ibase(Sn, Vn)
-        # [V_d, V_q] .~ T_park(-δ)*[terminal.u_r, terminal.u_i] * Vn/V_b
-        [I_d, I_q] .~ -T_park(-δ)*[terminal.i_r, terminal.i_i] * Ibase(Sn, Vn)/Ibase(S_b, V_b)
+        [terminal.u_r, terminal.u_i] .~ T_park(δ)*[V_d, V_q] * (V_b/Vn)
+        [I_d, I_q] .~ -T_park(-δ)*[terminal.i_r, terminal.i_i] * (Ibase(Sn, Vn)/Ibase(S_b, V_b))
 
         # mechanical swing equation
         Dt(δ) ~ ω_b*(ω - 1)

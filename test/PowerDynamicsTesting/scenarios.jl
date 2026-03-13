@@ -14,7 +14,7 @@ function line_between_slacks(edgef)
     dst = compile_bus(SlackDifferential(name=:slack_dst))
     g = path_graph(2)
     nw = Network(g, [src, dst], edgef)
-    u0 = NWState(nw)
+    u0 = NWState(nw; guess=true, init=true)
     any(isnan.(uflat(u0))) && error("Initial conditions contain NaNs")
     any(isnan.(pflat(u0))) && @warn "Parameters contain NaNs"
 
@@ -63,7 +63,7 @@ function bus_on_slack(busf; tmax=6, toilength=1000, argscale=1, magscale=1)
     g = path_graph(2)
 
     nw = Network(g, [slack, busf], edgef)
-    u0 = NWState(nw)
+    u0 = NWState(nw; guess=true, init=true)
     if any(isnan.(uflat(u0)))
         # show(stderr, MIME"text/plain"(), u0)
         # println(stderr)
