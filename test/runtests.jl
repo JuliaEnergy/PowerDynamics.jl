@@ -1,9 +1,13 @@
+GPL_MTK = haskey(ENV, "GPL_MTK")
+if GPL_MTK
+    using ModelingToolkit
+end
 using Test
 using Testfiles
 using Aqua
 using ExplicitImports
 using NetworkDynamics
-using ModelingToolkit
+using ModelingToolkitBase
 using ModelingToolkitStandardLibrary
 using ModelingToolkitStandardLibrary.Blocks
 using Makie

@@ -110,8 +110,9 @@ The ideal rotor is connected to a slack bus via a lossless transmission line wit
 To simulate this system, we first need to import some packages...
 =#
 
-using ModelingToolkit
-using ModelingToolkit: t_nounits as t, D_nounits as Dt
+using ModelingToolkitBase
+using ModelingToolkitBase: t_nounits as t, D_nounits as Dt
+using SciCompDSL: @mtkmodel
 using OrdinaryDiffEqRosenbrock
 using CairoMakie
 nothing #hide #md

@@ -2,8 +2,9 @@ using Test
 using PowerDynamics
 using PowerDynamics.Library
 using PowerDynamics: autoconnections, CompositeInjector
-using ModelingToolkit
-using ModelingToolkit: t_nounits as t, D_nounits as Dt
+using ModelingToolkitBase
+using ModelingToolkitBase: t_nounits as t, D_nounits as Dt
+using SciCompDSL: @mtkmodel
 using ModelingToolkitStandardLibrary.Blocks
 
 @info "Start modeling_tools tests"

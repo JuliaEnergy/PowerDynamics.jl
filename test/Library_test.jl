@@ -2,13 +2,15 @@ using PowerDynamics
 using PowerDynamics.Library
 PowerDynamics.load_pdtesting()
 using Main.PowerDynamicsTesting
-using ModelingToolkit
+using ModelingToolkitBase
+using SciCompDSL: @mtkmodel
 using NetworkDynamics
 using Graphs
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 using ModelingToolkitStandardLibrary.Blocks
-using ModelingToolkit: ModelingToolkit as MTK
+using ModelingToolkitBase: ModelingToolkitBase as MTK
+using ModelingToolkitBase: t_nounits as t, D_nounits as Dt
 using OrderedCollections
 using DiffEqCallbacks
 using CairoMakie

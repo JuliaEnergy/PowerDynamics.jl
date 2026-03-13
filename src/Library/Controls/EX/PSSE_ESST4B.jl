@@ -33,7 +33,7 @@ end
 FEX_function uses if/else statements. We need to register it as a symbolic function
 to block MTK from tracing the function and handle it as a black box.
 =#
-ModelingToolkit.@register_symbolic FEX_function(u)
+Symbolics.@register_symbolic FEX_function(u)
 
 """
     RectifierCommutationVoltageDrop

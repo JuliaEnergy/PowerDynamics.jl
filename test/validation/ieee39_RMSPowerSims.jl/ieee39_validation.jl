@@ -1,6 +1,6 @@
 using PowerDynamics
 using PowerDynamics.Library
-using ModelingToolkit
+using ModelingToolkitBase
 using NetworkDynamics
 using CairoMakie
 import JSON

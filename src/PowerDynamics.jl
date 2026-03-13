@@ -14,11 +14,12 @@ using Setfield: @set, @set!
 using SymbolicIndexingInterface: SymbolicIndexingInterface as SII
 using MacroTools: postwalk, @capture
 
-using ModelingToolkit: ModelingToolkit, @connector, @named,
-                       System, getname, unknowns, get_name, t_nounits as t, Equation,
-                       mtkcompile
+using ModelingToolkitBase: ModelingToolkitBase, @connector, @named,
+                           System, getname, unknowns, get_name, t_nounits as t, Equation,
+                           mtkcompile
 # needed for @mtkmodel
-using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System, Equation, connect
+using ModelingToolkitBase: @variables, @parameters, @unpack, Num, System, Equation, connect
+using SciCompDSL: @mtkmodel
 using Symbolics: Symbolics
 using SciMLBase: SciMLBase
 

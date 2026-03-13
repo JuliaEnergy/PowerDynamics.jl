@@ -9,7 +9,7 @@ The parameters are mainly adopted from the RTDS data.
 =#
 using PowerDynamics
 using PowerDynamics.Library
-using ModelingToolkit
+using ModelingToolkitBase
 using NetworkDynamics
 using Graphs
 using OrdinaryDiffEqRosenbrock

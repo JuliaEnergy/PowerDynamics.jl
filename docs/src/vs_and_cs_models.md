@@ -217,7 +217,7 @@ G2 (~)─╊═══┫
 For both modeling approaches we need common elements: the load model and the pi-line.
 For the load we choose a constant-Y load. The powerflow model for the load is a PQ bus.
 ```@example modelborders
-using ModelingToolkit, PowerDynamics, PowerDynamics.Library, NetworkDynamics, OrdinaryDiffEqRosenbrock, OrdinaryDiffEqNonlinearSolve, CairoMakie
+using ModelingToolkitBase, PowerDynamics, PowerDynamics.Library, NetworkDynamics, OrdinaryDiffEqRosenbrock, OrdinaryDiffEqNonlinearSolve, CairoMakie
 @named load = ConstantYLoad()
 @named loadbus = compile_bus(MTKBus(load); pf=pfPQ(P=-1, Q=-0.1))
 ```

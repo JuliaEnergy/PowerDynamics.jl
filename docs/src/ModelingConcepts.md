@@ -77,8 +77,9 @@ You can check if a model satisfies the injector interface using the [`isinjector
 
 !!! details "Code example: definition of PQ load as injector"
     ```@example concepts
-    using PowerDynamics, PowerDynamics.Library, ModelingToolkit
-    using ModelingToolkit: D_nounits as Dt, t_nounits as t
+    using PowerDynamics, PowerDynamics.Library, ModelingToolkitBase
+    using ModelingToolkitBase: D_nounits as Dt, t_nounits as t
+    using SciCompDSL: @mtkmodel
     @mtkmodel MyPQLoad begin
         @components begin
             terminal = Terminal()

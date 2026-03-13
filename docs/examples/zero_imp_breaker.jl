@@ -23,8 +23,9 @@ and OrdinaryDiffEq for solving the resulting differential-algebraic equations.
 
 using PowerDynamics
 using PowerDynamics.Library
-using ModelingToolkit
-using ModelingToolkit: t_nounits as t, D_nounits as Dt
+using ModelingToolkitBase
+using ModelingToolkitBase: t_nounits as t, D_nounits as Dt
+using SciCompDSL: @mtkmodel
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 using CairoMakie

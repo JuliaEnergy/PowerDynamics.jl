@@ -42,7 +42,7 @@ The IEEE 39-bus system data is organized into separate files for different compo
 
 using PowerDynamics
 using PowerDynamics.Library
-using ModelingToolkit
+using ModelingToolkitBase
 using NetworkDynamics
 using DataFrames
 using CSV

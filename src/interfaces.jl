@@ -1,7 +1,7 @@
 function isterminal(sys::System)
     vars = Set(getname.(unknowns(sys))) == Set([:u_r, :u_i, :i_r, :i_i])
-    inputs = isempty(ModelingToolkit.unbound_inputs(sys))
-    outputs = isempty(ModelingToolkit.unbound_outputs(sys))
+    inputs = isempty(ModelingToolkitBase.unbound_inputs(sys))
+    outputs = isempty(ModelingToolkitBase.unbound_outputs(sys))
     vars && inputs && outputs
 end
 """
@@ -40,8 +40,8 @@ function isbusbar(sys::System)
     # TODO: consider overloading constructors in libary to add metadata
     # @set! busbar.metadata = (; modelname=:busbar)
     vars = getname.(unknowns(sys)) ⊇ Set([:u_r, :u_i, :i_r, :i_i])
-    inputs = Set(getname.(ModelingToolkit.unbound_inputs(sys))) == Set([:i_r, :i_i])
-    outputs = Set(getname.(ModelingToolkit.unbound_outputs(sys))) == Set([:u_r, :u_i])
+    inputs = Set(getname.(ModelingToolkitBase.unbound_inputs(sys))) == Set([:i_r, :i_i])
+    outputs = Set(getname.(ModelingToolkitBase.unbound_outputs(sys))) == Set([:u_r, :u_i])
     vars && inputs && outputs
 end
 """
@@ -87,8 +87,8 @@ end
 
 function islineend(sys::System)
     vars = getname.(unknowns(sys)) ⊇ Set([:u_r, :u_i, :i_r, :i_i])
-    inputs = Set(getname.(ModelingToolkit.unbound_inputs(sys))) == Set([:u_r, :u_i])
-    outputs = Set(getname.(ModelingToolkit.unbound_outputs(sys))) == Set([:i_r, :i_i])
+    inputs = Set(getname.(ModelingToolkitBase.unbound_inputs(sys))) == Set([:u_r, :u_i])
+    outputs = Set(getname.(ModelingToolkitBase.unbound_outputs(sys))) == Set([:i_r, :i_i])
     vars && inputs && outputs
 end
 """

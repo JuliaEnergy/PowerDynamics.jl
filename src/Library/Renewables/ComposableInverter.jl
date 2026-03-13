@@ -1,9 +1,10 @@
 module ComposableInverter
 
-using ModelingToolkit: ModelingToolkit, @named, t_nounits as t, D_nounits as Dt,
-                       @component
+using ModelingToolkitBase: ModelingToolkitBase, @named, t_nounits as t, D_nounits as Dt,
+                           @component
 # needed for @mtkmodel
-using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System, Equation, connect, setmetadata
+using ModelingToolkitBase: @variables, @parameters, @unpack, Num, System, Equation, connect, setmetadata
+using SciCompDSL: @mtkmodel
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using NetworkDynamics: set_mtk_defaults!
 
