@@ -157,7 +157,7 @@ nothing #hide #md
 Now we can build the network using the [`Network`](@extref NetworkDynamics.Network) constructor from NetworkDynamics.jl
 This constructor takes a list of VertexModels (the buses) and a list of EdgeModels (the powerlines) and connects them to a
 network.
-In general, we also need to define the topology of the undelying graph. In this case however, this is not necessary because
+In general, we also need to define the topology of the underlying graph. In this case however, this is not necessary because
 we told each component at the compile step where it is placed in the network (see the `vidx`, `src` and `dst` arguments above)
 =#
 nw = Network([bus1, bus2, bus3], [line12, line13, line23])
