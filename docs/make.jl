@@ -36,12 +36,7 @@ for dir in (example_dir, tutorial_dir)
     end
 end
 
-kwargs = (;
-    # linear_analysis must run before ieee39_part4, because loading SciMLSensitivity
-    # (used in part4) before linear_analysis breaks the linear analysis examples.
-    # vs_and_cs_models.md also uses initialize_from_pf, so it needs to run before
-    # ieee39_part4 too.
-    expandfirst = ["generated/linear_analysis.md", "vs_and_cs_models.md"],
+doc = makedocs(;
     modules=[PowerDynamics, PowerDynamics.Library, PowerDynamics.Library.ComposableInverter],
     authors="Hans Würfel, Tim Kittel, Jan Liße, Sabine Auer, Anton Plietzsch and contributors",
     sitename="PowerDynamics.jl",
@@ -85,26 +80,15 @@ kwargs = (;
         r"^\.\./assets/OpenIPSL_valid/.*\.png$",  # Match ../assets/OpenIPSL_valid/*.png
         "https://marketplace.visualstudio.com/items?itemName=julialang.language-julia", # curl blocked?
         ],
-    warnonly=[:missing_docs],
+    warnonly=true,
+    debug=true, # return doc object
 )
-kwargs_warnonly = (; kwargs..., warnonly=true)
 
-if haskey(ENV,"GITHUB_ACTIONS")
-    success = true
-    thrown_ex = nothing
-    try
-        makedocs(; kwargs...)
-    catch e
-        @info "Strict doc build failed, try again with warnonly=true"
-        global success = false
-        global thrown_ex = e
-        makedocs(; kwargs_warnonly...)
-    end
-
+if haskey(ENV, "GITHUB_ACTIONS")
     deploydocs(; repo="github.com/JuliaEnergy/PowerDynamics.jl.git",
             devbranch="main", push_preview=true)
-
-    success || throw(thrown_ex)
-else # local build
-    makedocs(; kwargs_warnonly...)
+    errors = setdiff(doc.internal.errors, [:missing_docs])
+    if !isempty(errors)
+        error("makedocs encountered errors: $(errors)")
+    end
 end
