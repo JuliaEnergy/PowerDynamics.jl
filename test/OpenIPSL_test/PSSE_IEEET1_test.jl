@@ -53,7 +53,7 @@ BUS = let
         connect(IEEET1_EXCITER.EFD_out, GENROE.EFD_in)
     ]
     busmodel = MTKBus([GENROE, IEEET1_EXCITER], con; name=:GEN1)
-    compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0))
+    compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0), mtkcompile=:compare)
 end
 
 sol = OpenIPSL_SMIB(BUS);

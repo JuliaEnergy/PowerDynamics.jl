@@ -241,7 +241,7 @@ end
     @named mtkbus = GenBus()
 
     bus = compile_bus(mtkbus)
-    @test sum(bus.mass_matrix) == 2
+    @test dim(bus) == 4
     set_voltage!(bus; mag=1.017, arg=0.0295)
     set_current!(bus; P=0.716, Q=0.3025)
     initialize_component!(bus)

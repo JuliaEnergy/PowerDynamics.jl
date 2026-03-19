@@ -1,7 +1,4 @@
-GPL_MTK = haskey(ENV, "GPL_MTK")
-if GPL_MTK
-    using ModelingToolkit
-end
+using ModelingToolkit
 using Test
 using Testfiles
 using Aqua

@@ -105,7 +105,7 @@ BUS = let
 
     # Create bus model with proper connections
     busmodel = MTKBus([gensal, scrx, hygov], con; name=:GEN1)
-    bm = compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0))
+    bm = compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0); mtkcompile=:compare)
     # set_default!(bm, :hygov₊n_ref, 0.0206)
     set_default!(bm, :hygov₊position_limiter₊out, ref[1, "hYGOV.Position_Limiter.y"])
     # set_default!(bm, :hygov₊water_integrator₊out, ref[1, "hYGOV.q.y"])

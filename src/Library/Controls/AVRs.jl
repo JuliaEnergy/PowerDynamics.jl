@@ -71,7 +71,9 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         vm(t), [guess=1, description="terminal voltage measurement (lagged)"]
         vfceil(t), [description="ceiled field voltage"]
         amp_in(t), [description="amplifier input"]
-        vr1(t), [guess=0, description="regulator voltage before Limiter"]
+        if !anti_windup
+            vr1(t), [guess=0, description="regulator voltage before Limiter"]
+        end
         v_fb(t), [guess=0, description="feedback voltage"]
     end
     @equations begin

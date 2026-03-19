@@ -170,7 +170,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         current_error(t), [description="Current error with feedback [pu]"]
         vm_prop(t), [guess=0, description="Current regulator proportional output [pu]"]
         vm_out(t), [guess=1, description="Current regulator output [pu]"]
-        vm_limited(t), [description="LV_GATE limited output [pu]"]
+        vm_limited(t), [guess=1, description="LV_GATE limited output [pu]"]
         vb_signal(t), [description="Exciter output (limited) [pu]"]
         VE(t), [description="adapted terminal voltage magnitude for rectifier"]
     end

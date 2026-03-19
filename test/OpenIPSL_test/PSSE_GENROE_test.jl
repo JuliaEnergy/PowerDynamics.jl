@@ -62,7 +62,7 @@ GENROE_BUS = let
         # delta = ref."gENROE.delta"[1]
     )
     busmodel = MTKBus(genroe; name=:GEN1)
-    compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0))
+    compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0), mtkcompile=:compare)
 end
 
 sol = OpenIPSL_SMIB(GENROE_BUS);
