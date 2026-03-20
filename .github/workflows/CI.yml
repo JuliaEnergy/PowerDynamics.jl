@@ -19,6 +19,7 @@ jobs:
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
       actions: write
       contents: read
+      pull-requests: read
     strategy:
       fail-fast: false
       matrix:
@@ -39,6 +40,17 @@ jobs:
       - name: Load Julia packages from cache
         id: julia-cache
         uses: julia-actions/cache@v2
+      - name: Add Testfiles (Julia 1.10 ignores [sources])
+        if: matrix.version == 'lts'
+        shell: julia --project=. --color=yes {0}
+        env:
+          JULIA_PKG_PRECOMPILE_AUTO: "no"
+        run: |
+          import Pkg
+          Pkg.add(url="https://github.com/hexaeder/Testfiles.jl", rev="main")
+      - uses: hexaeder/julia-buildpkg@main
+        with:
+          project: test
       - name: Test with specific test dep versions
         shell: julia --project=testenv --color=yes {0}
         run: |
@@ -91,13 +103,15 @@ jobs:
         # main-branch build with GITHUB_REF="main" reused for a tag build).
         # Always wiping the artefact here lets julia-buildpkg re-precompile with
         # the correct GITHUB_REF_NAME for the current event (branch / tag / PR).
-        run: find "$HOME/.julia/compiled" -name "PowerDynamics*" -type f -delete -print
+        run: find "$HOME/.julia/compiled" -name "PowerDynamics*" -type f -delete -print 2>/dev/null || true
       - name: Configure doc environment
         shell: julia --project=docs --color=yes {0}
         run: |
           using Pkg
           Pkg.instantiate()
-      - uses: julia-actions/julia-buildpkg@v1
+      - uses: hexaeder/julia-buildpkg@main
+        with:
+          project: docs
       - uses: julia-actions/julia-docdeploy@v1
         # continue-on-error: true
         env:
