@@ -39,7 +39,7 @@ jobs:
           arch: ${{ matrix.arch }}
       - name: Load Julia packages from cache
         id: julia-cache
-        uses: julia-actions/cache@v2
+        uses: julia-actions/cache@v3
       - name: Add Testfiles (Julia 1.10 ignores [sources])
         if: matrix.version == 'lts'
         shell: julia --project=. --color=yes {0}
@@ -95,7 +95,7 @@ jobs:
           version: '1.11'
       - name: Load Julia packages from cache
         id: julia-cache
-        uses: julia-actions/cache@v2
+        uses: julia-actions/cache@v3
       - name: Clear PowerDynamics precompile cache
         # GITHUB_REF is baked into PowerDynamics at precompile time (used by
         # ref_source_file to generate docstring source links).  A restored depot
