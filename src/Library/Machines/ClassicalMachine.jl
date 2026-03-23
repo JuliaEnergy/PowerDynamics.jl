@@ -31,8 +31,8 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         S_b, [description="System power basis in MVA"]
         V_b, [description="System voltage basis in kV"]
         ω_b, [description="System base frequency in rad/s"]
-        Sn=S_b, [description="Machine power rating in MVA"]
-        Vn=V_b, [description="Machine voltage rating in kV"]
+        Sn, [description="Machine power rating in MVA"]
+        Vn, [description="Machine voltage rating in kV"]
         # field voltage
         vf_set, [guess=1, description="field voltage"]
         if !τ_m_input

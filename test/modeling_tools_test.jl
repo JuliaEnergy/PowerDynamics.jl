@@ -58,7 +58,7 @@ end
 
     @testset "real components autoconnections" begin
         @named machine = SauerPaiMachine(;
-            vf_input=true, τ_m_input=true, S_b=100, V_b=1, ω_b=2π*60, R_s=0.000125, T″_d0=0.01,
+            vf_input=true, τ_m_input=true, S_b=100, V_b=1, Sn=100, Vn=1, ω_b=2π*60, R_s=0.000125, T″_d0=0.01,
             T″_q0=0.01, X_ls=0.01460, X_d=0.1460, X′_d=0.0608, X″_d=0.06, X_q=0.1000, X′_q=0.0969,
             X″_q=0.06, T′_d0=8.96, T′_q0=0.310, H=23.64
         )
@@ -90,7 +90,7 @@ end
         end
 
         @named machine = SauerPaiMachine(;
-            vf_input=true, τ_m_input=true, S_b=100, V_b=1, ω_b=2π*60, R_s=0.000125,
+            vf_input=true, τ_m_input=true, S_b=100, V_b=1, Sn=100, Vn=1, ω_b=2π*60, R_s=0.000125,
             T″_d0=0.01, T″_q0=0.01, H=23.64
         )
 
@@ -116,7 +116,7 @@ end
 
     @testset "CompositeInjector with autoconnections" begin
         @named machine = SauerPaiMachine(;
-            vf_input=true, τ_m_input=true, S_b=100, V_b=1, ω_b=2π*60, R_s=0.000125, T″_d0=0.01,
+            vf_input=true, τ_m_input=true, S_b=100, V_b=1, Sn=100, Vn=1, ω_b=2π*60, R_s=0.000125, T″_d0=0.01,
             T″_q0=0.01, X_ls=0.01460, X_d=0.1460, X′_d=0.0608, X″_d=0.06, X_q=0.1000, X′_q=0.0969,
             X″_q=0.06, T′_d0=8.96, T′_q0=0.310, H=23.64
         )

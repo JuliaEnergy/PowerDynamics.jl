@@ -45,8 +45,8 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         S_b, [description="System power basis in MVA"]
         V_b, [description="System voltage basis in kV"]
         ω_b, [description="System base frequency in rad/s"]
-        Sn=S_b, [description="Machine power rating in MVA"]
-        Vn=V_b, [description="Machine voltage rating in kV"]
+        Sn, [description="Machine power rating in MVA"]
+        Vn, [description="Machine voltage rating in kV"]
         # input/parameter switches
         if !vf_input
             vf_set, [guess=1, bounds=(0,Inf), description="field voltage"]
