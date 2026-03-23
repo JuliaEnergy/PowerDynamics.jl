@@ -39,9 +39,9 @@ function finalizetoi(toi::TrajectoriesOfInterest)
 end
 
 function keysequal(toi1, toi2)
-   if keys(toi1.syms) == keys(toi2.syms)
+   if Set(keys(toi1.syms)) == Set(keys(toi2.syms))
       for k in keys(toi1.syms)
-          if keys(toi1[k]) != keys(toi2[k])
+          if Set(keys(toi1[k])) != Set(keys(toi2[k]))
               return false
           end
       end
