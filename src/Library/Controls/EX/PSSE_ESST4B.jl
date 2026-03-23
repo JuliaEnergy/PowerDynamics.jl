@@ -167,7 +167,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         vr_prop(t), [description="Voltage regulator proportional output [pu]"]
         vr_out(t), [guess=1, description="Voltage regulator output [pu]"]
         va_out(t), [description="Thyristor bridge output [pu]"]
-        current_error(t), [description="Current error with feedback [pu]"]
+        current_error(t), [guess=0, description="Current error with feedback [pu]"]
         vm_prop(t), [guess=0, description="Current regulator proportional output [pu]"]
         vm_out(t), [guess=1, description="Current regulator output [pu]"]
         vm_limited(t), [guess=1, description="LV_GATE limited output [pu]"]

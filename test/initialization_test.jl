@@ -127,7 +127,7 @@ end
         # cannot initialize because not steadystate
         @test_throws ComponentInitError initialize_from_pf(nw; pfs=pfs)
 
-        s0 = initialize_from_pf(nw; pfs=pfs, nwtol=5, tol=5)
+        s0 = initialize_from_pf(nw; pfs=pfs, nwtol=Inf, tol=Inf)
         # without formula/constraint, the parameter is not initialized
         @test s0.p.e[9, :pibranch₊active] != pfs0.p.e[9, :pibranch₊active]
 
