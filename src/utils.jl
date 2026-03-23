@@ -177,7 +177,7 @@ is fixed at precompile time (see its definition for the per-context mapping):
 - **tag push**: tag name (e.g. `"v4.4.0"`), so links stay valid in archived versions
 """
 function ref_source_file(f, line)
-    subf = match(r"PowerDynamics.*/(src/.*)", f)[1]
+    subf = replace(relpath(f, pkgdir(@__MODULE__)), '\\' => '/')
 
     link = "https://github.com/$GITHUB_REPO/blob/$GITHUB_REF/$subf#L$(line+2)"
     doctext = "For a concrete list of variables and parameters please check the model source"
