@@ -1,4 +1,7 @@
 # PowerDynamics.jl Changelog
+## Version 4.4.1 Changelog
+- fixes a precompile issue on Windows machines
+- small changes to documentation + test system
 
 ## Version 4.4.0 Changelog
 - **New component: ComposableInverter**: Added composable grid-forming (GFM) and grid-following (GFL) inverter models with filter blocks (`LFilter`, `LCFilter`, `LCLFilter`), controller blocks (`CC1`, `VC`, `CC2`), PLL models, and composite models (`DroopInverter`, `SimpleGFL`, `SimpleGFLDC`)
