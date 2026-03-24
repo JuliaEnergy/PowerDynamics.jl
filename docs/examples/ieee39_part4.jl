@@ -27,9 +27,8 @@ the integration with Julia's optimization ecosystem for parameter tuning.
 ## Loading required packages and setup
 using PowerDynamics
 using PowerDynamics.Library
-using ModelingToolkitBase
+using ModelingToolkitBase, SciCompDSL
 using ModelingToolkitBase: D_nounits as Dt, t_nounits as t
-using SciCompDSL: @mtkmodel
 using NetworkDynamics
 using NetworkDynamics: SII
 using OrdinaryDiffEqRosenbrock

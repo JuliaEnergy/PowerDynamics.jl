@@ -49,10 +49,9 @@ In addition to the transformation, the model is defined by the following equatio
 
 We can use the ModelingToolkit DSL to define the full injector model:
 =#
-using PowerDynamics, NetworkDynamics, ModelingToolkitBase
+using PowerDynamics, NetworkDynamics, ModelingToolkitBase, SciCompDSL
 using PowerDynamics.Library
 using ModelingToolkitBase: t_nounits as t, D_nounits as Dt
-using SciCompDSL: @mtkmodel
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEqRosenbrock, OrdinaryDiffEqNonlinearSolve
 using CairoMakie

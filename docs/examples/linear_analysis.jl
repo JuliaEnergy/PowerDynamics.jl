@@ -36,9 +36,8 @@ SimplusGT uses a special machine model for their Type 0 Apparatus which:
 using PowerDynamics
 using PowerDynamics.Library
 using PowerDynamics.Library.ComposableInverter
-using ModelingToolkitBase
+using ModelingToolkitBase, SciCompDSL
 using ModelingToolkitBase: t_nounits as t, D_nounits as Dt
-using SciCompDSL: @mtkmodel
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 using NetworkDynamics

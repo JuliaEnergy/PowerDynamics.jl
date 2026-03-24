@@ -11,6 +11,7 @@ FFTA = "b86e33f2-c0db-4aa1-a6e0-ab43e668529e"
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
+ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 ModelingToolkitBase = "7771a370-6774-4173-bd38-47e70ca0b839"
 ModelingToolkitStandardLibrary = "16a59e39-deab-5bd0-87e4-056b12336739"
 NetworkDynamics = "22e9dc34-2a0d-11e9-0de0-8588d035468b"
@@ -21,13 +22,14 @@ OrdinaryDiffEqNonlinearSolve = "127b3ac7-2247-4354-8eb6-78cf4e7c58e8"
 OrdinaryDiffEqRosenbrock = "43230ef6-c299-4910-a778-202eb28ce4ce"
 OrdinaryDiffEqTsit5 = "b1df2697-797e-41e3-8120-5422d3b24e4a"
 PowerDynamics = "cc46b21f-1b17-51c2-b642-af74c3d3a8be"
+SciCompDSL = "91a8cdf1-4ca6-467b-a780-87fda3fff15e"
 SciMLSensitivity = "1ed8b502-d754-442c-8d5d-10ac956f44a1"
 SparseConnectivityTracer = "9f842d2f-2579-4b1d-911e-f412cf18a3f5"
 Sparspak = "e56a9233-b9d6-4f03-8d0f-1825330902ac"
 SteadyStateDiffEq = "9672c7b4-1e72-59bd-8a11-6ac3964bc41f"
 
-[sources.PowerDynamics]
-path = ".."
+[sources]
+PowerDynamics = {path = ".."}
 
 [compat]
 CSV = "0.10.15"
