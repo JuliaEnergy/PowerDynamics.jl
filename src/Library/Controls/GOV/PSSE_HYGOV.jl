@@ -76,11 +76,9 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 
         # Hydraulic system variables
         flow_gate_ratio(t), [description="Flow to gate ratio"]
-        flow_gate_ratio_squared(t), [description="(Q/G)^2"]
         water_flow(t), [description="Water flow Q [pu]"]
-        flow_minus_noload(t), [description="Flow minus no-load Q-qNL [pu]"]
+        # flow_minus_noload(t), [description="Flow minus no-load Q-qNL [pu]"]
         turbine_head(t), [description="Turbine head H [pu]"]
-        head_flow_product(t), [description="H*(Q-qNL) [pu]"]
         base_power(t), [description="A_t * H * (Q-qNL) [pu]"]
         damping_term(t), [description="D_turb * G * SPEED [pu]"]
     end

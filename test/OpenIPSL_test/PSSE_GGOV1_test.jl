@@ -169,7 +169,7 @@ BUS = let
         # accel limiter initialization
         # the derivateive is zero which is fine
         # however, the accelerator intoruced an algebraic loop, we need guess its output
-        :ggov1₊accel_limiter₊FSR = fuel_flow # same as govenor output
+        :ggov1₊fsr_limited = fuel_flow # same as govenor output
 
         :ggov1₊Ldref = (TEXM - :ggov1₊Wfnl) * :ggov1₊Kturb
     end

@@ -106,11 +106,11 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     @structural_parameters begin
         K # Gain
         T # Time constant
-        guess=0
+        guess=0 # guess for input (because its derivative)
     end
     @variables begin
-        in(t), [description="Input signal", input=true]
-        out(t), [guess=guess, description="Output signal", output=true]
+        in(t), [guess=guess, description="Input signal", input=true]
+        out(t), [description="Output signal", output=true]
     end
     @equations begin
         T*Dt(in) ~ K*out - in

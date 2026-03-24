@@ -115,7 +115,6 @@ BUS = let
     # add_initconstraint!(bm, c)
     bm
 end
-
 sol = OpenIPSL_SMIB(BUS, tol=1e-4, nwtol=1e-4);
 
 ## Validation tests for GENSAL machine variables (core 3 variables)
