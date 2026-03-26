@@ -37,9 +37,7 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-      - name: Load Julia packages from cache
-        id: julia-cache
-        uses: julia-actions/cache@v3
+      - uses: julia-actions/cache@v3
       - name: Add Testfiles (Julia 1.10 ignores [sources])
         if: matrix.version == 'lts'
         shell: julia --project=. --color=yes {0}
@@ -71,14 +69,6 @@ jobs:
           path: "assets/*.png"
           retention-days: 30
           compression-level: 0
-      - name: Save Julia depot cache on cancel or failure
-        id: julia-cache-save
-        if: cancelled() || failure()
-        uses: actions/cache/save@v5
-        with:
-          path: |
-            ${{ steps.julia-cache.outputs.cache-paths }}
-          key: ${{ steps.julia-cache.outputs.cache-key }}
 
   docs:
     name: Documentation-v1.11
@@ -93,9 +83,7 @@ jobs:
       - uses: julia-actions/setup-julia@v2
         with:
           version: '1.11'
-      - name: Load Julia packages from cache
-        id: julia-cache
-        uses: julia-actions/cache@v3
+      - uses: julia-actions/cache@v3
       - name: Clear PowerDynamics precompile cache
         # GITHUB_REF is baked into PowerDynamics at precompile time (used by
         # ref_source_file to generate docstring source links).  A restored depot
@@ -125,11 +113,3 @@ jobs:
           using PowerDynamics
           DocMeta.setdocmeta!(PowerDynamics, :DocTestSetup, :(using PowerDynamics); recursive=true)
           doctest(PowerDynamics)
-      - name: Save Julia depot cache on cancel or failure
-        id: julia-cache-save
-        if: cancelled() || failure()
-        uses: actions/cache/save@v5
-        with:
-          path: |
-            ${{ steps.julia-cache.outputs.cache-paths }}
-          key: ${{ steps.julia-cache.outputs.cache-key }}
