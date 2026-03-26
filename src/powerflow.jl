@@ -369,7 +369,7 @@ function _init_from_pf(
 )
     if isnothing(pfs)
         pfnw = isnothing(pfnw) ? powerflow_model(nw) : pfnw
-        pfs0 = isnothing(pfs0) ? NWState(pfnw) : pfnw
+        pfs0 = isnothing(pfs0) ? NWState(pfnw) : pfs0
         pfs = solve_powerflow(nw; pfnw, pfs0, verbose, sparse=sparsepf)
     end
 
