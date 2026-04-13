@@ -36,6 +36,21 @@ using Main.PowerDynamicsTesting
     ic1(out1, u, pfu)
     ic2(out2, u, reverse(pfu))
     @test out1 == out2
+
+    # test with captured runtime variables
+    ics = Any[]
+    for _scale in [1,2,3]
+        ic = @pfinitconstraint :x * _scale - @pf(:z)
+        push!(ics, ic)
+    end
+    for (ic3, _scale) in zip(ics, [1,2,3])
+        out3 = [0.0]
+        u3 = rand(1)
+        pfu3 = rand(1)
+        ic3(out3, u3, pfu3)
+        @test out3[1] ≈ u3[1] * _scale - pfu3[1]
+        @test !occursin("Expr(:escape", repr(ic3))
+    end
 end
 
 @testset "PFInitFormula construction" begin
@@ -82,6 +97,25 @@ end
     if5(out5, u, pfu)
     @test out5[1] ≈ sqrt(5.0)  # sqrt(1^2 + 2^2) = sqrt(5)
     @test out5[2] ≈ 16.0       # 1*3 + 2*4 + 5 = 16
+
+    # test with captured runtime variables
+    _offset = 2.0
+    if6 = @pfinitformula :Vset = sqrt(:u_r^2 + :u_i^2) + _offset
+    out6 = [0.0]
+    u6 = [3.0, 4.0]
+    pfu6 = Float64[]
+    if6(out6, u6, pfu6)
+    @test out6[1] ≈ 5.0 + _offset
+    @test !occursin("Expr(:escape", repr(if6))
+
+    _scale = 0.5
+    if7 = @pfinitformula :Pset = :u_r * :i_r + _scale * @pf(:Pload)
+    out7 = [0.0]
+    u7 = [1.0, 3.0]  # u_r, i_r
+    pfu7 = [4.0]     # Pload
+    if7(out7, u7, pfu7)
+    @test out7[1] ≈ 1.0 * 3.0 + _scale * 4.0
+    @test !occursin("Expr(:escape", repr(if7))
 end
 
 @testset "Test end to end initialziation" begin
