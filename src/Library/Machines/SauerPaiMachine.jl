@@ -9,6 +9,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     @structural_parameters begin
         vf_input = true
         τ_m_input = true
+        stator_dynamics = false
     end
     @components begin
         terminal=Terminal()
@@ -101,15 +102,15 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         Dt(δ) ~ ω_b*(ω - 1)
         2*H * Dt(ω) ~ τ_m  - τ_e - D*(ω - 1)
 
-        # stator equations
-        # 1/ω_b * Dt(ψ_d) ~ R_s*I_d + ω * ψ_q + V_d
-        # 1/ω_b * Dt(ψ_q) ~ R_s*I_q - ω * ψ_d + V_q
-        # static fomulation
-        # 0 ~ R_s*I_d + ω * ψ_q + V_d
-        # 0 ~ R_s*I_q - ω * ψ_d + V_q
-        # static formualion in V_d, V_q which is the only free stuff
-        V_d ~ -R_s*I_d - ω * ψ_q
-        V_q ~ -R_s*I_q + ω * ψ_d
+        if stator_dynamics
+            # stator equations
+            1/ω_b * Dt(ψ_d) ~ R_s*I_d + ω * ψ_q + V_d
+            1/ω_b * Dt(ψ_q) ~ R_s*I_q - ω * ψ_d + V_q
+        else
+            # static fomulation
+            0 ~ R_s*I_d + ω * ψ_q + V_d
+            0 ~ R_s*I_q - ω * ψ_d + V_q
+        end
 
         T′_d0 * Dt(E′_q) ~ -E′_q - (X_d - X′_d)*(I_d - γ_d2*ψ″_d - (1-γ_d1)*I_d + γ_d2*E′_q) + vf
         T′_q0 * Dt(E′_d) ~ -E′_d + (X_q - X′_q)*(I_q - γ_q2*ψ″_q - (1-γ_q1)*I_q - γ_q2*E′_d)
