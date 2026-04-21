@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Modeling Concepts · PowerDynamics.jl</title><meta name="title" content="Modeling Concepts · PowerDynamics.jl"/><meta property="og:title" content="Modeling Concepts · PowerDynamics.jl"/><meta property="twitter:title" content="Modeling Concepts · PowerDynamics.jl"/><meta name="description" content="Documentation for PowerDynamics.jl."/><meta property="og:description" content="Documentation for PowerDynamics.jl."/><meta property="twitter:description" content="Documentation for PowerDynamics.jl."/><meta property="og:url" content="https://juliaenergy.github.io/PowerDynamics.jl/ModelingConcepts/"/><meta property="twitter:url" content="https://juliaenergy.github.io/PowerDynamics.jl/ModelingConcepts/"/><link rel="canonical" href="https://juliaenergy.github.io/PowerDynamics.jl/ModelingConcepts/"/><meta property="og:image" content="https://juliaenergy.github.io/PowerDynamics.jl/assets/preview.png"/><meta property="twitter:image" content="https://juliaenergy.github.io/PowerDynamics.jl/assets/preview.png"/><meta property="twitter:card" content="summary_large_image"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img class="docs-light-only" src="../assets/logo.svg" alt="PowerDynamics.jl logo"/><img class="docs-dark-only" src="../assets/logo-dark.svg" alt="PowerDynamics.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">PowerDynamics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li class="is-active"><a class="tocitem" href>Modeling Concepts</a><ul class="internal"><li><a class="tocitem" href="#Relationship-between-ModelingToolkit-and-NetworkDynamics"><span>Relationship between ModelingToolkit and NetworkDynamics</span></a></li><li><a class="tocitem" href="#ModelingToolkit-Models"><span>ModelingToolkit Models</span></a></li><li><a class="tocitem" href="#From-MTK-Models-to-NetworkDynamics"><span>From MTK Models to NetworkDynamics</span></a></li><li><a class="tocitem" href="#Internals"><span>Internals</span></a></li></ul></li><li><a class="tocitem" href="../initialization/">Initialization</a></li><li><a class="tocitem" href="../Library/">Component Library</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../julia_setup/">Julia Setup for New Users</a></li><li><a class="tocitem" href="../generated/getting_started/">Getting Started</a></li><li><a class="tocitem" href="../generated/typical_simulation_workflow/">Typical Simulation Workflow</a></li><li><a class="tocitem" href="../generated/custom_bus/">Custom Generator Bus</a></li><li><a class="tocitem" href="../generated/custom_line/">Custom Transmission Line</a></li></ul></li><li><span class="tocitem">Advanced Examples</span><ul><li><a class="tocitem" href="../generated/ieee9bus/">IEEE 9-Bus Example</a></li><li><a class="tocitem" href="../generated/ieee39_part1/">IEEE39 Part I: Modeling</a></li><li><a class="tocitem" href="../generated/ieee39_part2/">IEEE39 Part II: Initialization</a></li><li><a class="tocitem" href="../generated/ieee39_part3/">IEEE39 Part III: Simulation</a></li><li><a class="tocitem" href="../generated/ieee39_part4/">IEEE39 Part IV: Parameter Tuning</a></li><li><a class="tocitem" href="../generated/emt_toymodel/">EMT Toymodel</a></li></ul></li><li><a class="tocitem" href="../API/">API</a></li><li><a class="tocitem" href="../networkdynamics_forward/">🔗 NetworkDynamics.jl Docs</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Modeling Concepts</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Modeling Concepts</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl/blob/main/docs/src/ModelingConcepts.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Modeling-Concepts"><a class="docs-heading-anchor" href="#Modeling-Concepts">Modeling Concepts</a><a id="Modeling-Concepts-1"></a><a class="docs-heading-anchor-permalink" href="#Modeling-Concepts" title="Permalink"></a></h1><p>In general, PowerDynamics models power grids as a set of dynamical systems for both <strong>nodes</strong> and <strong>edges</strong> on a graph. Check out the <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/mathematical_model/#Mathematical-Model">Mathematical Model</a> documentation of NetworkDynamics for the underlying concepts.</p><p>The simulation happens entirely in a synchronous dq-frame. Due to their conceptual similarity to complex phasors, variables in this global dq-frame are referenced by subscripts <code>_r</code> and <code>_i</code> (for real and imaginary). This helps distinguish the variables from local dq frames, e.g. a generator model might transform <code>u_r</code> and <code>u_i</code> into <code>u_d</code> and <code>u_q</code>.</p><p>Both edge and node models are so-called input-output-systems: the edges receive the voltage of adjacent nodes as an input, the nodes receive the currents on adjacent edges as an input. In general, this leads to the following structure of a bus/node model:</p><p class="math-container">\[\begin{aligned}
+M_{\mathrm v}\,\frac{\mathrm{d}}{\mathrm{d}t}x_{\mathrm v} &amp;= f_{\mathrm v}\left(x_{\mathrm v}, \sum_k\begin{bmatrix}i^k_r\\ i^k_i\end{bmatrix}, p_{\mathrm v}, t\right)\\
+\begin{bmatrix}u_r\\ u_i\end{bmatrix} &amp;= g_{\mathrm v}(x_{\mathrm v},p_{\mathrm v}, t)
+\end{aligned}\]</p><p>where <span>$M_{\mathrm v}$</span> is the (possibly singular) mass-matrix, <span>$x_{\mathrm v}$</span> are the internal states and <span>$p_{\mathrm v}$</span> are parameters. Function <span>$f_{\mathrm v}$</span> describes the time evolution of the internal states while output equation <span>$g_{\mathrm v}$</span> defines the output voltage. The input for the system is the sum of all inflowing currents from adjacent lines <span>$k$</span>. Note how vertices are modeled as one-port systems; i.e., they receive the accumulated current from all connected lines, they can&#39;t distinguish which line provides which current. For special cases, this limitation might be mitigated using <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/external_inputs/#External-Inputs">External Inputs</a>.</p><div class="admonition is-info" id="Nodal-dynamics-include-injectors-f063f1871764c83a"><header class="admonition-header">Nodal dynamics include injectors<a class="admonition-anchor" href="#Nodal-dynamics-include-injectors-f063f1871764c83a" title="Permalink"></a></header><div class="admonition-body"><p>An important distinction between our modeling and the modeling in many other libraries is that we include the <strong>injector dynamics</strong> inside the <strong>node dynamics</strong>. I.e. if you have a bus with a load and a generator, the overall node dynamics will include both machine and load dynamics within their equations. The modularity and model reuse on the bus level is provided by <a href="https://github.com/SciML/ModelingToolkit.jl">ModelingToolkit.jl</a> integration.</p></div></div><p>The edge model on the other hand looks like this:</p><p class="math-container">\[\begin{aligned}
+M_{\mathrm e}\,\frac{\mathrm{d}}{\mathrm{d}t}x_{\mathrm e} &amp;= f_{\mathrm e}\left(x_{\mathrm e}, \begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}, \begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix},p_\mathrm{e}, t\right)\\
+\begin{bmatrix}i_r^\mathrm{src}\\i_i^\mathrm{src}\end{bmatrix} &amp;= g^\mathrm{src}_{\mathrm e}\left(x_{\mathrm e}, \begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}, \begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}, p_\mathrm{e}, t\right)\\
+\begin{bmatrix}i_r^\mathrm{dst}\\i_i^\mathrm{dst}\end{bmatrix} &amp;= g^\mathrm{dst}_{\mathrm e}\left(x_{\mathrm e}, \begin{bmatrix} u_r^\mathrm{src}\\u_i^\mathrm{src}\end{bmatrix}, \begin{bmatrix} u_r^\mathrm{dst}\\u_i^\mathrm{dst}\end{bmatrix}, p_\mathrm{e}, t\right)\\
+\end{aligned}\]</p><p>There are a few notable differences compared to bus models: Edges are two-port systems, they have <strong>two distinct</strong> inputs and <strong>two distinct</strong> outputs. Namely, they receive the dq voltage from both source and destination end, and define the current for both ends separately. In very simple systems without losses, those output currents might be just antisymmetric, in general cases however the current on both ends can differ drastically.</p><div class="admonition is-info" id="Note-92c9044989d2612f"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-92c9044989d2612f" title="Permalink"></a></header><div class="admonition-body"><p>Source and destination end of a line are purely conventional. It has nothing to do with the actual flow direction. Per convention from <a href="https://github.com/JuliaGraphs/Graphs.jl">Graphs.jl</a>, edges in undirected graphs always go from vertex with lower index to vertex with higher index, i.e. <span>$15 \to 23$</span> never <span>$23 \to 15$</span>.</p></div></div><p>The above descriptions are important to understand what&#39;s happening inside the package. However, since we use ModelingToolkit to define the individual models a lot of this complexity is hidden from the user. In the following, we&#39;ll go through the most important concepts when designing models using ModelingToolkit.</p><h2 id="Relationship-between-ModelingToolkit-and-NetworkDynamics"><a class="docs-heading-anchor" href="#Relationship-between-ModelingToolkit-and-NetworkDynamics">Relationship between ModelingToolkit and NetworkDynamics</a><a id="Relationship-between-ModelingToolkit-and-NetworkDynamics-1"></a><a class="docs-heading-anchor-permalink" href="#Relationship-between-ModelingToolkit-and-NetworkDynamics" title="Permalink"></a></h2><p>A crucial part of using this library is understanding the relationship between ModelingToolkit models and NetworkDynamics.</p><p>In a nutshell, ModelingToolkit models are <strong>symbolic models</strong>; i.e., they consist of symbolic equations which are not yet &quot;compiled&quot; for use as a numeric model. The modeling in MTK is very flexible and similar to the Modelica language. What we need in the end is models in the structure defined in the equations above. For that, we need the MTK models to have a specific structure. Then we can use the <a href="../API/#PowerDynamics.compile_bus"><code>compile_bus</code></a> and <a href="../API/#PowerDynamics.compile_line"><code>compile_line</code></a> function to compile the MTK models and create <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#Component-Models-with-MTK"><code>EdgeModel</code></a> and <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#Component-Models-with-MTK"><code>VertexModel</code></a> objects from them. Those objects are not symbolic anymore but compiled numeric versions of the symbolically created systems.</p><h2 id="ModelingToolkit-Models"><a class="docs-heading-anchor" href="#ModelingToolkit-Models">ModelingToolkit Models</a><a id="ModelingToolkit-Models-1"></a><a class="docs-heading-anchor-permalink" href="#ModelingToolkit-Models" title="Permalink"></a></h2><h3 id="Terminal"><a class="docs-heading-anchor" href="#Terminal">Terminal</a><a id="Terminal-1"></a><a class="docs-heading-anchor-permalink" href="#Terminal" title="Permalink"></a></h3><p>The <code>Terminal</code>-Connector is an important building block for every model. It represents a connection point with constant voltage in dq-coordinates <code>u_r</code> and <code>u_i</code> and enforces the Kirchhoff constraints <code>sum(i_r)=0</code> and <code>sum(i_i)=0</code>.</p><h3 id="Modeling-of-Buses"><a class="docs-heading-anchor" href="#Modeling-of-Buses">Modeling of Buses</a><a id="Modeling-of-Buses-1"></a><a class="docs-heading-anchor-permalink" href="#Modeling-of-Buses" title="Permalink"></a></h3><h4 id="Injector-Interface"><a class="docs-heading-anchor" href="#Injector-Interface">Model class <code>Injector</code></a><a id="Injector-Interface-1"></a><a class="docs-heading-anchor-permalink" href="#Injector-Interface" title="Permalink"></a></h4><p>An injector is a class of components with a single <code>Terminal()</code> (called <code>:terminal</code>). Examples for injectors might be Generators, Shunts, Loads.</p><pre><code class="language-asciiart hljs">(t)   ┌──────────┐
+ o←───┤ Injector │
+      └──────────┘</code></pre><p>The current for injectors is always in injector convention; i.e., positive currents flow <em>out</em> of the injector <em>towards</em> the terminal.</p><div class="admonition is-info" id="Model-classes-d94a7fe6762e0ba2"><header class="admonition-header">Model classes<a class="admonition-anchor" href="#Model-classes-d94a7fe6762e0ba2" title="Permalink"></a></header><div class="admonition-body"><p>Model &quot;classes&quot; are nothing formalized. In this document, a model class is just a description for some <code>System</code> from <code>ModelingToolkit.jl</code>, which satisfies certain requirements. For example, any <code>System</code> is considered an &quot;Injector&quot; if it contains a connector <code>Terminal()</code> called <code>:terminal</code>.</p></div></div><p>You can check if a model satisfies the injector interface using the <a href="../API/#PowerDynamics.isinjectormodel"><code>isinjectormodel</code></a> function.</p><details class="admonition is-details" id="Code-example:-definition-of-PQ-load-as-injector-8869b984ee134904"><summary class="admonition-header">Code example: definition of PQ load as injector<a class="admonition-anchor" href="#Code-example:-definition-of-PQ-load-as-injector-8869b984ee134904" title="Permalink"></a></summary><div class="admonition-body"><pre><code class="language-julia hljs">using PowerDynamics, PowerDynamics.Library, ModelingToolkit
+using ModelingToolkit: D_nounits as Dt, t_nounits as t
+@mtkmodel MyPQLoad begin
+    @components begin
+        terminal = Terminal()
+    end
+    @parameters begin
+        Pset, [description=&quot;Active Power demand&quot;]
+        Qset, [description=&quot;Reactive Power demand&quot;]
+    end
+    @variables begin
+        P(t), [description=&quot;Active Power&quot;]
+        Q(t), [description=&quot;Reactive Power&quot;]
+    end
+    @equations begin
+        P ~ terminal.u_r*terminal.i_r + terminal.u_i*terminal.i_i
+        Q ~ terminal.u_i*terminal.i_r - terminal.u_r*terminal.i_i
+        # if possible, it&#39;s better for the solver to explicitly provide algebraic equations for the current
+        terminal.i_r ~ (Pset*terminal.u_r + Qset*terminal.u_i)/(terminal.u_r^2 + terminal.u_i^2)
+        terminal.i_i ~ (Pset*terminal.u_i - Qset*terminal.u_r)/(terminal.u_r^2 + terminal.u_i^2)
+    end
+end</code></pre></div></details><h4 id="MTKBus-Interface"><a class="docs-heading-anchor" href="#MTKBus-Interface">Model class <code>MTKBus</code></a><a id="MTKBus-Interface-1"></a><a class="docs-heading-anchor-permalink" href="#MTKBus-Interface" title="Permalink"></a></h4><p>A <code>MTKBus</code> is a class of models, which are used to describe the dynamic behavior of a full bus in a power grid. Each <code>MTKBus</code> must contain a predefined model of type <code>BusBar()</code> (named <code>:busbar</code>). This busbar represents the connection point to the grid. Optionally, it may contain various injectors. If there are no injectors, the model just describes a junction bus; i.e., a bus that just satisfies the Kirchhoff constraint for the flows of connected lines.</p><pre><code class="language-asciiart hljs"> ┌───────────────────────────────────┐
+ │ MTKBus             ┌───────────┐  │
+ │  ┌──────────┐   ┌──┤ Generator │  │
+ │  │          │   │  └───────────┘  │
+ │  │  BusBar  ├───o                 │
+ │  │          │   │  ┌───────────┐  │
+ │  └──────────┘   └──┤ Load      │  │
+ │                    └───────────┘  │
+ └───────────────────────────────────┘</code></pre><p>Sometimes it is not possible to connect all injectors directly but instead one needs or wants <code>Branches</code> between the busbar and injector terminal. As long as the <code>:busbar</code> is present at the toplevel, there are few limitations on the overall model complexity.</p><p>For simple models (direct connections of a few injectors), it is possible to use the convenience method <code>MTKBus(injectors...)</code> to create the composite model based on provided injector models.</p><p>You can check if a model satisfies the bus interface using the <a href="../API/#PowerDynamics.isbusmodel"><code>isbusmodel</code></a> function.</p><details class="admonition is-details" id="Code-example:-definition-of-a-Bus-containing-a-swing-equation-and-a-load-28fdf243cad26dec"><summary class="admonition-header">Code example: definition of a Bus containing a swing equation and a load<a class="admonition-anchor" href="#Code-example:-definition-of-a-Bus-containing-a-swing-equation-and-a-load-28fdf243cad26dec" title="Permalink"></a></summary><div class="admonition-body"><pre><code class="language-julia hljs">using PowerDynamics, PowerDynamics.Library, ModelingToolkit
+@mtkmodel MyMTKBus begin
+    @components begin
+        busbar = BusBar()
+        swing = Swing()
+        load = PQLoad()
+    end
+    @equations begin
+        connect(busbar.terminal, swing.terminal)
+        connect(busbar.terminal, load.terminal)
+    end
+end</code></pre><p>Alternatively, for that system you could have just called</p><pre><code class="language-julia hljs">mybus = MTKBus(Swing(;name=:swing), PQLoad(;name=:load))</code></pre><p>to get an instance of a model which is structurally equivalent to <code>MyMTKBus</code>.</p></div></details><h3 id="Line-Modeling"><a class="docs-heading-anchor" href="#Line-Modeling">Line Modeling</a><a id="Line-Modeling-1"></a><a class="docs-heading-anchor-permalink" href="#Line-Modeling" title="Permalink"></a></h3><h4 id="Branch-Interface"><a class="docs-heading-anchor" href="#Branch-Interface">Model class <code>Branch</code></a><a id="Branch-Interface-1"></a><a class="docs-heading-anchor-permalink" href="#Branch-Interface" title="Permalink"></a></h4><p>A branch is the two-port equivalent to an injector. It needs to have two <code>Terminal()</code>s, one is called <code>:src</code>, the other <code>:dst</code>.</p><p>Examples for branches are: PI-model branches, dynamic RL branches or transformers.</p><pre><code class="language-asciiart hljs">(src) ┌──────────┐ (dst)
+  o←──┤  Branch  ├──→o
+      └──────────┘</code></pre><p><em>Both</em> ends follow the injector interface; i.e., current leaving the device towards the terminals is always positive.</p><p>You can check if a model satisfies the branch interface using the <a href="../API/#PowerDynamics.isbranchmodel"><code>isbranchmodel</code></a> function.</p><details class="admonition is-details" id="Code-example:-algebraic-R-line-94bcb60996f680f"><summary class="admonition-header">Code example: algebraic R-line<a class="admonition-anchor" href="#Code-example:-algebraic-R-line-94bcb60996f680f" title="Permalink"></a></summary><div class="admonition-body"><pre><code class="language-julia hljs">using PowerDynamics, PowerDynamics.Library, ModelingToolkit
+@mtkmodel MyRLine begin
+    @components begin
+        src = Terminal()
+        dst = Terminal()
+    end
+    @parameters begin
+        R=0, [description=&quot;Resistance&quot;]
+    end
+    @equations begin
+        dst.i_r ~ (dst.u_r - src.u_r)/R
+        dst.i_i ~ (dst.u_i - src.u_i)/R
+        src.i_r ~ -dst.i_r
+        src.i_i ~ -dst.i_i
+    end
+end</code></pre></div></details><h4 id="MTKLine-Interface"><a class="docs-heading-anchor" href="#MTKLine-Interface">Model class: <code>MTKLine</code></a><a id="MTKLine-Interface-1"></a><a class="docs-heading-anchor-permalink" href="#MTKLine-Interface" title="Permalink"></a></h4><p>Similar to the <code>MTKBus</code>, a <code>MTKLine</code> is a model class which represents a transmission line in the network.</p><p>It must contain two <code>LineEnd()</code> instances, one called <code>:src</code>, one called <code>:dst</code>.</p><pre><code class="language-asciiart hljs"> ┌────────────────────────────────────────────────┐
+ │ MTKLine          ┌──────────┐                  │
+ │  ┌─────────┐  ┌──┤ Branch A ├──┐  ┌─────────┐  │
+ │  │ LineEnd │  │  └──────────┘  │  │ LineEnd │  │
+ │  │  :src   ├──o                o──┤  :dst   │  │
+ │  │         │  │  ┌──────────┐  │  │         │  │
+ │  └─────────┘  └──┤ Branch B ├──┘  └─────────┘  │
+ │                  └──────────┘                  │
+ └────────────────────────────────────────────────┘</code></pre><p>Simple line models, which consist only of valid <code>Branch</code> models, can be instantiated using the <code>MTKLine(branches...)</code> constructor.</p><p>More complex models can be created manually. For example, you could define a dynamic multi-branch DC line model by chaining (possibly very complex and nested) source and destination inverter/rectifier models with one or many dc branches.</p><pre><code class="language-asciiart hljs">┌───────────────────────────────────────────────────────────┐
+│ MTKLine                ┌──────────┐                       │
+│                       ┌┤ DC Br. A ├┐                      │
+│┌─────────┐ ┌─────────┐│└──────────┘│┌─────────┐┌─────────┐│
+││ LineEnd ├─┤ src inv ├o            o┤ dst inv ├┤ LineEnd ││
+│└─────────┘ └─────────┘│┌──────────┐│└─────────┘└─────────┘│
+│   :src                └┤ DC Br. B ├┘              :dst    │
+│                        └──────────┘                       │
+└───────────────────────────────────────────────────────────┘</code></pre><p>You can check if a model satisfies the line interface using the <a href="../API/#PowerDynamics.islinemodel"><code>islinemodel</code></a> function.</p><details class="admonition is-details" id="Code-example:-Transmission-line-with-two-pi-branches-ac7d1f0145dafd61"><summary class="admonition-header">Code example: Transmission line with two pi-branches<a class="admonition-anchor" href="#Code-example:-Transmission-line-with-two-pi-branches-ac7d1f0145dafd61" title="Permalink"></a></summary><div class="admonition-body"><pre><code class="language-julia hljs">using PowerDynamics, PowerDynamics.Library, ModelingToolkit
+@mtkmodel MyMTKLine begin
+    @components begin
+        src = LineEnd()
+        dst = LineEnd()
+        branch1 = PiLine()
+        branch2 = PiLine()
+    end
+    @equations begin
+        connect(src.terminal, branch1.src)
+        connect(src.terminal, branch2.src)
+        connect(dst.terminal, branch1.dst)
+        connect(dst.terminal, branch2.dst)
+    end
+end</code></pre><p>Alternatively, an equivalent model with multiple valid branch models in parallel could be created and instantiated with the convenience constructor</p><pre><code class="language-julia hljs">line = MTKLine(PiLine(;name=:branch1), PiLine(;name=:branch2))</code></pre></div></details><h2 id="From-MTK-Models-to-NetworkDynamics"><a class="docs-heading-anchor" href="#From-MTK-Models-to-NetworkDynamics">From MTK Models to NetworkDynamics</a><a id="From-MTK-Models-to-NetworkDynamics-1"></a><a class="docs-heading-anchor-permalink" href="#From-MTK-Models-to-NetworkDynamics" title="Permalink"></a></h2><p>Both <code>MTKLine</code> and <code>MTKBus</code> are still purely symbolic ModelingToolkit models. However, they have an important property: they possess the correct input-output structure and variable names to be compiled into <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#Component-Models-with-MTK"><code>VertexModel</code></a> and <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#Component-Models-with-MTK"><code>EdgeModel</code></a> models. To do so, PowerDynamics.jl provides the <a href="../API/#PowerDynamics.compile_line"><code>compile_line</code></a> and <a href="../API/#PowerDynamics.compile_bus"><code>compile_bus</code></a> functions.</p><p>At their core, both <code>compile_*</code> functions use ModelingToolkit&#39;s <a href="https://docs.sciml.ai/ModelingToolkit/stable/API/model_building/#ModelingToolkit.mtkcompile"><code>mtkcompile</code></a> to perform <strong>symbolic simplifications</strong> on your models and reduce the number of states. Most notably, this process can drastically reduce the number of equations, while all previously defined states remain &quot;observable&quot;, i.e. inspectable after simulation. For example, in the above code example of the PQ load we defined equations for active and reactive powers <span>$P$</span> and <span>$Q$</span>. Those equations don&#39;t add anything to the actual behavior of the system, however they will be kept around as so-called &quot;observed&quot; states, meaning we can reconstruct and plot them from dynamical simulations.</p><div class="admonition is-success" id="Tip:-Introduce-states-of-interest-as-observables-1a6c78104c770e1f"><header class="admonition-header">Tip: Introduce states of interest as observables<a class="admonition-anchor" href="#Tip:-Introduce-states-of-interest-as-observables-1a6c78104c770e1f" title="Permalink"></a></header><div class="admonition-body"><p>It is often useful to add derived quantities of interest explicitly to your models. For example, if you&#39;re interested in some internal voltage angle just define an equation <code>u_angle ~ atan(u_d, u_q)</code>. If nothing else depends on it, this equation will be symbolically reduced,  i.e. you don&#39;t add any overhead to your simulation but it will be accessible after the simulation.  This is often far more convenient than &quot;reconstructing&quot; such states manually!</p></div></div><h3 id="(MTK)-Bus-Model-to-VertexModel:-compile_bus"><a class="docs-heading-anchor" href="#(MTK)-Bus-Model-to-VertexModel:-compile_bus">(MTK) Bus Model to VertexModel: <code>compile_bus</code></a><a id="(MTK)-Bus-Model-to-VertexModel:-compile_bus-1"></a><a class="docs-heading-anchor-permalink" href="#(MTK)-Bus-Model-to-VertexModel:-compile_bus" title="Permalink"></a></h3><pre><code class="language-asciiart hljs">                                      ╔═════════════════════════╗
+                                      ║ VertexModel (compiled)  ║
+┌────────────────────┐      Network   ║  ┌────────────────────┐ ║
+│MTKBus   ┌─────────┐│     interface  ║  │MTKBus   ┌─────────┐│ ║
+│        ┌┤Generator││                ║  │        ┌┤Generator││ ║
+│┌──────┐│└─────────┘│      current ────→│┌──────┐│└─────────┘│ ║
+││BusBar├o           │  =&gt;            ║  ││BusBar├o           │ ║
+│└──────┘│┌────┐     │      voltage ←────│└──────┘│┌────┐     │ ║
+│        └┤Load│     │                ║  │        └┤Load│     │ ║
+│         └────┘     │                ║  │         └────┘     │ ║
+└────────────────────┘                ║  └────────────────────┘ ║
+                                      ╚═════════════════════════╝</code></pre><h3 id="(MTK)-Line-Model-to-EdgeModel:-compile_line"><a class="docs-heading-anchor" href="#(MTK)-Line-Model-to-EdgeModel:-compile_line">(MTK) Line Model to EdgeModel: <code>compile_line</code></a><a id="(MTK)-Line-Model-to-EdgeModel:-compile_line-1"></a><a class="docs-heading-anchor-permalink" href="#(MTK)-Line-Model-to-EdgeModel:-compile_line" title="Permalink"></a></h3><pre><code class="language-asciiart hljs">
+                                        ╔══════════════════════════════╗
+                                        ║ EdgeModel (compiled)         ║
+┌─────────────────────────────┐     src ║ ┌──────────────────────────┐ ║ dst
+│MTKLine   ┌───────┐          │  vertex ║ │MTKLine   ┌────┐          │ ║ vertex
+│         ┌┤BranchA├┐         │         ║ │         ┌┤    ├┐         │ ║
+│┌───────┐│└───────┘│┌───────┐│     u ───→│┌───────┐│└────┘│┌───────┐│←─── u
+││LineEnd├o         o┤LineEnd││  =&gt;     ║ ││LineEnd├o      o┤LineEnd││ ║
+│└───────┘│┌───────┐│└───────┘│     i ←───│└───────┘│┌────┐│└───────┘│───→ i
+│  :src   └┤BranchB├┘  :dst   │         ║ │         └┤    ├┘         │ ║
+│          └───────┘          │         ║ │          └────┘          │ ║
+└─────────────────────────────┘         ║ └──────────────────────────┘ ║
+                                        ╚══════════════════════════════╝</code></pre><h3 id="End-to-End-Example"><a class="docs-heading-anchor" href="#End-to-End-Example">End to End Example</a><a id="End-to-End-Example-1"></a><a class="docs-heading-anchor-permalink" href="#End-to-End-Example" title="Permalink"></a></h3><p>Putting the knowledge from this document together, we can start a short simulation of an example network:</p><pre><code class="language-julia hljs">using PowerDynamics, PowerDynamics.Library, ModelingToolkit
+using Graphs, NetworkDynamics
+using OrdinaryDiffEqRosenbrock, OrdinaryDiffEqNonlinearSolve
+using CairoMakie</code></pre><p>First, we define an <code>MTKBus</code> consisting of two predefined injector models from the library: a <code>Swing</code> generator model and a <code>PQLoad</code>. To do so, we use the <a href="../API/#PowerDynamics.MTKBus"><code>MTKBus(injectors...)</code></a> constructor.</p><pre><code class="language-julia hljs">@named swing = Swing(; Pm=1, V=1, D=0.1)
+@named load = PQLoad(; Pset=-.5, Qset=0)
+bus1mtk = MTKBus(swing, load; name=:swingbus)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Model swingbus:</span>
+<span class="sgr1">Subsystems (3):</span> see hierarchy(swingbus)
+  busbar
+  swing
+  load
+<span class="sgr1">Equations (25):</span>
+  19 standard: see equations(swingbus)
+  6 connecting: see equations(expand_connections(swingbus))
+<span class="sgr1">Unknowns (27):</span> see unknowns(swingbus)
+  busbar₊u_r(t) [defaults to 1]: bus d-voltage
+  busbar₊u_i(t) [defaults to 0]: bus q-voltage
+  busbar₊i_r(t): bus d-current (flowing into bus)
+  busbar₊i_i(t): bus d-current (flowing into bus)
+  busbar₊P(t): bus active power (flowing into network)
+  busbar₊Q(t): bus reactive power (flowing into network)
+  busbar₊u_mag(t): bus voltage magnitude
+  busbar₊u_arg(t): bus voltage argument
+  busbar₊i_mag(t): bus current magnitude
+  busbar₊i_arg(t): bus current argument
+  busbar₊terminal₊u_r(t): d-voltage
+  busbar₊terminal₊u_i(t): q-voltage
+  busbar₊terminal₊i_r(t): d-current
+  busbar₊terminal₊i_i(t): q-current
+  swing₊ω(t): Rotor frequency
+  swing₊θ(t): Rotor angle
+  swing₊Pel(t): Electrical Power injected into the grid
+  swing₊terminal₊u_r(t): d-voltage
+  swing₊terminal₊u_i(t): q-voltage
+  swing₊terminal₊i_r(t): d-current
+  swing₊terminal₊i_i(t): q-current
+  load₊P(t): Active Power
+  load₊Q(t): Reactive Power
+  load₊terminal₊u_r(t): d-voltage
+  load₊terminal₊u_i(t): q-voltage
+  load₊terminal₊i_r(t): d-current
+  load₊terminal₊i_i(t): q-current
+<span class="sgr1">Parameters (7):</span> see parameters(swingbus)
+  swing₊ω_ref [defaults to 1]: Reference frequency
+  swing₊Pm [defaults to 1]: Mechanical Power
+  swing₊M [defaults to 0.005]: Inertia
+  swing₊D [defaults to 0.1]: Damping
+  swing₊V [defaults to 1]: Voltage magnitude
+  load₊Pset [defaults to -0.5]: Active Power demand
+  load₊Qset [defaults to 0]: Reactive Power demand</code></pre><p>This results in an MTK model, which fulfills the <code>MTKBus</code> interface and thus can be compiled into an actual <code>VertexModel</code> for simulation:</p><pre><code class="language-julia hljs">vertex1f = compile_bus(bus1mtk) # extract component function</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:swingbus</span> <span class="sgr94">NoFeedForward()</span>
+ ├─ 2 inputs:  [busbar₊i_r, busbar₊i_i]
+ ├─ 2 states:  [swing₊ω<span class="sgr90">≈0</span>, swing₊θ<span class="sgr90">≈0</span>]
+ ├─ 2 outputs: [busbar₊u_r=1, busbar₊u_i=0]
+ └─ 7 params:  [swing₊ω_ref=1, swing₊Pm=1, swing₊M=0.005, swing₊D=0.1, swing₊V=1, load₊Pset=-0.5, load₊Qset=0]</code></pre><p>As a second bus in this example, we use a <a href><code>SlackDifferential</code></a> from the library. This model is not an Injector but an MTKBus directly, as it does not make sense to connect anything else to a slack bus.</p><pre><code class="language-julia hljs">bus2mtk = SlackDifferential(; name=:slackbus)
+vertex2f = compile_bus(bus2mtk) # extract component function</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:slackbus</span> <span class="sgr94">PureStateMap()</span>
+ ├─ 2 inputs:  [busbar₊i_r, busbar₊i_i]
+ ├─ 2 states:  [busbar₊u_i=0, busbar₊u_r=1]
+ ├─ 2 outputs: [busbar₊u_r=1, busbar₊u_i=0]
+ └─ 2 params:  [u_init_r=1, u_init_i=0]</code></pre><p>For the connecting line, we instantiate two <a href><code>PiLine</code></a> from the library. Each PiLine fulfills the Branch interface. Therefore we can define a <code>MTKLine</code> model by putting both Branches in parallel:</p><pre><code class="language-julia hljs">@named branch1 = PiLine()
+@named branch2 = PiLine()
+linemtk = MTKLine(branch1, branch2; name=:powerline)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Model swingbus:</span>
+<span class="sgr1">Subsystems (3):</span> see hierarchy(swingbus)
+  busbar
+  swing
+  load
+<span class="sgr1">Equations (25):</span>
+  19 standard: see equations(swingbus)
+  6 connecting: see equations(expand_connections(swingbus))
+<span class="sgr1">Unknowns (27):</span> see unknowns(swingbus)
+  busbar₊u_r(t) [defaults to 1]: bus d-voltage
+  busbar₊u_i(t) [defaults to 0]: bus q-voltage
+  busbar₊i_r(t): bus d-current (flowing into bus)
+  busbar₊i_i(t): bus d-current (flowing into bus)
+  busbar₊P(t): bus active power (flowing into network)
+  busbar₊Q(t): bus reactive power (flowing into network)
+  busbar₊u_mag(t): bus voltage magnitude
+  busbar₊u_arg(t): bus voltage argument
+  busbar₊i_mag(t): bus current magnitude
+  busbar₊i_arg(t): bus current argument
+  busbar₊terminal₊u_r(t): d-voltage
+  busbar₊terminal₊u_i(t): q-voltage
+  busbar₊terminal₊i_r(t): d-current
+  busbar₊terminal₊i_i(t): q-current
+  swing₊ω(t): Rotor frequency
+  swing₊θ(t): Rotor angle
+  swing₊Pel(t): Electrical Power injected into the grid
+  swing₊terminal₊u_r(t): d-voltage
+  swing₊terminal₊u_i(t): q-voltage
+  swing₊terminal₊i_r(t): d-current
+  swing₊terminal₊i_i(t): q-current
+  load₊P(t): Active Power
+  load₊Q(t): Reactive Power
+  load₊terminal₊u_r(t): d-voltage
+  load₊terminal₊u_i(t): q-voltage
+  load₊terminal₊i_r(t): d-current
+  load₊terminal₊i_i(t): q-current
+<span class="sgr1">Parameters (7):</span> see parameters(swingbus)
+  swing₊ω_ref [defaults to 1]: Reference frequency
+  swing₊Pm [defaults to 1]: Mechanical Power
+  swing₊M [defaults to 0.005]: Inertia
+  swing₊D [defaults to 0.1]: Damping
+  swing₊V [defaults to 1]: Voltage magnitude
+  load₊Pset [defaults to -0.5]: Active Power demand
+  load₊Qset [defaults to 0]: Reactive Power demand</code></pre><p>Similar to before, we need to compile the MTKModel by calling <a href="../API/#PowerDynamics.compile_line"><code>compile_line</code></a>.</p><pre><code class="language-julia hljs">edgef = compile_line(linemtk) # extract component function</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">EdgeModel <span class="sgr1">:powerline</span> <span class="sgr94">PureFeedForward()</span>
+ ├─ 2/2 inputs:  src=[src₊u_r, src₊u_i] dst=[dst₊u_r, dst₊u_i]
+ ├─   0 states:  []  
+ ├─ 2/2 outputs: src=[src₊i_r, src₊i_i] dst=[dst₊i_r, dst₊i_i]
+ └─  18 params:  [branch1₊R=0, branch1₊X=0.1, branch1₊G_src=0, branch1₊B_src=0, branch1₊G_dst=0, branch1₊B_dst=0, branch1₊r_src=1, branch1₊r_dst=1, branch1₊active=1, branch2₊R=0, branch2₊X=0.1, branch2₊G_src=0, branch2₊B_src=0, branch2₊G_dst=0, branch2₊B_dst=0, branch2₊r_src=1, branch2₊r_dst=1, branch2₊active=1]</code></pre><p>To simulate the system, we place both components on a graph and define their network topology. We define both graph topology as well as the models for the individual components.</p><pre><code class="language-julia hljs">g = complete_graph(2)
+nw = Network(g, [vertex1f, vertex2f], edgef)
+u0 = NWState(nw) # extract parameters and state from models
+u0.v[1, :swing₊θ] = 0 # set missing initial conditions
+u0.v[1, :swing₊ω] = 1</code></pre><p>Then we can solve the problem</p><pre><code class="language-julia hljs">prob = ODEProblem(nw, u0, (0,1))
+sol = solve(prob, Rodas5P())</code></pre><p>And finally we can plot the solution:</p><pre><code class="language-julia hljs">fig = Figure();
+ax = Axis(fig[1,1])
+lines!(ax, sol; idxs=VIndex(1,:busbar₊P), label=&quot;Power injection Bus&quot;, color=Cycled(1))
+lines!(ax, sol; idxs=VIndex(1,:swing₊Pel), label=&quot;Power injection Swing&quot;, color=Cycled(2))
+lines!(ax, sol; idxs=VIndex(1,:load₊P), label=&quot;Power injection load&quot;, color=Cycled(3))
+axislegend(ax)
+
+ax = Axis(fig[2,1])
+lines!(ax, sol; idxs=VIndex(1,:busbar₊u_arg), label=&quot;swing bus voltage angle&quot;, color=Cycled(1))
+lines!(ax, sol; idxs=VIndex(2,:busbar₊u_arg), label=&quot;slack bus voltage angle&quot;, color=Cycled(2))
+axislegend(ax)</code></pre><img src="2ec25eba.png" alt="Example block output"/><h2 id="Internals"><a class="docs-heading-anchor" href="#Internals">Internals</a><a id="Internals-1"></a><a class="docs-heading-anchor-permalink" href="#Internals" title="Permalink"></a></h2><p>Internally, we use different input/output conventions for bus and line models. The predefined models <code>BusBar()</code> and <code>LineEnd()</code> are defined in the following way:</p><h3 id="Model:-BusBar()"><a class="docs-heading-anchor" href="#Model:-BusBar()">Model: <code>BusBar()</code></a><a id="Model:-BusBar()-1"></a><a class="docs-heading-anchor-permalink" href="#Model:-BusBar()" title="Permalink"></a></h3><p>A busbar is a concrete model used in bus modeling. It represents the physical connection within a bus, the component where all injectors and lines attach.</p><pre><code class="language-asciiart hljs">           ┌──────────┐
+i_lines ──→│          │  (t)
+           │  Busbar  ├───o
+  u_bus ←──│          │
+           └──────────┘</code></pre><p>It receives the sum of all line currents as an input and balances this with the currents flowing into the terminal. As an output, it forwards the terminal voltage to the backend.</p><h3 id="Model:-LineEnd()"><a class="docs-heading-anchor" href="#Model:-LineEnd()">Model: <code>LineEnd()</code></a><a id="Model:-LineEnd()-1"></a><a class="docs-heading-anchor-permalink" href="#Model:-LineEnd()" title="Permalink"></a></h3><p>A <code>LineEnd</code> model is very similar to the <code>BusBar</code> model. It represents one end of a transmission line.</p><pre><code class="language-asciiart hljs">          ┌───────────┐
+ u_bus ──→│           │  (t)
+          │  LineEnd  ├───o
+i_line ←──│           │
+          └───────────┘</code></pre><p>It has special input/output connectors which handle the network interconnection. The main difference being the distinct input/output conventions for the network interface.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../initialization/">Initialization »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Friday 12 December 2025 02:46">Friday 12 December 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
