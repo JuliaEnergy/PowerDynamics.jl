@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Linear Analysis of 4-Bus EMT System · PowerDynamics.jl</title><meta name="title" content="Linear Analysis of 4-Bus EMT System · PowerDynamics.jl"/><meta property="og:title" content="Linear Analysis of 4-Bus EMT System · PowerDynamics.jl"/><meta property="twitter:title" content="Linear Analysis of 4-Bus EMT System · PowerDynamics.jl"/><meta name="description" content="Documentation for PowerDynamics.jl."/><meta property="og:description" content="Documentation for PowerDynamics.jl."/><meta property="twitter:description" content="Documentation for PowerDynamics.jl."/><meta property="og:url" content="https://juliaenergy.github.io/PowerDynamics.jl/generated/linear_analysis/"/><meta property="twitter:url" content="https://juliaenergy.github.io/PowerDynamics.jl/generated/linear_analysis/"/><link rel="canonical" href="https://juliaenergy.github.io/PowerDynamics.jl/generated/linear_analysis/"/><meta property="og:image" content="https://juliaenergy.github.io/PowerDynamics.jl/assets/preview.png"/><meta property="twitter:image" content="https://juliaenergy.github.io/PowerDynamics.jl/assets/preview.png"/><meta property="twitter:card" content="summary_large_image"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="PowerDynamics.jl logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="PowerDynamics.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PowerDynamics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../ModelingConcepts/">Modeling Concepts</a></li><li><a class="tocitem" href="../../initialization/">Initialization</a></li><li><a class="tocitem" href="../../Library/">Component Library</a></li><li><a class="tocitem" href="../../vs_and_cs_models/">On Voltage and Current Sources</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../../julia_setup/">Julia Setup for New Users</a></li><li><a class="tocitem" href="../getting_started/">Getting Started</a></li><li><a class="tocitem" href="../typical_simulation_workflow/">Typical Simulation Workflow</a></li><li><a class="tocitem" href="../custom_bus/">Custom Generator Bus</a></li><li><a class="tocitem" href="../custom_line/">Custom Transmission Line</a></li></ul></li><li><span class="tocitem">Advanced Examples</span><ul><li><a class="tocitem" href="../ieee9bus/">IEEE 9-Bus Example</a></li><li><a class="tocitem" href="../ieee39_part1/">IEEE39 Part I: Modeling</a></li><li><a class="tocitem" href="../ieee39_part2/">IEEE39 Part II: Initialization</a></li><li><a class="tocitem" href="../ieee39_part3/">IEEE39 Part III: Simulation</a></li><li><a class="tocitem" href="../ieee39_part4/">IEEE39 Part IV: Parameter Tuning</a></li><li class="is-active"><a class="tocitem" href>Linear Analysis of 4-Bus EMT System</a><ul class="internal"><li><a class="tocitem" href="#Synchronous-Machine-with-Stator-Dynamics"><span>Synchronous Machine with Stator Dynamics</span></a></li><li><a class="tocitem" href="#4-Bus-Network-Setup"><span>4-Bus Network Setup</span></a></li><li><a class="tocitem" href="#Transmission-Lines"><span>Transmission Lines</span></a></li><li><a class="tocitem" href="#Network-Assembly-and-Initialization"><span>Network Assembly and Initialization</span></a></li><li><a class="tocitem" href="#Eigenvalue-Analysis"><span>Eigenvalue Analysis</span></a></li><li><a class="tocitem" href="#Impedance-Based-Bode-Analysis"><span>Impedance-Based Bode Analysis</span></a></li><li><a class="tocitem" href="#Open-Loop-Decomposition-(Alternative-Approach)"><span>Open-Loop Decomposition (Alternative Approach)</span></a></li><li><a class="tocitem" href="#Time-Domain-Simulation"><span>Time-Domain Simulation</span></a></li><li><a class="tocitem" href="#Parameter-Sensitivity-Analysis"><span>Parameter Sensitivity Analysis</span></a></li></ul></li><li><a class="tocitem" href="../emt_toymodel/">EMT Toymodel</a></li><li><a class="tocitem" href="../zero_imp_breaker/">Zero-Impedance Circuit Breaker</a></li></ul></li><li><a class="tocitem" href="../../API/">API</a></li><li><a class="tocitem" href="../../networkdynamics_forward/">🔗 NetworkDynamics.jl Docs</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Advanced Examples</a></li><li class="is-active"><a href>Linear Analysis of 4-Bus EMT System</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Linear Analysis of 4-Bus EMT System</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl/blob/main/docs/examples/linear_analysis.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="linear-analysis"><a class="docs-heading-anchor" href="#linear-analysis">Linear Analysis of a 4-Bus System</a><a id="linear-analysis-1"></a><a class="docs-heading-anchor-permalink" href="#linear-analysis" title="Permalink"></a></h1><p>This example can be downloaded as a normal Julia script <a href="../linear_analysis.jl">here</a>.</p><p>This example demonstrates <strong>eigenvalue analysis</strong> and <strong>impedance-based Bode analysis</strong> of a 4-bus EMT power system.</p><div class="admonition is-success" id="Replicated-SimplusGT-Example-6e7ad38d7ea27811"><header class="admonition-header">Replicated SimplusGT Example<a class="admonition-anchor" href="#Replicated-SimplusGT-Example-6e7ad38d7ea27811" title="Permalink"></a></header><div class="admonition-body"><p>This example reimplements the basic 4-bus default example from <a href="https://github.com/Future-Power-Networks/Simplus-Grid-Tool">SimplusGT</a> (Simplus Grid Tool). Since we use the same models and parameters, we can directly compare our results to the SimplusGT results.</p><p>Please note that this tutorial only replicates a small part of what SimplusGT is capable of, so please check out their great toolbox for in-depth linear analysis of power systems!</p><p>Throughout this example we compare our results to figures exported from SimplusGT. You can find a README.md in <code>/docs/examples/SimplusGTData</code> of the PowerDynamics.jl repository which explains how those reference plots have been created.</p></div></div><h2 id="Synchronous-Machine-with-Stator-Dynamics"><a class="docs-heading-anchor" href="#Synchronous-Machine-with-Stator-Dynamics">Synchronous Machine with Stator Dynamics</a><a id="Synchronous-Machine-with-Stator-Dynamics-1"></a><a class="docs-heading-anchor-permalink" href="#Synchronous-Machine-with-Stator-Dynamics" title="Permalink"></a></h2><p>In order to replicate the results from SimplusGT we need to use identical or nearly identical models. Most of the models needed are present in our Library, but we still need to implement a custom machine model. Since modeling is not the focus of this tutorial, it is provided without further explanation.</p><details class="admonition is-details">
+<summary class="admonition-header">Definition of custom Machine Model</summary>
+<div class="admonition-body">
+SimplusGT uses a special machine model for their Type 0 Apparatus which:
+- retains the stator flux dynamics (i.e. defines the current output as a differential equation),
+- assumes constant field flux (parameter which is initialized at operation point) and
+- contains no governor dynamics (i.e. mechanical torque is a constant parameter initialized at operation point).<pre><code class="language-julia hljs">using PowerDynamics
+using PowerDynamics.Library
+using PowerDynamics.Library.ComposableInverter
+using ModelingToolkit
+using ModelingToolkit: t_nounits as t, D_nounits as Dt
+using OrdinaryDiffEqRosenbrock
+using OrdinaryDiffEqNonlinearSolve
+using NetworkDynamics
+using NetworkDynamics: feedback
+using CairoMakie
+
+@mtkmodel SyncMachineStatorDynamics begin
+    @components begin
+        terminal = Terminal()
+    end
+    @parameters begin
+        J, [description=&quot;Inertia constant [MWs²/MVA]&quot;]
+        D, [description=&quot;Damping coefficient [pu]&quot;]
+        wL, [description=&quot;Stator inductance * base frequency [pu]&quot;]
+        R, [description=&quot;Stator resistance [pu]&quot;]
+        ω0, [description=&quot;Base frequency [rad/s]&quot;]
+        psi_f, [guess=1, description=&quot;Field flux linkage [pu]&quot;]
+        T_m, [guess=1, description=&quot;Mechanical torque [pu]&quot;]
+    end
+    @variables begin
+        i_d(t), [guess=0, description=&quot;d-axis stator current [pu]&quot;]
+        i_q(t), [guess=1, description=&quot;q-axis stator current [pu]&quot;]
+        w(t), [guess=2*pi*50, description=&quot;Rotor speed deviation [rad/s]&quot;]
+        theta(t), [guess=0, description=&quot;Rotor angle [rad]&quot;]
+        v_d(t), [guess=1, description=&quot;d-axis terminal voltage [pu]&quot;]
+        v_q(t), [guess=0, description=&quot;q-axis terminal voltage [pu]&quot;]
+        psi_d(t), [guess=1, description=&quot;d-axis flux linkage [pu]&quot;]
+        psi_q(t), [guess=0, description=&quot;q-axis flux linkage [pu]&quot;]
+        Te(t), [guess=1, description=&quot;Electrical torque [pu]&quot;]
+    end
+    begin
+        J_pu = J*2/ω0^2
+        D_pu = D/ω0^2
+        L = wL/ω0
+        T_to_loc(α)  = [ cos(α) sin(α);
+                        -sin(α)  cos(α)]
+        T_to_glob(α) = T_to_loc(-α)
+    end
+    @equations begin
+        # output transformation (global dq/local dq)
+        [terminal.i_r, terminal.i_i] .~ -T_to_glob(theta)*[i_d, i_q]
+        [v_d, v_q] .~ T_to_loc(theta)*[terminal.u_r, terminal.u_i]
+        # electromechanical equations
+        psi_d ~ L*i_d
+        psi_q ~ L*i_q - psi_f
+        Te ~ psi_f * i_d
+        Dt(i_d) ~ (v_d - R*i_d + w*psi_q)/L
+        Dt(i_q) ~ (v_q - R*i_q - w*psi_d)/L
+        # swing equation
+        Dt(w) ~ (Te - T_m - D_pu*w)/J_pu
+        Dt(theta) ~ w - ω0
+    end
+end</code></pre></div>
+</details><h2 id="4-Bus-Network-Setup"><a class="docs-heading-anchor" href="#4-Bus-Network-Setup">4-Bus Network Setup</a><a id="4-Bus-Network-Setup-1"></a><a class="docs-heading-anchor-permalink" href="#4-Bus-Network-Setup" title="Permalink"></a></h2><p>The topology of the network looks like this:</p><pre><code class="language-asciiart hljs">       (~)
+    2╺┯━┷━┯╸
+      │   │   (GFL)
+1╺┯━━━┿╸  │   ╺━┿━╸4
+ (~)  │   │╭────╯
+     ╺┷━┯━┷┷╸3
+      (GFM)
+</code></pre><p>We have 4 Buses in total, two of which have a synchronous machine connected, one has a grid forming droop inverter and one has a grid following inverter.</p><div class="admonition is-info" id="EMT-Models-d74fb106c0446aa8"><header class="admonition-header">EMT Models<a class="admonition-anchor" href="#EMT-Models-d74fb106c0446aa8" title="Permalink"></a></header><div class="admonition-body"><p>The entire modeling in SimplusGT uses <strong>EMT Components</strong>, meaning that the power lines are modeled using <a href="../../Library/#PowerDynamics.Library.DynamicSeriesRLBranch"><code>DynamicSeriesRLBranch</code></a> models. At each of the buses there is a shunt consisting of a parallel capacitor and resistor (<a href="../../Library/#PowerDynamics.Library.DynamicParallelRCShunt"><code>DynamicParallelRCShunt</code></a>).</p></div></div><p>Since the devices are all natural current sources and we have explicit shunts at all buses (self-edges in SimplusGT data), we use current source modeling according to the docs <a href="../../vs_and_cs_models/#vc-and-cs">on voltage and current sources</a>. Specificially, we model each bus as a RC-shunt (the self-edge in SimplusGT), while the devices are connected to those shunt buses  as current sources via <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.LoopbackConnection"><code>LoopbackConnection</code></a> components.</p><p>So in the end we get interconnected models of the following form. This is important for the definition of our perturbation ports later on.</p><pre><code class="language-asciiart hljs">               ╭────────────────┬───────────╮
+               │        voltage │ u out     │
+┏━━━━━━━━━━━━━━▽━━┓   ╔═════════△════════╗  │   ╔═══════════════╗
+┃ Rest of Network ┃   ║ VertexModel:     ║  ╰───▷ Vertex-Model: ║
+┃ - voltage in    ┃   ║  Shunt-Model     ║      ║  Device       ║
+┃ - current out   ┃   ║ - current sum in ║      ║ - voltage in  ║
+┗━━━━━━━━━━━━━━▽━━┛   ║ - voltage out    ║  ╭───◁ - current out ║
+               │      ╚═════════△════════╝  │   ╚═══════════════╝
+       current │ i out        ╭─┴─╮         │  (direct connection via loopback)
+               ╰──────────────▷ + ◁─────────╯
+                              ╰───╯</code></pre><p>With that we can start defining the actual models. For each model we define:</p><ul><li>a shunt bus (dynamic shunt model, static shunt model for powerflow),</li><li>a device bus (machine or inverter model, Slack, PV or PQ model for powerflow) and</li><li>a loopback connection connecting the current-source device to the shunt bus.</li></ul><h3 id="Bus-1-and-2:-Synchronous-Generators"><a class="docs-heading-anchor" href="#Bus-1-and-2:-Synchronous-Generators">Bus 1 &amp; 2: Synchronous Generators</a><a id="Bus-1-and-2:-Synchronous-Generators-1"></a><a class="docs-heading-anchor-permalink" href="#Bus-1-and-2:-Synchronous-Generators" title="Permalink"></a></h3><p>Bus 1 and 2 are modeled using the previously defined <code>SyncMachineStatorDynamics</code> model. The parameters are taken from the SimplusGT example. During powerflow, the first machine is modeled as a slack bus, the second one as a PV bus. In both cases, we use current source modeling and connect the device to a dynamic shunt bus (which acts like a static shunt during powerflow).</p><pre><code class="language-julia hljs">ω0 = 2π*50
+sg1_bus, bus1, loop1 = let
+    @named sm = SyncMachineStatorDynamics(J=3.5, D=1, wL=0.05, R=0.01, ω0=ω0)
+    @named sg1_bus = compile_bus(MTKBus(sm); current_source=true)
+    set_pfmodel!(sg1_bus, pfSlack(V=1, δ=0; current_source=true, assume_io_coupling=true))
+
+    @named shunt = DynamicParallelRCShunt(R=1/0.6, C=1e-5, ω0=ω0)
+    @named bus1 = compile_bus(MTKBus(shunt))
+    set_pfmodel!(bus1, pfShunt(G=0.6, B=1e-5))
+
+    loop1 = LoopbackConnection(; potential=[:u_r, :u_i], flow=[:i_r, :i_i], src=:sg1_bus, dst=:bus1)
+
+    sg1_bus, bus1, loop1
+end
+
+sg2_bus, bus2, loop2 = let
+    @named sm = SyncMachineStatorDynamics(J=3.5, D=1, wL=0.05, R=0.01, ω0=ω0)
+    @named sg2_bus = compile_bus(MTKBus(sm); current_source=true)
+    set_pfmodel!(sg2_bus, pfPV(P=0.5, V=1; current_source=true, assume_io_coupling=true))
+
+    @named shunt = DynamicParallelRCShunt(R=1/0.6, C=1e-5, ω0=ω0)
+    @named bus2 = compile_bus(MTKBus(shunt))
+    set_pfmodel!(bus2, pfShunt(G=0.6, B=1e-5))
+
+    loop2 = LoopbackConnection(; potential=[:u_r, :u_i], flow=[:i_r, :i_i], src=:sg2_bus, dst=:bus2)
+
+    sg2_bus, bus2, loop2
+end</code></pre><h3 id="Bus-3:-Grid-Forming-Inverter"><a class="docs-heading-anchor" href="#Bus-3:-Grid-Forming-Inverter">Bus 3: Grid-Forming Inverter</a><a id="Bus-3:-Grid-Forming-Inverter-1"></a><a class="docs-heading-anchor-permalink" href="#Bus-3:-Grid-Forming-Inverter" title="Permalink"></a></h3><p>The GFM uses a <a href="../../Library/#PowerDynamics.Library.ComposableInverter.DroopInverter"><code>DroopInverter</code></a> with an LCL filter and cascaded PI controllers for current and voltage. The parameters are converted from SimplusGT bandwidth conventions, where frequency bandwidths are mapped to PI gains, and cross-coupling feedforward is disabled (<code>Fcoupl=0</code>) to match the MATLAB reference.</p><p>The GFM acts like a PV bus during powerflow and is once again modeled as a current injector connected to a dynamic shunt bus.</p><pre><code class="language-julia hljs">gfm_bus, bus3, loop3 = let
+    xwLf=0.05; Rf=0.01; xwCf=0.02; xwLc=0.01; Rc=0.002
+    Xov=0.01; xDw=0.05; xfdroop=5; xfvdq=300; xfidq=600
+
+    @named droop = ComposableInverter.DroopInverter(;
+        filter_type = :LCL,
+        droop₊Qset = 0,
+        droop₊Kp = xDw*ω0,
+        droop₊ω0 = ω0,
+        droop₊Kq = 0,
+        droop₊τ_q = Inf,
+        droop₊τ_p = 1/(xfdroop*2*pi),
+        vsrc₊CC1_F = 0,
+        vsrc₊CC1_KI = (xfidq*2*pi)^2*(xwLf/ω0)/4,
+        vsrc₊CC1_KP = (xfidq*2*pi)*(xwLf/ω0),
+        vsrc₊CC1_Fcoupl = 0,
+        vsrc₊VC_KP = (xfvdq*2*pi)*(xwCf/ω0),
+        vsrc₊VC_KI = (xfvdq*2*pi)^2*(xwCf/ω0)/4*50,
+        vsrc₊VC_F = 0,
+        vsrc₊VC_Fcoupl = 0,
+        vsrc₊X_virt = Xov,
+        vsrc₊R_virt = 0,
+        vsrc₊Lg = xwLc,
+        vsrc₊C = xwCf,
+        vsrc₊Rf = Rf,
+        vsrc₊Lf = xwLf,
+        vsrc₊ω0 = ω0,
+        vsrc₊Rg = Rc,
+    )
+    @named gfm_bus = compile_bus(MTKBus(droop); current_source=true)
+    set_pfmodel!(gfm_bus, pfPV(P=0.5, V=1; current_source=true, assume_io_coupling=true))
+
+    @named shunt = DynamicParallelRCShunt(R=1/0.75, C=1e-5, ω0=ω0)
+    @named bus3 = compile_bus(MTKBus(shunt))
+    set_pfmodel!(bus3, pfShunt(G=0.75, B=1e-5))
+
+    loop3 = LoopbackConnection(; potential=[:u_r, :u_i], flow=[:i_r, :i_i], src=:gfm_bus, dst=:bus3)
+
+    gfm_bus, bus3, loop3
+end</code></pre><h3 id="Bus-4:-Grid-Following-Inverter"><a class="docs-heading-anchor" href="#Bus-4:-Grid-Following-Inverter">Bus 4: Grid-Following Inverter</a><a id="Bus-4:-Grid-Following-Inverter-1"></a><a class="docs-heading-anchor-permalink" href="#Bus-4:-Grid-Following-Inverter" title="Permalink"></a></h3><p>The GFL uses a <a href="../../Library/#PowerDynamics.Library.ComposableInverter.SimpleGFLDC"><code>SimpleGFLDC</code></a> model with DC-link dynamics, L filter, PLL with low-pass filter, and current controller. The parameters are obtained from the SimplusGT model. During powerflow, the GFL acts like a PQ bus.</p><pre><code class="language-julia hljs">gfl_bus, bus4, loop4 = let
+    V_dc=2.5; C_dc=1.25; f_v_dc=5
+    xwLf=0.03; Rf=0.01
+    f_pll=5; f_tau_pll=300; f_i_dq=600
+
+    @named gfl = ComposableInverter.SimpleGFLDC(;
+        ω0 = ω0,
+        Lf = xwLf,
+        Rf = Rf,
+        PLL_Kp = f_pll*2*pi,
+        PLL_Ki = (f_pll*2*pi)^2/4,
+        PLL_τ_lpf = 1/(f_tau_pll*2*pi),
+        CC1_KP = (xwLf/ω0) * (f_i_dq*2*pi),
+        CC1_KI = (xwLf/ω0) * (f_i_dq*2*pi)^2 / 4,
+        CC1_F = 0,
+        CC1_Fcoupl = 0,
+        C_dc = C_dc,
+        V_dc = V_dc,
+        kp_v_dc = V_dc*C_dc*(f_v_dc*2*pi),
+        ki_v_dc = V_dc*C_dc*(f_v_dc*2*pi) * (f_v_dc*2*pi)/4,
+    )
+    @named gfl_bus = compile_bus(MTKBus(gfl); current_source=true)
+    set_pfmodel!(gfl_bus, pfPQ(P=0.5, Q=-0.2; current_source=true))
+
+    @named shunt = DynamicParallelRCShunt(R=1/0.05, C=1e-5, ω0=ω0)
+    @named bus4 = compile_bus(MTKBus(shunt))
+    set_pfmodel!(bus4, pfShunt(G=0.05, B=1e-5))
+
+    loop4 = LoopbackConnection(; potential=[:u_r, :u_i], flow=[:i_r, :i_i], src=:gfl_bus, dst=:bus4)
+
+    gfl_bus, bus4, loop4
+end</code></pre><h2 id="Transmission-Lines"><a class="docs-heading-anchor" href="#Transmission-Lines">Transmission Lines</a><a id="Transmission-Lines-1"></a><a class="docs-heading-anchor-permalink" href="#Transmission-Lines" title="Permalink"></a></h2><p>All lines use <a href="../../Library/#PowerDynamics.Library.DynamicSeriesRLBranch"><code>DynamicSeriesRLBranch</code></a> (dynamic RL in the rotating dq-frame). Line 3→4 includes a turns ratio of 0.99 in accordance with the SimplusGT model. Static <a href="../../Library/#PowerDynamics.Library.PiLine"><code>PiLine</code></a> models are attached for the power flow solver.</p><pre><code class="language-julia hljs">line12 = let
+    @named branch = DynamicSeriesRLBranch(R=0.01, L=0.3, ω0=ω0)
+    lm = compile_line(MTKLine(branch); name=:l12, src=:bus1, dst=:bus2)
+    @named branch_pf = PiLine(R=0.01, X=0.3)
+    pfmod = compile_line(MTKLine(branch_pf); name=:l12_pfmod)
+    set_pfmodel!(lm, pfmod)
+    lm
+end
+
+line23 = let
+    @named branch = DynamicSeriesRLBranch(R=0.01, L=0.3, ω0=ω0)
+    lm = compile_line(MTKLine(branch); name=:l23, src=:bus2, dst=:bus3)
+    @named branch_pf = PiLine(R=0.01, X=0.3)
+    pfmod = compile_line(MTKLine(branch_pf); name=:l23_pfmod)
+    set_pfmodel!(lm, pfmod)
+    lm
+end
+
+line31 = let
+    @named branch = DynamicSeriesRLBranch(R=0.01, L=0.3, ω0=ω0)
+    lm = compile_line(MTKLine(branch); name=:l31, src=:bus3, dst=:bus1)
+    @named branch_pf = PiLine(R=0.01, X=0.3)
+    pfmod = compile_line(MTKLine(branch_pf); name=:l31_pfmod)
+    set_pfmodel!(lm, pfmod)
+    lm
+end
+
+line34 = let
+    @named branch = DynamicSeriesRLBranch(R=0.01, L=0.3, ω0=ω0, r_dst=0.99)
+    lm = compile_line(MTKLine(branch); name=:l34, src=:bus3, dst=:bus4)
+    @named branch_pf = PiLine(R=0.01, X=0.3, r_dst=0.99)
+    pfmod = compile_line(MTKLine(branch_pf); name=:l34_pfmod)
+    set_pfmodel!(lm, pfmod)
+    lm
+end</code></pre><h2 id="Network-Assembly-and-Initialization"><a class="docs-heading-anchor" href="#Network-Assembly-and-Initialization">Network Assembly and Initialization</a><a id="Network-Assembly-and-Initialization-1"></a><a class="docs-heading-anchor-permalink" href="#Network-Assembly-and-Initialization" title="Permalink"></a></h2><p>We assemble the network from 8 vertex models (4 device buses + 4 network buses), 4 loopback connections, and 4 transmission lines.</p><p>After defining the network we solve the powerflow and initialize the dynamic states at the powerflow solution. This is the operating point around which we will analyze the system.</p><pre><code class="language-julia hljs">nw = Network([sg1_bus, bus1, sg2_bus, bus2, gfm_bus, bus3, gfl_bus, bus4],
+    [loop1, loop2, loop3, loop4, line12, line23, line31, line34]; warn_order=false)
+
+pfs = solve_powerflow(nw; abstol=1e-10, reltol=1e-10)
+s0 = initialize_from_pf!(nw; pfs, tol=1e-7, nwtol=1e-7)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Initialize VIndex(1) </span>-&gt; 6.114655223365241e-15
+<span class="sgr1">Initialize VIndex(2) </span>-&gt; 5.866512215202201e-10
+<span class="sgr1">Initialize VIndex(3) </span>-&gt; 6.11566304273477e-15
+<span class="sgr1">Initialize VIndex(4) </span>-&gt; 6.439288095707885e-10
+<span class="sgr1">Initialize VIndex(5) </span>-&gt; 8.904745866809707e-13
+<span class="sgr1">Initialize VIndex(6) </span>-&gt; 1.4175959622158749e-8
+<span class="sgr1">Initialize VIndex(7) </span>-&gt; 1.4674020849522784e-13
+<span class="sgr1">Initialize VIndex(8) </span>-&gt; 1.575800468737856e-8
+<span class="sgr1">Initialize EIndex(1) </span>-&gt; 0.0
+<span class="sgr1">Initialize EIndex(2) </span>-&gt; 1.5366280697704624e-16
+<span class="sgr1">Initialize EIndex(3) </span>-&gt; 0.0
+<span class="sgr1">Initialize EIndex(4) </span>-&gt; 5.707857110366561e-15
+<span class="sgr1">Initialize EIndex(5) </span>-&gt; 0.0
+<span class="sgr1">Initialize EIndex(6) </span>-&gt; 5.495816427607498e-16
+<span class="sgr1">Initialize EIndex(7) </span>-&gt; 2.842268519560941e-14
+<span class="sgr1">Initialize EIndex(8) </span>-&gt; 0.0
+Initialized network with residual 3.3396037868680375e-8!</code></pre><h2 id="Eigenvalue-Analysis"><a class="docs-heading-anchor" href="#Eigenvalue-Analysis">Eigenvalue Analysis</a><a id="Eigenvalue-Analysis-1"></a><a class="docs-heading-anchor-permalink" href="#Eigenvalue-Analysis" title="Permalink"></a></h2><p>The ND.jl function <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.jacobian_eigenvals"><code>jacobian_eigenvals</code></a> linearizes the system around an operation point, eliminates algebraic constraints via Schur complement, and returns the eigenvalues of the reduced state matrix. We divide by <span>$2\pi$</span> to convert from rad/s to Hz. We plot the eigenvalues in the complex plane to get the global pole map of the system.</p><pre><code class="language-julia hljs">eigenvalues = jacobian_eigenvals(s0) ./ (2 * pi)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">46-element Vector{ComplexF64}:
+  -3.742652404778919e6 - 49.99999999895495im
+  -3.742652404778919e6 + 49.99999999895495im
+  -2.998054079741756e6 - 49.99999999995546im
+  -2.998054079741756e6 + 49.99999999995546im
+  -2.997497907153569e6 - 49.99999999932552im
+  -2.997497907153569e6 + 49.99999999932552im
+   -205304.73448214156 - 50.00016871027154im
+   -205304.73448214156 + 50.00016871027154im
+   -45279.473555920995 - 49.99857780817504im
+   -45279.473555920995 + 49.99857780817504im
+                       ⋮
+   -1.6666666666676069 + 49.99999999999967im
+   -1.6535848233015678 - 1.2629827797652746im
+   -1.6535848233015678 + 1.2629827797652746im
+   -1.5076610387873517 + 0.0im
+    -0.255925285864883 + 0.0im
+ -0.007794285512451979 - 2.7486657688360547im
+ -0.007794285512451979 + 2.7486657688360547im
+ -3.223660720527521e-9 + 0.0im
+                  -0.0 + 0.0im</code></pre><details class="admonition is-details">
+<summary class="admonition-header">Plotting code: Pole Map</summary>
+<div class="admonition-body"><pre><code class="language-julia hljs">fig = let
+    fig = Figure(size=(600,400))
+    ax1 = Axis(fig[1, 1], xlabel=&quot;Real Part [Hz]&quot;, ylabel=&quot;Imaginary Part [Hz]&quot;, title=&quot;Global Pole Map&quot;)
+    scatter!(ax1, real.(eigenvalues), imag.(eigenvalues), marker=:xcross)
+    ax2 = Axis(fig[1, 2], xlabel=&quot;Real Part [Hz]&quot;, ylabel=&quot;Imaginary Part [Hz]&quot;, title=&quot;Zoomed In&quot;)
+    scatter!(ax2, real.(eigenvalues), imag.(eigenvalues), marker=:xcross)
+    xlims!(ax2, -80, 20); ylims!(ax2, -150, 150)
+    fig
+end;</code></pre></div></details><img src="7e29bc52.png" alt="Example block output"/><p>The results match what we get from SimplusGT for that system.</p><details class="admonition is-details is-success">
+<summary class="admonition-header">Reference: Pole Map (click to reveal)</summary>
+<div class="admonition-body"><p><img src="../../assets/SimplusGTPlots/Figure_100.png" alt="image"/></p></div></details><h2 id="Impedance-Based-Bode-Analysis"><a class="docs-heading-anchor" href="#Impedance-Based-Bode-Analysis">Impedance-Based Bode Analysis</a><a id="Impedance-Based-Bode-Analysis-1"></a><a class="docs-heading-anchor-permalink" href="#Impedance-Based-Bode-Analysis" title="Permalink"></a></h2><p>SimplusGT models each device as a transfer function from bus voltage to injected current: the device admittance <span>$G(s)$</span>. To get a closed loop model, they add feedback through the network impedance matrix <span>$Z(s)$</span>. For impedance-based stability analysis, they directionally perturb the voltage input of a device <em>without</em> perturbing that voltage point in the network – effectively opening the loop at that bus.</p><pre><code class="language-asciiart hljs">             (Admittance-like)
+            ╭────────────────╮
+δu_dq╶─→●──→┤ Device TF G(s) ├→───●──╴ i_dq
+        │   ╰────────────────╯    │
+        │                         │
+        │   ╭────────────────╮    │
+(bus    ╰──←┤  Grid TF Z(s)  ├←───╯
+ voltage)   ╰────────────────╯
+             (Impedance-like)</code></pre><p>This kind of analysis can be replicated using the <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.linearize_network"><code>linearize_network</code></a> function while providing the <code>in</code> and <code>out</code> keyword arguments. With <code>in</code> it is possible to specify the perturbation port, <code>out</code> defines the observed state under this perturbation.</p><p>Perturbation in the linearization sense is <em>directed</em>; our device models however are fully acausal, there is no directionality within their definition. Therefore we are a bit restricted in the choice of perturbation channel: it has to be a &quot;connection&quot; between network components, i.e. either a vertex input, a vertex output, an edge input or an edge output.</p><p>Considering the component interconnection on the network level sketched out above, we have 6 channels for directional perturbation injection, 4 of which are unique:</p><pre><code class="language-asciiart hljs">               ╭────────────────┬───────────╮
+        δu_in →∙        δu_out →∙           ∙← δu_in
+        (line) │         (hub)  │           │ (device)
+┏━━━━━━━━━━━━━━▽━━┓   ╔═════════△════════╗  │   ╔═══════════════╗
+┃ Rest of Network ┃   ║ Shunt-Model      ║  ╰───▷ Device-Model  ║
+┃ - voltage in    ┃   ║ - current sum in ║      ║ - voltage in  ║
+┃ - current out   ┃   ║ - voltage out    ║  ╭───◁ - current out ║
+┗━━━━━━━━━━━━━━▽━━┛   ╚═════════△════════╝  │   ╚═══════════════╝
+       δi_out →∙        δi_out →∙           ∙← δi_out
+       (line)  │        (hub) ╭─┴─╮         │ (device)
+               ╰──────────────▷ + ◁─────────╯
+                              ╰───╯</code></pre><ul><li><code>δu_in (line)</code>: Perturbation of the voltage at the line side (perturbs line)</li><li><code>δu_out (hub)</code>: Perturbation of the voltage at the hub output (influences both device and line)</li><li><code>δu_in (device)</code>: Perturbation of the voltage at the device input (perturbs device)</li><li><code>δi_out (line)</code>, <code>δi_out (hub)</code> and <code>δi_out (device)</code>: Perturbation of the current before or after aggregation. Mathematically equivalent, as all affect only the hub input either way.</li></ul><p>The linearization of the full, nonlinear system <span>$\mathrm{M} \dot{x} = f(x)$</span> is done via automatic differentiation around the operating point <span>$x_0$</span> with respect to the input and output channels <span>$u$</span> and <span>$y$</span> as defined by the <code>in</code> and <code>out</code> arguments. This results in a linear descriptor system of the form</p><p class="math-container">\[\begin{aligned}
+\mathrm{M} \dot{x} &amp;= \frac{\partial f}{\partial x}\bigg|_{x_0}\delta x + \frac{\partial f}{\partial u}\bigg|_{x_0}\delta u &amp;= \mathrm{A} \delta x + \mathrm{B}\delta u\\
+\delta y &amp;= \frac{\partial g}{\partial x}\bigg|_{x_0}\delta x + \frac{\partial g}{\partial u}\bigg|_{x_0}\delta u &amp;= \mathrm{C} \delta x + \mathrm{D}\delta u
+\end{aligned}\]</p><h3 id="d-Component-Bus-Admittance-Y_{dd}"><a class="docs-heading-anchor" href="#d-Component-Bus-Admittance-Y_{dd}"><span>$d$</span>-Component Bus Admittance <span>$Y_{dd}$</span></a><a id="d-Component-Bus-Admittance-Y_{dd}-1"></a><a class="docs-heading-anchor-permalink" href="#d-Component-Bus-Admittance-Y_{dd}" title="Permalink"></a></h3><p>First, we are interested in the <span>$Y_{dd}(s)$</span> admittance, which is the transfer function from <code>δu_in (device)</code> to the device output. I.e. we perturb the input voltage for the device model and observe the change in current output. This is directly equivalent to the ports used in SimplusGT shown above.</p><div class="admonition is-info" id="Frame-Naming-Conventions:-dq-vs-ri-eb25e063e278b180"><header class="admonition-header">Frame Naming Conventions: $dq$ vs $ri$<a class="admonition-anchor" href="#Frame-Naming-Conventions:-dq-vs-ri-eb25e063e278b180" title="Permalink"></a></header><div class="admonition-body"><p>To match the conventional naming in literature and SimplusGT we use <span>$dq$</span> a lot throughout this tutorial. Note however, that the actual channels are called <code>u_r</code>, <code>u_i</code>, <code>i_r</code> and <code>i_i</code>. This is because per convention PowerDynamics uses <span>$ri$</span> (real/imaginary) naming for the <em>global</em> and <em>fixed frequency</em> dq-frame to distinguish it from the local dq frames commonly used in machine and inverter models.</p></div></div><p>Since we are only interested in <span>$Y_{dd}$</span> for now, we get away with a SISO system. We just specify a single perturbation and a single observed channel:</p><pre><code class="language-julia hljs">sys = linearize_network(
+    s0;
+    in=VIndex(:sg1_bus, :busbar₊u_r),  # &lt;- dertermines where the perturbation enters
+    out=VIndex(:sg1_bus, :busbar₊i_r), # &lt;- determines which output we observe
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">NetworkDescriptorSystem</span> with
+ ├─ 46 states  
+ ├─  1 input:  VIndex(:sg1_bus, :busbar₊u_r)
+ └─  1 output: VIndex(:sg1_bus, :busbar₊i_r)</code></pre><p>The return value is a <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.NetworkDescriptorSystem"><code>NetworkDescriptorSystem</code></a>, which is a relatively simple wrapper around the matrices of a linearized system. In addition to accessing the matrices via <code>sys.A</code>, <code>sys.B</code>, <code>sys.C</code> and <code>sys.D</code>, the system also acts like a transfer function which can be evaluated at a complex frequency:</p><pre><code class="language-julia hljs">sys(im * 2π*50)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">19.448992762891585 - 2.065340289230005im</code></pre><p>NetworkDynamics/PowerDynamics itself does not provide lots of functionality around LTIs. However you may just access the system matrices <code>sys.A</code> and so on to construct systems from specialized libraries such as <a href="https://github.com/JuliaControl/ControlSystems.jl">ControlSystems.jl</a> or <a href="https://github.com/andreasvarga/DescriptorSystems.jl">DescriptorSystems.jl</a>, or you can directly work with the matrices for your own custom analysis. Since we just want to generate a bode plot, we avoid additional dependencies in this example and sample and plot the transferfunction manually.</p><p>First, we need to obtain the admittance transfer functions for all 4 devices, then we can generate the bode plot.</p><pre><code class="language-julia hljs">Gs = map([:sg1_bus, :sg2_bus, :gfm_bus, :gfl_bus]) do COMP
+    vs = VIndex(COMP, :busbar₊u_r)
+    cs = VIndex(COMP, :busbar₊i_r)
+    G = NetworkDynamics.linearize_network(s0; in=vs, out=cs)
+end</code></pre><details class="admonition is-details">
+<summary class="admonition-header">Plotting code: Y_dd Bode Plot</summary>
+<div class="admonition-body">
+<div><pre><code class="language-julia hljs">fig = with_theme(Theme(palette = (; color = Makie.wong_colors()[[1, 6, 2, 4]]))) do
+    # we use the theme to get closer to matlab colors
+    fig = Figure(; size=(800, 600))
+    Label(fig[1, 1], &quot;Y_{dd} Bode Plot&quot;, halign=:center, tellwidth=false)
+    ax1 = Axis(fig[2, 1], xlabel=&quot;Frequency (rad/s)&quot;, ylabel=&quot;Gain (dB)&quot;, xscale=log10)
+    ax2 = Axis(fig[3, 1], xlabel=&quot;Frequency (rad/s)&quot;, ylabel=&quot;Phase (deg)&quot;, xscale=log10)
+    labels=[&quot;Bus $i&quot; for i in 1:length(Gs)]
+    for (G, label) in zip(Gs, labels)
+        fs = 10 .^ (range(log10(1e-1), log10(1e4); length=1000))
+        jωs = 2π * fs * im
+        gains = map(s -&gt; 20 * log10(abs(G(s))), jωs)
+        phases = rad2deg.(unwrap_rad(map(s -&gt; angle(G(s)), jωs)))
+        lines!(ax1, fs, gains; label, linewidth=2)
+        lines!(ax2, fs, phases; label, linewidth=2)
+    end
+    axislegend(ax1)
+    fig
+end</code></pre></div></details><img src="3691fa68.png" alt="Example block output"/><p>There is a small difference in the unwrapping algorithm, but besides that we nicely replicate the results from SimplusGT.</p><details class="admonition is-details is-success">
+<summary class="admonition-header">Reference: Y_dd Bode Plot (click to reveal)</summary>
+<div class="admonition-body"><p><img src="../../assets/SimplusGTPlots/Figure_200.png" alt="image"/></p></div></details><h3 id="Complex-Bus-Admittance-Y_{dq}"><a class="docs-heading-anchor" href="#Complex-Bus-Admittance-Y_{dq}">Complex Bus Admittance <span>$Y_{dq+}$</span></a><a id="Complex-Bus-Admittance-Y_{dq}-1"></a><a class="docs-heading-anchor-permalink" href="#Complex-Bus-Admittance-Y_{dq}" title="Permalink"></a></h3><p>The <span>$Y_{dd}$</span> plot above shows only the d-axis to d-axis coupling. To analyze <strong>sequence-dependent behavior</strong>, we transform the full 2×2 dq admittance matrix into complex vector form.</p><p>In the dq-frame, the admittance is a 2×2 real-valued transfer function matrix:</p><p class="math-container">\[\mathbf{Y}_{dq}(s) = \begin{bmatrix} Y_{dd}(s) &amp; Y_{dq}(s) \\ Y_{qd}(s) &amp; Y_{qq}(s) \end{bmatrix}\]</p><p>We apply the complex vector transformation:</p><p class="math-container">\[\mathbf{Y}_{\text{complex}}(s) = \mathbf{T} \cdot \mathbf{Y}_{dq}(s) \cdot \mathbf{T}^{-1}\]</p><p>where</p><p class="math-container">\[\mathbf{T} = \begin{bmatrix} 1 &amp; \phantom{-}j \\ 1 &amp; -j \end{bmatrix}, \quad
+\mathbf{T}^{-1} = \frac{1}{2}\begin{bmatrix} \phantom{-}1 &amp; 1 \\ -j &amp; j \end{bmatrix}\]</p><p>The resulting matrix separates positive and negative sequence components:</p><p class="math-container">\[\mathbf{Y}_{\text{complex}}(s) = \begin{bmatrix} Y_{dq+}(s) &amp; Y_{+-}(s) \\ Y_{-+}(s) &amp; Y_{dq-}(s) \end{bmatrix}\]</p><p>where:</p><ul><li><span>$Y_{dq+}(s)$</span> is the <strong>positive sequence</strong> (forward-rotating) admittance</li><li><span>$Y_{dq-}(s)$</span> is the <strong>negative sequence</strong> (backward-rotating) admittance</li><li>Off-diagonal terms represent sequence coupling</li></ul><p>For a perfectly balanced, symmetric system, <span>$Y_{dq+}(j\omega) = Y_{dq+}(-j\omega)$</span>. However, systems with PLLs, rotating reference frames, or sequence-dependent control exhibit <strong>asymmetry</strong>: <span>$Y_{dq+}(j\omega) \neq Y_{dq+}(-j\omega)$</span>. This is why we plot over both positive and negative frequencies.</p><p>First, we map over all devices again, get the full <span>$u_{dq} \mapsto i_{dq}$</span> transfer function and then calculate <span>$Y_{dq+}$</span> from it. This time we need to include both <code>r</code> and <code>i</code> components in the perturbation channel <code>in</code> and the observed channel <code>out</code>.</p><pre><code class="language-julia hljs">Gs_dqplus = map([:sg1_bus, :sg2_bus, :gfm_bus, :gfl_bus]) do COMP
+    vs = [VIndex(COMP, :busbar₊u_r), VIndex(COMP, :busbar₊u_i)]
+    cs = [VIndex(COMP, :busbar₊i_r), VIndex(COMP, :busbar₊i_i)]
+    G = NetworkDynamics.linearize_network(s0; in=vs, out=cs)
+    # Complex vector transformation
+    T = [1.0 1.0im; 1.0 -1.0im]
+    Tinv = inv(T)
+    # Return positive sequence admittance Y_dq+(s)
+    (s) -&gt; (T * G(s) * Tinv)[1,1]
+end</code></pre><p>In the last line we only took the <span>$Y_{dq+}$</span> from the resulting <span>$2 \times 2$</span> matrix, since <span>$Y_{dq+}(j\,\omega) = Y_{dq-}(-j\,\omega)$</span> and we can obtain both positive and negative sequence plots from the same matrix element.</p><details class="admonition is-details">
+<summary class="admonition-header">Plotting code: Y_dq+ Bode Plot</summary>
+<div class="admonition-body">
+<div><pre><code class="language-julia hljs">fig = with_theme(Theme(palette = (; color = Makie.wong_colors()[[1, 6, 2, 4]]))) do
+    fig = Figure(; size=(900, 600))
+    Label(fig[0, 1:2], &quot;Y_{dq+} Bode Plot&quot;, fontsize=16, halign=:center, tellwidth=false)
+
+    # Create 2×2 grid: [magnitude_neg, magnitude_pos; phase_neg, phase_pos]
+    ax_mag_neg = Axis(fig[1, 1], xlabel=&quot;Frequency (Hz)&quot;, ylabel=&quot;Gain (dB)&quot;,
+                      xscale=log10, xreversed=true)
+    ax_mag_pos = Axis(fig[1, 2], xlabel=&quot;Frequency (Hz)&quot;,
+                      xscale=log10, yticklabelsvisible=false, yticksvisible=false)
+    ax_phase_neg = Axis(fig[2, 1], xlabel=&quot;Frequency (Hz)&quot;, ylabel=&quot;Phase (deg)&quot;,
+                        xscale=log10, xreversed=true)
+    ax_phase_pos = Axis(fig[2, 2], xlabel=&quot;Frequency (Hz)&quot;,
+                        xscale=log10, yticklabelsvisible=false, yticksvisible=false)
+
+    labels = [&quot;Bus $i&quot; for i in 1:length(Gs_dqplus)]
+    for (G, label) in zip(Gs_dqplus, labels)
+        fs_pos = 10 .^ (range(log10(1e-1), log10(1e4); length=500))
+        fs_neg = fs_pos
+        jωs_pos = 2π * fs_pos * im
+        jωs_neg = -2π * fs_neg * im
+
+        gains_pos = map(s -&gt; 20 * log10(abs(G(s))), jωs_pos)
+        gains_neg = map(s -&gt; 20 * log10(abs(G(s))), jωs_neg)
+        phases_pos = rad2deg.(unwrap_rad(map(s -&gt; angle(G(s)), jωs_pos)))
+        phases_neg = rad2deg.(unwrap_rad(map(s -&gt; angle(G(s)), jωs_neg)))
+
+        # Plot negative frequencies (reversed x-axis)
+        lines!(ax_mag_neg, fs_neg, gains_neg; label, linewidth=2)
+        lines!(ax_phase_neg, fs_neg, phases_neg; label, linewidth=2)
+
+        # Plot positive frequencies
+        lines!(ax_mag_pos, fs_pos, gains_pos; label, linewidth=2)
+        lines!(ax_phase_pos, fs_pos, phases_pos; label, linewidth=2)
+    end
+
+    axislegend(ax_mag_pos; position=:rb)
+    linkyaxes!(ax_mag_neg, ax_mag_pos)
+    linkyaxes!(ax_phase_neg, ax_phase_pos)
+    fig
+end</code></pre></div></details><img src="d918a7ff.png" alt="Example block output"/><p>Once again we match the results obtained from SimplusGT for the same analysis.</p><details class="admonition is-details is-success">
+<summary class="admonition-header">Reference: Y_dq+ Bode Plot (click to reveal)</summary>
+<div class="admonition-body"><p><img src="../../assets/SimplusGTPlots/Figure_201.png" alt="image"/></p></div></details><h2 id="Open-Loop-Decomposition-(Alternative-Approach)"><a class="docs-heading-anchor" href="#Open-Loop-Decomposition-(Alternative-Approach)">Open-Loop Decomposition (Alternative Approach)</a><a id="Open-Loop-Decomposition-(Alternative-Approach)-1"></a><a class="docs-heading-anchor-permalink" href="#Open-Loop-Decomposition-(Alternative-Approach)" title="Permalink"></a></h2><p>The analyses above linearize the <em>closed-loop</em> nonlinear system directly. An alternative — and sometimes more insightful — approach is to first <strong>decompose</strong> the network into open-loop subsystems, get a linear representation of those and then reconnect them using LTI feedback algebra.</p><p>The function <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.open_loop_linearization"><code>open_loop_linearization</code></a> splits the linearized system into three transfer-function blocks in double-feedback loop:</p><pre><code class="language-asciiart hljs">                     ╔══════════════════════╗
+                 ╭──→╢ &quot;normal&quot; Nodes Zbus  ╟→──╮
+ stacked         │   ╚══════════════════════╝   │ stacked
+ aggregated node │   ╭──────────────────────╮   │ node
+ flow input¹    (+)─←┤ Network Coupling Ynw ├←──┤ potentials¹
+                 │   ╰──────────────────────╯   │
+                 │   ╭──────────────────────╮   │
+                 ╰──←┤ Injector Nodes Yinj  ├←──╯
+                     ╰──────────────────────╯
+¹ Only considering &quot;normal&quot; i.e. non-injector nodes</code></pre><ul><li><strong><code>Zbus</code></strong>: the bus impedance (shunt vertices). Maps summed current injections → bus voltages.</li><li><strong><code>Ynw</code></strong>: the network admittance (all transmission lines). Maps bus voltages → current injections.</li><li><strong><code>Yinj</code></strong>: the injector admittance (device models connected via <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.LoopbackConnection"><code>LoopbackConnection</code></a>). Maps bus voltages → current injections.</li></ul><p>The closed-loop system is recovered by placing <code>Zbus</code> in the forward path and the sum <code>Ynw + Yinj</code> in the feedback path:</p><pre><code class="language-julia hljs">(; Ynw, Zbus, Yinj) = open_loop_linearization(s0)</code></pre><p>Each of these is a <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.NetworkDescriptorSystem"><code>NetworkDescriptorSystem</code></a> and can be composed using the standard LTI operations <code>+</code>, <code>*</code>, and <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.feedback"><code>feedback</code></a>.</p><p>To reconstruct the full closed-loop system:</p><pre><code class="language-julia hljs">full_closed_loop = feedback(Zbus, Ynw + Yinj; pos=true)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">NetworkDescriptorSystem</span> with
+ ├─ 46 states   
+ ├─  8 inputs:  [VIndex(2, :busbar₊i_r), VIndex(2, :busbar₊i_i), VIndex(4, :busbar₊i_r), VIndex(4, :busbar₊i_i), VIndex(6, :busbar₊i_r), VIndex(6, :busbar₊i_i), VIndex(8, :busbar₊i_r), VIndex(8, :busbar₊i_i)]
+ └─  8 outputs: [VIndex(2, :busbar₊u_r), VIndex(2, :busbar₊u_i), VIndex(4, :busbar₊u_r), VIndex(4, :busbar₊u_i), VIndex(6, :busbar₊u_r), VIndex(6, :busbar₊u_i), VIndex(8, :busbar₊u_r), VIndex(8, :busbar₊u_i)]</code></pre><div class="admonition is-info" id="Positive-Feedback-Convention-b1211c3166fbd5f6"><header class="admonition-header">Positive Feedback Convention<a class="admonition-anchor" href="#Positive-Feedback-Convention-b1211c3166fbd5f6" title="Permalink"></a></header><div class="admonition-body"><p>We use <code>pos=true</code> here because the block diagram shows positive feedback: the flows from <code>Ynw</code> and <code>Yinj</code> are <em>added</em> to the external input at the summing junction.</p></div></div><p>The object <code>full_closed_loop</code> is again a <code>NetworkDescriptorSystem</code>. It is similar to the linearization we obtained earlier via <code>linearize_network</code>, just assembled differently. The only difference are the selected input/output channels.</p><p>The <code>feedback</code> operator keeps the inputs/outputs from the forward pass. We can close the loop differently in order to reconstruct a full closed loop network with suitable inputs/outputs for the <span>$Y_{dd}$</span> admittance again (i.e. device voltage perturbation to device current perturbation).</p><pre><code class="language-asciiart hljs">              ╭──────────────────────────────────╮
+δu_dq ╶───(+)→┤  Injector Nodes Yinj             ├→─┬────╴δi_dq
+           │  ╰──────────────────────────────────╯  │
+           │                                        │
+           │  ╔══════════════════════════════════╗  │
+           │  ║ NW + Shunt Impedance             ║  │
+           │  ║    ╔══════════════════════╗      ║  │
+           ╰────┬─←╢ &quot;normal&quot; Nodes Zbus  ╟←─(+)────╯
+              ║ │  ╚══════════════════════╝   │  ║
+              ║ │  ╭──────────────────────╮   │  ║
+              ║ ╰─→┤ Network Coupling Ynw ├→──╯  ║
+              ║    ╰──────────────────────╯      ║
+              ╚══════════════════════════════════╝</code></pre><p>Which is equivalent to what happens in SimplusGT internally.</p><pre><code class="language-julia hljs">nw_with_shunts = feedback(Zbus, Ynw; pos=true)              # close Zbus with network only
+inj_closed_loop = feedback(Yinj, nw_with_shunts; pos=true)  # close device with network+shunts</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">NetworkDescriptorSystem</span> with
+ ├─ 46 states   
+ ├─  8 inputs:  [VIndex(2, :busbar₊u_r), VIndex(2, :busbar₊u_i), VIndex(4, :busbar₊u_r), VIndex(4, :busbar₊u_i), VIndex(6, :busbar₊u_r), VIndex(6, :busbar₊u_i), VIndex(8, :busbar₊u_r), VIndex(8, :busbar₊u_i)]
+ └─  8 outputs: [VIndex(2, :busbar₊i_r), VIndex(2, :busbar₊i_i), VIndex(4, :busbar₊i_r), VIndex(4, :busbar₊i_i), VIndex(6, :busbar₊i_r), VIndex(6, :busbar₊i_i), VIndex(8, :busbar₊i_r), VIndex(8, :busbar₊i_i)]</code></pre><h3 id="Sanity-Check:-Eigenvalue-Comparison"><a class="docs-heading-anchor" href="#Sanity-Check:-Eigenvalue-Comparison">Sanity Check: Eigenvalue Comparison</a><a id="Sanity-Check:-Eigenvalue-Comparison-1"></a><a class="docs-heading-anchor-permalink" href="#Sanity-Check:-Eigenvalue-Comparison" title="Permalink"></a></h3><p>Let&#39;s verify that the closed-loop eigenvalues from the open-loop composition match the eigenvalues we computed earlier from the full nonlinear system.</p><details class="admonition is-details">
+<summary class="admonition-header">Sanity Check: Eigenvalue comparison (click to expand)</summary>
+<div class="admonition-body"><pre><code class="language-julia hljs">eigenvalues_ol = jacobian_eigenvals(full_closed_loop) ./ (2 * pi)
+fig = let
+    fig = Figure(size=(600,400))
+    ax = Axis(fig[1, 1], xlabel=&quot;Real Part [Hz]&quot;, ylabel=&quot;Imaginary Part [Hz]&quot;,
+              title=&quot;Eigenvalue Comparison: Direct vs Open-Loop Composition&quot;)
+    scatter!(ax, real.(eigenvalues), imag.(eigenvalues), marker=:xcross, markersize=14,
+             label=&quot;Direct (linearize_network)&quot;)
+    scatter!(ax, real.(eigenvalues_ol), imag.(eigenvalues_ol), marker=:circle, markersize=8,
+             label=&quot;Open-loop composition&quot;)
+    xlims!(ax, -80, 20); ylims!(ax, -150, 150)
+    axislegend(ax; position=:lt)
+    fig
+end</code></pre></div></details><img src="333ec630.png" alt="Example block output"/><p>The eigenvalues match exactly, confirming that linearizing first and then composing via feedback gives the same result as linearizing the full closed-loop nonlinear system.</p><h3 id="Sanity-Check:-Y_{dd}-Bode-Plot-Comparison"><a class="docs-heading-anchor" href="#Sanity-Check:-Y_{dd}-Bode-Plot-Comparison">Sanity Check: <span>$Y_{dd}$</span> Bode Plot Comparison</a><a id="Sanity-Check:-Y_{dd}-Bode-Plot-Comparison-1"></a><a class="docs-heading-anchor-permalink" href="#Sanity-Check:-Y_{dd}-Bode-Plot-Comparison" title="Permalink"></a></h3><p>Similarly, we can verify the <span>$Y_{dd}$</span> admittance Bode plot. The <code>inj_closed_loop</code> system maps bus voltages to device current injections (a MIMO system with stacked dq channels for all 4 buses). We extract the <code>u_r → i_r</code> channel for Bus 1 and compare it to the direct <span>$Y_{dd}$</span> computed earlier.</p><details class="admonition is-details">
+<summary class="admonition-header">Sanity Check: Y_dd Bode comparison (click to expand)</summary>
+<div class="admonition-body"><pre><code class="language-julia hljs">fig = let
+    # The inj_closed_loop channels use bus node indices (even numbers: 2,4,6,8).
+    # Bus 1&#39;s bus node is vertex 2 in the network.
+    icl_in_r = findfirst(==(VIndex(2, :busbar₊u_r)), inj_closed_loop.insym)
+    icl_out_r = findfirst(==(VIndex(2, :busbar₊i_r)), inj_closed_loop.outsym)
+
+    fs = 10 .^ (range(log10(1e-1), log10(1e4); length=500))
+    jωs = 2π * fs * im
+
+    # Direct Y_dd from earlier
+    gains_direct = map(s -&gt; 20 * log10(abs(Gs[1](s))), jωs)
+    # Open-loop composition: select the Bus 1 u_r → i_r element from inj_closed_loop
+    gains_ol = map(s -&gt; 20 * log10(abs(inj_closed_loop(s)[icl_out_r, icl_in_r])), jωs)
+
+    fig = Figure(size=(600,300))
+    ax = Axis(fig[1, 1], xlabel=&quot;Frequency (rad/s)&quot;, ylabel=&quot;Gain (dB)&quot;,
+              title=&quot;Y_dd Bus 1: Direct vs Open-Loop&quot;, xscale=log10)
+    lines!(ax, fs, gains_direct; label=&quot;Direct&quot;, linewidth=3)
+    lines!(ax, fs, gains_ol; label=&quot;Open-loop composition&quot;, linewidth=2, linestyle=:dash)
+    axislegend(ax; position=:rt)
+    fig
+end</code></pre></div></details><img src="1db6c0b9.png" alt="Example block output"/><p>The Bode plots are identical, confirming the equivalence of both approaches.</p><h2 id="Time-Domain-Simulation"><a class="docs-heading-anchor" href="#Time-Domain-Simulation">Time-Domain Simulation</a><a id="Time-Domain-Simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Time-Domain-Simulation" title="Permalink"></a></h2><p>Since we have the full nonlinear model at hand, let&#39;s also do a time-domain simulation. To perturb the system, we apply a three-phase short circuit at Bus 1 by reducing the shunt resistance to near zero for a short time. The fault starts at 0.1s and is cleared at 0.2s.</p><pre><code class="language-julia hljs">affect = ComponentAffect([], [:shunt₊R]) do u, p, ctx
+    if ctx.t == 0.1
+        println(&quot;Short Circuit at Bus 1 at t=0.1s&quot;)
+        p[:shunt₊R] = 1e-6
+    elseif ctx.t == 0.2
+        println(&quot;Clearing Short Circuit at Bus 1 at t=0.2s&quot;)
+        p[:shunt₊R] = 1/0.6
+    end
+end
+short = PresetTimeComponentCallback([0.1, 0.2], affect)
+prob = ODEProblem(nw, s0, (0,30); add_comp_cb=VIndex(:bus1)=&gt;short)
+sol = solve(prob, Rodas5P())</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Short Circuit at Bus 1 at t=0.1s
+Clearing Short Circuit at Bus 1 at t=0.2s</code></pre><p>Let&#39;s compare the results against a similar EMT simulation done in the Simulink model generated by SimplusGT.</p><details class="admonition is-details">
+<summary class="admonition-header">Plotting code: Short Circuit Response</summary>
+<div class="admonition-body"><pre><code class="language-julia hljs">fig = with_theme(Theme(palette = (; color = Makie.wong_colors()[[1, 6, 2, 4]]))) do
+    fig = Figure(size=(600,700))
+    ts = refine_timeseries(sol.t)
+    xlabel = &quot;Time [s]&quot;
+    ylabel = &quot;Voltage Magnitude [p.u.]&quot;
+    ax1 = Axis(fig[1,1]; title=&quot;Voltage Magnitude (full sim time)&quot;, limits=((0,30), (0.0, 1.2)), ylabel)
+    lines!(ax1, ts, sol(ts, idxs=VIndex(:bus1, :busbar₊u_mag)).u; label=&quot;Bus 1&quot;)
+    lines!(ax1, ts, sol(ts, idxs=VIndex(:bus2, :busbar₊u_mag)).u; label=&quot;Bus 2&quot;)
+    lines!(ax1, ts, sol(ts, idxs=VIndex(:bus3, :busbar₊u_mag)).u; label=&quot;Bus 3&quot;)
+    lines!(ax1, ts, sol(ts, idxs=VIndex(:bus4, :busbar₊u_mag)).u; label=&quot;Bus 4&quot;)
+    ax2 = Axis(fig[2,1]; title=&quot;Short Circuit&quot;, limits=((0,0.5), (0.0, 1.2)), ylabel)
+    lines!(ax2, ts, sol(ts, idxs=VIndex(:bus1, :busbar₊u_mag)).u; label=&quot;Bus 1&quot;)
+    lines!(ax2, ts, sol(ts, idxs=VIndex(:bus2, :busbar₊u_mag)).u; label=&quot;Bus 2&quot;)
+    lines!(ax2, ts, sol(ts, idxs=VIndex(:bus3, :busbar₊u_mag)).u; label=&quot;Bus 3&quot;)
+    lines!(ax2, ts, sol(ts, idxs=VIndex(:bus4, :busbar₊u_mag)).u; label=&quot;Bus 4&quot;)
+    ax3 = Axis(fig[3,1]; title=&quot;EMT Transients after fault clearing&quot;, limits=((0.199,0.204), (0.55, 1.65)), xlabel,ylabel)
+    lines!(ax3, ts, sol(ts, idxs=VIndex(:bus1, :busbar₊u_mag)).u; label=&quot;Bus 1&quot;)
+    lines!(ax3, ts, sol(ts, idxs=VIndex(:bus2, :busbar₊u_mag)).u; label=&quot;Bus 2&quot;)
+    lines!(ax3, ts, sol(ts, idxs=VIndex(:bus3, :busbar₊u_mag)).u; label=&quot;Bus 3&quot;)
+    lines!(ax3, ts, sol(ts, idxs=VIndex(:bus4, :busbar₊u_mag)).u; label=&quot;Bus 4&quot;)
+    axislegend(ax1; position=:rb)
+    fig
+end</code></pre></div></details><img src="f7bfd313.png" alt="Example block output"/><details class="admonition is-details is-success">
+<summary class="admonition-header">Reference: Short Circuit Response (click to reveal)</summary>
+<div class="admonition-body"><p><img src="../../assets/SimplusGTPlots/Voltage_Trajectory.png" alt="image"/></p></div></details><p>The initial state calculated by SimplusGT is slightly off, that&#39;s why we see some small oscillations in the MATLAB reference in the first 0.05 seconds. Besides that, we nicely replicate the results from SimplusGT, even for EMT transients.</p><h3 id="Identification-of-Critical-Eigenmodes"><a class="docs-heading-anchor" href="#Identification-of-Critical-Eigenmodes">Identification of Critical Eigenmodes</a><a id="Identification-of-Critical-Eigenmodes-1"></a><a class="docs-heading-anchor-permalink" href="#Identification-of-Critical-Eigenmodes" title="Permalink"></a></h3><p>In the time-domain simulation we see some relatively high oscillations of both inverter-based resources during the fault. Let&#39;s try to damp them! First, we need to identify the critical eigenmode here. For that we take the power spectrum of the magnitude of both affected buses and look for dominant frequencies.</p><p>We use basic NetworkDynamics functionality to sample <code>:busbar₊u_mag</code> for bus 3 and 4 in the first second. Then we perform a basic FFT on those to obtain the power spectrum:</p><pre><code class="language-julia hljs">using FFTA
+using Statistics
+dt = 0.001
+ts = 0:dt:1.0
+umags = [sol(ts, idxs=VIndex(Symbol(:bus, i), :busbar₊u_mag)).u for i in 3:4]
+fs = 1/dt            # sampling frequency [Hz]
+N = length(ts)
+umag_no_dc = [(umag .- mean(umag)) for umag in umags]
+fft_results = fft.(umag_no_dc)
+power_ffts = [abs.(fft_result).^2 / N for fft_result in fft_results]
+powers = [power_fft[1:N÷2] for power_fft in power_ffts]
+freqs_hz = (0:N÷2-1) .* (fs/N)</code></pre><p>The power spectrum is plotted together with the eigenvalues to visually identify the critical mode.</p><details class="admonition is-details">
+<summary class="admonition-header">Plotting code: Power Spectrum</summary>
+<div class="admonition-body"><pre><code class="language-julia hljs">fig = let
+    fig = Figure(size=(600,400))
+    ax1 = Axis(fig[1, 1], xlabel=&quot;Real Part [Hz]&quot;, ylabel=&quot;Imaginary Part [Hz]&quot;,
+               title=&quot;Pole Map with Power Spectrum Overlay&quot;)
+    # ylims!(ax1, -freqs_hz[end], freqs_hz[end])
+    xlims!(ax1, -10, 0.1); ylims!(ax1, -60, 60)
+    critical_mode = argmin(ev -&gt; abs(imag(ev)-31), eigenvalues)
+    scatter!(ax1, real(critical_mode), imag(critical_mode),color=:red, markersize=50, alpha=0.3)
+    factor = 20
+    lines!(ax1, -factor*powers[1], freqs_hz, label=&quot;Power Spectrum GFM (scaled)&quot;, color=Cycled(3))
+    lines!(ax1, -factor*powers[2], freqs_hz, label=&quot;Power Spectrum GFL (scaled)&quot;, color=Cycled(4))
+    scatter!(ax1, real.(eigenvalues), imag.(eigenvalues), marker=:xcross, label=&quot;Eigenvalues&quot;)
+    axislegend(ax1; position=:rb)
+    fig
+end</code></pre></div></details><img src="285b3c30.png" alt="Example block output"/><p>The spectrum shows that the main oscillations occur at very low frequencies. However, we are interested in the bump around 31 Hz, which corresponds to the oscillations between 0.1 and 0.2 seconds in the time-domain plot.</p><p>Let&#39;s find out which mode index corresponds to that 31 Hz mode:</p><pre><code class="language-julia hljs">critical_mode_i = findmin(ev -&gt; abs(imag(ev)-31), eigenvalues)[2]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">34</code></pre><p>With the critical mode identified, we can look at the participation factors to see which states are most involved in that mode. For that we use <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.show_participation_factors"><code>show_participation_factors</code></a> from NetworkDynamics:</p><pre><code class="language-julia hljs">show_participation_factors(s0, modes=critical_mode_i, threshold=0.1)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Participation Factors:
+  Mode  Real (Hz)  Imag (Hz)  Factor  State
+  ─────────────────────────────────────────────────────────────────
+  34    -2.674      31.04     0.185   VIndex(5, :droop₊vsrc₊vc₊γ_q)
+                              0.1811  VIndex(5, :droop₊vsrc₊vc₊γ_d)
+                              0.1094  EIndex(4, :branch₊i_line_r)
+                              0.1094  EIndex(6, :branch₊i_line_r)
+                              0.1084  EIndex(6, :branch₊i_line_i)
+                              0.1084  EIndex(4, :branch₊i_line_i)</code></pre><p>We see that the main participation comes from the states <code>droop₊vsrc₊vc₊γ_q</code> and <code>droop₊vsrc₊vc₊γ_d</code> of our droop inverter. If we inspect the model definition, we see that those are related to the <code>d</code> and <code>q</code> components of the internal integrator state of the PI voltage controller.</p><p>Next we perform a parameter sensitivity analysis to see how to increase the damping of those modes.</p><h2 id="Parameter-Sensitivity-Analysis"><a class="docs-heading-anchor" href="#Parameter-Sensitivity-Analysis">Parameter Sensitivity Analysis</a><a id="Parameter-Sensitivity-Analysis-1"></a><a class="docs-heading-anchor-permalink" href="#Parameter-Sensitivity-Analysis" title="Permalink"></a></h2><p>Having identified the modes of interest, the natural next question is: <strong>which parameters most influence a given mode?</strong></p><p>The <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.eigenvalue_sensitivity"><code>eigenvalue_sensitivity</code></a> function computes the sensitivity of a specific eigenvalue to every parameter in the system using the classical formula:</p><p class="math-container">\[\frac{\partial \lambda_i}{\partial p_k} = \mathbf{w}_i^\top \frac{\partial A_s}{\partial p_k} \mathbf{v}_i\]</p><p>where <span>$\mathbf{v}_i$</span> and <span>$\mathbf{w}_i$</span> are the right and left eigenvectors. The Jacobian derivative <span>$\partial A_s / \partial p_k$</span> is computed exactly via nested forward-mode automatic differentiation.</p><p>The results are displayed as <strong>scaled sensitivities</strong> <span>$p_k \cdot \partial\lambda/\partial p_k$</span>, which give the eigenvalue shift per 100% parameter change — making it easy to compare parameters of vastly different magnitudes.</p><p>We already know that the critical mode belongs to the droop inverter. Therefore, we&#39;ll focus our analysis on the droop inverter parameters. <code>eigenvalue_sensitivity</code> allows us to pass a list of parameters for which we want to obtain the sensitivities. We use <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.vpidxs"><code>vpidxs</code></a> to generate a list of all the parameter symbols of our droop inverter.</p><pre><code class="language-julia hljs">psyms = vpidxs(nw, :gfm_bus)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">25-element Vector{NetworkDynamics.SymbolicIndex}:
+ VIndex(5, :droop₊droop₊Kp)
+ VIndex(5, :droop₊droop₊ω0)
+ VIndex(5, :droop₊droop₊Kq)
+ VIndex(5, :droop₊droop₊τ_q)
+ VIndex(5, :droop₊droop₊Vset)
+ VIndex(5, :droop₊droop₊τ_p)
+ VIndex(5, :droop₊droop₊Qset)
+ VIndex(5, :droop₊droop₊Pset)
+ VIndex(5, :droop₊vsrc₊CC1_F)
+ VIndex(5, :droop₊vsrc₊CC1_KI)
+ ⋮
+ VIndex(5, :droop₊vsrc₊Lg)
+ VIndex(5, :droop₊vsrc₊VC_KP)
+ VIndex(5, :droop₊vsrc₊VC_F)
+ VIndex(5, :droop₊vsrc₊ω0)
+ VIndex(5, :droop₊vsrc₊Rg)
+ VIndex(5, :droop₊vsrc₊R_virt)
+ VIndex(5, :droop₊vsrc₊VC_Fcoupl)
+ VIndex(5, :droop₊vsrc₊VC_KI)
+ VIndex(5, :droop₊vsrc₊filter₊connected)</code></pre><p>We can use <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.show_eigenvalue_sensitivity"><code>show_eigenvalue_sensitivity</code></a> to get a nice table of the most sensitive parameters for our critical mode. We sort by real magnitude, since we are mostly interested in improving the damping of the mode.</p><pre><code class="language-julia hljs">show_eigenvalue_sensitivity(s0, critical_mode_i; params=psyms, threshold=0.01, sortby=:realmag)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Eigenvalue Sensitivity for mode 34: λ = -2.674 ± 31.04j Hz
+  Parameter                                Value     Real (Hz)  Imag (Hz)  |p·∂λ/∂p| (Hz)  ∠ (deg)
+  ────────────────────────────────────────────────────────────────────────────────────────────────
+  VIndex(5, :droop₊vsrc₊Rg)                 0.002    -0.3668     0.01983   0.3674           176.9
+  VIndex(5, :droop₊vsrc₊filter₊connected)   1        -0.2162     23.42     23.42            90.53
+  VIndex(5, :droop₊vsrc₊VC_KI)              2827     -0.2099     13.36     13.36            90.9
+  VIndex(5, :droop₊vsrc₊Lg)                 0.01      0.1359     0.6909    0.7041           78.87
+  VIndex(5, :droop₊vsrc₊VC_KP)              0.12     -0.1104    -0.01123   0.1109          -174.2
+  VIndex(5, :droop₊droop₊τ_p)               0.03183  -0.1067     1.178     1.183            95.18
+  VIndex(5, :droop₊vsrc₊X_virt)             0.01      0.1033     1.872     1.875            86.84
+  VIndex(5, :droop₊droop₊Kp)                15.71    -0.0831    -1.179     1.182           -94.03
+  VIndex(5, :droop₊vsrc₊CC1_KP)             0.6      -0.07488    0.004439  0.07501          176.6
+  VIndex(5, :droop₊vsrc₊CC1_KI)             565.5     0.05721    0.3869    0.3911           81.59
+  VIndex(5, :droop₊vsrc₊Rf)                 0.01      0.04461   -0.004583  0.04484         -5.866
+  VIndex(5, :droop₊vsrc₊ω0)                 314.2    -0.04091    1.015     1.016            92.31
+  VIndex(5, :droop₊vsrc₊Lf)                 0.05     -0.02063   -0.08342   0.08593         -103.9</code></pre><p>The most impactful parameters are:</p><ul><li>The grid-side filter resistance <code>Rg</code> and inductance <code>Lg</code> (can&#39;t be &quot;tuned&quot; since they are physical parameters)</li><li>The topology parameter <code>connected</code> which is not tunable</li><li>The proportional and integral gains of the voltage controller <code>VC_KP</code> and <code>VC_KI</code></li></ul><p>Let&#39;s check our eigenvalues after initializing the system again with those parameters increased by a factor of 3:</p><pre><code class="language-julia hljs">default_overrides = Dict(
+    VIndex(5, :droop₊vsrc₊VC_KP) =&gt; 3.0*s0.v[:gfm_bus, :droop₊vsrc₊VC_KP],
+    VIndex(5, :droop₊vsrc₊VC_KI) =&gt; 3.0*s0.v[:gfm_bus, :droop₊vsrc₊VC_KI]
+)
+s0_tuned = initialize_from_pf(nw; pfs, default_overrides, tol=1e-7, nwtol=1e-7)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Initialize VIndex(1) </span>-&gt; 6.114655223365241e-15
+<span class="sgr1">Initialize VIndex(2) </span>-&gt; 5.866512215202201e-10
+<span class="sgr1">Initialize VIndex(3) </span>-&gt; 6.11566304273477e-15
+<span class="sgr1">Initialize VIndex(4) </span>-&gt; 6.439288095707885e-10
+<span class="sgr1">Initialize VIndex(5) </span>-&gt; 8.904745814902197e-13
+<span class="sgr1">Initialize VIndex(6) </span>-&gt; 1.4175959622158749e-8
+<span class="sgr1">Initialize VIndex(7) </span>-&gt; 1.4674020849522784e-13
+<span class="sgr1">Initialize VIndex(8) </span>-&gt; 1.575800468737856e-8
+<span class="sgr1">Initialize EIndex(1) </span>-&gt; 0.0
+<span class="sgr1">Initialize EIndex(2) </span>-&gt; 1.5366280697704624e-16
+<span class="sgr1">Initialize EIndex(3) </span>-&gt; 0.0
+<span class="sgr1">Initialize EIndex(4) </span>-&gt; 5.707857110366561e-15
+<span class="sgr1">Initialize EIndex(5) </span>-&gt; 0.0
+<span class="sgr1">Initialize EIndex(6) </span>-&gt; 5.495816427607498e-16
+<span class="sgr1">Initialize EIndex(7) </span>-&gt; 2.842268519560941e-14
+<span class="sgr1">Initialize EIndex(8) </span>-&gt; 0.0
+Initialized network with residual 3.3396037868680375e-8!</code></pre><p>We can plot the new eigenvalues together with the old ones to see the effect of our tuning:</p><details class="admonition is-details">
+<summary class="admonition-header">Plotting code: Pole Map (Tuned)</summary>
+<div class="admonition-body"><pre><code class="language-julia hljs">fig = let
+    fig = Figure(size=(600,400))
+    ax1 = Axis(fig[1, 1], xlabel=&quot;Real Part [Hz]&quot;, ylabel=&quot;Imaginary Part [Hz]&quot;,
+               title=&quot;Pole Map before and after Tuning&quot;)
+    # ylims!(ax1, -freqs_hz[end], freqs_hz[end])
+    xlims!(ax1, -10, 0.1); ylims!(ax1, -60, 60)
+    old_ev = jacobian_eigenvals(s0) ./ (2 * pi)
+    new_ev = jacobian_eigenvals(s0_tuned) ./ (2 * pi)
+    scatter!(ax1, real.(old_ev), imag.(old_ev), markersize=5, label=&quot;Eigenvalues (pre tuning)&quot;, color=Cycled(2))
+    scatter!(ax1, real.(new_ev), imag.(new_ev), marker=:xcross, label=&quot;Eigenvalues (post tuning)&quot;)
+
+    # add arrow plot to show movement of critical modes
+    path = (t) -&gt; old_ev[critical_mode_i] + t * (new_ev[critical_mode_i] - old_ev[critical_mode_i])
+    arrows2d!(ax1, [(real(path(0.2)),  imag(path(0.2)))], [(real(path(0.8)),  imag(path(0.8)))]; argmode=:endpoint, shaftwidth=1, tiplength=5, tipwidth=5)
+    arrows2d!(ax1, [(real(path(0.2)), -imag(path(0.2)))], [(real(path(0.8)), -imag(path(0.8)))]; argmode=:endpoint, shaftwidth=1, tiplength=5, tipwidth=5)
+    axislegend(ax1; position=:lb)
+    fig
+end</code></pre></div></details><img src="04e69b6e.png" alt="Example block output"/><p>Lastly, we run the time-domain simulation again with the tuned parameters to see the effect on the system response.</p><pre><code class="language-julia hljs">prob_tuned = ODEProblem(nw, s0_tuned, (0,30); add_comp_cb=VIndex(:bus1)=&gt;short)
+sol_tuned = solve(prob_tuned, Rodas5P())</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Short Circuit at Bus 1 at t=0.1s
+Clearing Short Circuit at Bus 1 at t=0.2s</code></pre><p>When we plot the tuned and untuned solutions together we can verify that the oscillations have been damped by the tuning.</p><details class="admonition is-details">
+<summary class="admonition-header">Plotting code: Short Circuit Response (Tuned)</summary>
+<div class="admonition-body"><pre><code class="language-julia hljs">fig = with_theme(Theme(palette = (; color = Makie.wong_colors()[[1, 6, 2, 4]]))) do
+    fig = Figure()
+    ax = Axis(fig[1,1], title=&quot;Voltage Magnitude (tuned)&quot;, limits=((0,0.5), (0.0, 1.2)))
+    ts = filter(t -&gt; t&gt;0, refine_timeseries(sol.t))
+    for i in 1:4
+        lines!(ax, ts, sol_tuned(ts, idxs=VIndex(Symbol(:bus, i), :busbar₊u_mag)).u; label=&quot;Bus $i&quot;, color=Cycled(i))
+    end
+    ax2 = Axis(fig[2,1], title=&quot;Voltage Magnitude (before)&quot;, limits=((0,0.5), (0.0, 1.2)))
+    for i in 1:4
+        lines!(ax2, ts, sol(ts, idxs=VIndex(Symbol(:bus, i), :busbar₊u_mag)).u; label=&quot;Bus $i&quot;, color=Cycled(i))
+    end
+    axislegend(ax2; position=:rb)
+    fig
+end</code></pre></div></details><img src="792ea3b0.png" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ieee39_part4/">« IEEE39 Part IV: Parameter Tuning</a><a class="docs-footer-nextpage" href="../emt_toymodel/">EMT Toymodel »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 27 April 2026 04:17">Monday 27 April 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
