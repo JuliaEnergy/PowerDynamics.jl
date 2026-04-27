@@ -3,7 +3,7 @@ using PowerDynamics.Library
 using Documenter
 using Literate
 using DocumenterInterLinks
-using ModelingToolkit
+using ModelingToolkitBase
 using Graphs
 using NetworkDynamics
 using OrdinaryDiffEqRosenbrock, OrdinaryDiffEqNonlinearSolve

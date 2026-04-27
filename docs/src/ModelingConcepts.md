@@ -77,8 +77,8 @@ You can check if a model satisfies the injector interface using the [`isinjector
 
 !!! details "Code example: definition of PQ load as injector"
     ```@example concepts
-    using PowerDynamics, PowerDynamics.Library, ModelingToolkit
-    using ModelingToolkit: D_nounits as Dt, t_nounits as t
+    using PowerDynamics, PowerDynamics.Library, ModelingToolkitBase, SciCompDSL
+    using ModelingToolkitBase: D_nounits as Dt, t_nounits as t
     @mtkmodel MyPQLoad begin
         @components begin
             terminal = Terminal()
@@ -130,7 +130,7 @@ You can check if a model satisfies the bus interface using the [`isbusmodel`](@r
 
 !!! details "Code example: definition of a Bus containing a swing equation and a load"
     ```@example concepts
-    using PowerDynamics, PowerDynamics.Library, ModelingToolkit
+    using PowerDynamics, PowerDynamics.Library, ModelingToolkitBase, SciCompDSL
     @mtkmodel MyMTKBus begin
         @components begin
             busbar = BusBar()
@@ -169,7 +169,7 @@ You can check if a model satisfies the branch interface using the [`isbranchmode
 
 !!! details "Code example: algebraic R-line"
     ```@example concepts
-    using PowerDynamics, PowerDynamics.Library, ModelingToolkit
+    using PowerDynamics, PowerDynamics.Library, ModelingToolkitBase, SciCompDSL
     @mtkmodel MyRLine begin
         @components begin
             src = Terminal()
@@ -228,7 +228,7 @@ You can check if a model satisfies the line interface using the [`islinemodel`](
 
 !!! details "Code example: Transmission line with two pi-branches"
     ```@example concepts
-    using PowerDynamics, PowerDynamics.Library, ModelingToolkit
+    using PowerDynamics, PowerDynamics.Library, ModelingToolkitBase, SciCompDSL
     @mtkmodel MyMTKLine begin
         @components begin
             src = LineEnd()
@@ -308,7 +308,7 @@ however they will be kept around as so-called "observed" states, meaning we can 
 ### End to End Example
 Putting the knowledge from this document together, we can start a short simulation of an example network:
 ```@example concepts
-using PowerDynamics, PowerDynamics.Library, ModelingToolkit
+using PowerDynamics, PowerDynamics.Library, ModelingToolkitBase
 using Graphs, NetworkDynamics
 using OrdinaryDiffEqRosenbrock, OrdinaryDiffEqNonlinearSolve
 using CairoMakie

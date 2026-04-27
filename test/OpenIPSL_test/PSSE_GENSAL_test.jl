@@ -3,7 +3,7 @@ PowerDynamics.load_pdtesting()
 using Main.PowerDynamicsTesting
 
 using PowerDynamics.Library
-using ModelingToolkit
+using ModelingToolkitBase
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 
@@ -61,7 +61,7 @@ GENSAL_BUS = let
         efd_input=false,
     )
     busmodel = MTKBus(gensal; name=:GEN1)
-    compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0))
+    compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0), mtkcompile=:compare)
 end
 
 

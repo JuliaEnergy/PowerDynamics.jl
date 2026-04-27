@@ -3,7 +3,7 @@ PowerDynamics.load_pdtesting()
 using Main.PowerDynamicsTesting
 
 using PowerDynamics.Library
-using ModelingToolkit
+using ModelingToolkitBase
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 
@@ -125,7 +125,7 @@ BUS = let
 
     # Create bus model with proper connections
     busmodel = MTKBus([genrou, ggov1], con; name=:GEN1)
-    bm = compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0))
+    bm = compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0), mtkcompile=:compare)
 
     # load/temp limiter initialization
     # XXX This is a choice! It won't affect the result so we can chose whatever
@@ -169,7 +169,7 @@ BUS = let
         # accel limiter initialization
         # the derivateive is zero which is fine
         # however, the accelerator intoruced an algebraic loop, we need guess its output
-        :ggov1₊accel_limiter₊FSR = fuel_flow # same as govenor output
+        :ggov1₊fsr_limited = fuel_flow # same as govenor output
 
         :ggov1₊Ldref = (TEXM - :ggov1₊Wfnl) * :ggov1₊Kturb
     end

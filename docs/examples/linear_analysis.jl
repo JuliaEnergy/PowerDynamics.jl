@@ -36,8 +36,8 @@ SimplusGT uses a special machine model for their Type 0 Apparatus which:
 using PowerDynamics
 using PowerDynamics.Library
 using PowerDynamics.Library.ComposableInverter
-using ModelingToolkit
-using ModelingToolkit: t_nounits as t, D_nounits as Dt
+using ModelingToolkitBase, SciCompDSL
+using ModelingToolkitBase: t_nounits as t, D_nounits as Dt
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 using NetworkDynamics
@@ -332,8 +332,8 @@ at the powerflow solution. This is the operating point around which we will anal
 nw = Network([sg1_bus, bus1, sg2_bus, bus2, gfm_bus, bus3, gfl_bus, bus4],
     [loop1, loop2, loop3, loop4, line12, line23, line31, line34]; warn_order=false)
 
-pfs = solve_powerflow(nw; abstol=1e-10, reltol=1e-10)
-s0 = initialize_from_pf!(nw; pfs, tol=1e-7, nwtol=1e-7)
+pfs = solve_powerflow(nw)
+s0 = initialize_from_pf!(nw; pfs, nwtol=1e-7)
 nothing #hide #md
 
 #=

@@ -4,13 +4,13 @@ using ..PowerDynamics: PowerDynamics, Terminal, BusBase, Ibase
 using NetworkDynamics: NetworkDynamics, ComponentCondition, ComponentAffect,
                        VertexModel, VIndex, EIndex, NWState,
                        VectorContinuousComponentCallback, DiscreteComponentCallback, ComponentPostprocessing
-using ModelingToolkit: ModelingToolkit, @named, simplify, t_nounits as t, D_nounits as Dt,
-                       @component
+using ModelingToolkitBase: ModelingToolkitBase, @named, simplify, t_nounits as t, D_nounits as Dt,
+                           @component
 # needed for @mtkmodel
-using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System, Equation, connect, setmetadata
+using ModelingToolkitBase: @variables, @parameters, @unpack, Num, System, Equation, connect, setmetadata
+using SciCompDSL: SciCompDSL, @mtkmodel
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
-using NonlinearSolve: NonlinearProblem
-using SciMLBase: SciMLBase, solve
+using SciMLBase: SciMLBase
 using Symbolics: Symbolics
 using LinearAlgebra: LinearAlgebra
 using SparseConnectivityTracer: GradientTracer

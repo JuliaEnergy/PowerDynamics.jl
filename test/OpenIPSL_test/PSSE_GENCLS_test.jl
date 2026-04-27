@@ -3,7 +3,7 @@ PowerDynamics.load_pdtesting()
 using Main.PowerDynamicsTesting
 
 using PowerDynamics.Library
-using ModelingToolkit
+using ModelingToolkitBase
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 
@@ -38,7 +38,7 @@ GENCLS_BUS = let
 
     @named gencls = PSSE_GENCLS(; S_b, ω_b, H, M_b, #=P_0,=# X_d, D)
     busmodel = MTKBus(gencls; name=:GEN1)
-    compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0))
+    compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0), mtkcompile=:compare)
 end
 
 sol = OpenIPSL_SMIB(GENCLS_BUS);

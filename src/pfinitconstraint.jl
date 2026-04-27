@@ -101,9 +101,9 @@ macro pfinitconstraint(ex)
 
     sym = Symbol[]
     pfsym = Symbol[]
-    out = gensym(:out)
-    u = gensym(:u)
-    pfu = gensym(:pfu)
+    out = :__out__
+    u = :__u__
+    pfu = :__pfu__
     body = Expr[]
 
     dim = 0
@@ -111,20 +111,22 @@ macro pfinitconstraint(ex)
         constraint isa Union{Expr, QuoteNode} || continue # skip line number nodes
         dim += 1
         wrapped = _wrap_symbols!(constraint, sym, pfsym, u, pfu)
-        push!(body, :($(esc(out))[$dim] = $wrapped))
+        push!(body, :($out[$dim] = $wrapped))
     end
     unique!(sym)
     unique!(pfsym)
 
     s = join(string.(body), "\n")
-    s = replace(s, "(\$(Expr(:escape, Symbol(\"$(string(out))\"))))" => "    out")
-    s = replace(s, "(\$(Expr(:escape, Symbol(\"$(string(u))\"))))" => "u")
-    s = replace(s, "(\$(Expr(:escape, Symbol(\"$(string(pfu))\"))))" => "pfu")
+    s = replace(s, string(out) => "    out")
+    s = replace(s, string(u) => "u")
+    s = replace(s, string(pfu) => "pfu")
     s = "PFInitConstraint($sym, $pfsym, $dim) do out, u, pfu\n" * s * "\nend"
+
+    body_esc = _escape_all.(body)
 
     quote
         PFInitConstraint($sym, $pfsym, $dim, $s) do $(esc(out)), $(esc(u)), $(esc(pfu))
-            $(body...)
+            $(body_esc...)
             nothing
         end
     end
@@ -133,16 +135,21 @@ function _wrap_symbols!(ex, sym, pfsym, u, pfu)
     postwalk(ex) do x
         if x isa QuoteNode && x.value isa Symbol
             push!(sym, x.value)
-            :($(esc(u))[$x])
-        elseif @capture(x, @pf($(esc(u))[sc_]))
+            :($u[$x])
+        elseif @capture(x, @pf($u[sc_]))
             @assert sc isa QuoteNode && sc.value isa Symbol
-            # delete sc from symbols
+            # delete sc from symbols (it was added by the QuoteNode branch above)
             deleteat!(sym, findlast(isequal(sc.value), sym))
             push!(pfsym, sc.value)
-            :($(esc(pfu))[$sc])
+            :($pfu[$sc])
         else
             x
         end
+    end
+end
+function _escape_all(ex::Expr)
+    postwalk(ex) do x
+        x isa Symbol ? esc(x) : x
     end
 end
 
@@ -182,9 +189,9 @@ macro pfinitformula(ex)
     sym = Symbol[]
     pfsym = Symbol[]
     outsym = Symbol[]
-    out = gensym(:out)
-    u = gensym(:u)
-    pfu = gensym(:pfu)
+    out = :__out__
+    u = :__u__
+    pfu = :__pfu__
     body = Expr[]
 
     for formula in ex.args
@@ -199,7 +206,7 @@ macro pfinitformula(ex)
             if lhs isa QuoteNode && lhs.value isa Symbol
                 push!(outsym, lhs.value)
                 wrapped_rhs = _wrap_symbols!(rhs, sym, pfsym, u, pfu)
-                push!(body, :($(esc(out))[$lhs] = $wrapped_rhs))
+                push!(body, :($out[$lhs] = $wrapped_rhs))
             else
                 error("Left-hand side of formula assignment must be a quoted symbol like :var")
             end
@@ -213,14 +220,16 @@ macro pfinitformula(ex)
     unique!(outsym)
 
     s = join(string.(body), "\n")
-    s = replace(s, "(\$(Expr(:escape, Symbol(\"$(string(out))\"))))" => "    out")
-    s = replace(s, "(\$(Expr(:escape, Symbol(\"$(string(u))\"))))" => "u")
-    s = replace(s, "(\$(Expr(:escape, Symbol(\"$(string(pfu))\"))))" => "pfu")
+    s = replace(s, string(out) => "    out")
+    s = replace(s, string(u) => "u")
+    s = replace(s, string(pfu) => "pfu")
     s = "PFInitFormula($outsym, $sym, $pfsym) do out, u, pfu\n" * s * "\nend"
+
+    body_esc = _escape_all.(body)
 
     quote
         PFInitFormula($outsym, $sym, $pfsym, $s) do $(esc(out)), $(esc(u)), $(esc(pfu))
-            $(body...)
+            $(body_esc...)
             nothing
         end
     end

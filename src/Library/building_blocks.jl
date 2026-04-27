@@ -22,7 +22,7 @@ function QUAD_SE(u, SE1, SE2, E1, E2)
         return B * (u - A)^2 / u
     end
 end
-ModelingToolkit.@register_symbolic QUAD_SE(u, SE1, SE2, E1, E2)
+Symbolics.@register_symbolic QUAD_SE(u, SE1, SE2, E1, E2)
 
 """
     EXP_SE(u, SE1, SE2, E1, E2)
@@ -44,7 +44,7 @@ function EXP_SE(u, SE1, SE2, E1, E2)
 
     return k * u^X  # equivalently: SE1 * (u/E1)^X
 end
-ModelingToolkit.@register_symbolic EXP_SE(u, SE1, SE2, E1, E2)
+Symbolics.@register_symbolic EXP_SE(u, SE1, SE2, E1, E2)
 
 """
 SimpleLag block
@@ -106,11 +106,11 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     @structural_parameters begin
         K # Gain
         T # Time constant
-        guess=0
+        guess=0 # guess for input (because its derivative)
     end
     @variables begin
-        in(t), [description="Input signal", input=true]
-        out(t), [guess=guess, description="Output signal", output=true]
+        in(t), [guess=guess, description="Input signal", input=true]
+        out(t), [description="Output signal", output=true]
     end
     @equations begin
         T*Dt(in) ~ K*out - in
@@ -764,10 +764,10 @@ Matrices can be either of real numbers or symbolic parameters/terms.
 
 Returns A `System` object with variables `in` (input), `out` (output), and `x₁, x₂, ...` (states).
 """
-ModelingToolkit.@component ss_to_mtkmodel(; A, B, C, D, kwargs...) = ss_to_mtkmodel(A, B, C, D; kwargs...)
+ModelingToolkitBase.@component ss_to_mtkmodel(; A, B, C, D, kwargs...) = ss_to_mtkmodel(A, B, C, D; kwargs...)
 function ss_to_mtkmodel(A, B, C, D; name=nothing, guesses=zeros(size(A,1)))
-    t = ModelingToolkit.t_nounits
-    Dt = ModelingToolkit.D_nounits
+    t = ModelingToolkitBase.t_nounits
+    Dt = ModelingToolkitBase.D_nounits
 
     n = size(A, 1)
     @assert size(D) == (1, 1) "Only SISO systems supported"

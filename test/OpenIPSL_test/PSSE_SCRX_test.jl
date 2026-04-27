@@ -3,7 +3,7 @@ PowerDynamics.load_pdtesting()
 using Main.PowerDynamicsTesting
 
 using PowerDynamics.Library
-using ModelingToolkit
+using ModelingToolkitBase
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 
@@ -79,7 +79,7 @@ BUS = let
 
     # Create bus model with proper connections
     busmodel = MTKBus([genrou, scrx], con; name=:GEN1)
-    bm = compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0))
+    bm = compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0), mtkcompile=:compare)
 end
 
 sol = OpenIPSL_SMIB(BUS);

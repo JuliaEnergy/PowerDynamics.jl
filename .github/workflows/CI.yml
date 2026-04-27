@@ -47,14 +47,9 @@ jobs:
           import Pkg
           Pkg.add(url="https://github.com/hexaeder/Testfiles.jl", rev="main")
       - uses: hexaeder/julia-buildpkg@main
+      - uses: julia-actions/julia-runtest@v1
         with:
-          project: test
-      - name: Test with specific test dep versions
-        shell: julia --project=testenv --color=yes {0}
-        run: |
-          using Pkg
-          pkg"dev ."
-          Pkg.test("PowerDynamics"; coverage=true)
+          coverage: true
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v5
         with:
@@ -92,11 +87,6 @@ jobs:
         # Always wiping the artefact here lets julia-buildpkg re-precompile with
         # the correct GITHUB_REF_NAME for the current event (branch / tag / PR).
         run: find "$HOME/.julia/compiled" -name "PowerDynamics*" -type f -delete -print 2>/dev/null || true
-      - name: Configure doc environment
-        shell: julia --project=docs --color=yes {0}
-        run: |
-          using Pkg
-          Pkg.instantiate()
       - uses: hexaeder/julia-buildpkg@main
         with:
           project: docs

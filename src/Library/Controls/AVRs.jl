@@ -54,10 +54,6 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         E2, [description="2nd ceiling voltage"]
         Se1, [description="1st ceiling saturation"]
         Se2, [description="2nd ceiling saturation"]
-        if ceiling_function == :exponential
-            A=_solve_Ae(E1=>Se1, E2=>Se2), [description="1st ceiling coeff"]
-            B=_solve_Be(E1=>Se1, E2=>Se2), [description="1st ceiling coeff"]
-        end
         if !vref_input
             vref, [guess=1, description="Terminal voltag reference [Machine PU]"]
         end
@@ -75,15 +71,17 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         vm(t), [guess=1, description="terminal voltage measurement (lagged)"]
         vfceil(t), [description="ceiled field voltage"]
         amp_in(t), [description="amplifier input"]
-        vr1(t), [guess=0, description="regulator voltage before Limiter"]
+        if !anti_windup
+            vr1(t), [guess=0, description="regulator voltage before Limiter"]
+        end
         v_fb(t), [guess=0, description="feedback voltage"]
     end
     @equations begin
         # implementation after block diagram in milano
         if ceiling_function == :exponential
-            vfceil ~ vfout * A * exp(B * abs(vfout))
+            vfceil ~ vfout * EXP_SE(abs(vfout), Se1, Se2, E1, E2)
         elseif ceiling_function == :quadratic
-            vfceil ~ quadratic_ceiling(abs(vfout), E1, E2, Se1, Se2)
+            vfceil ~ abs(vfout) * QUAD_SE(abs(vfout), Se1, Se2, E1, E2)
         end
         if tmeas_lag
             Tr * Dt(vm) ~ v_mag.u - vm
@@ -111,40 +109,6 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     end
 end
 
-function solve_ceilf(pair1, pair2; u0=[0.01, 1])
-    p = [pair1.first, pair1.second, pair2.first, pair2.second]
-    if any(x -> x isa ModelingToolkit.NoValue, p)
-        return (; Ae=ModelingToolkit.NoValue, Be=ModelingToolkit.NoValue)
-    end
-    f = (du, u, p) -> begin
-        A,B = u
-        v1, S1, v2, S2 = p
-        du[1] = S1 - A*exp(B*v1)
-        du[2] = S2 - A*exp(B*v2)
-    end
-    prob = NonlinearProblem(f, u0, p)
-    sol = solve(prob; verbose=false)
-    if !SciMLBase.successful_retcode(sol.retcode)
-        error("Did not finde solution for Ae and Be: retcode $(sol.retcode)")
-    end
-    (; Ae=sol[1], Be=sol[2])
-end
-_solve_Ae(pair1, pair2) = solve_ceilf(pair1, pair2)[1]
-_solve_Be(pair1, pair2) = solve_ceilf(pair1, pair2)[2]
-
-
-function quadratic_ceiling(x, E1, E2, Se1, Se2)
-    # sq = sqrt(Se1/Se2)
-    # Asq = (E1 - E2 * sq) / (1 - sq)
-    # Bsq = Se2 /(E2 - Asq)^2
-
-    # below is the definition from RMSPowerSims
-    sq = sqrt((E1 * Se1) / (E2 * Se2))
-    Asq = (E1 - E2 * sq) / (1 - sq)
-    Bsq = (E2 * Se2) / ((E2 - Asq)^2)
-
-    ifelse(x > Asq, Bsq * (x - Asq)^2, 0.0)
-end
 
 #=
 @mtkmodel AVRTypeIS begin

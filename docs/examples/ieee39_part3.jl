@@ -32,7 +32,7 @@ This scenario tests the system's ability to:
 ## Loading required packages and setup
 using PowerDynamics
 using PowerDynamics.Library
-using ModelingToolkit
+using ModelingToolkitBase
 using NetworkDynamics
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve

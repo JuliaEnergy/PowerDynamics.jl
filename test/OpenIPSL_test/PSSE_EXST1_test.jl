@@ -3,7 +3,7 @@ PowerDynamics.load_pdtesting()
 using Main.PowerDynamicsTesting
 
 using PowerDynamics.Library
-using ModelingToolkit
+using ModelingToolkitBase
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 
@@ -53,7 +53,7 @@ BUS = let
         connect(EXST1_EXCITER.EFD_out, GENROE.EFD_in)
     ]
     busmodel = MTKBus([GENROE, EXST1_EXCITER], con; name=:GEN1)
-    compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0))
+    compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0), mtkcompile=:compare)
 end
 
 sol = OpenIPSL_SMIB(BUS);

@@ -46,8 +46,8 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         _IEEEST_active = 1, [description="Internal flag to disable/enable the stabilizer"]
     end
     begin
-        _vcu = ModelingToolkit.getdefault(Vcu)
-        _vcl = ModelingToolkit.getdefault(Vcl)
+        _vcu = ModelingToolkitBase.getdefault(Vcu)
+        _vcl = ModelingToolkitBase.getdefault(Vcl)
         if warn && _vcu != Inf && _vcl != -Inf
             @warn "You set explicit VCU/VCL limits for IEEEST. The output limiting is not active \
                    per default! You need to add a callback, which callback which watches vct(t) state \
@@ -56,12 +56,12 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         end
     end
     begin
-        _A1 = ModelingToolkit.getdefault(A1)
-        _A2 = ModelingToolkit.getdefault(A2)
-        _A3 = ModelingToolkit.getdefault(A3)
-        _A4 = ModelingToolkit.getdefault(A4)
-        _A5 = ModelingToolkit.getdefault(A5)
-        _A6 = ModelingToolkit.getdefault(A6)
+        _A1 = ModelingToolkitBase.getdefault(A1)
+        _A2 = ModelingToolkitBase.getdefault(A2)
+        _A3 = ModelingToolkitBase.getdefault(A3)
+        _A4 = ModelingToolkitBase.getdefault(A4)
+        _A5 = ModelingToolkitBase.getdefault(A5)
+        _A6 = ModelingToolkitBase.getdefault(A6)
 
         # define coefficients (both defualts and symbolic)
         #             A6 s² + A5 s + 1
