@@ -33,9 +33,12 @@ SteadyStateDiffEq = "9672c7b4-1e72-59bd-8a11-6ac3964bc41f"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Testfiles = "cbb5340f-90c5-49b5-a6e6-2125e1f2b326"
 
-[sources]
-PowerDynamics = {path = ".."}
-Testfiles = {url="https://github.com/hexaeder/Testfiles.jl", rev="main"}
+[sources.PowerDynamics]
+path = ".."
+
+[sources.Testfiles]
+rev = "main"
+url = "https://github.com/hexaeder/Testfiles.jl"
 
 [compat]
 Aqua = "0.8.12"
@@ -57,7 +60,7 @@ Optimization = "4.3, 5"
 OptimizationOptimisers = "0.3.7"
 OrderedCollections = "≥0.0.1"
 OrdinaryDiffEqNonlinearSolve = "1.9.0"
-OrdinaryDiffEqRosenbrock = "1.10.0"
+OrdinaryDiffEqRosenbrock = "1.10.0, 2"
 OrdinaryDiffEqTsit5 = "1.1.0"
 PowerDynamics = "≥0.0.1"
 SciMLBase = "≥0.0.1"
