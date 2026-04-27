@@ -96,7 +96,7 @@ nw = Network([genABbus, loadbus], [line_ab])</code></pre><pre class="documenter-
  ├─ 2 vertices (2 unique types)
  └─ 1 edges (1 unique type)
 Edge-Aggregation using SequentialAggregator(+)
-1 callback set across 1 vertex and 0 edges</code></pre><p>Once the network is defined, we can go ahead and run the simulation and plot the results:</p><pre><code class="language-julia hljs">s0 = initialize_from_pf(nw)
+1 callback set across 1 vertex and 0 edges</code></pre><p>Once the network is defined, we can go ahead and run the simulation and plot the results:</p><pre><code class="language- hljs">s0 = initialize_from_pf(nw)
 prob = ODEProblem(nw, s0, (0.0, 3.0))
 sol = solve(prob, Rodas5P());
 let
@@ -112,7 +112,7 @@ let
     lines!(ax3, sol, idxs=VIndex(:genABbus, :genA₊Q), color=Cycled(1))
     lines!(ax3, sol, idxs=VIndex(:genABbus, :genB₊Q), color=Cycled(2))
     fig
-end</code></pre><img src="b7d2913a.png" alt="Example block output"/><h4 id="Modeling-as-a-4-Bus-System-with-Loopback-Connections"><a class="docs-heading-anchor" href="#Modeling-as-a-4-Bus-System-with-Loopback-Connections">Modeling as a 4-Bus System with Loopback Connections</a><a id="Modeling-as-a-4-Bus-System-with-Loopback-Connections-1"></a><a class="docs-heading-anchor-permalink" href="#Modeling-as-a-4-Bus-System-with-Loopback-Connections" title="Permalink"></a></h4><p>Now we model the same system using loopback connections. Note how we use <code>current_source=true</code> to generate a model with voltage input and current output:</p><pre><code class="language-julia hljs">@named gen = SauerPaiMachine(; genp...)
+end</code></pre><h4 id="Modeling-as-a-4-Bus-System-with-Loopback-Connections"><a class="docs-heading-anchor" href="#Modeling-as-a-4-Bus-System-with-Loopback-Connections">Modeling as a 4-Bus System with Loopback Connections</a><a id="Modeling-as-a-4-Bus-System-with-Loopback-Connections-1"></a><a class="docs-heading-anchor-permalink" href="#Modeling-as-a-4-Bus-System-with-Loopback-Connections" title="Permalink"></a></h4><p>Now we model the same system using loopback connections. Note how we use <code>current_source=true</code> to generate a model with voltage input and current output:</p><pre><code class="language-julia hljs">@named gen = SauerPaiMachine(; genp...)
 @named genAbus = compile_bus(MTKBus(gen); current_source=true)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:genAbus</span> <span class="sgr94">FeedForward()</span>
  ├─  2 inputs:  [busbar₊u_r=1, busbar₊u_i=0]
  ├─  6 states:  [gen₊ψ″_q<span class="sgr90">≈0</span>, gen₊ψ″_d<span class="sgr90">≈1</span>, gen₊E′_d<span class="sgr90">≈0</span>, gen₊E′_q<span class="sgr90">≈1</span>, gen₊ω<span class="sgr90">≈1</span>, gen₊δ<span class="sgr90">≈0</span>]
@@ -128,16 +128,15 @@ nw = Network([genAbus, genBbus, junction, loadbus], [loopbackA, loopbackB, line_
  ├─ 4 vertices (3 unique types)
  └─ 3 edges (2 unique types)
 Edge-Aggregation using SequentialAggregator(+)
-1 callback set across 1 vertex and 0 edges</code></pre><p>Unsurprisingly, we now have a network with 4 vertices and 3 edges.</p><pre><code class="language-julia hljs">s0 = initialize_from_pf(nw; tol=1e-9, nwtol=1e-8);</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Initialize VIndex(1) </span><span class="sgr33"> - WARN: </span>Init failed with code MaxIters but residual is within tol 9.4e-13 &lt; 1.0e-9, continue...
--&gt; 9.4228611004188e-13
-<span class="sgr1">Initialize VIndex(2) </span><span class="sgr33"> - WARN: </span>Init failed with code MaxIters but residual is within tol 2.6e-12 &lt; 1.0e-9, continue...
--&gt; 2.6477988242365953e-12
+1 callback set across 1 vertex and 0 edges</code></pre><p>Unsurprisingly, we now have a network with 4 vertices and 3 edges.</p><pre><code class="language-julia hljs">s0 = initialize_from_pf(nw; tol=1e-9, nwtol=1e-8);</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Initialize VIndex(1) </span>-&gt; 2.6719256433915273e-10
+<span class="sgr1">Initialize VIndex(2) </span><span class="sgr33"> - WARN: </span>Init failed with code MaxIters but residual is within tol 5.8e-10 &lt; 1.0e-9, continue...
+-&gt; 5.757665023025232e-10
 <span class="sgr1">Initialize VIndex(3) </span>-&gt; 4.002966042486721e-16
 <span class="sgr1">Initialize VIndex(4) </span>-&gt; 2.220446049250313e-16
 <span class="sgr1">Initialize EIndex(1) </span>-&gt; 0.0
 <span class="sgr1">Initialize EIndex(2) </span>-&gt; 0.0
 <span class="sgr1">Initialize EIndex(3) </span>-&gt; 0.0
-Initialized network with residual 4.326576590062943e-13!</code></pre><p>The network still initializes fine. Since we have separate powerflow models for each generator, the power sharing is directly defined by those models – no extra initialization constraints needed.</p><p>We can simulate the network and reproduce the results from above:</p><pre><code class="language-julia hljs">prob = ODEProblem(nw, s0, (0.0, 3.0))
+Initialized network with residual 1.6755290566002915e-10!</code></pre><p>The network still initializes fine. Since we have separate powerflow models for each generator, the power sharing is directly defined by those models – no extra initialization constraints needed.</p><p>We can simulate the network and reproduce the results from above:</p><pre><code class="language-julia hljs">prob = ODEProblem(nw, s0, (0.0, 3.0))
 sol = solve(prob, Rodas5P());
 let
     fig = Figure()
@@ -152,4 +151,4 @@ let
     lines!(ax3, sol, idxs=VIndex(:genAbus, :gen₊Q), color=Cycled(1))
     lines!(ax3, sol, idxs=VIndex(:genBbus, :gen₊Q), color=Cycled(2))
     fig
-end</code></pre><img src="81641e48.png" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../Library/">« Component Library</a><a class="docs-footer-nextpage" href="../julia_setup/">Julia Setup for New Users »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Thursday 26 March 2026 08:19">Thursday 26 March 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre><img src="81641e48.png" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../Library/">« Component Library</a><a class="docs-footer-nextpage" href="../julia_setup/">Julia Setup for New Users »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 27 April 2026 13:15">Monday 27 April 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

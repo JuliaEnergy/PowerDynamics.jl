@@ -182,21 +182,21 @@ initialize_component(gen; default_overrides=interf_v30)</code></pre><pre class="
    - ctrld_gen₊machine₊δ (guess=0.0)
    - ctrld_gen₊avr₊vref (guess=1.0)
    - ctrld_gen₊gov₊p_ref (guess=1.0)
- - Initialization successful with residual 2.2368571849501683e-14
-   - ctrld_gen₊gov₊xg2 =&gt; 0.2500007071212
-   - ctrld_gen₊gov₊xg1 =&gt; 0.2500007071212
-   - ctrld_gen₊avr₊v_fb =&gt; -1.7379745860527382e-24
-   - ctrld_gen₊avr₊vfout =&gt; 1.2089294414023377
+ - Initialization successful with residual 1.5858001085434628e-14
+   - ctrld_gen₊gov₊xg2 =&gt; 0.2500007071211999
+   - ctrld_gen₊gov₊xg1 =&gt; 0.2500007071211999
+   - ctrld_gen₊avr₊v_fb =&gt; -1.6770342568023247e-24
+   - ctrld_gen₊avr₊vfout =&gt; 1.2089294414023373
    - ctrld_gen₊avr₊vr =&gt; -0.05863307790801337
-   - ctrld_gen₊avr₊vm =&gt; 1.0475029036205294
-   - ctrld_gen₊machine₊ψ″_q =&gt; -0.1222340798869759
+   - ctrld_gen₊avr₊vm =&gt; 1.0475029036205292
+   - ctrld_gen₊machine₊ψ″_q =&gt; -0.12223407988697589
    - ctrld_gen₊machine₊ψ″_d =&gt; 1.0583265036403948
    - ctrld_gen₊machine₊E′_d =&gt; 0.04110526546035266
    - ctrld_gen₊machine₊E′_q =&gt; 1.090168268034709
    - ctrld_gen₊machine₊ω =&gt; 1.0
    - ctrld_gen₊machine₊δ =&gt; 0.08480526654610765
    - ctrld_gen₊avr₊vref =&gt; 1.0357762880389267
-   - ctrld_gen₊gov₊p_ref =&gt; 0.01250003535606</code></pre><div class="admonition is-info" id="Mutating-vs-non-mutating-Initialization-f4e5ff2b80c318cb"><header class="admonition-header">Mutating vs non-mutating Initialization<a class="admonition-anchor" href="#Mutating-vs-non-mutating-Initialization-f4e5ff2b80c318cb" title="Permalink"></a></header><div class="admonition-body"><p>The non mutating <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.initialize_component"><code>initialize_component</code></a> returns a dictionary containing a full initialized component state. That can be useful for certain purposes, often it is easier to work with the <em>mutating</em> version of initialization function, which will write the initialized values back to the component metadata (i.e setting the <code>:init</code> property for the symbols).</p></div></div><p>Let&#39;s call the mutating <code>initialize_component!</code> function to write the initialized values back to the component and inspect the initial state using <code>dump_initial_state</code>:</p><pre><code class="language-julia hljs">initialize_component!(gen; default_overrides=interf_v30)
+   - ctrld_gen₊gov₊p_ref =&gt; 0.012500035356059999</code></pre><div class="admonition is-info" id="Mutating-vs-non-mutating-Initialization-f4e5ff2b80c318cb"><header class="admonition-header">Mutating vs non-mutating Initialization<a class="admonition-anchor" href="#Mutating-vs-non-mutating-Initialization-f4e5ff2b80c318cb" title="Permalink"></a></header><div class="admonition-body"><p>The non mutating <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.initialize_component"><code>initialize_component</code></a> returns a dictionary containing a full initialized component state. That can be useful for certain purposes, often it is easier to work with the <em>mutating</em> version of initialization function, which will write the initialized values back to the component metadata (i.e setting the <code>:init</code> property for the symbols).</p></div></div><p>Let&#39;s call the mutating <code>initialize_component!</code> function to write the initialized values back to the component and inspect the initial state using <code>dump_initial_state</code>:</p><pre><code class="language-julia hljs">initialize_component!(gen; default_overrides=interf_v30)
 dump_initial_state(gen; obs=false)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"> - Set additional default for busbar₊u_r: 1.04573
  - Set additional default for busbar₊u_i: -0.0609188
  - Set additional default for busbar₊i_i: 1.53174
@@ -217,28 +217,28 @@ dump_initial_state(gen; obs=false)</code></pre><pre class="documenter-example-ou
    - ctrld_gen₊machine₊δ (guess=0.0)
    - ctrld_gen₊avr₊vref (guess=1.0)
    - ctrld_gen₊gov₊p_ref (guess=1.0)
- - Initialization successful with residual 2.2368571849501683e-14
-   - ctrld_gen₊gov₊xg2 =&gt; 0.2500007071212
-   - ctrld_gen₊gov₊xg1 =&gt; 0.2500007071212
-   - ctrld_gen₊avr₊v_fb =&gt; -1.7379745860527382e-24
-   - ctrld_gen₊avr₊vfout =&gt; 1.2089294414023377
+ - Initialization successful with residual 1.5858001085434628e-14
+   - ctrld_gen₊gov₊xg2 =&gt; 0.2500007071211999
+   - ctrld_gen₊gov₊xg1 =&gt; 0.2500007071211999
+   - ctrld_gen₊avr₊v_fb =&gt; -1.6770342568023247e-24
+   - ctrld_gen₊avr₊vfout =&gt; 1.2089294414023373
    - ctrld_gen₊avr₊vr =&gt; -0.05863307790801337
-   - ctrld_gen₊avr₊vm =&gt; 1.0475029036205294
-   - ctrld_gen₊machine₊ψ″_q =&gt; -0.1222340798869759
+   - ctrld_gen₊avr₊vm =&gt; 1.0475029036205292
+   - ctrld_gen₊machine₊ψ″_q =&gt; -0.12223407988697589
    - ctrld_gen₊machine₊ψ″_d =&gt; 1.0583265036403948
    - ctrld_gen₊machine₊E′_d =&gt; 0.04110526546035266
    - ctrld_gen₊machine₊E′_q =&gt; 1.090168268034709
    - ctrld_gen₊machine₊ω =&gt; 1.0
    - ctrld_gen₊machine₊δ =&gt; 0.08480526654610765
    - ctrld_gen₊avr₊vref =&gt; 1.0357762880389267
-   - ctrld_gen₊gov₊p_ref =&gt; 0.01250003535606
+   - ctrld_gen₊gov₊p_ref =&gt; 0.012500035356059999
 <span class="sgr1">Inputs:</span>
   busbar₊i_i                     = <span class="sgr34"> 1.5317</span>
   busbar₊i_r                     = <span class="sgr34">-2.3014</span>
 <span class="sgr1">States:</span>
   busbar₊u_i                     = <span class="sgr34">-0.060919</span>
   busbar₊u_r                     = <span class="sgr34"> 1.0457</span>
-  ctrld_gen₊avr₊v_fb             = <span class="sgr33">-1.738e-24</span> (guess  0)
+  ctrld_gen₊avr₊v_fb             = <span class="sgr33">-1.677e-24</span> (guess  0)
   ctrld_gen₊avr₊vfout            = <span class="sgr33"> 1.2089</span>    (guess  1) (bounds 0.0..Inf)
   ctrld_gen₊avr₊vm               = <span class="sgr33"> 1.0475</span>    (guess  1)
   ctrld_gen₊avr₊vr               = <span class="sgr33">-0.058633</span>  (guess  0)
@@ -340,15 +340,15 @@ initialize_component!(vm_manual)</code></pre><pre class="documenter-example-outp
    - machine₊δ (guess=0.0)
    - machine₊vf_set (guess=1.0)
    - machine₊τ_m_set (guess=1.0)
- - Initialization successful with residual 1.3441624866295092e-15
-   - machine₊ψ″_q =&gt; -0.15059882743968384
+ - Initialization successful with residual 1.3785621572510508e-15
+   - machine₊ψ″_q =&gt; -0.1505988274396838
    - machine₊ψ″_d =&gt; 1.02194881575775
-   - machine₊E′_d =&gt; 0.10353669204145349
+   - machine₊E′_d =&gt; 0.10353669204145347
    - machine₊E′_q =&gt; 1.0295381077888897
    - machine₊ω =&gt; 1.0
-   - machine₊δ =&gt; -0.0009453966114083673
+   - machine₊δ =&gt; -0.0009453966114084172
    - machine₊vf_set =&gt; 1.0649548005163991
-   - machine₊τ_m_set =&gt; 0.09999997941499997</code></pre><p>The initialization succeeded now!</p><div class="admonition is-info" id="No-more-default_overrides-d1d2d98c65ddf3b3"><header class="admonition-header">No more default_overrides<a class="admonition-anchor" href="#No-more-default_overrides-d1d2d98c65ddf3b3" title="Permalink"></a></header><div class="admonition-body"><p>Note how we can skip the <code>default_overrides</code> keyword argument, since the first (failing) call of <code>initialize_component!</code> already &quot;burned in&quot; the default overrides! Mutating state is a powerful tool, but it needs care!</p></div></div><h3 id="Method-2:-Adding-an-init_formula"><a class="docs-heading-anchor" href="#Method-2:-Adding-an-init_formula">Method 2: Adding an <code>init_formula</code></a><a id="Method-2:-Adding-an-init_formula-1"></a><a class="docs-heading-anchor-permalink" href="#Method-2:-Adding-an-init_formula" title="Permalink"></a></h3><p>The problem with the previous method is that it is quite manual. In reality, we would never go through this very manual initialization process. The fact that the model is structurally underconstrained is a property of the model and should therefore be handled by the model. To do so, NetworkDynamics.jl provides the <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.InitFormula"><code>InitFormula</code></a> mechanism.</p><p>An <code>InitFormula</code> is a symbolic formula that is evaluated during the initialization process. It is attached to the VertexModel so it can be evaluated automatically during the initialization process. The &quot;formula&quot; we want to apply is simply the equation</p><p class="math-container">\[V_\mathrm{set} = \sqrt{u_r^2 + u_i^2}\]</p><pre><code class="language-julia hljs">vm_formula = copy(nw[VIndex(39)])
+   - machine₊τ_m_set =&gt; 0.099999979415</code></pre><p>The initialization succeeded now!</p><div class="admonition is-info" id="No-more-default_overrides-d1d2d98c65ddf3b3"><header class="admonition-header">No more default_overrides<a class="admonition-anchor" href="#No-more-default_overrides-d1d2d98c65ddf3b3" title="Permalink"></a></header><div class="admonition-body"><p>Note how we can skip the <code>default_overrides</code> keyword argument, since the first (failing) call of <code>initialize_component!</code> already &quot;burned in&quot; the default overrides! Mutating state is a powerful tool, but it needs care!</p></div></div><h3 id="Method-2:-Adding-an-init_formula"><a class="docs-heading-anchor" href="#Method-2:-Adding-an-init_formula">Method 2: Adding an <code>init_formula</code></a><a id="Method-2:-Adding-an-init_formula-1"></a><a class="docs-heading-anchor-permalink" href="#Method-2:-Adding-an-init_formula" title="Permalink"></a></h3><p>The problem with the previous method is that it is quite manual. In reality, we would never go through this very manual initialization process. The fact that the model is structurally underconstrained is a property of the model and should therefore be handled by the model. To do so, NetworkDynamics.jl provides the <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.InitFormula"><code>InitFormula</code></a> mechanism.</p><p>An <code>InitFormula</code> is a symbolic formula that is evaluated during the initialization process. It is attached to the VertexModel so it can be evaluated automatically during the initialization process. The &quot;formula&quot; we want to apply is simply the equation</p><p class="math-container">\[V_\mathrm{set} = \sqrt{u_r^2 + u_i^2}\]</p><pre><code class="language-julia hljs">vm_formula = copy(nw[VIndex(39)])
 formula = @initformula :ZIPLoad₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
 set_initformula!(vm_formula, formula)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:bus39</span> <span class="sgr94">PureStateMap()</span> @ Vertex 39
  ├─  2 inputs:  [busbar₊i_r=0.72013, busbar₊i_i=-1.7222]
@@ -368,15 +368,15 @@ set_initformula!(vm_formula, formula)</code></pre><pre class="documenter-example
    - machine₊δ (guess=0.0)
    - machine₊vf_set (guess=1.0)
    - machine₊τ_m_set (guess=1.0)
- - Initialization successful with residual 1.3441624866295092e-15
-   - machine₊ψ″_q =&gt; -0.15059882743968384
+ - Initialization successful with residual 1.3785621572510508e-15
+   - machine₊ψ″_q =&gt; -0.1505988274396838
    - machine₊ψ″_d =&gt; 1.02194881575775
-   - machine₊E′_d =&gt; 0.10353669204145349
+   - machine₊E′_d =&gt; 0.10353669204145347
    - machine₊E′_q =&gt; 1.0295381077888897
    - machine₊ω =&gt; 1.0
-   - machine₊δ =&gt; -0.0009453966114083673
+   - machine₊δ =&gt; -0.0009453966114084172
    - machine₊vf_set =&gt; 1.0649548005163991
-   - machine₊τ_m_set =&gt; 0.09999997941499997</code></pre><p>The init formula is applied early in the initialization process, essentially writing a new <code>default</code> for <code>ZIPLoad₊Vset</code> based on the other defaults.</p><p>This reduced the number of free variables to 10, thus the system was solvable.</p><h3 id="Method-3:-Using-an-InitConstraint"><a class="docs-heading-anchor" href="#Method-3:-Using-an-InitConstraint">Method 3: Using an <code>InitConstraint</code></a><a id="Method-3:-Using-an-InitConstraint-1"></a><a class="docs-heading-anchor-permalink" href="#Method-3:-Using-an-InitConstraint" title="Permalink"></a></h3><p>Sometimes, your additional initialization needs are more complicated. Similar to defining a <em>formula</em>, which is evaluated <em>before</em> the actual initialization, NetworkDynamics provides a mechanism for injecting additional constraints into the initialization process.</p><p>In contrast to the formula, the constraint does not need to be explicitly solvable, as it defines a residual equation</p><p class="math-container">\[0 = c(x) = V_\mathrm{set} - \sqrt{u_r^2 + u_i^2}\]</p><pre><code class="language-julia hljs">vm_constraint = copy(nw[VIndex(39)])
+   - machine₊τ_m_set =&gt; 0.099999979415</code></pre><p>The init formula is applied early in the initialization process, essentially writing a new <code>default</code> for <code>ZIPLoad₊Vset</code> based on the other defaults.</p><p>This reduced the number of free variables to 10, thus the system was solvable.</p><h3 id="Method-3:-Using-an-InitConstraint"><a class="docs-heading-anchor" href="#Method-3:-Using-an-InitConstraint">Method 3: Using an <code>InitConstraint</code></a><a id="Method-3:-Using-an-InitConstraint-1"></a><a class="docs-heading-anchor-permalink" href="#Method-3:-Using-an-InitConstraint" title="Permalink"></a></h3><p>Sometimes, your additional initialization needs are more complicated. Similar to defining a <em>formula</em>, which is evaluated <em>before</em> the actual initialization, NetworkDynamics provides a mechanism for injecting additional constraints into the initialization process.</p><p>In contrast to the formula, the constraint does not need to be explicitly solvable, as it defines a residual equation</p><p class="math-container">\[0 = c(x) = V_\mathrm{set} - \sqrt{u_r^2 + u_i^2}\]</p><pre><code class="language-julia hljs">vm_constraint = copy(nw[VIndex(39)])
 constraint = @initconstraint begin
   :ZIPLoad₊Vset - sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
 end
@@ -398,13 +398,13 @@ set_initconstraint!(vm_constraint, constraint)</code></pre><pre class="documente
    - machine₊vf_set (guess=1.0)
    - machine₊τ_m_set (guess=1.0)
    - ZIPLoad₊Vset (guess=1.0)
- - Initialization successful with residual 1.3447363849099366e-15
+ - Initialization successful with residual 1.379563701880601e-15
    - machine₊ψ″_q =&gt; -0.15059882743968386
    - machine₊ψ″_d =&gt; 1.0219488157577499
    - machine₊E′_d =&gt; 0.10353669204145349
    - machine₊E′_q =&gt; 1.0295381077888894
    - machine₊ω =&gt; 1.0
-   - machine₊δ =&gt; -0.0009453966114083827
+   - machine₊δ =&gt; -0.0009453966114084089
    - machine₊vf_set =&gt; 1.0649548005163987
    - machine₊τ_m_set =&gt; 0.09999997941499997
    - ZIPLoad₊Vset =&gt; 1.0300036884035901</code></pre><p>For this particular case, method (2) is the way to go. However there are cases where the constraint is more complex and cannot be expressed as a formula.</p><p>See NetworkDynamics docs on <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/initialization/#Advanced-Component-Initialization%3A-Formulas-and-Constraints">Advanced Component Initialization: Formulas and Constraints</a> and the PowerDynamics specific extension <a href="../../initialization/#Advanced-Component-Initialization">Advanced Component Initialization</a> for more information on method 2 and 3.</p><h2 id="initialize-all-components"><a class="docs-heading-anchor" href="#initialize-all-components">Automatic Initialization of Full Network</a><a id="initialize-all-components-1"></a><a class="docs-heading-anchor-permalink" href="#initialize-all-components" title="Permalink"></a></h2><p>Let&#39;s return from our excursion into individual component initialization and focus on the whole network again. As we&#39;ve just seen, we have structurally underconstrained components in the network. Let&#39;s define the init formulas for the two buses which have loads and machines:</p><pre><code class="language-julia hljs">formula = @initformula :ZIPLoad₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
@@ -421,11 +421,11 @@ set_initformula!(nw[VIndex(39)], formula)</code></pre><p>With that, the componen
   ⋮
   ├─ VIndex(39, :machine₊ψ″_q)           =&gt; -0.15059933653741464
   ├─ VIndex(39, :machine₊ψ″_d)           =&gt; 1.0219450150609855
-  ├─ VIndex(39, :machine₊E′_d)           =&gt; 0.10353704204613723
+  ├─ VIndex(39, :machine₊E′_d)           =&gt; 0.10353704204613726
   ├─ VIndex(39, :machine₊E′_q)           =&gt; 1.029534387321863
   ├─ VIndex(39, :machine₊ω)              =&gt; 1.0
-  ├─ VIndex(39, :machine₊δ)              =&gt; -0.0009449613162678245
+  ├─ VIndex(39, :machine₊δ)              =&gt; -0.0009449613162678115
   ├─ VIndex(39, :busbar₊u_r)             =&gt; 1.0141861967677506
   └─ VIndex(39, :busbar₊u_i)             =&gt; -0.17979515941396632<span class="sgr90">
  p = NWParameter([-3.22, -0.024, 1.03017, 1.0, 1.0, 0.0, 0.0, -5.0, -1.84, 1.00386  …  0.97561, 1.0, 0.0, 0.0, 0.0, 0.0, 0.5, 1.0, 0.0, 0.0])
- t = nothing</span></code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ieee39_part1/">« IEEE39 Part I: Modeling</a><a class="docs-footer-nextpage" href="../ieee39_part3/">IEEE39 Part III: Simulation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Thursday 26 March 2026 08:19">Thursday 26 March 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ t = nothing</span></code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ieee39_part1/">« IEEE39 Part I: Modeling</a><a class="docs-footer-nextpage" href="../ieee39_part3/">IEEE39 Part III: Simulation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 27 April 2026 13:15">Monday 27 April 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
