@@ -213,12 +213,6 @@ Once your companion package exists, your typical session looks like this:
 
 This loop is the productive heart of Julia work. The persistent REPL keeps everything compiled and warm; Revise keeps your library code in sync with what's on disk; the companion package gives all your reusable logic a clean home.
 
-A few patterns to lean on:
-
-- **One example script per scenario or figure.** Keep them readable end-to-end.
-- **Helpers in `src/`, narrative in `examples/`.** If a script gets too dense with setup, that setup belongs in the package.
-- **`test/runtests.jl`** is optional for a research companion, but a small test file is one of the cheapest ways to catch regressions when you `update` your environment. Even just a few `@test`s on the highest-level functions pays for itself. See the [Julia `Test` stdlib documentation](https://docs.julialang.org/en/v1/stdlib/Test/) for what you can write there.
-
 ## From companion package to shared library
 
 One of the nicest properties of the companion-package pattern is that it sets you up for a smooth transition when your "private helpers" turn out to be useful to other people too.
@@ -252,7 +246,7 @@ A few things that trip people up:
 
 **Don't worry about dependency hygiene in a research companion.** For *real* libraries you intend others to use, you want the package's environment to be lean — every dependency you add becomes a constraint imposed on every downstream user. A research companion is different. It's not meant to be consumed by anyone; it's a private home for your project's code. So go ahead and add `CairoMakie`, `DataFrames`, `CSV`, whatever your scripts need, directly to the companion's `Project.toml`. Putting them in a nested environment under `examples/` would introduce back unnecessary complexity. The hygiene principle reasserts itself the moment you start spinning out genuinely shared packages — those should keep their dependencies tight.
 
-**Pay attantion to your REPL prompt color.** If the `julia>` prompt turns yellow, Revise is yelling at you. Maybe you introduce a syntax error while modifying source files or something like that. You can call `Revise.retry()` to retry loading or at least resurfacing the error. If you ignore it, you might not be running the code you think you're running!
+**Pay attention to your REPL prompt color.** If the `julia>` prompt turns yellow, Revise is yelling at you. Maybe you introduce a syntax error while modifying source files or something like that. You can call `Revise.retry()` to retry loading or at least resurfacing the error. If you ignore it, you might not be running the code you think you're running!
 
 **Commit the `Manifest.toml` for research projects.** Yes, it's auto-generated, but committing it is what guarantees a future-you (or a collaborator) can reproduce your numbers. This is good safeguard against accidentally breaking your environment by package updates. For a *library* package intended for downstream use, you'd `.gitignore` it instead — a different situation.
 
@@ -265,6 +259,6 @@ A few things that trip people up:
 You now have the full picture: a working Julia setup ([Part I](@ref julia-setup)), an understanding of environments and `Pkg` ([Part II](@ref env-management)), and a structure for organizing real research code (this part). From here:
 
 - The [Modern Julia Workflows blog](https://modernjuliaworkflows.org/) covers many topics adjacent to what's here — testing, CI, profiling, debugging.
-- The [Pkg.jl documentation](https://pkgdocs.julialang.org/) is excellent when you need depth on a specific Pkg feature. Specific, notably and quite recent features of Pkg are the [`[sources]`-sections](https://pkgdocs.julialang.org/v1/toml-files/#The-%5Bsources%5D-section) and the [`[workspace]`-section](https://pkgdocs.julialang.org/v1/toml-files/#Workspaces) and how you might [use those features across you pacakge](https://discourse.julialang.org/t/how-to-use-workspaces-to-test/133670/16).
-- Check out how to run you tests automaticially in CI with GitHub actions. 
+- The [Pkg.jl documentation](https://pkgdocs.julialang.org/) is excellent when you need depth on a specific Pkg feature. Specific, notably and quite recent features of Pkg are the [`[sources]`-sections](https://pkgdocs.julialang.org/v1/toml-files/#The-%5Bsources%5D-section) and the [`[workspace]`-section](https://pkgdocs.julialang.org/v1/toml-files/#Workspaces) and how you might [use those features across your packages](https://discourse.julialang.org/t/how-to-use-workspaces-to-test/133670/16).
+- Check out how to run your tests automatically in CI with GitHub actions.
 - Check out [`Documenter.jl`](https://juliadocs.github.io/Documenter.jl/stable/) for how to write documentation for your package and publish it online.

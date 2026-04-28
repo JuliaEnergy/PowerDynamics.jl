@@ -243,9 +243,9 @@ Consider a concrete scenario. Your global environment has `Revise` installed, an
  ╚════════╝                                      ╰────────────────────────╯
 ```
 
-Now you start Julia globally. Either through `startup.jl` or VSCode's auto-Revise, `using Revise` runs — which loads `OrderedCollections@1.2` into the session. However, you actual Project was previously resolved (and precompiled!) for `OrderedCollections@1.3`.
+Now you start Julia globally. Either through `startup.jl` or VSCode's auto-Revise, `using Revise` runs — which loads `OrderedCollections@1.2` into the session. However, your actual Project was previously resolved (and precompiled!) for `OrderedCollections@1.3`.
 
-A Julia session can't unload a package. Per semver, 1.2 and 1.3 are compatible, so things will *appear to work*. But your entire precompile cache for everything downstream of `OrderedCollections` — including big packages like `DifferentialEquations` — was built against `@1.3` and is now invalidated. So using those packages in this environment can lead to huge amounts of redudant precompilation which is slow and surprising:
+A Julia session can't unload a package. Per semver, 1.2 and 1.3 are compatible, so things will *appear to work*. But your entire precompile cache for everything downstream of `OrderedCollections` — including big packages like `DifferentialEquations` — was built against `@1.3` and is now invalidated. So using those packages in this environment can lead to huge amounts of redundant precompilation which is slow and surprising:
 
 ```asciiart
  ╔════════╗                                      ╭────────────────────────╮
@@ -263,8 +263,7 @@ A Julia session can't unload a package. Per semver, 1.2 and 1.3 are compatible, 
 ```
 
 
-If instead you start Julia *directly in the project environment*, the manifest pins `@1.3` from the start, Revise's reference to `OrderedCollections` resolves into that same `@1.3`, and only Revise's small precompile cache (in the global env) gets invalidated:
-That's much better!
+If instead you start Julia *directly in the project environment*, the manifest pins `@1.3` from the start, Revise's reference to `OrderedCollections` resolves into that same `@1.3`, and only Revise's small precompile cache (in the global env) gets invalidated. That's much better!
 
 The takeaway: pick the right environment **before** starting Julia, not after.
 
