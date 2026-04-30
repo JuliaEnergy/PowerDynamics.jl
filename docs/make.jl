@@ -56,7 +56,6 @@ doc = makedocs(;
         "Component Library" => "Library.md",
         "vs_and_cs_models.md",
         "Tutorials" => [
-            "Julia Setup for New Users" => "julia_setup.md",
             "Getting Started" => "generated/getting_started.md",
             "Typical Simulation Workflow" => "generated/typical_simulation_workflow.md",
             "Custom Generator Bus" => "generated/custom_bus.md",
@@ -74,6 +73,11 @@ doc = makedocs(;
         ],
         "API" => "API.md",
         "🔗 NetworkDynamics.jl Docs" => "networkdynamics_forward.md",
+        "Getting Started with Julia" => [
+            "Julia Setup for New Users" => "julia_setup.md",
+            "Environment Management" => "julia_pkgbasics.md",
+            "How to Structure Research Projects" => "julia_workflow.md",
+        ],
     ],
     draft=haskey(ENV, "DOCUMENTER_DRAFT"),
     linkcheck_ignore = [
