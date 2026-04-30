@@ -54,7 +54,7 @@ MyPaperCompanion/
 │  ├╴ network_construction.jl    # subfiles with the actual implementation
 │  ├╴ analysis.jl
 │  └╴ plotting.jl
-├╴ examples/
+├╴ scripts/
 │  ├╴ scenario_a.jl              # high-level scripts that USE the package
 │  └╴ scenario_b.jl
 ├╴ test/
@@ -63,10 +63,10 @@ MyPaperCompanion/
 └╴ Manifest.toml                 # exact resolved versions
 ```
 
-The key idea: **scripts in `examples/` import the companion package and call its functions**. The companion package owns the implementation; the scripts own the narrative.
+The key idea: **scripts in `scripts/` import the companion package and call its functions**. The companion package owns the implementation; the scripts own the narrative.
 
 ```julia
-# examples/scenario_a.jl
+# scripts/scenario_a.jl
 using MyPaperCompanion
 using CairoMakie
 
@@ -102,7 +102,7 @@ When you `activate` a package's directory, two things happen at once:
 1. The environment (with its dependencies) becomes active.
 2. The package itself becomes available — it's automatically `dev`'d (used directly from the source on disk), since it *is* the active project.
 
-So when you're working *inside* `MyPaperCompanion`, you can just write `using MyPaperCompanion` from any script in `examples/` and it works — no separate install step, and any change you make in `src/` is picked up by Revise on the next call.
+So when you're working *inside* `MyPaperCompanion`, you can just write `using MyPaperCompanion` from any script in `scripts/` and it works — no separate install step, and any change you make in `src/` is picked up by Revise on the next call.
 
 You can still `dev` *other* packages alongside (e.g. when you're simultaneously fixing a bug in `NetworkDynamics`), and `add` registered packages as usual.
 
@@ -136,7 +136,7 @@ pkg> activate path/to/MyPaperCompanion
 (MyPaperCompanion) pkg> add NetworkDynamics DataFrames
 ```
 
-Or — and this is the better workflow — open the `MyPaperCompanion` folder in VSCode, set the Julia env to it via the bottom-left status bar, and start the REPL there. From now on, any `examples/*.jl` script you `SHIFT+ENTER` from will run in the package's environment.
+Or — and this is the better workflow — open the `MyPaperCompanion` folder in VSCode, set the Julia env to it via the bottom-left status bar, and start the REPL there. From now on, any `scripts/*.jl` script you `SHIFT+ENTER` from will run in the package's environment.
 
 ## How to organize code inside the package
 
@@ -207,7 +207,7 @@ Once your companion package exists, your typical session looks like this:
 
 1. Open the package folder in VSCode. Pick its environment via the bottom-left status bar.
 2. Start the REPL. (Revise is auto-loaded by the VSCode extension if it's in your global env — see [Part II](@ref env-management).)
-3. Open an `examples/*.jl` script. `SHIFT+ENTER` through it block by block.
+3. Open a `scripts/*.jl` script. `SHIFT+ENTER` through it block by block.
 4. When you find a bug or want a new helper, edit a file in `src/`. Save.
 5. Re-run the relevant lines in the script. Revise has already picked up your edit. No restart.
 
@@ -244,7 +244,7 @@ A few things that trip people up:
 
 **The companion package is its own environment.** Don't accidentally activate the global env in a session that was meant to be working on the companion. (See the [warning about runtime environment switching](@ref start-in-project) in Part II.)
 
-**Don't worry about dependency hygiene in a research companion.** For *real* libraries you intend others to use, you want the package's environment to be lean — every dependency you add becomes a constraint imposed on every downstream user. A research companion is different. It's not meant to be consumed by anyone; it's a private home for your project's code. So go ahead and add `CairoMakie`, `DataFrames`, `CSV`, whatever your scripts need, directly to the companion's `Project.toml`. Putting them in a nested environment under `examples/` would introduce back unnecessary complexity. The hygiene principle reasserts itself the moment you start spinning out genuinely shared packages — those should keep their dependencies tight.
+**Don't worry about dependency hygiene in a research companion.** For *real* libraries you intend others to use, you want the package's environment to be lean — every dependency you add becomes a constraint imposed on every downstream user. A research companion is different. It's not meant to be consumed by anyone; it's a private home for your project's code. So go ahead and add `CairoMakie`, `DataFrames`, `CSV`, whatever your scripts need, directly to the companion's `Project.toml`. Putting them in a nested environment under `scripts/` would introduce back unnecessary complexity. The hygiene principle reasserts itself the moment you start spinning out genuinely shared packages — those should keep their dependencies tight.
 
 **Pay attention to your REPL prompt color.** If the `julia>` prompt turns yellow, Revise is yelling at you. Maybe you introduce a syntax error while modifying source files or something like that. You can call `Revise.retry()` to retry loading or at least resurfacing the error. If you ignore it, you might not be running the code you think you're running!
 
