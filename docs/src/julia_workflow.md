@@ -48,9 +48,9 @@ You have a few options. You could keep stuffing them into the script (it grows u
 A companion package is a small, project-specific Julia package that holds the reusable code for a particular piece of research. The repository looks like this:
 
 ```
-MyPaperCompanion/
+MyProjectCompanion/
 ├╴ src/
-│  ├╴ MyPaperCompanion.jl        # top-level module file
+│  ├╴ MyProjectCompanion.jl      # top-level module file
 │  ├╴ network_construction.jl    # subfiles with the actual implementation
 │  ├╴ analysis.jl
 │  └╴ plotting.jl
@@ -67,13 +67,13 @@ The key idea: **scripts in `scripts/` import the companion package and call its 
 
 ```julia
 # scripts/scenario_a.jl
-using MyPaperCompanion
+using MyProjectCompanion
 using CairoMakie
 
-data = MyPaperCompanion.load_default_data()
-nw   = MyPaperCompanion.build_network(data)
-sol  = MyPaperCompanion.simulate(nw; scenario=:base)
-fig  = MyPaperCompanion.plot_results(sol)
+data = MyProjectCompanion.load_default_data()
+nw   = MyProjectCompanion.build_network(data)
+sol  = MyProjectCompanion.simulate(nw; scenario=:base)
+fig  = MyProjectCompanion.plot_results(sol)
 ```
 
 ## Packages vs environments
@@ -84,7 +84,7 @@ In other words: every package is an environment, but not every environment is a 
 
 ```toml
 # Project.toml of a package
-name = "MyPaperCompanion"
+name = "MyProjectCompanion"
 uuid = "12345678-1234-1234-1234-123456789abc"
 version = "0.1.0"
 
@@ -102,7 +102,7 @@ When you `activate` a package's directory, two things happen at once:
 1. The environment (with its dependencies) becomes active.
 2. The package itself becomes available — it's automatically `dev`'d (used directly from the source on disk), since it *is* the active project.
 
-So when you're working *inside* `MyPaperCompanion`, you can just write `using MyPaperCompanion` from any script in `scripts/` and it works — no separate install step, and any change you make in `src/` is picked up by Revise on the next call.
+So when you're working *inside* `MyProjectCompanion`, you can just write `using MyProjectCompanion` from any script in `scripts/` and it works — no separate install step, and any change you make in `src/` is picked up by Revise on the next call.
 
 You can still `dev` *other* packages alongside (e.g. when you're simultaneously fixing a bug in `NetworkDynamics`), and `add` registered packages as usual.
 
@@ -111,32 +111,32 @@ You can still `dev` *other* packages alongside (e.g. when you're simultaneously 
 The fastest way to scaffold a package is to let `Pkg` do it.
 
 ```julia-repl
-pkg> generate MyPaperCompanion
+pkg> generate MyProjectCompanion
 ```
 
-Run this in the parent directory where you want the package to live. It creates the basic `MyPaperCompanion/` folder with a `Project.toml`, `src/MyPaperCompanion.jl`, and the auto-generated UUID. You can then `cd` into the new folder, run `git init`, and add things to your taste.
+Run this in the parent directory where you want the package to live. It creates the basic `MyProjectCompanion/` folder with a `Project.toml`, `src/MyProjectCompanion.jl`, and the auto-generated UUID. You can then `cd` into the new folder, run `git init`, and add things to your taste.
 
-The auto-generated `src/MyPaperCompanion.jl` looks roughly like:
+The auto-generated `src/MyProjectCompanion.jl` looks roughly like:
 
 ```julia
-module MyPaperCompanion
+module MyProjectCompanion
 
 greet() = print("Hello World!")
 
-end # module MyPaperCompanion
+end # module MyProjectCompanion
 ```
 
-This file is the **entry point** of your package. When someone writes `using MyPaperCompanion`, this is the file Julia loads first. Anything else you want in your package needs to be reachable from here.
+This file is the **entry point** of your package. When someone writes `using MyProjectCompanion`, this is the file Julia loads first. Anything else you want in your package needs to be reachable from here.
 
 Now, activate the package's environment, add the dependencies you need (just like in any other environment), and start writing code. Activate it explicitly:
 
 ```julia-repl
-pkg> activate path/to/MyPaperCompanion
+pkg> activate path/to/MyProjectCompanion
 
-(MyPaperCompanion) pkg> add NetworkDynamics DataFrames
+(MyProjectCompanion) pkg> add NetworkDynamics DataFrames
 ```
 
-Or — and this is the better workflow — open the `MyPaperCompanion` folder in VSCode, set the Julia env to it via the bottom-left status bar, and start the REPL there. From now on, any `scripts/*.jl` script you `SHIFT+ENTER` from will run in the package's environment.
+Or — and this is the better workflow — open the `MyProjectCompanion` folder in VSCode, set the Julia env to it via the bottom-left status bar, and start the REPL there. From now on, any `scripts/*.jl` script you `SHIFT+ENTER` from will run in the package's environment.
 
 ## How to organize code inside the package
 
@@ -147,8 +147,8 @@ Once you have more than one file's worth of code, you'll split things across fil
 The recommended structure for a research companion package is **a single, flat module** spread across multiple files using `include`.
 
 ```julia
-# src/MyPaperCompanion.jl
-module MyPaperCompanion
+# src/MyProjectCompanion.jl
+module MyProjectCompanion
 
 using NetworkDynamics   # all dependencies go here, at the top of the main module file
 using DataFrames        # loaded dependencies are visible to all included files
@@ -171,20 +171,20 @@ That's typically all your top-level file does: `using` the dependencies, declare
 
 This has a few consequences worth internalizing:
 
-- Everything inside `src/` lives in the same module (`MyPaperCompanion`) and can see everything else there. There's no need for relative imports between your own files. I.e. if you define function `foo()` in file A, you can use `foo()` directly in a different function in file B.
-- `using` statements at the top of `MyPaperCompanion.jl` apply to *all* included files. You don't (and shouldn't) re-`using NetworkDynamics` at the top of `analysis.jl`.
+- Everything inside `src/` lives in the same module (`MyProjectCompanion`) and can see everything else there. There's no need for relative imports between your own files. I.e. if you define function `foo()` in file A, you can use `foo()` directly in a different function in file B.
+- `using` statements at the top of `MyProjectCompanion.jl` apply to *all* included files. You don't (and shouldn't) re-`using NetworkDynamics` at the top of `analysis.jl`.
 - **Including the same file twice is almost always a bug.** You'll get every function defined twice, redefinition warnings, and confused behavior. If you find yourself reaching for "include this file from multiple places", stop — you want a function call, not a re-include.
 - The order of definitions only matters for types. I.e. you need to define `struct Foo` befor you can define a function `myfun(a::Foo)`. You don't need to worry about the order of function definitions, or the order of `include`s that contain them.
 
 ### `export` controls what users see
 
-Names listed in `export` are made available unqualified when someone writes `using MyPaperCompanion`. Names *not* exported are still accessible — just qualified with the module name:
+Names listed in `export` are made available unqualified when someone writes `using MyProjectCompanion`. Names *not* exported are still accessible — just qualified with the module name:
 
 ```julia
-using MyPaperCompanion
+using MyProjectCompanion
 
 build_network(data)              # exported, no qualification needed
-MyPaperCompanion.internal_thing()  # not exported, but still reachable
+MyProjectCompanion.internal_thing()  # not exported, but still reachable
 ```
 
 A reasonable rule of thumb: export the few high-level functions a script user actually calls (`build_network`, `simulate`, `plot_results`); don't export internal helpers (`_normalize_admittance_matrix`, `_pivot_dataframe`). Internal names by convention often start with an underscore, but Julia doesn't enforce this.
@@ -219,13 +219,13 @@ One of the nicest properties of the companion-package pattern is that it sets yo
 
 The typical arc looks like this:
 
-**Stage 1 — your own research companion.** You're working on a paper. You've put your helpers, your custom component models, and your plotting routines into `MyPaperCompanion`. It's a normal package; it just happens to be *paper-specific* and lives in your paper's repository.
+**Stage 1 — your own research companion.** You're working on a paper. You've put your helpers, your custom component models, and your plotting routines into `MyProjectCompanion`. It's a normal package; it just happens to be *project-specific* and not really meant for use as a "library".
 
-**Stage 2 — coworkers get interested.** Maybe in the course of your paper work you developed a clean implementation of grid-forming droop inverters with LCL filters, and a colleague now wants to use the same models for an unrelated study. The droop inverter implementation inside `MyPaperCompanion` is genuinely reusable — it's not paper-specific at all.
+**Stage 2 — coworkers get interested.** Maybe in the course of your project work you developed a clean implementation of grid-forming droop inverters with LCL filters, and a colleague now wants to use the same models for an unrelated study. The droop inverter implementation inside `MyProjectCompanion` is genuinely reusable — it's not project/paper-specific at all.
 
 Because that code already lives in a proper package, extracting it is mostly mechanical:
 1. Create a new package, e.g. `GridFormingModels`, in its own Git repository.
-2. Move the relevant files from `MyPaperCompanion/src/` into `GridFormingModels/src/` and adjust imports/exports.
+2. Move the relevant files from `MyProjectCompanion/src/` into `GridFormingModels/src/` and adjust imports/exports.
 3. In each research project that needs them, run `] dev path/to/GridFormingModels` (or `] dev https://github.com/your-org/GridFormingModels.jl` once it's pushed).
 4. Replace the now-extracted definitions in each companion package with `using GridFormingModels`.
 
