@@ -121,9 +121,9 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
 @mtkmodel ZIPLoad begin
     @parameters begin
-        Pset, [description="Active Power at operation point [pu]"]
-        Qset, [description="Reactive Power at operation point [pu]"]
-        Vset, [guess=1,description="Voltage at operation point [pu]"]
+        Pset, [guess=-1, description="Active Power at operation point [pu]"]
+        Qset, [guess=0, description="Reactive Power at operation point [pu]"]
+        Vset, [guess=1, description="Voltage at operation point [pu]"]
         KpZ, [description="Active power constant impedance fraction"]
         KqZ, [description="Reactive power constant impedance fraction"]
         KpI, [description="Active power constant current fraction"]
