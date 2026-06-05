@@ -337,7 +337,9 @@ end
 Symbolics.@register_symbolic _hard_clamped_rhs(u, x, xmin, xmax)
 
 function attach_limint_postprocessing_callback!(cf, ns)
-    cb = _generate_limint_callbacks(ns)
+    # FIX: mtk might repalce x by out, so we find the one which is actually a state
+    xsym = _resolve_state_alias(cf, Symbol(ns, "₊x"))
+    cb = _generate_limint_callbacks(ns, xsym)
     NetworkDynamics.add_callback!(cf, cb)
     NetworkDynamics.set_default!(cf, Symbol(ns, "₊_callback_sat_max"), 0.0)
     NetworkDynamics.set_default!(cf, Symbol(ns, "₊_callback_sat_min"), 0.0)
@@ -364,6 +366,20 @@ function attach_limint_postprocessing_callback!(cf, ns)
     end
     NetworkDynamics.add_initconstraint!(cf, ic)
     =#
+end
+function _resolve_state_alias(cf, name::Symbol)
+    name ∈ NetworkDynamics.sym(cf) && return name
+    obs = cf.metadata[:observed]::Vector{Equation}
+    idx = findfirst(eq -> ModelingToolkitBase.getname(eq.lhs) == name, obs)
+    idx === nothing && error("Could not find observed equation for limited integrator alias $name.")
+    subs = Dict(eq.lhs => eq.rhs for eq in obs)
+    resolved = obs[idx].lhs
+    for _ in 0:length(obs)
+        next = Symbolics.substitute(resolved, subs)
+        isequal(next, resolved) && break
+        resolved = next
+    end
+    ModelingToolkitBase.getname(resolved)
 end
 function attach_limint_postprocessing_complementary!(cf, ns)
     # # add explicit limits
@@ -446,10 +462,9 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
 LimIntegrator(; kwargs...) = LimitedIntegratorBase(; type=:int, T=1, kwargs...)
 
-function _generate_limint_callbacks(namespace)
+function _generate_limint_callbacks(namespace, x)
     min = Symbol(namespace, "₊min")
     max = Symbol(namespace, "₊max")
-    x = Symbol(namespace, "₊x")
     forcing = Symbol(namespace, "₊forcing")
     satmax = Symbol(namespace, "₊_callback_sat_max")
     satmin = Symbol(namespace, "₊_callback_sat_min")
