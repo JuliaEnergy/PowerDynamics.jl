@@ -20,7 +20,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         end
     end
     @variables begin
-        ω(t), [guess=0, description="Rotor frequency"]
+        ω(t), [guess=1, description="Rotor frequency"]
         θ(t), [guess=0, description="Rotor angle"]
         Pel(t), [description="Electrical Power injected into the grid"]
     end
