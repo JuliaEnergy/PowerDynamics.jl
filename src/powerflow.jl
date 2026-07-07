@@ -267,13 +267,13 @@ function solve_powerflow(
         if sparse && isnothing(pfnw.jac_prototype)
             alg = try
                 set_jac_prototype!(pfnw)
-                NonlinearSolve.FastShortcutNLLSPolyalg(linsolve=NonlinearSolve.LinearSolve.KLUFactorization())
+                NonlinearSolve.FastShortcutNonlinearPolyalg(linsolve=NonlinearSolve.LinearSolve.KLUFactorization())
             catch e
                 @warn "Could not set sparse jacobian prototype for powerflow model! Falling back to dense solver. Error: $e"
-                NonlinearSolve.FastShortcutNLLSPolyalg()
+                NonlinearSolve.FastShortcutNonlinearPolyalg()
             end
         else
-            alg = NonlinearSolve.FastShortcutNLLSPolyalg()
+            alg = NonlinearSolve.FastShortcutNonlinearPolyalg()
         end
     end
 
