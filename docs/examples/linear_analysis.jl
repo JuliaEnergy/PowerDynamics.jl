@@ -851,7 +851,7 @@ affect = ComponentAffect([], [:shunt₊R]) do u, p, ctx
     end
 end
 short = PresetTimeComponentCallback([0.1, 0.2], affect)
-prob = ODEProblem(nw, s0, (0,30); add_comp_cb=VIndex(:bus1)=>short)
+prob = ODEProblem(nw, s0, (0,30); add_comp_cb=VIndex(:bus1)=>short, initializealg=BrownFullBasicInit())
 sol = solve(prob, Rodas5P())
 nothing # hide #md
 
@@ -1072,7 +1072,7 @@ fig #hide #md
 #=
 Lastly, we run the time-domain simulation again with the tuned parameters to see the effect on the system response.
 =#
-prob_tuned = ODEProblem(nw, s0_tuned, (0,30); add_comp_cb=VIndex(:bus1)=>short)
+prob_tuned = ODEProblem(nw, s0_tuned, (0,30); add_comp_cb=VIndex(:bus1)=>short, initializealg=BrownFullBasicInit())
 sol_tuned = solve(prob_tuned, Rodas5P())
 nothing # hide #md
 #=

@@ -475,47 +475,38 @@ function _generate_limint_callbacks(namespace, x)
     if use_continuous_callback
         condition = ComponentCondition(_SatLim_condition, [min, max, x, forcing], [satmax, satmin])
 
-        upcrossing_affect = ComponentAffect([], [satmax, satmin]) do u, p, eventidx, ctx
+        saturation_affect = ComponentAffect([], [satmax, satmin]) do u, p, event_signs, ctx
             comp = get_compidx(ctx)
             verbose = get_callback_verbosity()
-            if eventidx == 1
+            if event_signs[1] > 0
+                # out[1] upcrossing: x exceeded max, enter upper saturation
                 verbose && println("$comp: $namespace: /⎺ reached upper saturation at $(round(ctx.t, digits=4))s")
                 p[satmax] = 1.0
                 p[satmin] = 0.0
-            elseif eventidx == 2
+            end
+            if event_signs[2] > 0
+                # out[2] upcrossing: x dropped below min, enter lower saturation
                 verbose && println("$comp: $namespace: \\_ reached lower saturation at $(round(ctx.t, digits=4))s")
                 p[satmax] = 0.0
                 p[satmin] = 1.0
-            elseif eventidx == 3
-                # upcrossing means, forcing went from negative to positive, i.e. we leave lower saturation
+            end
+            if event_signs[3] > 0
+                # out[3] upcrossing: forcing went from negative to positive, i.e. we leave lower saturation
                 insatmin = !iszero(p[satmin])
                 if insatmin
                     verbose && println("$comp: $namespace: _/ left lower saturation at $(round(ctx.t, digits=4))s")
                     p[satmin] = 0.0
                 end
-            else
-                error("Unknown event index $eventidx")
-            end
-        end
-
-        downcrossing_affect = ComponentAffect([],[satmax]) do u, p, eventidx, ctx
-            comp = get_compidx(ctx)
-            verbose = get_callback_verbosity()
-            if eventidx == 1 || eventidx == 2
-                # in theory should never be hit
-                return
-            elseif eventidx == 3
-                # downcrossing means, forcing went from positive to negative, i.e. we leave upper saturation
+            elseif event_signs[3] < 0
+                # out[3] downcrossing: forcing went from positive to negative, i.e. we leave upper saturation
                 insatmax = !iszero(p[satmax])
                 if insatmax
                     verbose && println("$comp: $namespace: ⎺\\ left upper saturation at $(round(ctx.t, digits=4))s")
                     p[satmax] = 0.0
                 end
-            else
-                error("Unknown event index $eventidx")
             end
         end
-        continous_callback = VectorContinuousComponentCallback(condition, upcrossing_affect, 3; affect_neg! = downcrossing_affect)
+        continous_callback = VectorContinuousComponentCallback(condition, saturation_affect, 3)
     end
 
     if use_discrete_callback

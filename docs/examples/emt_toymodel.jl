@@ -38,6 +38,7 @@ using ModelingToolkitBase: D_nounits as Dt, t_nounits as t
 using CSV
 using SteadyStateDiffEq
 using OrdinaryDiffEqRosenbrock
+using OrdinaryDiffEqNonlinearSolve
 using DataFrames
 using CairoMakie
 
@@ -296,7 +297,7 @@ With the system properly initialized and the disturbance configured,
 we can now run the electromagnetic transient simulation.
 =#
 
-prob = ODEProblem(nw, s0, (0.0, 0.15))
+prob = ODEProblem(nw, s0, (0.0, 0.15); initializealg=BrownFullBasicInit())
 sol = solve(prob, Rodas5P());
 nothing #hide #md
 

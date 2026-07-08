@@ -276,7 +276,7 @@ of the PV powerflow model.
 
 Now we'll simulate the modified network and compare it with the original system response:
 =#
-prob_droop = ODEProblem(nw_droop, s0_droop, (0.0, 15.0))
+prob_droop = ODEProblem(nw_droop, s0_droop, (0.0, 15.0); initializealg=BrownFullBasicInit())
 sol_droop = solve(prob_droop, Rodas5P())
 @assert SciMLBase.successful_retcode(sol_droop)
 
