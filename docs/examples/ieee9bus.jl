@@ -221,7 +221,7 @@ With the system properly initialized, we can now set up and run the dynamic simu
 We create an ODE problem using the initialized state and simulate the system response
 to the line outage disturbance.
 =#
-prob = ODEProblem(nw,  u0, (0,15); initializealg=BrownFullBasicInit())
+prob = ODEProblem(nw,  u0, (0,15))
 sol = solve(prob, Rodas5P())
 nothing #hide #md
 

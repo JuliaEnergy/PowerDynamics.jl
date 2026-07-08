@@ -297,7 +297,7 @@ With the system properly initialized and the disturbance configured,
 we can now run the electromagnetic transient simulation.
 =#
 
-prob = ODEProblem(nw, s0, (0.0, 0.15); initializealg=BrownFullBasicInit())
+prob = ODEProblem(nw, s0, (0.0, 0.15))
 sol = solve(prob, Rodas5P());
 nothing #hide #md
 

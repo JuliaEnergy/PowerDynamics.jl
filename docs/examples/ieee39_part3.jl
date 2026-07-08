@@ -154,7 +154,7 @@ automatically extracts the component callbacks from the models and uses them dur
 =#
 
 u0 = NWState(nw) # state is stored in metadata because of mutating init function!
-prob = ODEProblem(nw,  u0, (0.0, 15.0); initializealg=BrownFullBasicInit())
+prob = ODEProblem(nw,  u0, (0.0, 15.0))
 ## Solve the ODE using Rodas5P (suitable for stiff differential-algebraic systems)
 sol = solve(prob, Rodas5P());
 @assert SciMLBase.successful_retcode(sol) # ensure the simulation was successful

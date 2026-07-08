@@ -220,7 +220,7 @@ We create an ODE problem and solve it using the Rodas5P solver (a stiff DAE solv
 The callbacks are attached to the breaker component using the `add_comp_cb` keyword argument.
 =#
 
-prob = ODEProblem(nw, s0, (0,2); add_comp_cb=[EIndex(:breaker) => (open_breaker, close_breaker)], initializealg=BrownFullBasicInit())
+prob = ODEProblem(nw, s0, (0,2); add_comp_cb=[EIndex(:breaker) => (open_breaker, close_breaker)])
 sol = solve(prob, Rodas5P())
 
 nothing #hide #md
