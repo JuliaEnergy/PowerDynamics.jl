@@ -90,7 +90,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         end
 
         # Building block components
-        transducer = SimpleLag(K=1, T=T_R)
+        transducer = SimpleLag(K=1, T=T_R, guess=1)
         leadlag1 = LeadLag(K=1, T1=T_C, T2=T_B)
         leadlag2 = LeadLag(K=1, T1=T_C1, T2=T_B1)
         amplifier = SimpleLagLim(K=K_A, T=T_A, outMin=V_AMIN, outMax=V_AMAX)

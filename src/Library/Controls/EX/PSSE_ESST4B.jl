@@ -153,7 +153,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         end
 
         # Building block components
-        transducer = SimpleLag(K=1, T=T_R)
+        transducer = SimpleLag(K=1, T=T_R, guess=1)
         voltage_int = LimIntegrator(K=K_IR, outMin=V_RMIN/K_PR, outMax=V_RMAX/K_PR)
         thyristor = SimpleLag(K=1, T=T_A)
         current_int = LimIntegrator(K=K_IM, outMin=V_MMIN/K_PM, outMax=V_MMAX/K_PM)
