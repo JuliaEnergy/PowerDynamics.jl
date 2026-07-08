@@ -378,7 +378,7 @@ function loss(p)
     allp[tp_idx] .= p  # Update only the tunable parameters with the parameters for the given optimization iteration
 
     ## Solve the system with new parameters
-    _sol = solve(prob_droop, Rodas5P(autodiff=true);
+    _sol = solve(prob_droop, Rodas5P(autodiff=Optimization.AutoForwardDiff());
         p = allp,
         saveat = opt_ref.t,
         tspan=(0.0, opt_ref.t[end]),
