@@ -277,7 +277,7 @@ nw = Network([genABbus, loadbus], [line_ab])
 ```
 Once the network is defined, we can go ahead and run the simulation and plot the results:
 ```@example modelborders
-s0 = initialize_from_pf(nw; tol=1e-9)
+s0 = initialize_from_pf(nw; nwtol=1e-9)
 prob = ODEProblem(nw, s0, (0.0, 3.0))
 sol = solve(prob, Rodas5P());
 let
