@@ -14,6 +14,7 @@ using SciMLBase: SciMLBase
 using Symbolics: Symbolics
 using LinearAlgebra: LinearAlgebra
 using SparseConnectivityTracer: GradientTracer
+using NaNMath: NaNMath
 using ScopedValues: ScopedValue, with
 
 export CallbackVerbosity, set_callback_verbosity!, get_callback_verbosity, with_callback_verbosity

@@ -18,15 +18,15 @@ of the normalized current IN = K_C * I_fd / V_ex.
 """
 function FEX_function(u)
     if u <= 0
-        return 1.0
-    elseif u > 0 && u <= 0.433
-        return 1 - 0.577*u
-    elseif u > 0.433 && u < 0.75
-        return sqrt(0.75 - u^2)
-    elseif u >= 0.75 && u <= 1
-        return 1.732*(1 - u)
+        return one(u)
+    elseif u > 0 && u <= oftype(u, 0.433)
+        return one(u) - oftype(u, 0.577)*u
+    elseif u > oftype(u, 0.433) && u < oftype(u, 0.75)
+        return NaNMath.sqrt(oftype(u, 0.75) - u^2)
+    elseif u >= oftype(u, 0.75) && u <= 1
+        return oftype(u, 1.732)*(one(u) - u)
     else
-        return 0.0
+        return zero(u)
     end
 end
 #=

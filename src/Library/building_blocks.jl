@@ -13,10 +13,10 @@ function QUAD_SE(u, SE1, SE2, E1, E2)
     # end
     SE1 == SE2 && return SE1
 
-    a = sqrt(SE1 * E1 / (SE2 * E2))
+    a = NaNMath.sqrt(SE1 * E1 / (SE2 * E2))
     A = E2 - (E1 - E2) / (a - 1)
     if u <= A
-        return 0.0
+        return zero(u)
     else
         B = SE2 * E2 * (a - 1)^2 / (E1 - E2)^2
         return B * (u - A)^2 / u
@@ -39,10 +39,10 @@ function EXP_SE(u, SE1, SE2, E1, E2)
     # end
     SE1 == SE2 && return SE1
 
-    X = log(SE2/SE1) / log(E2/E1)
-    k = SE1 / E1^X
+    X = NaNMath.log(SE2/SE1) / NaNMath.log(E2/E1)
+    k = SE1 / NaNMath.pow(E1, X)
 
-    return k * u^X  # equivalently: SE1 * (u/E1)^X
+    return k * NaNMath.pow(u, X)  # equivalently: SE1 * (u/E1)^X
 end
 Symbolics.@register_symbolic EXP_SE(u, SE1, SE2, E1, E2)
 
