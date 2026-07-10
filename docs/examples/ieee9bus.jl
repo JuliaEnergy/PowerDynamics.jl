@@ -9,7 +9,7 @@ The parameters are mainly adopted from the RTDS data.
 =#
 using PowerDynamics
 using PowerDynamics.Library
-using ModelingToolkit
+using ModelingToolkitBase
 using NetworkDynamics
 using Graphs
 using OrdinaryDiffEqRosenbrock
@@ -29,6 +29,8 @@ function GeneratorBus(; machine_p=(;), avr_p=(;), gov_p=(;))
         τ_m_input=true,
         S_b=100,
         V_b=1,
+        Sn=100,
+        Vn=1,
         ω_b=2π*60,
         R_s=0.000125,
         T″_d0=0.01,

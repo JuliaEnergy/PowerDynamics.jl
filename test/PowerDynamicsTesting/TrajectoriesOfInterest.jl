@@ -39,9 +39,9 @@ function finalizetoi(toi::TrajectoriesOfInterest)
 end
 
 function keysequal(toi1, toi2)
-   if keys(toi1.syms) == keys(toi2.syms)
+   if Set(keys(toi1.syms)) == Set(keys(toi2.syms))
       for k in keys(toi1.syms)
-          if keys(toi1[k]) != keys(toi2[k])
+          if Set(keys(toi1[k])) != Set(keys(toi2[k]))
               return false
           end
       end
@@ -119,7 +119,17 @@ function savetoi(path, toi)
 end
 function loadtoi(path)
     path = contains(path, r"\.jld2$") ? path : path*".jld2"
-    JLD2.load_object(path)
+    toi = JLD2.load_object(path)
+    # JLD2 serializes the internal hash table of OrderedDict, which breaks across
+    # Julia versions that change hash(::String). Rebuild by reinserting all entries.
+    _syms = empty(toi.syms)
+    for (title, series) in toi.syms
+        _syms[title] = empty(series)
+        for (label, data) in series
+            _syms[title][label] = data
+        end
+    end
+    FinalTrajectoriesOfInterest(toi.ts, _syms)
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", toi::TrajectoriesOfInterest)

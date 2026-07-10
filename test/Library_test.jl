@@ -2,13 +2,15 @@ using PowerDynamics
 using PowerDynamics.Library
 PowerDynamics.load_pdtesting()
 using Main.PowerDynamicsTesting
-using ModelingToolkit
+using ModelingToolkitBase
+using SciCompDSL: @mtkmodel
 using NetworkDynamics
 using Graphs
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 using ModelingToolkitStandardLibrary.Blocks
-using ModelingToolkit: ModelingToolkit as MTK
+using ModelingToolkitBase: ModelingToolkitBase as MTK
+using ModelingToolkitBase: t_nounits as t, D_nounits as Dt
 using OrderedCollections
 using DiffEqCallbacks
 using CairoMakie
@@ -42,8 +44,8 @@ end
     @named swing = Swing(Pm=1, D=0.1, M=0.005, θ=0, ω=1, V=1)
     @named pqload = PQLoad(Pset=-0.5, Qset=-0.2)
     bm = MTKBus(swing, pqload)
-    @test length(full_equations(simplify_mtkbus(bm))) == 2
     bus = compile_bus(bm)
+    @test dim(bus) == 2
     toi = bus_on_slack(bus)
     toi["active power"]["electric power of swing"] = VIndex(2,:swing₊Pel)
     toi["active power"]["electric power of load"] = VIndex(2,:pqload₊P)
@@ -60,6 +62,8 @@ end
                 τ_m_input=false,
                 S_b=100,
                 V_b=18,
+                Sn=100,
+                Vn=18,
                 ω_b=2π*60,
                 X_d=0.146, X′_d=0.0608, X″_d=0.06,
                 X_q=0.1, X′_q=0.0969, X″_q=0.06,
@@ -79,7 +83,7 @@ end
     end
     @named mtkbus = GenBus()
     bus = compile_bus(mtkbus)
-
+    @test dim(bus) == 8
     set_voltage!(bus; mag=1.017, arg=0.0295)
     set_current!(bus; P=0.716, Q=0.3025)
     initialize_component!(bus)
@@ -91,8 +95,6 @@ end
 end
 
 @testset "SauerPai Generator with AVR and GOV" begin
-    A, B = Library.solve_ceilf(3.3 => 0.6602, 4.5 => 4.2662)
-
     @mtkmodel GenBus begin
         @components begin
             machine = PowerDynamics.Library.SauerPaiMachine(;
@@ -100,6 +102,8 @@ end
                 τ_m_input=true,
                 S_b=100,
                 V_b=18,
+                Sn=100,
+                Vn=18,
                 ω_b=2π*60,
                 X_d=0.146, X′_d=0.0608, X″_d=0.06,
                 X_q=0.1, X′_q=0.0969, X″_q=0.06,
@@ -120,7 +124,8 @@ end
                 Tf=0.35,
                 Ke=1,
                 Te=0.314,
-                A, B,
+                E1=3.3, Se1=0.6602,
+                E2=4.5, Se2=4.2662,
                 tmeas_lag=false)
             gov = TGOV1(
                 R=0.05,
@@ -143,6 +148,7 @@ end
     @named mtkbus = GenBus()
 
     bus = compile_bus(mtkbus)
+    @test dim(bus) == 13
     set_voltage!(bus; mag=1.017, arg=0.0295)
     set_current!(bus; P=0.716, Q=0.3025)
     initialize_component!(bus)
@@ -156,6 +162,7 @@ end
 @testset "test loads" begin
     @named load = PQLoad(Pset=-0.5, Qset=-0.5)
     bus = compile_bus(MTKBus(load));
+    @test dim(bus) == 2
     toi = bus_on_slack(bus)
     # isinteractive() && plottoi(toi)
     @reftest "PQLoad_1" toi
@@ -171,6 +178,7 @@ end
     Y = -conj(Sload)/Vset^2
     @named load = ConstantYLoad(B=imag(Y), G=real(Y))
     bus = compile_bus(MTKBus(load));
+    @test dim(bus) == 2
     toi = bus_on_slack(bus)
     # isinteractive() && plottoi(toi)
     @reftest "ConstantYLoad" toi
@@ -182,6 +190,7 @@ end
                           KpZ=0, KpI=0, KpC=1,
                           KqZ=0, KqI=0, KqC=1)
     bus = compile_bus(MTKBus(load))
+    @test dim(bus) == 2
     toi = bus_on_slack(bus)
     # isinteractive() && plottoi(toi)
     @reftest "ZIPLoad_constant_power" toi
@@ -222,6 +231,8 @@ end
                 τ_m_input=false,
                 S_b=100,
                 V_b=18,
+                Sn=100,
+                Vn=18,
                 ω_b=2π*60,
                 X′_d=0.0608,
                 R_s=0.000124,
@@ -236,6 +247,7 @@ end
     @named mtkbus = GenBus()
 
     bus = compile_bus(mtkbus)
+    @test dim(bus) == 4
     set_voltage!(bus; mag=1.017, arg=0.0295)
     set_current!(bus; P=0.716, Q=0.3025)
     initialize_component!(bus)
@@ -250,9 +262,8 @@ end
     E2 = 4.7281
     Se1 = 0.08
     Se2 = 0.26
-    se_quad = x -> Library.quadratic_ceiling(x, E1, E2, Se1, Se2)
-    Ae, Be = Library.solve_ceilf(E1=>Se1, E2=>Se2)
-    se_exp  = x -> Ae* exp(Be*x)
+    se_quad = x -> x * Library.QUAD_SE(x, Se1, Se2, E1, E2)
+    se_exp  = x -> Library.EXP_SE(x, Se1, Se2, E1, E2)
 
     if isinteractive()
         let fig = Figure()

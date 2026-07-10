@@ -9,6 +9,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     @structural_parameters begin
         vf_input = true
         τ_m_input = true
+        stator_dynamics = false
     end
     @components begin
         terminal=Terminal()
@@ -45,8 +46,8 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         S_b, [description="System power basis in MVA"]
         V_b, [description="System voltage basis in kV"]
         ω_b, [description="System base frequency in rad/s"]
-        Sn=S_b, [description="Machine power rating in MVA"]
-        Vn=V_b, [description="Machine voltage rating in kV"]
+        Sn, [description="Machine power rating in MVA"]
+        Vn, [description="Machine voltage rating in kV"]
         # input/parameter switches
         if !vf_input
             vf_set, [guess=1, bounds=(0,Inf), description="field voltage"]
@@ -64,8 +65,8 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         I_q(t), [guess=0, description="q-axis current"]
         V_d(t), [guess=0, description="d-axis voltage"]
         V_q(t), [guess=1, description="q-axis voltage"]
-        E′_d(t), [guess=1, description="transient voltage behind transient reactance in d-axis"]
-        E′_q(t), [guess=0, description="transient voltage behind transient reactance in q-axis"]
+        E′_d(t), [guess=0, description="transient voltage behind transient reactance in d-axis"]
+        E′_q(t), [guess=1, description="transient voltage behind transient reactance in q-axis"]
         δ(t), [guess=0, description="rotor angle"]
         ω(t), [guess=1, description="rotor speed"]
         τ_e(t), [bounds=(0,Inf) ,description="electrical torque"]
@@ -91,8 +92,8 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     end
     @equations begin
         # Park's transformations
-        [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q] * Vn/V_b
-        [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i] * Ibase(S_b, V_b)/Ibase(Sn, Vn)
+        [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q] * (Vn/V_b)
+        [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i] * (Ibase(S_b, V_b)/Ibase(Sn, Vn))
 
         τ_e ~ ψ_d*I_q - ψ_q*I_d
         # for static ψ, this becomes which makes sense!
@@ -101,15 +102,15 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         Dt(δ) ~ ω_b*(ω - 1)
         2*H * Dt(ω) ~ τ_m  - τ_e - D*(ω - 1)
 
-        # stator equations
-        # 1/ω_b * Dt(ψ_d) ~ R_s*I_d + ω * ψ_q + V_d
-        # 1/ω_b * Dt(ψ_q) ~ R_s*I_q - ω * ψ_d + V_q
-        # static fomulation
-        # 0 ~ R_s*I_d + ω * ψ_q + V_d
-        # 0 ~ R_s*I_q - ω * ψ_d + V_q
-        # static formualion in V_d, V_q which is the only free stuff
-        V_d ~ -R_s*I_d - ω * ψ_q
-        V_q ~ -R_s*I_q + ω * ψ_d
+        if stator_dynamics
+            # stator equations
+            1/ω_b * Dt(ψ_d) ~ R_s*I_d + ω * ψ_q + V_d
+            1/ω_b * Dt(ψ_q) ~ R_s*I_q - ω * ψ_d + V_q
+        else
+            # static fomulation
+            0 ~ R_s*I_d + ω * ψ_q + V_d
+            0 ~ R_s*I_q - ω * ψ_d + V_q
+        end
 
         T′_d0 * Dt(E′_q) ~ -E′_q - (X_d - X′_d)*(I_d - γ_d2*ψ″_d - (1-γ_d1)*I_d + γ_d2*E′_q) + vf
         T′_q0 * Dt(E′_d) ~ -E′_d + (X_q - X′_q)*(I_q - γ_q2*ψ″_q - (1-γ_q1)*I_q - γ_q2*E′_d)

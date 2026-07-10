@@ -76,7 +76,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         # XADIFD_in = RealInput()   # Machine field current input
 
         # Building block components
-        transducer = SimpleLag(K=1, T=T_R)
+        transducer = SimpleLag(K=1, T=T_R, guess=1)
         amplifier = SimpleLagLim(K=K_A, T=T_A, outMin=V_RMIN, outMax=V_RMAX)
         derivative_lag = Derivative(K=K_F, T=T_F)
         exciter = RotatingExciter(T_E=T_E, K_E=K_E, E_1=E_1, E_2=E_2, S_EE_1=S_EE_1, S_EE_2=S_EE_2)

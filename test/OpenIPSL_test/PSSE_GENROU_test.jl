@@ -3,7 +3,7 @@ PowerDynamics.load_pdtesting()
 using Main.PowerDynamicsTesting
 
 using PowerDynamics.Library
-using ModelingToolkit
+using ModelingToolkitBase
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 
@@ -62,7 +62,7 @@ GENROU_BUS = let
         # delta = ref."gENROU.delta"[1]
     )
     busmodel = MTKBus(genrou; name=:GEN1)
-    compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0))
+    compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0), mtkcompile=:compare)
 end
 
 sol = OpenIPSL_SMIB(GENROU_BUS);

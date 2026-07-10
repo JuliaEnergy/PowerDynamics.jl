@@ -22,7 +22,7 @@ function QUAD_SE(u, SE1, SE2, E1, E2)
         return B * (u - A)^2 / u
     end
 end
-ModelingToolkit.@register_symbolic QUAD_SE(u, SE1, SE2, E1, E2)
+Symbolics.@register_symbolic QUAD_SE(u, SE1, SE2, E1, E2)
 
 """
     EXP_SE(u, SE1, SE2, E1, E2)
@@ -44,7 +44,7 @@ function EXP_SE(u, SE1, SE2, E1, E2)
 
     return k * u^X  # equivalently: SE1 * (u/E1)^X
 end
-ModelingToolkit.@register_symbolic EXP_SE(u, SE1, SE2, E1, E2)
+Symbolics.@register_symbolic EXP_SE(u, SE1, SE2, E1, E2)
 
 """
 SimpleLag block
@@ -106,11 +106,11 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     @structural_parameters begin
         K # Gain
         T # Time constant
-        guess=0
+        guess=0 # guess for input (because its derivative)
     end
     @variables begin
-        in(t), [description="Input signal", input=true]
-        out(t), [guess=guess, description="Output signal", output=true]
+        in(t), [guess=guess, description="Input signal", input=true]
+        out(t), [description="Output signal", output=true]
     end
     @equations begin
         T*Dt(in) ~ K*out - in
@@ -337,7 +337,9 @@ end
 Symbolics.@register_symbolic _hard_clamped_rhs(u, x, xmin, xmax)
 
 function attach_limint_postprocessing_callback!(cf, ns)
-    cb = _generate_limint_callbacks(ns)
+    # FIX: mtk might repalce x by out, so we find the one which is actually a state
+    xsym = _resolve_state_alias(cf, Symbol(ns, "₊x"))
+    cb = _generate_limint_callbacks(ns, xsym)
     NetworkDynamics.add_callback!(cf, cb)
     NetworkDynamics.set_default!(cf, Symbol(ns, "₊_callback_sat_max"), 0.0)
     NetworkDynamics.set_default!(cf, Symbol(ns, "₊_callback_sat_min"), 0.0)
@@ -364,6 +366,20 @@ function attach_limint_postprocessing_callback!(cf, ns)
     end
     NetworkDynamics.add_initconstraint!(cf, ic)
     =#
+end
+function _resolve_state_alias(cf, name::Symbol)
+    name ∈ NetworkDynamics.sym(cf) && return name
+    obs = cf.metadata[:observed]::Vector{Equation}
+    idx = findfirst(eq -> ModelingToolkitBase.getname(eq.lhs) == name, obs)
+    idx === nothing && error("Could not find observed equation for limited integrator alias $name.")
+    subs = Dict(eq.lhs => eq.rhs for eq in obs)
+    resolved = obs[idx].lhs
+    for _ in 0:length(obs)
+        next = Symbolics.substitute(resolved, subs)
+        isequal(next, resolved) && break
+        resolved = next
+    end
+    ModelingToolkitBase.getname(resolved)
 end
 function attach_limint_postprocessing_complementary!(cf, ns)
     # # add explicit limits
@@ -446,10 +462,9 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
 LimIntegrator(; kwargs...) = LimitedIntegratorBase(; type=:int, T=1, kwargs...)
 
-function _generate_limint_callbacks(namespace)
+function _generate_limint_callbacks(namespace, x)
     min = Symbol(namespace, "₊min")
     max = Symbol(namespace, "₊max")
-    x = Symbol(namespace, "₊x")
     forcing = Symbol(namespace, "₊forcing")
     satmax = Symbol(namespace, "₊_callback_sat_max")
     satmin = Symbol(namespace, "₊_callback_sat_min")
@@ -764,10 +779,10 @@ Matrices can be either of real numbers or symbolic parameters/terms.
 
 Returns A `System` object with variables `in` (input), `out` (output), and `x₁, x₂, ...` (states).
 """
-ModelingToolkit.@component ss_to_mtkmodel(; A, B, C, D, kwargs...) = ss_to_mtkmodel(A, B, C, D; kwargs...)
+ModelingToolkitBase.@component ss_to_mtkmodel(; A, B, C, D, kwargs...) = ss_to_mtkmodel(A, B, C, D; kwargs...)
 function ss_to_mtkmodel(A, B, C, D; name=nothing, guesses=zeros(size(A,1)))
-    t = ModelingToolkit.t_nounits
-    Dt = ModelingToolkit.D_nounits
+    t = ModelingToolkitBase.t_nounits
+    Dt = ModelingToolkitBase.D_nounits
 
     n = size(A, 1)
     @assert size(D) == (1, 1) "Only SISO systems supported"

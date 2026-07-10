@@ -46,6 +46,7 @@ function compile_bus(
     current_source=false,
     ff_to_constraint=!current_source,
     extin=nothing,
+    mtkcompile=nothing,
     kwargs...)
     if !isbusmodel(sys)
         msg = "The system must satisfy the bus model interface!"
@@ -55,7 +56,7 @@ function compile_bus(
         throw(ArgumentError(msg))
     end
     io = _busio(sys, :busbar, current_source)
-    vertexf = VertexModel(sys, io.in, io.out; verbose, name, assume_io_coupling, check, ff_to_constraint, extin)
+    vertexf = VertexModel(sys, io.in, io.out; verbose, name, assume_io_coupling, check, ff_to_constraint, extin, mtkcompile)
     compile_bus(vertexf; copy=false, check, kwargs...)
 end
 """
@@ -164,7 +165,15 @@ compile_line(││LineEnd├o         o┤LineEnd││) =>     ║ ││LineE
 
 See also: [`MTKLine`](@ref)
 """
-function compile_line(sys::System; verbose=false, name=getname(sys), assume_io_coupling=false, check=true, kwargs...)
+function compile_line(
+    sys::System;
+    verbose=false,
+    name=getname(sys),
+    assume_io_coupling=false,
+    check=true,
+    mtkcompile=nothing,
+    kwargs...
+)
     if !islinemodel(sys)
         msg = "The system must satisfy the line model interface!"
         if isbranchmodel(sys)
@@ -173,7 +182,7 @@ function compile_line(sys::System; verbose=false, name=getname(sys), assume_io_c
         throw(ArgumentError(msg))
     end
     io = _lineio(sys, :src, :dst)
-    edgef = EdgeModel(sys, io.srcin, io.dstin, io.srcout, io.dstout; verbose, name, assume_io_coupling, check)
+    edgef = EdgeModel(sys, io.srcin, io.dstin, io.srcout, io.dstout; verbose, name, assume_io_coupling, check, mtkcompile)
     compile_line(edgef; copy=false, check, kwargs...)
 end
 function compile_line(edgef::EdgeModel; copy=true, src=nothing, dst=nothing, name=edgef.name, check=true, pairs...)

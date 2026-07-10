@@ -272,9 +272,9 @@ as such in the [`MTKBus`](@ref) constructor.
     └────────────────────────────────────┘
 ```
 """
-function CompositeInjector(systems, eqs=autoconnections(systems); name=Symbol(join(ModelingToolkit.getname.(systems), "_")))
+function CompositeInjector(systems, eqs=autoconnections(systems); name=Symbol(join(ModelingToolkitBase.getname.(systems), "_")))
     @named terminal = Terminal()
-    ivs = ModelingToolkit.get_iv.(systems)
+    ivs = ModelingToolkitBase.get_iv.(systems)
     @assert allequal(ivs) "Systems have different independent variables! $ivs"
     iv = first(ivs)
     termeqs = Equation[connect(sys.terminal, terminal) for sys in systems if isinjectormodel(sys)]
@@ -285,16 +285,16 @@ function autoconnections(systems)
     systems = collect(systems) # tuple -> vector
 
     outputs = mapreduce(vcat, systems) do sys
-        subouts = filter(ModelingToolkit.get_systems(sys)) do subsys
-            contains(repr(ModelingToolkit.get_gui_metadata(subsys).type), "Blocks.RealOutput")
+        subouts = filter(ModelingToolkitBase.get_systems(sys)) do subsys
+            contains(repr(ModelingToolkitBase.get_gui_metadata(subsys).type), "Blocks.RealOutput")
         end
         subout_names = getname.(subouts)
         subouts_resolved = getproperty.(Ref(sys), subout_names)
         subout_names .=> subouts_resolved
     end
     inputs = mapreduce(vcat, systems) do sys
-        subins = filter(ModelingToolkit.get_systems(sys)) do subsys
-            contains(repr(ModelingToolkit.get_gui_metadata(subsys).type), "Blocks.RealInput")
+        subins = filter(ModelingToolkitBase.get_systems(sys)) do subsys
+            contains(repr(ModelingToolkitBase.get_gui_metadata(subsys).type), "Blocks.RealInput")
         end
         subin_names = getname.(subins)
         subins_resolved = getproperty.(Ref(sys), subin_names)

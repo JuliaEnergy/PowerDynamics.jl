@@ -16,12 +16,12 @@ function set_reference_dir(mod::Module, dir="assets")
 end
 
 """
-    @reftest name TOI
+    @reftest name TOI [tol]
 
 Mark `TrajectoriesOfInterest` object as reference test. Those objects will be
 saved using JLD2 and compared to the existing reference if available.
 """
-macro reftest(name, toi)
+macro reftest(name, toi, tol=1e-5)
     quote
         _toi = $(esc(toi))
         if VERSION < v"1.11-"
@@ -30,7 +30,7 @@ macro reftest(name, toi)
                 @test_broken false
             end
         else
-            result = _save_and_compare($(esc(name)), _toi)
+            result = _save_and_compare($(esc(name)), _toi; tol=$(esc(tol)))
             if _intestset()
                 @test result
             end

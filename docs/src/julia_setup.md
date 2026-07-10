@@ -145,11 +145,11 @@ Besides executing an entire script (play button up top), you can execute **singl
 - Select multiple lines and hit `SHIFT + RETURN` to send all selected lines.
 - Hit `ALT + RETURN` (or `CMD + RETURN`) to execute an entire *code cell*, where a code cell is everything between lines starting with `##`.
 
-!!! note "Execute your first script"
-    Install `ModelingToolkit` in addition to `PowerDynamics` in your environment and copy the following code to your script:
+!!! note "Execute your first Script"
+    Install `ModelingToolkitBase` in addition to `PowerDynamics` in your environment and copy the following code to your script:
     ```julia
     using PowerDynamics
-    using ModelingToolkit
+    using ModelingToolkitBase
     using PowerDynamics: Library
 
     @named swing = Library.Swing(V=1)

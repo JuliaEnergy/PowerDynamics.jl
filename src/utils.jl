@@ -1,5 +1,5 @@
 function freep(sys::System)
-    return filter(p -> !haskey(ModelingToolkit.defaults(sys), p), ModelingToolkit.parameters(sys))
+    return filter(p -> !haskey(ModelingToolkitBase.defaults(sys), p), ModelingToolkitBase.parameters(sys))
 end
 function freep(cf::NetworkDynamics.ComponentModel)
     return filter(p -> !NetworkDynamics.has_default(cf, p), NetworkDynamics.psym(cf))

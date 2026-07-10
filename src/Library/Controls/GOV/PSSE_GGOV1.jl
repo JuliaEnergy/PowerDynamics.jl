@@ -23,9 +23,6 @@
         ASET(t), [input=true, description="Acceleration limiter setpoint [pu/s]"]
         FSR(t), [input=true, description="Governor output signal [pu]"]
         FSRA(t), [output=true, description="Acceleration controller output [pu]"]
-        # Internal signals
-        error_signal(t), [description="ASET minus speed derivative [pu/s]"]
-        acceleration_output(t), [description="Scaled acceleration output [pu]"]
     end
     @equations begin
         speed_derivative.in ~ SPEED
@@ -190,7 +187,6 @@ end
         valve_integrator(t), [description="Valve actuator integrator state"]
 
         # Internal signals
-        speed_offset(t), [description="Speed offset by 1.0"]
         flag_output(t), [description="Flag logic output"]
         dm_output(t), [description="Dm_select logic output"]
         valve_error(t), [description="FSR - valve_position"]

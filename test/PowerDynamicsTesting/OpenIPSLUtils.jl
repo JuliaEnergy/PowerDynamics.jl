@@ -92,7 +92,7 @@ function OpenIPSL_SMIB(_bus1; just_init=false, tol=1e-10, nwtol=1e-10)
         return s0
     end
 
-    s0 = initialize_from_pf!(nw; subverbose=[VIndex(1)], tol, nwtol)
+    s0 = initialize_from_pf!(nw; subverbose=false, verbose=false, tol, nwtol)
 
     prob = ODEProblem(nw, s0, (0, 10))
     sol = solve(prob, Rodas5P())

@@ -8,7 +8,7 @@ using PowerDynamics.NetworkDynamics: VIndex, EIndex, SII, VertexModel,
                                      ComponentAffect, PresetTimeComponentCallback, set_callback!
 using PowerDynamics.SciMLBase: SciMLBase, solve, ODEProblem, auto_dt_reset!
 using PowerDynamics.NetworkDynamics.DiffEqCallbacks: PresetTimeCallback
-using PowerDynamics.ModelingToolkit: @named
+using PowerDynamics.ModelingToolkitBase: @named
 
 using OrdinaryDiffEqRosenbrock: Rodas5P
 using OrdinaryDiffEqNonlinearSolve: OrdinaryDiffEqNonlinearSolve

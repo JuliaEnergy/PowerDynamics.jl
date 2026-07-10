@@ -33,8 +33,8 @@ The test system includes:
 using PowerDynamics
 using PowerDynamics.Library
 using NetworkDynamics
-using ModelingToolkit
-using ModelingToolkit: D_nounits as Dt, t_nounits as t
+using ModelingToolkitBase, SciCompDSL
+using ModelingToolkitBase: D_nounits as Dt, t_nounits as t
 using CSV
 using SteadyStateDiffEq
 using OrdinaryDiffEqRosenbrock
@@ -268,8 +268,8 @@ as an initial guess for our target system with the algebraic PQ load.
 
 s0guess = NWState(nw)
 ## Transfer key state variables from less stiff solution
-s0guess[VIndex(2, :busbar₊u_i)] = less_stiff_s0[VIndex(2, :busbar₊u_i)]
-s0guess[VIndex(2, :busbar₊u_r)] = less_stiff_s0[VIndex(2, :busbar₊u_r)]
+s0guess[VIndex(2, :shunt₊u_i)] = less_stiff_s0[VIndex(2, :busbar₊u_i)]
+s0guess[VIndex(2, :shunt₊u_r)] = less_stiff_s0[VIndex(2, :busbar₊u_r)]
 s0guess[EIndex(1, :branch₊i_i)] = less_stiff_s0[EIndex(1, :branch₊i_i)]
 s0guess[EIndex(1, :branch₊i_r)] = less_stiff_s0[EIndex(1, :branch₊i_r)]
 s0 = find_fixpoint(nw, s0guess; alg=DynamicSS(Rodas5P()))

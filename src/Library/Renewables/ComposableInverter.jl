@@ -1,9 +1,10 @@
 module ComposableInverter
 
-using ModelingToolkit: ModelingToolkit, @named, t_nounits as t, D_nounits as Dt,
-                       @component
+using ModelingToolkitBase: ModelingToolkitBase, @named, t_nounits as t, D_nounits as Dt,
+                           @component
 # needed for @mtkmodel
-using ModelingToolkit: @mtkmodel, @variables, @parameters, @unpack, Num, System, Equation, connect, setmetadata
+using ModelingToolkitBase: @variables, @parameters, @unpack, Num, System, Equation, connect, setmetadata
+using SciCompDSL: @mtkmodel
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using NetworkDynamics: set_mtk_defaults!
 
@@ -139,8 +140,11 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         (C/ω0) * Dt(V_C_r) ~ i_f_r - i_g_r + C*V_C_i
         (C/ω0) * Dt(V_C_i) ~ i_f_i - i_g_i - C*V_C_r
         # Grid-side inductor
-        (Lg/ω0) * Dt(i_g_r) ~ V_C_r - connected*terminal.u_r - Rg*i_g_r + Lg*i_g_i
-        (Lg/ω0) * Dt(i_g_i) ~ V_C_i - connected*terminal.u_i - Rg*i_g_i - Lg*i_g_r
+        # Both V_C and terminal.u are gated by `connected` so that when connected=0
+        # the driving force vanishes and i_g decays to 0 (open-circuit behaviour).
+        # Without gating V_C, i_g would build up to V_C/Z_g ≈ 70 pu internally.
+        (Lg/ω0) * Dt(i_g_r) ~ connected*(V_C_r - terminal.u_r) - Rg*i_g_r + Lg*i_g_i
+        (Lg/ω0) * Dt(i_g_i) ~ connected*(V_C_i - terminal.u_i) - Rg*i_g_i - Lg*i_g_r
         # Current flows out through terminal
         terminal.i_r ~ connected*i_g_r
         terminal.i_i ~ connected*i_g_i

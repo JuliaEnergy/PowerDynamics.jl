@@ -1,9 +1,10 @@
+using ModelingToolkit
 using Test
 using Testfiles
 using Aqua
 using ExplicitImports
 using NetworkDynamics
-using ModelingToolkit
+using ModelingToolkitBase
 using ModelingToolkitStandardLibrary
 using ModelingToolkitStandardLibrary.Blocks
 using Makie

@@ -12,8 +12,8 @@ To make it more interesting, we add protection logic to the branches:
 - if the current exceeds the limit, the branch is switched off after a delay time.
 =#
 using PowerDynamics
-using ModelingToolkit
-using ModelingToolkit: D_nounits as Dt, t_nounits as t
+using ModelingToolkitBase, SciCompDSL
+using ModelingToolkitBase: D_nounits as Dt, t_nounits as t
 using NetworkDynamics
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
