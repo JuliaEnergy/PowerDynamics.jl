@@ -38,6 +38,7 @@ using ModelingToolkitBase: D_nounits as Dt, t_nounits as t
 using CSV
 using SteadyStateDiffEq
 using OrdinaryDiffEqRosenbrock
+using OrdinaryDiffEqNonlinearSolve
 using DataFrames
 using CairoMakie
 

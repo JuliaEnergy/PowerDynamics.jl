@@ -398,7 +398,7 @@ sol = solve(prob, Rodas5P());
     end
 
     jac_prototype = get_jac_prototype(nw; remove_conditions=true)
-    prob_jac = ODEProblem(ODEFunction(nw; jac_prototype), copy(uflat(s0)), (0,15), copy(pflat(s0)); callback=get_callbacks(nw))
+    prob_jac = ODEProblem(ODEFunction(nw; jac_prototype), copy(uflat(s0)), (0,15), copy(pflat(s0)); callback=get_callbacks(nw), initializealg=BrownFullBasicInit())
     s1 = @time solve(prob, Rodas5P());
     s2 = @time solve(prob_jac, Rodas5P());
 end
