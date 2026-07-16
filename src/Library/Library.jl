@@ -3,7 +3,8 @@ module Library
 using ..PowerDynamics: PowerDynamics, Terminal, BusBase, Ibase
 using NetworkDynamics: NetworkDynamics, ComponentCondition, ComponentAffect,
                        VertexModel, VIndex, EIndex, NWState,
-                       VectorContinuousComponentCallback, DiscreteComponentCallback, ComponentPostprocessing
+                       VectorContinuousComponentCallback, DiscreteComponentCallback, ComponentPostprocessing,
+                       set_initf
 using ModelingToolkitBase: ModelingToolkitBase, @named, simplify, t_nounits as t, D_nounits as Dt,
                            @component
 # needed for @mtkmodel
@@ -143,18 +144,18 @@ Slack bus with differential voltage states, holding voltage constant via zero de
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
-@mtkmodel SlackDifferential begin
-    @parameters begin
-        u_init_r=1, [description="bus d-voltage initial value"]
-        u_init_i=0, [description="bus q-voltage initial value"]
+function SlackDifferential(; name=:slackdiff, u_init_r=1, u_init_i=0)
+    @named busbar = BusBase()
+    params = @parameters begin
+        u_init_r = u_init_r, [description="bus d-voltage initial value"]
+        u_init_i = u_init_i, [description="bus q-voltage initial value"]
     end
-    @components begin
-        busbar = BusBase(;u_r=u_init_r, u_i=u_init_i)
-    end
-    @equations begin
+    eqs = [
         Dt(busbar.u_r) ~ 0
         Dt(busbar.u_i) ~ 0
-    end
+    ]
+    sys = System(eqs, t, [], params; systems=[busbar], name)
+    set_initf(sys, busbar.u_r => u_init_r, busbar.u_i => u_init_i)
 end
 
 """

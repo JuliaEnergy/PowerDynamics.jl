@@ -6,7 +6,7 @@ using ModelingToolkitBase: ModelingToolkitBase, @named, t_nounits as t, D_nounit
 using ModelingToolkitBase: @variables, @parameters, @unpack, Num, System, Equation, connect, setmetadata
 using SciCompDSL: @mtkmodel
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
-using NetworkDynamics: set_mtk_defaults!
+using NetworkDynamics: set_mtk_defaults
 
 using ..PowerDynamics: PowerDynamics, Terminal
 
@@ -192,7 +192,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         V_I .~ -Fcoupl*Lf*W*i_f + KP*(i_f_ref - i_f) + KI*γ + F*V_C
     )
     sys = System(eqs, t; name)
-    set_mtk_defaults!(sys, defaults)
+    sys = set_mtk_defaults(sys, defaults)
     return sys
 end
 
@@ -230,7 +230,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         i_f_ref .~ -Fcoupl*C*W*V_C + KP*(V_C_ref - V_C) + KI*γ + F*i_g
     )
     sys = System(eqs, t; name)
-    set_mtk_defaults!(sys, defaults)
+    sys = set_mtk_defaults(sys, defaults)
     return sys
 end
 
@@ -268,7 +268,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         V_C_ref .~ -Fcoupl*Lg*W*i_g + KP*(i_g_ref - i_g) + KI*γ + F*V_g
     )
     sys = System(eqs, t; name)
-    set_mtk_defaults!(sys, defaults)
+    sys = set_mtk_defaults(sys, defaults)
     return sys
 end
 
@@ -372,7 +372,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         vc.V_C_ref_q ~       - (vc.i_g_q * R_virt + vc.i_g_d * X_virt)
     ]
     sys = System(eqs, t; name, systems)
-    set_mtk_defaults!(sys, defaults)
+    sys = set_mtk_defaults(sys, defaults)
     return sys
 end
 
@@ -502,7 +502,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         cc2.i_g_ref_q ~ _iset_q
     ]
     sys = System(eqs, t; name, systems)
-    set_mtk_defaults!(sys, defaults)
+    sys = set_mtk_defaults(sys, defaults)
     return sys
 end
 
@@ -587,7 +587,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     ]
 
     sys = System(eqs, t; name, systems)
-    set_mtk_defaults!(sys, defaults)
+    sys = set_mtk_defaults(sys, defaults)
     return sys
 end
 
@@ -624,7 +624,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     ]
 
     sys = System(eqs, t; name, systems=[droop, vsrc, terminal])
-    set_mtk_defaults!(sys, defaults)
+    sys = set_mtk_defaults(sys, defaults)
     return sys
 end
 
@@ -660,7 +660,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         Dt(ω_pll) ~ Ki*u_q
     ]
     sys = System(eqs, t; name)
-    set_mtk_defaults!(sys, defaults)
+    sys = set_mtk_defaults(sys, defaults)
     return sys
 end
 
@@ -697,7 +697,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         Dt(θ) ~ ω
     ]
     sys = System(eqs, t; name)
-    set_mtk_defaults!(sys, defaults)
+    sys = set_mtk_defaults(sys, defaults)
     return sys
 end
 
@@ -780,7 +780,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         cc1.i_f_ref_q ~ _iset_q
     ]
     sys = System(eqs, t; name, systems)
-    set_mtk_defaults!(sys, defaults)
+    sys = set_mtk_defaults(sys, defaults)
     return sys
 end
 
@@ -873,7 +873,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         Dt(v_dc_i) ~ (V_dc - v_dc_state) * ki_v_dc
     ]
     sys = System(eqs, t; name, systems)
-    set_mtk_defaults!(sys, defaults)
+    sys = set_mtk_defaults(sys, defaults)
     return sys
 end
 

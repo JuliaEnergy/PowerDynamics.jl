@@ -2,6 +2,11 @@ using PowerDynamics
 using NetworkDynamics
 using PowerDynamics: @capture, postwalk
 using Graphs
+using ModelingToolkitBase
+using ModelingToolkitBase: t_nounits as t, D_nounits as Dt
+using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
+using PowerDynamics.Library
+using NetworkDynamics: set_mtk_defaults
 PowerDynamics.load_pdtesting()
 using Main.PowerDynamicsTesting
 
@@ -217,4 +222,136 @@ end
         @test_throws ArgumentError initialize_from_pf(nw; additional_initconstraint=:foo)
         @test_throws ArgumentError initialize_from_pf(nw; additional_initformula=:foo)
     end
+end
+
+# End-to-end backward initialization through nested components: every model carries its
+# own init recipe (`initf`), the AVR pins its PI block's output observable via `set_initf`,
+# and composition chains everything into one DAG which determines every free variable from
+# the powerflow interface — no nonlinear solve. Mirrors docs/tutorials/nested_component_init.jl.
+@testset "nested backward init: initf + set_initf pin" begin
+    @component function nbi_pi_block(; name, defaults...)
+        @parameters K_p K_i
+        @variables begin
+            err(t)
+            y(t)
+        end
+        @variables x(t), [guess=0, initf = (y - K_p*err)/K_i]
+        sys = System([Dt(x) ~ err, y ~ K_p*err + K_i*x], t; name)
+        sys = set_mtk_defaults(sys, defaults)
+    end
+    @component function nbi_avr(; name, defaults...)
+        @named v_mag_in = RealInput()
+        @named vf_out = RealOutput()
+        @variables begin
+            v_meas(t), [guess=1, initf = v_mag_in.u]
+            v_f(t), [guess=1]
+        end
+        @parameters begin
+            T_m; T_e; K_e
+            v_ref, [guess=1, initf = v_meas]
+        end
+        @named pi = nbi_pi_block()
+        eqs = [
+            T_m*Dt(v_meas) ~ v_mag_in.u - v_meas,
+            pi.err ~ v_ref - v_meas,
+            T_e*Dt(v_f) ~ pi.y - K_e*v_f,
+            vf_out.u ~ v_f,
+        ]
+        sys = System(eqs, t; name, systems=[v_mag_in, vf_out, pi])
+        sys = set_initf(sys, pi.y => K_e*v_f)
+        sys = set_mtk_defaults(sys, defaults)
+    end
+    @component function nbi_gov(; name, defaults...)
+        @named ω_in = RealInput()
+        @named Pm_out = RealOutput()
+        @variables begin
+            P_m(t), [guess=1]
+            P_in(t)
+        end
+        @parameters begin
+            R; T_g
+            P_ref, [guess=1, initf = P_m - (1 - ω_in.u)/R]
+        end
+        eqs = [
+            P_in ~ P_ref + (1 - ω_in.u)/R,
+            T_g*Dt(P_m) ~ P_in - P_m,
+            Pm_out.u ~ P_m,
+        ]
+        sys = System(eqs, t; name, systems=[ω_in, Pm_out])
+        sys = set_mtk_defaults(sys, defaults)
+    end
+    @component function nbi_machine(; name, defaults...)
+        @named terminal = Terminal()
+        @named vf_in = RealInput()
+        @named Pm_in = RealInput()
+        @named v_mag_out = RealOutput()
+        @named ω_out = RealOutput()
+        @parameters R_s X′_d H ω_b
+        @variables begin
+            ω(t)=1
+            V_d(t); V_q(t); I_d(t); I_q(t); τ_e(t); v_mag(t); e_r(t); e_i(t)
+        end
+        @variables begin
+            δ(t), [guess=0, initf = atan(e_i, e_r)]
+            v_f(t), [guess=1, initf = sqrt(e_r^2 + e_i^2)]
+            P_m(t), [guess=1, initf = ω*τ_e]
+        end
+        T_to_loc(α)  = [ sin(α) -cos(α); cos(α)  sin(α)]
+        T_to_glob(α) = [ sin(α)  cos(α); -cos(α) sin(α)]
+        eqs = [
+            v_f ~ vf_in.u
+            P_m ~ Pm_in.u
+            [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q]
+            [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i]
+            Dt(δ) ~ ω_b*(ω - 1)
+            2*H*Dt(ω) ~ P_m/ω - τ_e
+            τ_e ~ (V_q + R_s*I_q)*I_q + (V_d + R_s*I_d)*I_d
+            0 ~ V_q + R_s*I_q + X′_d*I_d - v_f
+            0 ~ V_d + R_s*I_d - X′_d*I_q
+            e_r ~ terminal.u_r + R_s*terminal.i_r - X′_d*terminal.i_i
+            e_i ~ terminal.u_i + R_s*terminal.i_i + X′_d*terminal.i_r
+            v_mag ~ sqrt(V_d^2 + V_q^2)
+            v_mag_out.u ~ v_mag
+            ω_out.u ~ ω
+        ]
+        sys = System(eqs, t; name, systems=[terminal, vf_in, Pm_in, v_mag_out, ω_out])
+        sys = set_mtk_defaults(sys, defaults)
+    end
+
+    @named machine = nbi_machine(; R_s=0.01, X′_d=0.3, H=5, ω_b=2π*50)
+    @named avr = nbi_avr(; T_m=0.02, T_e=0.5, K_e=1.0, pi₊K_p=20, pi₊K_i=5)
+    @named gov = nbi_gov(; R=0.05, T_g=0.5)
+    gen = CompositeInjector([machine, avr, gov]; name=:gen)
+    genbus = compile_bus(MTKBus(gen; name=:genbus); vidx=2, pf=pfPV(V=1, P=1))
+
+    # the AVR's set_initf pinned the PI output observable
+    @test NetworkDynamics.pinned_obssyms(genbus) == Set([:gen₊avr₊pi₊y])
+
+    slackbus = compile_bus(PowerDynamics.VariableFrequencySlack(name=:slack); vidx=1, pf=pfSlack(V=1))
+    line = compile_line(MTKLine(PiLine(; name=:piline, R=0.01, X=0.1, B_src=0, B_dst=0)); src=1, dst=2)
+    nw = Network([slackbus, genbus], line)
+
+    s0 = initialize_from_pf!(nw; verbose=false)
+
+    # re-run the (non-mutating) component init on the seeded bus to inspect the log:
+    # the whole DAG resolves — pin marked, everything computed, nothing solved
+    io = IOBuffer()
+    initialize_component(nw[VIndex(2)]; verbose=true, io)
+    out = String(take!(io))
+    @test occursin("(pinned observable)", out)
+    @test occursin("No free variables!", out)
+
+    # hand-computed reference: v_meas = V_pf = 1 at the PV bus, so err = 0 and the PI
+    # state is exactly y/K_i = K_e*v_f/K_i
+    @test s0[VIndex(2, :gen₊avr₊v_meas)] ≈ 1.0
+    @test s0[VIndex(2, :gen₊avr₊v_ref)] ≈ 1.0
+    v_f = s0[VIndex(2, :gen₊avr₊v_f)]
+    @test s0[VIndex(2, :gen₊avr₊pi₊x)] ≈ 1.0 * v_f / 5
+    # governor holds the machine's electrical power at nominal speed
+    @test s0[VIndex(2, :gen₊gov₊P_ref)] ≈ s0[VIndex(2, :gen₊gov₊P_m)]
+
+    # flat start: the RHS at the initialized state is zero
+    du = similar(uflat(s0))
+    nw(du, uflat(s0), pflat(s0), 0.0)
+    @test maximum(abs, du) < 1e-10
 end

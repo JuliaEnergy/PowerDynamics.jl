@@ -60,6 +60,7 @@ doc = makedocs(;
             "Typical Simulation Workflow" => "generated/typical_simulation_workflow.md",
             "Custom Generator Bus" => "generated/custom_bus.md",
             "Custom Transmission Line" => "generated/custom_line.md",
+            "Backward Initialization of Nested Models" => "generated/nested_component_init.md",
         ],
         "Advanced Examples" => [
             "generated/ieee9bus.md",
