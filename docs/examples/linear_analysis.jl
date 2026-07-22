@@ -333,7 +333,7 @@ nw = Network([sg1_bus, bus1, sg2_bus, bus2, gfm_bus, bus3, gfl_bus, bus4],
     [loop1, loop2, loop3, loop4, line12, line23, line31, line34]; warn_order=false)
 
 pfs = solve_powerflow(nw)
-s0 = initialize_from_pf!(nw; pfs, nwtol=1e-5)
+s0 = initialize_from_pf!(nw; pfs)
 nothing #hide #md
 
 #=
@@ -1031,7 +1031,7 @@ default_overrides = Dict(
     VIndex(5, :droop₊vsrc₊VC_KP) => 3.0*s0.v[:gfm_bus, :droop₊vsrc₊VC_KP],
     VIndex(5, :droop₊vsrc₊VC_KI) => 3.0*s0.v[:gfm_bus, :droop₊vsrc₊VC_KI]
 )
-s0_tuned = initialize_from_pf(nw; pfs, default_overrides, tol=1e-7, nwtol=1e-5)
+s0_tuned = initialize_from_pf(nw; pfs, default_overrides)
 nothing # hide #md
 
 #=
