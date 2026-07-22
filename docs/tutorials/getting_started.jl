@@ -99,7 +99,7 @@ The equations of the rotor connected to the infinite bus can be written as:
 ```math
 \begin{aligned}
 \dot{\theta} &= \omega\\
-M\,\dot{\omega} &= P_\mathrm{m} - P_\mathrm{e} - D\,\omega&&\text{Swing Equation with}\\
+\dot{\omega} &= \frac{1}{M}\left(P_\mathrm{m} - P_\mathrm{e} - D\,\omega\right)&&\text{Swing Equation with}\\
 P_\mathrm{e} &= \frac{1}{X}\sin{\theta}&&\text{connection to infinite bus with}\ δ=0
 \end{aligned}
 ```
@@ -138,7 +138,7 @@ After importing the packages, we can define the *symbolic system* using the `@mt
     @equations begin
         Pₑ ~ 1/X * sin(θ)
         Dt(θ) ~ ω
-        M * Dt(ω) ~ Pₘ - Pₑ - D*ω
+        Dt(ω) ~ (Pₘ - Pₑ - D*ω) / M
     end
 end
 nothing #hide #md
