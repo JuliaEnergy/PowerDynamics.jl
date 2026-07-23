@@ -1,4 +1,84 @@
 # PowerDynamics.jl Changelog
+## Version 5.0.0 Changelog
+
+PowerDynamics v5 is the downstream half of
+[NetworkDynamics v1.0](https://github.com/JuliaDynamics/NetworkDynamics.jl/blob/8628b8a/NEWS.md):
+ModelingToolkit v11, the reworked initialization
+pipeline, and the SciML v3 stack. Most of the breakage comes from there rather than from
+PowerDynamics itself.
+
+### Breaking
+
+- **All NetworkDynamics v1.0 breaking changes apply unchanged.** PowerDynamics
+  `@reexport`s NetworkDynamics, so its API *is* part of the PowerDynamics API. Affected:
+  `set_mtk_defaults!` → non-mutating `set_mtk_defaults`, symbolic expressions as a `guess`
+  or bound to an unknown now error (use `initf`/`guessf`), `find_fixpoint` takes an
+  `NWState`, MTK models are no longer simplified by `mtkcompile`, `ODEProblem` passes
+  `initializealg=BrownFullBasicInit()`, and `VectorContinuousComponentCallback` lost
+  `affect_neg!`. See the
+  [NetworkDynamics v1.0 release notes](https://github.com/JuliaDynamics/NetworkDynamics.jl/blob/8628b8a/NEWS.md)
+  for the details and the rewrites.
+- **`ModelingToolkit` → `ModelingToolkitBase` + `SciCompDSL`**
+  ([#261](https://github.com/JuliaEnergy/PowerDynamics.jl/pull/261)). MTK v11 split into
+  `ModelingToolkitBase` (MIT) and `ModelingToolkit` (AGPL); PowerDynamics depends only on
+  the MIT half, and `@mtkmodel` moved out into `SciCompDSL`. Along with it: `Symbolics` ≥7, `SciMLBase` ≥3, `NetworkDynamics` ≥1, and the
+  `OrdinaryDiffEq*` subpackages ≥2.
+- **`Sn` and `Vn` no longer default to `S_b`/`V_b`**
+  ([#261](https://github.com/JuliaEnergy/PowerDynamics.jl/pull/261)) in `SauerPaiMachine`
+  and `ClassicalMachine`. They were *symbolic* defaults, which under MTK v11 would turn
+  into permanent parameter bindings rather than a one-time value. Pass the machine rating
+  explicitly, e.g. `SauerPaiMachine(; S_b=100, V_b=1, Sn=100, Vn=1, …)`.
+
+### Initialization
+
+- **Backward initialization through nested components.** NetworkDynamics' new
+  `initf`/`guessf` metadata and `set_initf`/`set_guessf` let each model carry its own init
+  recipe; composed together they chain into a DAG that can fix *every* free variable from
+  the powerflow alone, with no nonlinear solve at all. The new tutorial "Backward
+  Initialization of Nested Models" builds a generator bus (machine + AVR + governor + inner
+  blocks) that initializes to "No free variables!".
+- **`@pfinitconstraint` / `@pfinitformula` hygiene fixed**: both macros mishandled
+  escaping, so a constraint could not close over local runtime variables
+  (`@pfinitconstraint :x * scale - @pf(:z)` inside a loop). They now capture locals
+  correctly, and `show` prints the macro form the user wrote instead of leaking
+  `Expr(:escape, …)` into the output.
+- **`initialize_from_pf` no longer ignores `pfs0`** — the supplied start state was
+  overwritten with the powerflow *network*, so a hand-tuned powerflow guess had no effect.
+- `tol` and `nwtol` are forwarded through `initialize_from_pf` to the residual check.
+
+### Library
+
+- **New: optional stator dynamics in `SauerPaiMachine`** via
+  `SauerPaiMachine(; stator_dynamics=true)`, which replaces the algebraic stator
+  formulation with `1/ω_b · Dt(ψ_d,ψ_q)`.
+- **New: `mtkcompile` keyword on `compile_bus` and `compile_line`**, forwarded to
+  `VertexModel`/`EdgeModel`. Pass `true` for MTK's (AGPL) simplification pipeline or
+  `:compare` to print both side by side.
+- **Bug fix: `ClassicalMachine` per-unit conversion.** The Park transform applied the
+  current base ratio upside down (`Ibase(Sn,Vn)/Ibase(S_b,V_b)`), giving wrong currents
+  whenever the machine rating differed from the system base.
+- **Bug fix: `ComposableInverter` in the disconnected state.** With `connected=0` the LCL
+  filter's grid-side current was still driven by `V_C` and built up to ≈70 pu internally.
+  Both `V_C` and `terminal.u` are now gated, so `i_g` decays to zero as an open circuit
+  should.
+- **Bug fix: limited-integrator callbacks** now resolve the integrator state through the
+  observed-alias chain instead of assuming the name `<ns>₊x` survives compilation. MTK may
+  demote the state to an alias of the block output, which silently broke the saturation
+  callbacks (visible in `PSSE_HYGOV` and with `mtkcompile=true`).
+- **Saturation functions are AD-safe**: `QUAD_SE`, `EXP_SE` and `PSSE_ESST4B`'s
+  `FEX_function` are now type-generic and use `NaNMath`, so `sqrt`/`log` on a slightly
+  out-of-range argument no longer throws a `DomainError` mid-initialization.
+- `SlackDifferential` is built with `set_initf` rather than symbolic parameter defaults.
+
+### Documentation
+
+- **New "Getting Started with Julia" section**
+  ([#276](https://github.com/JuliaEnergy/PowerDynamics.jl/pull/276)): the setup page was
+  rewritten and joined by "Environment Management" and an opinionated "How to Structure
+  Research Projects" guide, aimed at users who arrive at PowerDynamics before they arrive
+  at Julia.
+- **New tutorial** "Backward Initialization of Nested Models" (see above).
+
 ## Version 4.4.1 Changelog
 - fixes a precompile issue on Windows machines
 - small changes to documentation + test system
