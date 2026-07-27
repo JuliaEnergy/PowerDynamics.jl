@@ -105,20 +105,24 @@ You can check if a model satisfies the injector interface using the [`isinjector
 
 #### [Model class `MTKBus`](@id MTKBus Interface)
 A `MTKBus` is a class of models, which are used to describe the dynamic behavior of a full bus in a power grid.
-Each `MTKBus` must contain a predefined model of type `BusBar()` (named `:busbar`).
+Each `MTKBus` must contain a predefined model of type [`BusBar`](@ref) (named `:busbar`).
 This busbar represents the connection point to the grid.
+It also contains a [`SystemBase`](@ref) named `:systembase`, which carries the *global*
+per-unit bases (`Sbase`, `ωbase`) and the reference frame speed `ωframe`.
+Components inside the bus bind their own base shadows to it (`bound_to = :systembase₊Sbase`).
 Optionally, it may contain various injectors.
+Both `busbar` and `systembase` will be added automaticially if you use the `MTKBus` constructor.
 If there are no injectors, the model just describes a junction bus; i.e., a bus that just satisfies the Kirchhoff constraint for the flows of connected lines.
 
 ```asciiart
  ┌───────────────────────────────────┐
- │ MTKBus             ┌───────────┐  │
- │  ┌──────────┐   ┌──┤ Generator │  │
- │  │          │   │  └───────────┘  │
- │  │  BusBar  ├───o                 │
- │  │          │   │  ┌───────────┐  │
- │  └──────────┘   └──┤ Load      │  │
- │                    └───────────┘  │
+ │ MTKBus                            │
+ │  ┌──────────┐      ┌───────────┐  │
+ │  │  BusBar  ├───o──┤ Generator │  │
+ │  └──────────┘   │  └───────────┘  │
+ │  ╭──────────┐   │  ┌───────────┐  │
+ │  │SystemBase│   └──┤ Load      │  │
+ │  └──────────┘      └───────────┘  │
  └───────────────────────────────────┘
 ```
 Sometimes it is not possible to connect all injectors directly but instead one needs or wants `Branches` between the busbar and injector terminal.
@@ -133,6 +137,7 @@ You can check if a model satisfies the bus interface using the [`isbusmodel`](@r
     using PowerDynamics, PowerDynamics.Library, ModelingToolkitBase, SciCompDSL
     @mtkmodel MyMTKBus begin
         @components begin
+            systembase = SystemBase() # optional, injected at compile_bus
             busbar = BusBar()
             swing = Swing()
             load = PQLoad()
@@ -192,7 +197,11 @@ You can check if a model satisfies the branch interface using the [`isbranchmode
 #### [Model class: `MTKLine`](@id MTKLine Interface)
 Similar to the `MTKBus`, a `MTKLine` is a model class which represents a transmission line in the network.
 
-It must contain two `LineEnd()` instances, one called `:src`, one called `:dst`.
+It must contain two [`LineEnd`](@ref) instances, one called `:src`, one called `:dst`.
+Each is constructed with a matching `side` kwarg (`LineEnd(; side=:src)` / `LineEnd(; side=:dst)`),
+which is what lets the line end inherit its voltage base `Vbase` from the bus it is attached to.
+Like a bus, a line carries a [`SystemBase`](@ref) named `:systembase`; [`MTKLine`](@ref) adds it and
+[`compile_line`](@ref) injects one if it is missing.
 
 ```asciiart
  ┌────────────────────────────────────────────────┐
@@ -203,6 +212,7 @@ It must contain two `LineEnd()` instances, one called `:src`, one called `:dst`.
  │  │         │  │  ┌──────────┐  │  │         │  │
  │  └─────────┘  └──┤ Branch B ├──┘  └─────────┘  │
  │                  └──────────┘                  │
+ │  + SystemBase                                  │
  └────────────────────────────────────────────────┘
 ```
 
@@ -231,8 +241,9 @@ You can check if a model satisfies the line interface using the [`islinemodel`](
     using PowerDynamics, PowerDynamics.Library, ModelingToolkitBase, SciCompDSL
     @mtkmodel MyMTKLine begin
         @components begin
-            src = LineEnd()
-            dst = LineEnd()
+            systembase = SystemBase() # optional, injected at compile_line
+            src = LineEnd(; side=:src)
+            dst = LineEnd(; side=:dst)
             branch1 = PiLine()
             branch2 = PiLine()
         end
@@ -387,7 +398,7 @@ fig #hide
 ## Internals
 
 Internally, we use different input/output conventions for bus and line models.
-The predefined models `BusBar()` and `LineEnd()` are defined in the following way:
+The predefined models `BusBar()`, `LineEnd()` and `SystemBase()` are defined in the following way:
 
 ### Model: `BusBar()`
 A busbar is a concrete model used in bus modeling.
@@ -415,3 +426,34 @@ i_line ←──│           │
 
 It has special input/output connectors which handle the network interconnection.
 The main difference being the distinct input/output conventions for the network interface.
+
+A `LineEnd` is always constructed with a `side` kwarg (`:src` or `:dst`) telling it which end
+of the line it is. That is what allows it to inherit its voltage base from the bus it is
+attached to; a transformer is simply a line whose two ends resolve to different `Vbase`
+values, with the turns ratio falling out of the two bases.
+
+### Model: `SystemBase()`
+A parameter-only model carrying the quantities that are *global* to the system rather than
+local to a bus or a line:
+
+| Parameter | Unit | Meaning |
+|:----------|:-----|:--------|
+| `Sbase`   | MVA  | System power base |
+| `ωbase`   | rad/s | System frequency base |
+| `ωframe`  | pu   | Speed of the global dq reference frame (pinned to `1`) |
+| `fbase`   | Hz   | `ωbase/2π`, an observable |
+
+Exactly one instance, named `:systembase`, sits at the top level of every bus and every line
+next to the `busbar` resp. the two `LineEnd`s.
+Because the instance name is the same in every container, a component that needs a global
+base always spells the binding the same way, whether it lives in a bus or in a line:
+```julia
+@parameters begin
+    Sbase, [bound_to = :systembase₊Sbase]
+    ωbase, [bound_to = :systembase₊ωbase]
+end
+```
+Such a shadow is eliminated at compile time (it becomes an observable of the target), so the
+whole bus or line has exactly one settable knob per global base. The defaults come from the
+module-level globals at construction time — see [`set_Sbase!`](@ref), [`set_ωbase!`](@ref)
+and [`set_fbase!`](@ref).

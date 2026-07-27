@@ -58,6 +58,7 @@ function compile_bus(
     end
     # `Vbase` convenience kwarg: sugar for the `busbar₊Vbase => …` default override
     vbase_override = isnothing(Vbase) ? (;) : NamedTuple{(Symbol("busbar₊Vbase"),)}((Vbase,))
+    sys = add_systembase(sys) # no-opt if present
     io = _busio(sys, :busbar, current_source)
     vertexf = VertexModel(sys, io.in, io.out; verbose, name, assume_io_coupling, check, ff_to_constraint, extin, mtkcompile)
     _resolve_busbar_vbase!(vertexf, current_source)
@@ -225,6 +226,7 @@ function compile_line(
         end
         throw(ArgumentError(msg))
     end
+    sys = add_systembase(sys) # no-opt if present
     io = _lineio(sys, :src, :dst)
     edgef = EdgeModel(sys, io.srcin, io.dstin, io.srcout, io.dstout; verbose, name, assume_io_coupling, check, mtkcompile)
     compile_line(edgef; copy=false, check, kwargs...)

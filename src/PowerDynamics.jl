@@ -29,6 +29,7 @@ using SparseMatrixColorings: SparseMatrixColorings
 
 export Terminal, BusBar, LineEnd, SystemBase
 export MTKBus, MTKLine, CompositeInjector, Ibase, Zbase, Ybase
+export get_Sbase, get_ωbase, get_fbase, get_Vbase
 export set_Sbase!, set_ωbase!, set_fbase!, set_Vbase!
 include("modeling_tools.jl")
 

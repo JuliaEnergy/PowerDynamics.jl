@@ -186,9 +186,18 @@ interface  ║  │ MTKBus             │ ║
 ```
 =#
 
+## Part I restored the global bases when it finished, so we set them again for the bus we
+## build here. The droop model above is written entirely in per unit and never reads them,
+## but the bus we are about to splice into the network gets its own `systembase` — and a
+## single bus sitting on a different base than its 38 neighbours is a trap worth avoiding.
+set_Sbase!(BASE_MVA); set_fbase!(BASE_FREQ)
+
 @named inverter = DroopInverter()
 mtkbus = MTKBus(inverter)
 droop_bus_template = compile_bus(mtkbus; name=:DroopInverter)
+
+set_Sbase!(); set_fbase!() # hide #md
+droop_bus_template #hide #md
 
 #=
 We see that the droop inverter has 3 free parameters (you can check `free_p(droop_bus_template)` or `dump_initial_state(droop_bus_template)`).

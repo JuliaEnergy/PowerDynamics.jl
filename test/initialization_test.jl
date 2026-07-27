@@ -286,7 +286,9 @@ end
         @named Pm_in = RealInput()
         @named v_mag_out = RealOutput()
         @named ω_out = RealOutput()
-        @parameters R_s X′_d H ω_b
+        @parameters R_s X′_d H
+        ## frequency base is taken structurally from the bus's `systembase`
+        @parameters ωbase, [bound_to = :systembase₊ωbase]
         @variables begin
             ω(t)=1
             V_d(t); V_q(t); I_d(t); I_q(t); τ_e(t); v_mag(t); e_r(t); e_i(t)
@@ -303,7 +305,7 @@ end
             P_m ~ Pm_in.u
             [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q]
             [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i]
-            Dt(δ) ~ ω_b*(ω - 1)
+            Dt(δ) ~ ωbase*(ω - 1)
             2*H*Dt(ω) ~ P_m/ω - τ_e
             τ_e ~ (V_q + R_s*I_q)*I_q + (V_d + R_s*I_d)*I_d
             0 ~ V_q + R_s*I_q + X′_d*I_d - v_f
@@ -318,7 +320,7 @@ end
         sys = set_mtk_defaults(sys, defaults)
     end
 
-    @named machine = nbi_machine(; R_s=0.01, X′_d=0.3, H=5, ω_b=2π*50)
+    @named machine = nbi_machine(; R_s=0.01, X′_d=0.3, H=5)
     @named avr = nbi_avr(; T_m=0.02, T_e=0.5, K_e=1.0, pi₊K_p=20, pi₊K_i=5)
     @named gov = nbi_gov(; R=0.05, T_g=0.5)
     gen = CompositeInjector([machine, avr, gov]; name=:gen)

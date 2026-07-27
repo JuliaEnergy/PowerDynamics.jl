@@ -17,6 +17,17 @@ using OrdinaryDiffEqNonlinearSolve
 using CairoMakie
 
 #=
+## Per-unit bases
+
+The IEEE 9-bus system is a 60 Hz system on a 100 MVA base. `Sbase` and `ωbase` are *global*
+quantities in PowerDynamics: they are set once, before any model is constructed, and are then
+baked into every component that is built afterwards. (100 MVA is already the default, so only
+the frequency actually needs setting here.)
+=#
+set_Sbase!(100)  # MVA — the default, spelled out for clarity
+set_fbase!(60)   # Hz
+
+#=
 ## Generator Buses
 
 The 3 generator buses are modeled using a SauerPai 6th order machine model with
@@ -27,11 +38,6 @@ function GeneratorBus(; machine_p=(;), avr_p=(;), gov_p=(;))
     @named machine = SauerPaiMachine(;
         vf_input=true,
         τ_m_input=true,
-        S_b=100,
-        V_b=1,
-        Sn=100,
-        Vn=1,
-        ω_b=2π*60,
         R_s=0.000125,
         T″_d0=0.01,
         T″_q0=0.01,
@@ -255,3 +261,6 @@ end
 axislegend(ax)
 
 fig #hide #md
+
+#-
+set_Sbase!(); set_fbase!() #hide #md

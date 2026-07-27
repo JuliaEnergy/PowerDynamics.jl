@@ -64,7 +64,10 @@ using CairoMakie
         R_s=0.000124, [description="stator resistance"]
         X′_d=0.0608, [description="d-axis transient reactance"]
         H=23.64, [description="inertia constant"]
-        ω_b=2π*50, [description="System base frequency in rad/s"]
+        ## The frequency base is a system-level quantity. Instead of carrying its own
+        ## copy, the machine declares a shadow that is structurally bound to the
+        ## `systembase` of whatever bus it is placed in.
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
         vf_set, [guess=1, description="field voltage"]
         P_m, [guess=1, description="mechanical power"]
     end
@@ -91,7 +94,7 @@ using CairoMakie
         [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i]
 
         ## mechanical swing equation Milano 15.5
-        Dt(δ) ~ ω_b*(ω - 1)
+        Dt(δ) ~ ωbase*(ω - 1)
         2*H * Dt(ω) ~ P_m/ω - τ_e
 
         ## static flux linkage equations Milano 15.11
@@ -124,8 +127,8 @@ There are two ways of doing so: manually and using the `MTKBus` constructor.
 
 **Manual Construction**
 
-We need to define a new MTK model, which has 2 components: a busbar and the machine.
-Both components have a `terminal` as a subcomponent, we can use the `connect` function
+We need to define a new MTK model, which has 3 components: a busbar, the machine and a component holding the system base.
+Both electrical components have a `terminal` as a subcomponent, we can use the `connect` function
 to hook the machine on the busbar.
 =#
 @mtkmodel MyMTKBus begin
@@ -333,7 +336,10 @@ First, we create a modified Milano machine with control inputs/outputs:
         R_s=0.000124, [description="stator resistance"]
         X′_d=0.0608, [description="d-axis transient reactance"]
         H=23.64, [description="inertia constant"]
-        ω_b=2π*50, [description="System base frequency in rad/s"]
+        ## The frequency base is a system-level quantity. Instead of carrying its own
+        ## copy, the machine declares a shadow that is structurally bound to the
+        ## `systembase` of whatever bus it is placed in.
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
         P_m, [guess=1, description="mechanical power"]
     end
     @variables begin
@@ -359,7 +365,7 @@ First, we create a modified Milano machine with control inputs/outputs:
         [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i]
 
         ## mechanical swing equation Milano 15.5
-        Dt(δ) ~ ω_b*(ω - 1)
+        Dt(δ) ~ ωbase*(ω - 1)
         2*H * Dt(ω) ~ P_m/ω - τ_e
 
         ## static flux linkage equations Milano 15.11

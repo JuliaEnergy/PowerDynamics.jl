@@ -28,65 +28,88 @@ end
 ####
 #### Global per-unit base references
 ####
-"""
-    PowerDynamics.SBASE
-
-Global system power base in MVA (default `100.0`). Mutate with [`set_Sbase!`](@ref).
-Buses and lines default their `Sbase` to this at construction. See also
-[`ωBASE`](@ref), [`VBASE`](@ref).
-"""
-const SBASE = Ref(100.0)
+const SBASE_DEFAULT = 100.0
+const ωBASE_DEFAULT = 2π * 50
+const VBASE_DEFAULT = 1.0
+const SBASE = Ref(SBASE_DEFAULT)
+const ωBASE = Ref(ωBASE_DEFAULT)
+const VBASE = Ref(VBASE_DEFAULT)
 
 """
-    PowerDynamics.ωBASE
+    get_Sbase()
 
-Global system frequency base in rad/s (default `2π*50`). Mutate with [`set_ωbase!`](@ref)
-or [`set_fbase!`](@ref). Buses and lines default their `ωbase` to this at construction.
+The global system power base in MVA (`100.0` unless changed). Buses and lines default their
+`Sbase` to this **at construction time**, so changing it later does not affect models that
+already exist. Set it with [`set_Sbase!`](@ref).
 """
-const ωBASE = Ref(2π * 50)
-
-"""
-    PowerDynamics.VBASE
-
-Global *fallback* voltage base in kV (default `1.0`). Mutate with [`set_Vbase!`](@ref).
-Unlike `Sbase`/`ωbase`, voltage base is genuinely per-bus (`Vbase` on each busbar) — this
-global is only the fallback default used when nothing more specific is provided.
-"""
-const VBASE = Ref(1.0)
+get_Sbase() = SBASE[]
 
 """
-    set_Sbase!(val)
+    set_Sbase!(val=100.0)
 
-Set the global system power base [`SBASE`](@ref) to `val` MVA and return it.
+Set the global system power base to `val` MVA and return it. Called without an argument it
+restores the default, so a script that temporarily changes the power base can undo that with
+a bare `set_Sbase!()`. Read it back with [`get_Sbase`](@ref).
 """
-set_Sbase!(val) = (SBASE[] = float(val))
-
-"""
-    set_ωbase!(val)
-
-Set the global system frequency base [`ωBASE`](@ref) to `val` rad/s and return it.
-See also [`set_fbase!`](@ref) to set it from a frequency in Hz.
-"""
-set_ωbase!(val) = (ωBASE[] = float(val))
+set_Sbase!(val=SBASE_DEFAULT) = (SBASE[] = float(val))
 
 """
-    set_fbase!(f)
+    get_ωbase()
 
-Set the global system frequency base [`ωBASE`](@ref) from a frequency `f` in Hz
-(i.e. `ωBASE = 2π·f`) and return the resulting angular frequency in rad/s.
+The global system frequency base in rad/s (`2π*50` unless changed). Buses and lines default
+their `ωbase` to this **at construction time**. Set it with [`set_ωbase!`](@ref) or
+[`set_fbase!`](@ref); see [`get_fbase`](@ref) for the same value in Hz.
 """
-set_fbase!(f) = set_ωbase!(2π * float(f))
+get_ωbase() = ωBASE[]
 
 """
-    set_Vbase!(val)
+    set_ωbase!(val=2π*50)
 
-Set the global fallback voltage base [`VBASE`](@ref) to `val` kV and return it.
+Set the global system frequency base to `val` rad/s and return it. Called without an argument
+it restores the default (50 Hz), so a script that temporarily changes the frequency base can
+undo that with a bare `set_ωbase!()`.
+
+See also [`set_fbase!`](@ref) to set it from a frequency in Hz, and [`get_ωbase`](@ref).
 """
-set_Vbase!(val) = (VBASE[] = float(val))
+set_ωbase!(val=ωBASE_DEFAULT) = (ωBASE[] = float(val))
+
+"""
+    get_fbase()
+
+The global system frequency base in Hz, i.e. [`get_ωbase`](@ref)`()/2π` (`50.0` unless
+changed). Set it with [`set_fbase!`](@ref).
+"""
+get_fbase() = get_ωbase()/(2π)
+
+"""
+    set_fbase!(f=50)
+
+Set the global system frequency base from a frequency `f` in Hz (i.e. `ωbase = 2π·f`) and
+return the resulting angular frequency in rad/s. Called without an argument it restores the
+default of 50 Hz. Read it back with [`get_fbase`](@ref).
+"""
+set_fbase!(f=ωBASE_DEFAULT/(2π)) = set_ωbase!(2π * float(f))
+
+"""
+    get_Vbase()
+
+The global *fallback* voltage base in kV (`1.0` unless changed). Unlike `Sbase`/`ωbase`,
+voltage base is genuinely per-bus (`Vbase` on each busbar) — this global is only the fallback
+used when nothing more specific is given. Set it with [`set_Vbase!`](@ref).
+"""
+get_Vbase() = VBASE[]
+
+"""
+    set_Vbase!(val=1.0)
+
+Set the global fallback voltage base to `val` kV and return it. Called without an argument it
+restores the default. Read it back with [`get_Vbase`](@ref).
+"""
+set_Vbase!(val=VBASE_DEFAULT) = (VBASE[] = float(val))
 
 """
     @named systembase = SystemBase()
-    SystemBase(; name, Sbase=SBASE[], ωbase=ωBASE[], ωframe=1.0)
+    SystemBase(; name, Sbase=get_Sbase(), ωbase=get_ωbase(), ωframe=1.0)
 
 The canonical home of the *global* per-unit bases and the global reference frame. A
 parameter-only component, instantiated **exactly once per bus and once per line** by
@@ -102,13 +125,14 @@ Every component that needs a global base declares a local shadow bound to it:
 end
 ```
 
-Hand-rolled bus/line `System`s must add a `SystemBase` themselves;
-a missing one makes the `bound_to` resolution fail at [`compile_bus`](@ref) /
-[`compile_line`](@ref).
+Hand-rolled bus/line `System`s need not add a `SystemBase` themselves:
+[`compile_bus`](@ref) / [`compile_line`](@ref) inject one if it is missing. Adding it
+explicitly is still useful when you want to set the bases on the symbolic model
+(`SystemBase(ωbase=2π*60)`) rather than on the compiled component.
 
 # Parameters
-- `Sbase`: system power base [MVA], defaults to the global [`SBASE`](@ref)
-- `ωbase`: system frequency base [rad/s], defaults to the global [`ωBASE`](@ref)
+- `Sbase`: system power base [MVA], defaults to the global [`get_Sbase`](@ref)`()`
+- `ωbase`: system frequency base [rad/s], defaults to the global [`get_ωbase`](@ref)`()`
 - `ωframe`: speed of the global dq reference frame [pu]. **Pinned to `1` in 5.0** — it is a
   gauge, present so that frame-dependent terms (`ωbase*(ω - ωframe)`, cross-coupling in EMT
   branches) name it explicitly instead of hiding an invisible `1`. Do not change it.
@@ -117,9 +141,9 @@ See also: [`BusBar`](@ref), [`LineEnd`](@ref), [`set_Sbase!`](@ref), [`set_ωbas
 """
 @component function SystemBase(; name, defaults...)
     params = @parameters begin
-        Sbase = SBASE[], [description="System power base [MVA]"]
-        ωbase = ωBASE[], [description="System frequency base [rad/s]"]
-        ωframe = 1.0,    [description="Global dq frame speed [pu] (gauge; pinned to 1 in 5.0)"]
+        Sbase = get_Sbase(), [description="System power base [MVA]"]
+        ωbase = get_ωbase(), [description="System frequency base [rad/s]"]
+        ωframe = 1.0,    [description="Global dq frame speed [pu] (pinned to 1 in PD@v5.0)"]
     end
     vars = @variables begin
         fbase(t), [description="System frequency [Hz] (ωbase/2π)"]
@@ -131,7 +155,29 @@ See also: [`BusBar`](@ref), [`LineEnd`](@ref), [`set_Sbase!`](@ref), [`set_ωbas
 end
 
 """
-    BusBase(; name, Vbase=VBASE[])
+    add_systembase(sys::System)
+
+Return `sys` with a [`SystemBase`](@ref) named `systembase` added at the top level, or `sys`
+unchanged if it already has one.
+"""
+function add_systembase(sys::System)
+    has_systembase(sys) && return sys
+    @named systembase = SystemBase()
+    @set sys.systems = vcat(ModelingToolkitBase.get_systems(sys), systembase)
+end
+
+"""
+    has_systembase(sys::System)
+
+Whether `sys` has a top-level subsystem named `systembase`. See `add_systembase`.
+Internal; not exported.
+"""
+function has_systembase(sys::System)
+    any(s -> getname(s) === :systembase, ModelingToolkitBase.get_systems(sys))
+end
+
+"""
+    BusBase(; name, Vbase=get_Vbase())
 
 The bare bus interface (the ND-facing input/output side of a bus): complex voltage
 `u_r`/`u_i` (outputs), complex current `i_r`/`i_i` (inputs), pu power observables, and the
@@ -139,11 +185,11 @@ per-unit bases plus SI observables.
 """
 @component function BusBase(; name, defaults...)
     params = @parameters begin
-        # VBASE[] via initf instead of default so we can distinguish between
+        # get_Vbase() via initf instead of default so we can distinguish between
         # soft default from global fallback vs hard default from user.
         # compile_bus special treats thes initf: directly applies for voltage
         # sources and drops for satellite buses
-        Vbase, [initf_weak = VBASE[], description="Bus voltage base [kV]"]
+        Vbase, [initf_weak = get_Vbase(), description="Bus voltage base [kV]"]
         # global bases: structural aliases of the bus's `systembase` sibling
         Sbase, [bound_to = :systembase₊Sbase, description="System power base [MVA]"]
         ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
@@ -298,6 +344,9 @@ Constructs a bus `System` by connecting all provided injector components to a
 central [`BusBar`](@ref). Each injector component must satisfy the injector
 model interface (see [`isinjectormodel`](@ref)).
 
+Additionally injects a [`SystemBase`](@ref) component to provide the global
+per-unit bases and reference frame.
+
 # Arguments
 - `injectors...`: Variable number of injector components (generators, loads, etc.)
 - `name=:bus`: Name for the resulting bus system
@@ -308,12 +357,12 @@ model interface (see [`isinjectormodel`](@ref)).
 ```asciiart
                                  ┌────────────────────┐
                                  │MTKBus   ┌─────────┐│
-                                 │        ┌┤Generator││
-        ┌─────────┐   ┌────┐     │┌──────┐│└─────────┘│
-MTKBus(o┤Generator│, o┤Load│) => ││BusBar├o           │
-        └─────────┘   └────┘     │└──────┘│┌────┐     │
-                                 │        └┤Load│     │
+                                 │┌──────┐┌┤Generator││
+        ┌─────────┐   ┌────┐     ││BusBar├o└─────────┘│
+MTKBus(o┤Generator│, o┤Load│) => │└──────┘│┌────┐     │
+        └─────────┘   └────┘     │        └┤Load│     │
                                  │         └────┘     │
+                                 │ + SystemBase       │
                                  └────────────────────┘
 ```
 
@@ -352,6 +401,9 @@ Constructs a line `System` by connecting all provided branch components between
 source and destination line ends in parallel. Each branch component must satisfy
 the branch model interface.
 
+Additionally injects a [`SystemBase`](@ref) component to provide the global
+per-unit bases and reference frame.
+
 # Arguments
 - `branches...`: Variable number of branch components (transmission lines, transformers, etc.)
 - `name=:line`: Name for the resulting line system
@@ -368,6 +420,7 @@ MTKLine(o┤BranchA├o, o┤BranchB├o) => ││LineEnd├o         o┤LineE
          └───────┘    └───────┘      │└───────┘│┌───────┐│└───────┘│
                                      │  :src   └┤BranchB├┘  :dst   │
                                      │          └───────┘          │
+                                     │ + SystemBase                │
                                      └─────────────────────────────┘
 ```
 

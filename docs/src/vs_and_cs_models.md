@@ -243,7 +243,7 @@ We also define the line model:
 #### Modeling as a 2-Bus System
 For the two-bus system we start by defining two generator models with some default parameters:
 ```@example modelborders
-genp = (vf_input=false, τ_m_input=false, S_b=100, V_b=1, ω_b=2π*50, R_s=0.000125, T″_d0=0.01, T″_q0=0.01, X_ls=0.01460, X_d=0.1460, X′_d=0.0608, X″_d=0.06, X_q=0.1000, X′_q=0.0969, X″_q=0.06, T′_d0=8.96, T′_q0=0.310, H=23.64, Sn=100, Vn=1)
+genp = (vf_input=false, τ_m_input=false, R_s=0.000125, T″_d0=0.01, T″_q0=0.01, X_ls=0.01460, X_d=0.1460, X′_d=0.0608, X″_d=0.06, X_q=0.1000, X′_q=0.0969, X″_q=0.06, T′_d0=8.96, T′_q0=0.310, H=23.64)
 @named genA = SauerPaiMachine(; genp...)
 @named genB = SauerPaiMachine(; genp...)
 nothing

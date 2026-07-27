@@ -4,6 +4,7 @@ using Main.PowerDynamicsTesting
 
 using PowerDynamics.Library
 using ModelingToolkitBase
+using ModelingToolkit # needed for mtkcompile=:compare
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 
@@ -23,9 +24,7 @@ names(ref)
 # GENSAL generator parameters from OpenIPSL test
 GENSAL_BUS = let
     # GENSAL generator parameters from OpenIPSL test case
-    S_b = 100e6
     H = 4.28
-    M_b = 100e6
     D = 0
     # Machine reactances
     Xd = 1.84
@@ -43,8 +42,6 @@ GENSAL_BUS = let
     S12 = 0.39
     # Armature resistance
     R_a = 0.0
-    # V_b = 400e3
-    # ω_b = 2π*50
 
     # powerflow results, used to set up pfmodel
     # P_0 = 40e6
@@ -53,7 +50,7 @@ GENSAL_BUS = let
     angle_0 = 0.070492225331847
 
     @named gensal = PSSE_GENSAL(;
-        S_b, H, M_b, D,
+        H, D,
         Xd, Xq, Xpd, Xppd, Xppq, Xl,
         Tpd0, Tppd0, Tppq0,
         S10, S12, R_a,

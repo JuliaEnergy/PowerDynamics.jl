@@ -273,7 +273,10 @@ the governor.
         R_s, [description="stator resistance"]
         X′_d, [description="d-axis transient reactance"]
         H, [description="inertia constant"]
-        ω_b, [description="base frequency [rad/s]"]
+        ## The frequency base is a *system* quantity: rather than taking it as a
+        ## constructor argument, the component declares a local shadow that is
+        ## structurally bound to the bus's `systembase`, and is filled in at compile time.
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
     end
     components = @named begin
         terminal = Terminal()
@@ -306,7 +309,7 @@ the governor.
         [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q]
         [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i]
         ## swing equation
-        Dt(δ) ~ ω_b*(ω - 1)
+        Dt(δ) ~ ωbase*(ω - 1)
         2*H*Dt(ω) ~ P_m/ω - τ_e
         τ_e ~ (V_q + R_s*I_q)*I_q + (V_d + R_s*I_d)*I_d
         ## magnetic equations
@@ -338,7 +341,7 @@ nothing #md #hide
 `CompositeInjector` wires matching `RealInput`/`RealOutput` connector names together and
 hooks the machine's terminal to a shared terminal.
 =#
-@named machine = ClassicalMachine(; R_s=0.01, X′_d=0.3, H=5, ω_b=2π*50)
+@named machine = ClassicalMachine(; R_s=0.01, X′_d=0.3, H=5)
 @named avr = SimpleAVR(; T_m=0.02, T_e=0.5, K_e=1.0, pi₊K_p=2, pi₊K_i=1)
 @named gov = SimpleGov(; R=0.05, T_g=0.5)
 

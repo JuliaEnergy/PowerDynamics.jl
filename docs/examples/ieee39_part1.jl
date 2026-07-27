@@ -102,7 +102,7 @@ The system data is stored in CSV files containing:
     |:----------|:------------|
     | `bus` | Bus number where generator is connected |
     | `Sn` | Machine power rating [MVA] |
-    | `V_b` | System voltage basis [kV] |
+    | `V_b` | Bus voltage base [kV] \(unused: duplicates `base_kv` in bus.csv\) |
     | `Vn` | Machine voltage rating [kV] |
     | `R_s` | Stator resistance [pu] |
     | `X_ls` | Stator leakage reactance [pu] |
@@ -160,11 +160,18 @@ gov_df = CSV.read(joinpath(DATA_DIR, "gov.csv"), DataFrame)
 nothing #hide #md
 
 #=
-System base values follow the IEEE 39-bus standard:
+System base values follow the IEEE 39-bus standard. `Sbase` and the frequency base are
+*global* in PowerDynamics: they are set once, before any model is constructed, and every
+component built afterwards bakes them in. Since they are read at construction time, changing
+them later has no effect on models that already exist — and by the same token, a script that
+changes them should restore the defaults when it is done, which we do at the very end of this
+page.
 =#
 
 BASE_MVA = 100.0
 BASE_FREQ = 60.0
+set_Sbase!(BASE_MVA)
+set_fbase!(BASE_FREQ)
 nothing #hide #md
 
 
@@ -185,8 +192,20 @@ We use the ZIP load model to represent loads. This model satisfies the [Injector
  o──┤ ZIP Load │
     └──────────┘
 ```
+
+Every parameter that we are going to read from the CSV files is declared **free** by passing
+`nothing` instead of a value. A library model normally comes with sensible defaults; passing
+`nothing` removes the default for that parameter, so the compiled model carries the parameter
+but no value for it. That way the CSV data is the single source of truth: if a column is
+missing, initialization fails loudly instead of silently falling back to a library default.
 =#
-load = ZIPLoad(;name=:ZIPLoad)
+load = ZIPLoad(;
+    name=:ZIPLoad,
+    Pset=nothing, Qset=nothing,
+    KpZ=nothing, KqZ=nothing,
+    KpI=nothing, KqI=nothing,
+    KpC=nothing, KqC=nothing,
+)
 nothing #hide #md
 
 #=
@@ -204,10 +223,19 @@ This model satisfies the [Injector Interface](@ref) directly.
 ```
 =#
 
+## all machine parameters come from machine.csv, so they are declared free
+unset_machine_p = (;
+    Sn=nothing, Vn=nothing, R_s=nothing, X_ls=nothing,
+    X_d=nothing, X_q=nothing, X′_d=nothing, X′_q=nothing, X″_d=nothing, X″_q=nothing,
+    T′_d0=nothing, T′_q0=nothing, T″_d0=nothing, T″_q0=nothing,
+    H=nothing, D=nothing,
+)
+
 uncontrolled_machine = SauerPaiMachine(;
     τ_m_input=false,  ## No external mechanical torque input
     vf_input=false,   ## No external field voltage input
     name=:machine,
+    unset_machine_p...,
 )
 nothing #hide #md
 
@@ -238,12 +266,23 @@ Together, they satisfy the [Injector Interface](@ref).
 
 _machine = SauerPaiMachine(;
     name=:machine,
+    unset_machine_p...,
 )
 _avr = AVRTypeI(;
     name=:avr,
     ceiling_function=:quadratic,
+    ## from avr.csv
+    Ka=nothing, Ke=nothing, Kf=nothing,
+    Ta=nothing, Tf=nothing, Te=nothing, Tr=nothing,
+    vr_min=nothing, vr_max=nothing,
+    E1=nothing, Se1=nothing, E2=nothing, Se2=nothing,
 )
-_gov = TGOV1(; name=:gov,)
+_gov = TGOV1(;
+    name=:gov,
+    ## from gov.csv
+    V_min=nothing, V_max=nothing, R=nothing,
+    T1=nothing, T2=nothing, T3=nothing, DT=nothing, ω_ref=nothing,
+)
 
 controlled_machine = CompositeInjector(
     [_machine, _avr, _gov],
@@ -271,8 +310,15 @@ interface  ║  │MTKBus           │ ║
 ```
 =#
 
+#=
+Note that the per-unit bases need no attention here. `Sbase` and `ωbase` were set globally at
+the top of this page and are picked up by every `compile_bus` call below; they end up on the
+bus's `systembase`, and each device's own `Sbase`/`ωbase` are structurally bound to it rather
+than being per-device parameters. The one genuinely per-bus base, `busbar₊Vbase`, is set from
+`bus.csv` when we instantiate the individual buses further down.
+=#
+
 @named junction_bus_template = compile_bus(MTKBus())
-strip_defaults!(junction_bus_template)  ## Clear default parameters for manual setting
 junction_bus_template #hide #md
 
 #=
@@ -293,7 +339,6 @@ interface  ║  │MTKBus          │ ║
 =#
 
 @named load_bus_template = compile_bus(MTKBus(load))
-strip_defaults!(load_bus_template)
 load_bus_template #hide #md
 
 #=
@@ -323,10 +368,6 @@ Buses with controlled generators (machine + AVR + governor)
 @named ctrld_machine_bus_template = compile_bus(
     MTKBus(controlled_machine);
 )
-strip_defaults!(ctrld_machine_bus_template)
-## Set system-wide base values for all generators
-set_default!(ctrld_machine_bus_template, r"S_b$", BASE_MVA)
-set_default!(ctrld_machine_bus_template, r"ω_b$", 2π*BASE_FREQ)
 ctrld_machine_bus_template #hide #md
 
 #=
@@ -358,9 +399,6 @@ Buses with both controlled generators and loads
 @named ctrld_machine_load_bus_template = compile_bus(
     MTKBus(controlled_machine, load);
 )
-strip_defaults!(ctrld_machine_load_bus_template)
-set_default!(ctrld_machine_load_bus_template, r"S_b$", BASE_MVA)
-set_default!(ctrld_machine_load_bus_template, r"ω_b$", 2π*BASE_FREQ)
 ctrld_machine_load_bus_template #hide #md
 
 #=
@@ -386,9 +424,6 @@ Buses with uncontrolled generators and loads
 @named unctrld_machine_load_bus_template = compile_bus(
     MTKBus(uncontrolled_machine, load);
 )
-strip_defaults!(unctrld_machine_load_bus_template)
-set_default!(unctrld_machine_load_bus_template, r"S_b$", BASE_MVA)
-set_default!(unctrld_machine_load_bus_template, r"ω_b$", 2π*BASE_FREQ)
 unctrld_machine_load_bus_template #hide #md
 
 #=
@@ -405,9 +440,11 @@ function apply_csv_params!(bus, table, bus_index)
     ## Apply all parameters except "bus" column
     row = table[row_idx, :]
     for col_name in names(table)
-        if col_name != "bus"
-            set_default!(bus, Regex(col_name*"\$"), row[col_name])
-        end
+        col_name == "bus" && continue
+        ## `V_b` in machine.csv duplicates `base_kv` in bus.csv. The voltage base is a
+        ## property of the bus, not of the machine, so we take it from bus.csv below.
+        col_name == "V_b" && continue
+        set_default!(bus, Regex(col_name*"\$"), row[col_name])
     end
 end
 nothing #hide #md
@@ -436,6 +473,11 @@ for row in eachrow(bus_df)
     elseif row.category == "unctrld_machine_load"
         compile_bus(unctrld_machine_load_bus_template; vidx=i, name=Symbol("bus$i"))
     end
+
+    ## The voltage base is the one per-unit base that is genuinely per bus (this system mixes
+    ## 16.5, 138, 230 and 345 kV). It only affects the SI observables (`u_kV`, `P_MW`, …) and
+    ## is handed down to the incident lines during initialization.
+    set_default!(bus, :busbar₊Vbase, row.base_kv)
 
     ## Apply component parameters from CSV files
     row.has_load && apply_csv_params!(bus, load_df, i)
@@ -478,6 +520,12 @@ vertex ║ │MTKLine                       │ ║ vertex
        ╚══════════════════════════════════╝
 ```
 (We used the `PiLine_fault` model since we plan on simulating short circuits later.)
+
+A line has two voltage bases, `src₊Vbase` and `dst₊Vbase`, one per `LineEnd` — a transformer
+between the 16.5 kV generator buses and the 345 kV grid has genuinely different bases on its
+two ends. We do not set them here: each `LineEnd` declares that it inherits its `Vbase` from
+the bus it is attached to, and that inheritance is resolved during initialization, once the
+line knows its neighbours. Part II shows the result.
 =#
 
 @named piline_template = compile_line(MTKLine(PiLine_fault(;name=:piline)))
@@ -511,6 +559,14 @@ This creates the IEEE 39-bus test system ready for initialization and simulation
 =#
 
 nw = Network(busses, branches)
+
+#=
+All models are built, so we restore the global bases to their defaults. Calling the setters
+without an argument does that, and it keeps this page's 60 Hz from leaking into whatever is
+constructed next in the same session.
+=#
+set_Sbase!()
+set_fbase!()
 
 #=
 The network `nw` now contains the complete IEEE 39-bus model structure.

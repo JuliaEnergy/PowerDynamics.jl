@@ -9,6 +9,19 @@ The following functions are designed for public use.
 Terminal
 BusBar
 LineEnd
+SystemBase
+```
+
+### Global Per-Unit Bases
+```@docs
+get_Sbase
+set_Sbase!
+get_ωbase
+set_ωbase!
+get_fbase
+set_fbase!
+get_Vbase
+set_Vbase!
 ```
 
 ### Bus and Line Construction

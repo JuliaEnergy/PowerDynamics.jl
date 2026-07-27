@@ -4,6 +4,7 @@ using Main.PowerDynamicsTesting
 
 using PowerDynamics.Library
 using ModelingToolkitBase
+using ModelingToolkit # needed for mtkcompile=:compare
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 
@@ -22,12 +23,8 @@ ref = CSV.read(
 # GENROU generator parameters from OpenIPSL test
 GENROU_BUS = let
     # Machine parameters from OpenIPSL GENROU test case
-    S_b = 100e6
-    M_b = 100e6
     H = 4.28
     D = 0
-    V_b = 400e3
-    ω_b = 2π*50
 
     # Machine reactances and time constants
     Xd = 1.84
@@ -54,7 +51,7 @@ GENROU_BUS = let
     angle_0 = 0.070492225331847
 
     @named genrou = PSSE_GENROU(;
-        S_b, H, M_b, D,
+        H, D,
         Xd, Xq, Xpd, Xpq, Xppd, Xppq, Xl,
         Tpd0, Tpq0, Tppd0, Tppq0,
         S10, S12, R_a,

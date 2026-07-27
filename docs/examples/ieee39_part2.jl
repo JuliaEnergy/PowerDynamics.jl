@@ -352,3 +352,28 @@ We can just use [`initialize_from_pf!`](@ref) to do everything from
 exporting the power flow model, finding the fixpoint and initializing all components based on the PF solution:
 =#
 s0 = initialize_from_pf!(nw)
+
+#=
+## Voltage Bases of the Lines
+
+Initialization is also where the lines learn their voltage bases. In [Part I](@ref
+ieee39-part1) we set `busbar₊Vbase` on every bus from `bus.csv`, but we never touched the
+lines. A `LineEnd` does not carry a value of its own: it declares that its `Vbase` is
+inherited from the bus on that side of the line, and the inheritance is resolved here, when
+the line is initialized in the context of its neighbours.
+
+The effect is easiest to see on a transformer, whose two ends sit at genuinely different
+voltage levels — branch 41 connects the 345 kV grid (bus 25) to a 16.5 kV generator bus (37).
+Lets check the voltage bases for both ends of that line:
+=#
+s0.e(25=>37, r"Vbase$")
+#=
+To cross check, lets check the voltage base of the two buses themselves:
+=#
+s0.v([25,37], :busbar₊Vbase)
+
+#=
+Only the SI observables depend on this — the dynamics are formulated in per unit throughout —
+but it means `u_kV`, `P_MW` and friends report the right numbers on both sides without anyone
+having to keep a table of line voltage levels in sync with the buses.
+=#

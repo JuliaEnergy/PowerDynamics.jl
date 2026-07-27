@@ -4,6 +4,7 @@ using Main.PowerDynamicsTesting
 
 using PowerDynamics.Library
 using ModelingToolkitBase
+using ModelingToolkit # needed for mtkcompile=:compare
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 
@@ -21,8 +22,6 @@ ref = CSV.read(
 # GENROU+ESST4B bus model parameters from OpenIPSL ESST4B test case
 BUS = let
     # System parameters
-    S_b = 100e6
-    M_b = 100e6
 
     # GENROU machine parameters from OpenIPSL ESST4B.mo (lines 5-25)
     H = 4.0
@@ -48,7 +47,7 @@ BUS = let
 
     # Create GENROU machine with EFD input enabled for exciter control
     @named genrou = PSSE_GENROU(;
-        S_b, H, M_b, D,
+        H, D,
         Xd, Xq, Xpd, Xpq, Xppd, Xppq, Xl,
         Tpd0, Tpq0, Tppd0, Tppq0,
         S10, S12, R_a,

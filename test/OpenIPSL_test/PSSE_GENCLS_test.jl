@@ -4,6 +4,7 @@ using Main.PowerDynamicsTesting
 
 using PowerDynamics.Library
 using ModelingToolkitBase
+using ModelingToolkit # needed for mtkcompile=:compare
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 
@@ -22,13 +23,9 @@ ref = CSV.read(
 # TEMP: for now, hardcoded for GENCLS testing
 GENCLS_BUS = let
     # GENCLS generator parameters from OpenIPSL test
-    S_b = 100e6
     H = 6.0
-    M_b = 100e6
     X_d = 0.2
     D = 0
-    # V_b = 400e3
-    ω_b = 2π*50
 
     # powerflow results, used to set up pfmodel
     # P_0 = 40e6
@@ -36,7 +33,7 @@ GENCLS_BUS = let
     v_0 = 1.0
     angle_0 = 0.070492225331847
 
-    @named gencls = PSSE_GENCLS(; S_b, ω_b, H, M_b, #=P_0,=# X_d, D)
+    @named gencls = PSSE_GENCLS(; H, X_d, D)
     busmodel = MTKBus(gencls; name=:GEN1)
     compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0), mtkcompile=:compare)
 end
