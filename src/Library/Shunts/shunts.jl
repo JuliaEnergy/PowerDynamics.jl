@@ -32,7 +32,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 end
 
 """
-    DynamicCShunt(; C, ω0=2π*50)
+    DynamicCShunt(; C)
 
 Dynamic shunt element modeled as a pure capacitor.
 
@@ -40,8 +40,9 @@ The capacitor voltage is a differential state, suitable for DAE index reduction 
 current-source buses and modelling shunt capacitor banks without resistive losses.
 
 # Parameters
-- `C`: Shunt susceptance [pu] at frequency ω0. Related to physical capacitance by C = ω0 * C_actual.
-- `ω0`: Frame angular frequency [rad/s]. Default: 2π*50 rad/s.
+- `C`: Shunt susceptance [pu] at frequency `ωbase`. Related to physical capacitance by C = ωbase * C_actual.
+
+The frequency base `ωbase` is inherited from the container's `systembase` (`bound_to = :systembase₊ωbase`), not set here.
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
@@ -50,7 +51,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         terminal = Terminal()
     end
     @parameters begin
-        ω0=2π*50, [description="Frame angular frequency [rad/s]"]
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
         C, [description="Shunt susceptance [pu] (frequency-normalized capacitance)"]
     end
     @variables begin
@@ -61,8 +62,8 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     end
     @equations begin
         # Capacitor dynamics in rotating dq frame (C is susceptance)
-        C/ω0 * Dt(V_C_r) ~ -i_C_r + C*V_C_i
-        C/ω0 * Dt(V_C_i) ~ -i_C_i - C*V_C_r
+        C/ωbase * Dt(V_C_r) ~ -i_C_r + C*V_C_i
+        C/ωbase * Dt(V_C_i) ~ -i_C_i - C*V_C_r
         # Terminal voltage = capacitor voltage
         terminal.u_r ~ V_C_r
         terminal.u_i ~ V_C_i
@@ -73,7 +74,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 end
 
 """
-    DynamicParallelRCShunt(; R, C, ω0=2π*50)
+    DynamicParallelRCShunt(; R, C)
 
 Dynamic shunt element modeled as a parallel R ∥ C circuit.
 
@@ -85,8 +86,9 @@ The capacitor voltage is a differential state, suitable for:
 
 # Parameters
 - `R`: Shunt resistance [pu]
-- `C`: Shunt susceptance [pu] at frequency ω0. Related to physical capacitance by C = ω0 * C_actual.
-- `ω0`: Frame angular frequency [rad/s]. Default: 2π*50 rad/s.
+- `C`: Shunt susceptance [pu] at frequency `ωbase`. Related to physical capacitance by C = ωbase * C_actual.
+
+The frequency base `ωbase` is inherited from the container's `systembase` (`bound_to = :systembase₊ωbase`), not set here.
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
@@ -95,7 +97,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         terminal = Terminal()
     end
     @parameters begin
-        ω0=2π*50, [description="Frame angular frequency [rad/s]"]
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
         R, [description="Shunt resistance [pu]"]
         C, [description="Shunt susceptance [pu] (frequency-normalized capacitance)"]
     end
@@ -109,8 +111,8 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     end
     @equations begin
         # Capacitor dynamics in rotating dq frame (C is susceptance)
-        C/ω0 * Dt(V_C_r) ~ -i_C_r + C*V_C_i
-        C/ω0 * Dt(V_C_i) ~ -i_C_i - C*V_C_r
+        C/ωbase * Dt(V_C_r) ~ -i_C_r + C*V_C_i
+        C/ωbase * Dt(V_C_i) ~ -i_C_i - C*V_C_r
         # Resistor current (Ohm's law)
         i_R_r ~ -terminal.u_r / R
         i_R_i ~ -terminal.u_i / R

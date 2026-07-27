@@ -14,7 +14,7 @@ using Setfield: @set, @set!
 using SymbolicIndexingInterface: SymbolicIndexingInterface as SII
 using MacroTools: postwalk, @capture
 
-using ModelingToolkitBase: ModelingToolkitBase, @connector, @named,
+using ModelingToolkitBase: ModelingToolkitBase, @connector, @named, @component, extend,
                            System, getname, unknowns, get_name, t_nounits as t, Equation,
                            mtkcompile
 # needed for @mtkmodel
@@ -27,8 +27,9 @@ using SciMLBase: SciMLBase
 using SparseConnectivityTracer: SparseConnectivityTracer
 using SparseMatrixColorings: SparseMatrixColorings
 
-export Terminal, BusBar, LineEnd
+export Terminal, BusBar, LineEnd, SystemBase
 export MTKBus, MTKLine, CompositeInjector, Ibase, Zbase, Ybase
+export set_Sbase!, set_ωbase!, set_fbase!, set_Vbase!
 include("modeling_tools.jl")
 
 export isinjectormodel, isbusmodel, isbranchmodel, islinemodel

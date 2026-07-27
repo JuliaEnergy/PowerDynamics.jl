@@ -38,16 +38,20 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     end
     @parameters begin
         # Machine parameters (using OpenIPSL naming)
-        M_b, [description="Machine base power rating [MVA]"]
+        M_b, [initf_weak = Sbase, description="Machine base power rating [MVA]"]
         H=0, [description="Inertia constant [s]"]
         D=0, [description="Damping coefficient [pu]"]
         R_a=0, [description="Armature resistance [pu]"]
         X_d=0.2, [description="d-axis transient reactance [pu]"]
 
-        # System base
-        S_b, [description="System power basis [MVA]"]
-        # V_b, [description="System voltage basis [kV]"]
-        ω_b, [description="System base frequency [rad/s]"]
+        # System bases: inherited structurally from the bus this machine attaches to.
+        Sbase, [bound_to = :systembase₊Sbase, description="System power base [MVA]"]
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+
+        # Derived base quantities: symbolic defaults -> parameter bindings (auto-observed),
+        # written like parameters but tracking the bases (not independently settable).
+        CoB = M_b/Sbase, [description="base conversion factor M_b/Sbase"]
+        fn = ωbase/(2π), [description="System frequency [Hz]"]
 
         # Initial conditions and setpoints
         P_0, [guess=0, description="Initial active power [MW]"]
@@ -55,7 +59,6 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         # Q_0, [guess=0, description="Initial reactive power [Mvar]"]
         # v_0, [guess=1, description="Initial voltage magnitude [pu]"]
         # angle_0, [guess=1, description="Initial voltage angle [rad]"]
-        fn=50, [description="System frequency [Hz]"]
     end
     @variables begin
         # State variables
@@ -82,9 +85,6 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         Q(t), [description="Reactive power [pu]"]
     end
     begin
-        # Base conversion factor
-        CoB = M_b / S_b
-
         # Initial value calculations (from OpenIPSL)
         #=
         p0 = P_0 / M_b  # Initial active power (machine base)
@@ -117,7 +117,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
             0
         )
         Dt(ω) ~ ifelse(H>1e-10,
-            (P_0/S_b - P - D*ω) / (2*H),
+            (P_0/Sbase - P - D*ω) / (2*H),
             0
         )
 

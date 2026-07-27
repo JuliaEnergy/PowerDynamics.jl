@@ -39,7 +39,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         Qset, [guess=0, description="Reactive Power demand"]
         αP, [description="Active Power exponent"]
         αQ, [description="Reactive Power exponent"]
-        Vn, [guess=1, description="Nominal voltage (where real power equals set power)"]
+        Vset, [guess=1, description="Reference voltage (where real power equals set power) [pu]"]
     end
     @components begin
         terminal = Terminal()
@@ -50,8 +50,8 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     end
     begin
         v = sqrt(terminal.u_r^2 + terminal.u_i^2)
-        Pload = Pset * (v/Vn)^αP
-        Qload = Qset * (v/Vn)^αQ
+        Pload = Pset * (v/Vset)^αP
+        Qload = Qset * (v/Vset)^αQ
         Sload = Pload + im*Qload
         vcomplex = terminal.u_r + im*terminal.u_i
         iout = conj(Sload/vcomplex)

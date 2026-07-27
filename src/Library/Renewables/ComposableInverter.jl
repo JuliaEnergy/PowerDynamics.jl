@@ -287,10 +287,10 @@ to inner current controller (CC1). Operates in a fixed dq-frame (no PLL). Suitab
 # Parameters
 - `Vset_input`: If true, voltage setpoint comes from RealInput ports. If false, uses internal Vset/δset parameters.
 - `filter_type`: `:LC` for LC filter or `:LCL` for LCL filter.
-- `Lf`: Inverter-side filter reactance [pu]. Related to physical inductance by Lf = ω0 * Lf_actual.
-- `C`: Filter susceptance [pu]. Related to physical capacitance by C = ω0 * C_actual.
-- `Lg`: Grid-side filter reactance [pu]. Related to physical inductance by Lg = ω0 * Lg_actual (LCL only).
-- `ω0`: Frame angular frequency [rad/s]. Default: 2π*50 rad/s.
+- `Lf`: Inverter-side filter reactance [pu]. Related to physical inductance by Lf = ωbase * Lf_actual.
+- `C`: Filter susceptance [pu]. Related to physical capacitance by C = ωbase * C_actual.
+- `Lg`: Grid-side filter reactance [pu]. Related to physical inductance by Lg = ωbase * Lg_actual (LCL only).
+- `ωbase`: System frequency base [rad/s], inherited from the container's `systembase` (`bound_to = :systembase₊ωbase`); not a constructor argument.
 - Various PI controller gains (CC1_KP, CC1_KI, VC_KP, VC_KI)
 - `defaults...`: Additional parameter/variable defaults (e.g., `Lf=0.01, CC1_KP=0.1`)
 
@@ -302,7 +302,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         Rf  = 0.01
         Lf = 0.007, [description="Inverter-side filter reactance [pu] (frequency-normalized inductance)"]
         C = 0.5,  [description="Filter susceptance [pu] (frequency-normalized capacitance)"]
-        ω0  = 2π*50
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
         # cc1
         CC1_KP = 0.063
         CC1_KI = 63
@@ -333,9 +333,9 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 
     # Create filter subsystem based on filter_type
     if filter_type == :LC
-        @named filter = LCFilter(; ω0, Rf, Lf, C)
+        @named filter = LCFilter(; ω0=ωbase, Rf, Lf, C)
     else  # :LCL
-        @named filter = LCLFilter(; ω0, Rf, Lf, C, Rg, Lg)
+        @named filter = LCLFilter(; ω0=ωbase, Rf, Lf, C, Rg, Lg)
     end
 
     @named cc1 = CC1(; Lf=Lf, F=CC1_F, Fcoupl=CC1_Fcoupl, KP=CC1_KP, KI=CC1_KI)
@@ -389,10 +389,10 @@ Implements three-loop control: outer current controller (CC2) → voltage contro
 
 # Parameters
 - `iset_input`: If true, current setpoint comes from RealInput ports. If false, uses internal iset_d/iset_q parameters.
-- `Lf`: Inverter-side filter reactance [pu]. Related to physical inductance by Lf = ω0 * Lf_actual.
-- `C`: Filter susceptance [pu]. Related to physical capacitance by C = ω0 * C_actual.
-- `Lg`: Grid-side filter reactance [pu]. Related to physical inductance by Lg = ω0 * Lg_actual.
-- `ω0`: Frame angular frequency [rad/s]. Default: 2π*50 rad/s.
+- `Lf`: Inverter-side filter reactance [pu]. Related to physical inductance by Lf = ωbase * Lf_actual.
+- `C`: Filter susceptance [pu]. Related to physical capacitance by C = ωbase * C_actual.
+- `Lg`: Grid-side filter reactance [pu]. Related to physical inductance by Lg = ωbase * Lg_actual.
+- `ωbase`: System frequency base [rad/s], inherited from the container's `systembase` (`bound_to = :systembase₊ωbase`); not a constructor argument.
 - PLL and controller gains (PLL_Kp, PLL_Ki, CC1_*, VC_*, CC2_*)
 - `defaults...`: Additional parameter/variable defaults (e.g., `Lf=0.01, PLL_Kp=100`)
 
@@ -404,7 +404,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         Rf  = 0.01
         Lf = 0.007, [description="Inverter-side filter reactance [pu] (frequency-normalized inductance)"]
         C = 0.5,  [description="Filter susceptance [pu] (frequency-normalized capacitance)"]
-        ω0  = 2π*50
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
         Rg  = 0.01
         Lg = 0.007, [description="Grid-side filter reactance [pu] (frequency-normalized inductance)"]
 
@@ -440,7 +440,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     end
 
     # Create filter subsystem (always LCL for current control)
-    @named filter = LCLFilter(; ω0, Rf, Lf, C, Rg, Lg)
+    @named filter = LCLFilter(; ω0=ωbase, Rf, Lf, C, Rg, Lg)
 
     # Create PLL subsystem
     @named pll = SimplePLL(; Kp=PLL_Kp, Ki=PLL_Ki)
@@ -530,7 +530,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 @component function DroopOuter(; name, pq_input=false, Pset=nothing, Qset=nothing, defaults...)
     @parameters begin
         Vset, [description = "Voltage magnitude setpoint [pu]", guess=1]
-        ω0=2π*50, [guess=2π*50, description = "Nominal frequency [pu]"]
+        ωbase, [bound_to = :systembase₊ωbase, description = "System frequency base [rad/s]"]
         Kp = 0.4, [description = "Active power droop coefficient"]
         Kq = 0.04, [description = "Reactive power droop coefficient"]
         τ_p = 0.1, [description = "Active Power filter time constant [s]"]
@@ -577,11 +577,11 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         τ_q * Dt(Qfilt) ~ Qmeas - Qfilt
 
         # Droop control equations
-        ω ~ ω0 - Kp * (Pfilt - _Pset)
+        ω ~ ωbase - Kp * (Pfilt - _Pset)
         V ~ Vset - Kq * (Qfilt - _Qset)
 
         # Voltage angle dynamics
-        Dt(δ) ~ ω - ω0
+        Dt(δ) ~ ω - ωbase
         V_out.u ~ V
         δ_out.u ~ δ
     ]
@@ -605,7 +605,7 @@ Suitable for:
 # Parameters
 - `filter_type`: `:LC` or `:LCL` filter topology (passed to VoltageSource)
 - Droop controller parameters: `Kp` (P-f droop), `Kq` (Q-V droop), `τ_p`, `τ_q` (power filter time constants)
-- Filter parameters inherited from VoltageSource: `Lf`, `C`, `Lg`, `ω0`
+- Filter parameters inherited from VoltageSource: `Lf`, `C`, `Lg` (`ωbase` comes from the bus)
 - `defaults...`: Additional parameter/variable defaults (e.g., `Kp=0.5, τ_p=0.2`)
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
@@ -714,8 +714,8 @@ Suitable for:
 
 # Parameters
 - `iset_input`: If true, current setpoint comes from RealInput ports. If false, uses internal iset_d/iset_q parameters.
-- `Lf`: Filter reactance [pu]. Related to physical inductance by Lf = ω0 * Lf_actual.
-- `ω0`: Frame angular frequency [rad/s]. Default: 2π*50 rad/s.
+- `Lf`: Filter reactance [pu]. Related to physical inductance by Lf = ωbase * Lf_actual.
+- `ωbase`: System frequency base [rad/s], inherited from the container's `systembase` (`bound_to = :systembase₊ωbase`); not a constructor argument.
 - PLL and CC1 controller gains
 - `defaults...`: Additional parameter/variable defaults (e.g., `Lf=0.05, PLL_Kp=50`)
 
@@ -725,7 +725,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     @parameters begin
         Rf  = 0.01
         Lf = 0.05, [description="Filter reactance [pu] (frequency-normalized inductance)"]
-        ω0  = 2π*50
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
         # PLL
         PLL_Kp = 2π*10
         PLL_Ki = (2π*10)^2/4
@@ -744,7 +744,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         end
     end
 
-    @named filter = LFilter(; ω0, Rf, Lf)
+    @named filter = LFilter(; ω0=ωbase, Rf, Lf)
     @named pll = PLL_LPF(; Kp=PLL_Kp, Ki=PLL_Ki, τ_lpf=PLL_τ_lpf)
     @named cc1 = CC1(; Lf=Lf, F=CC1_F, Fcoupl=CC1_Fcoupl, KP=CC1_KP, KI=CC1_KI)
 
@@ -796,8 +796,8 @@ The DC voltage controller generates active current reference (q-axis). Suitable 
 - Studies requiring DC-side transient analysis
 
 # Parameters
-- `Lf`: Filter reactance [pu]. Related to physical inductance by Lf = ω0 * Lf_actual.
-- `ω0`: Frame angular frequency [rad/s]. Default: 2π*50 rad/s.
+- `Lf`: Filter reactance [pu]. Related to physical inductance by Lf = ωbase * Lf_actual.
+- `ωbase`: System frequency base [rad/s], inherited from the container's `systembase` (`bound_to = :systembase₊ωbase`); not a constructor argument.
 - `C_dc`: DC-link capacitance [pu]
 - `V_dc`: DC voltage reference [pu]
 - `kp_v_dc`, `ki_v_dc`: DC voltage PI controller gains
@@ -811,7 +811,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     @parameters begin
         Rf  = 0.01
         Lf = 0.03, [description="Filter reactance [pu] (frequency-normalized inductance)"]
-        ω0  = 2π*50
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
         # PLL
         PLL_Kp = 2π*5
         PLL_Ki = (2π*5)^2/4
@@ -837,7 +837,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         v_dc_i(t), [guess=0, description="DC voltage PI integrator"]
     end
 
-    @named filter = LFilter(; ω0, Rf, Lf)
+    @named filter = LFilter(; ω0=ωbase, Rf, Lf)
     @named pll = PLL_LPF(; Kp=PLL_Kp, Ki=PLL_Ki, τ_lpf=PLL_τ_lpf)
     @named cc1 = CC1(; Lf=Lf, F=CC1_F, Fcoupl=CC1_Fcoupl, KP=CC1_KP, KI=CC1_KI)
 

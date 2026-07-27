@@ -1,6 +1,6 @@
 module Library
 
-using ..PowerDynamics: PowerDynamics, Terminal, BusBase, Ibase
+using ..PowerDynamics: PowerDynamics, Terminal, BusBase, SystemBase, Ibase
 using NetworkDynamics: NetworkDynamics, ComponentCondition, ComponentAffect,
                        VertexModel, VIndex, EIndex, NWState,
                        VectorContinuousComponentCallback, DiscreteComponentCallback, ComponentPostprocessing,
@@ -101,16 +101,6 @@ macro no_simplify(ex)
     end
 end
 
-@mtkmodel SystemBase begin
-    @parameters begin
-        SnRef = 100, [description="System base"]
-        fNom = 50, [description="AC system frequency"]
-        ωNom = 2 * π * fNom, [description="System angular frequency"]
-        ωRef0Pu = 1, [description="Reference for system angular frequency (pu base ωNom)"]
-        ω0Pu = 1, [description="System angular frequency (pu base ωNom)"]
-   end
-end
-
 ####
 #### Slack Models
 ####
@@ -126,6 +116,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 @mtkmodel SlackAlgebraic begin
     @components begin
         busbar = BusBase()
+        systembase = SystemBase()
     end
     @parameters begin
         u_set_r=1, [description="bus d-voltage setpoint"]
@@ -146,6 +137,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
 function SlackDifferential(; name=:slackdiff, u_init_r=1, u_init_i=0)
     @named busbar = BusBase()
+    @named systembase = SystemBase()
     params = @parameters begin
         u_init_r = u_init_r, [description="bus d-voltage initial value"]
         u_init_i = u_init_i, [description="bus q-voltage initial value"]
@@ -154,7 +146,7 @@ function SlackDifferential(; name=:slackdiff, u_init_r=1, u_init_i=0)
         Dt(busbar.u_r) ~ 0
         Dt(busbar.u_i) ~ 0
     ]
-    sys = System(eqs, t, [], params; systems=[busbar], name)
+    sys = System(eqs, t, [], params; systems=[busbar, systembase], name)
     set_initf(sys, busbar.u_r => u_init_r, busbar.u_i => u_init_i)
 end
 
@@ -168,17 +160,18 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 @mtkmodel VariableFrequencySlack begin
     @components begin
         busbar = BusBase()
+        systembase = SystemBase()
     end
     @parameters begin
         V, [guess=1, description="bus voltage magnitude"]
-        ω = 1, [description="slack frequency in pu (base ωNom)"]
-        ω_b=2π*50, [description="System base frequency in rad/s"]
+        ω = 1, [description="slack frequency in pu (base ωbase)"]
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
     end
     @variables begin
         δ(t), [guess=0, description="voltage angle"]
     end
     @equations begin
-        Dt(δ) ~ ω_b*(ω - 1)
+        Dt(δ) ~ ωbase*(ω - 1)
         busbar.u_r ~ V * cos(δ)
         busbar.u_i ~ V * sin(δ)
     end

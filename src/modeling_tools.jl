@@ -25,8 +25,134 @@ See also: [`BusBar`](@ref), [`LineEnd`](@ref)
     i_i(t), [guess=0, description="q-current", connect=Flow]
 end
 
-@mtkmodel BusBase begin
-    @variables begin
+####
+#### Global per-unit base references
+####
+"""
+    PowerDynamics.SBASE
+
+Global system power base in MVA (default `100.0`). Mutate with [`set_Sbase!`](@ref).
+Buses and lines default their `Sbase` to this at construction. See also
+[`ωBASE`](@ref), [`VBASE`](@ref).
+"""
+const SBASE = Ref(100.0)
+
+"""
+    PowerDynamics.ωBASE
+
+Global system frequency base in rad/s (default `2π*50`). Mutate with [`set_ωbase!`](@ref)
+or [`set_fbase!`](@ref). Buses and lines default their `ωbase` to this at construction.
+"""
+const ωBASE = Ref(2π * 50)
+
+"""
+    PowerDynamics.VBASE
+
+Global *fallback* voltage base in kV (default `1.0`). Mutate with [`set_Vbase!`](@ref).
+Unlike `Sbase`/`ωbase`, voltage base is genuinely per-bus (`Vbase` on each busbar) — this
+global is only the fallback default used when nothing more specific is provided.
+"""
+const VBASE = Ref(1.0)
+
+"""
+    set_Sbase!(val)
+
+Set the global system power base [`SBASE`](@ref) to `val` MVA and return it.
+"""
+set_Sbase!(val) = (SBASE[] = float(val))
+
+"""
+    set_ωbase!(val)
+
+Set the global system frequency base [`ωBASE`](@ref) to `val` rad/s and return it.
+See also [`set_fbase!`](@ref) to set it from a frequency in Hz.
+"""
+set_ωbase!(val) = (ωBASE[] = float(val))
+
+"""
+    set_fbase!(f)
+
+Set the global system frequency base [`ωBASE`](@ref) from a frequency `f` in Hz
+(i.e. `ωBASE = 2π·f`) and return the resulting angular frequency in rad/s.
+"""
+set_fbase!(f) = set_ωbase!(2π * float(f))
+
+"""
+    set_Vbase!(val)
+
+Set the global fallback voltage base [`VBASE`](@ref) to `val` kV and return it.
+"""
+set_Vbase!(val) = (VBASE[] = float(val))
+
+"""
+    @named systembase = SystemBase()
+    SystemBase(; name, Sbase=SBASE[], ωbase=ωBASE[], ωframe=1.0)
+
+The canonical home of the *global* per-unit bases and the global reference frame. A
+parameter-only component, instantiated **exactly once per bus and once per line** by
+[`MTKBus`](@ref) / [`MTKLine`](@ref) as a top-level sibling of the `busbar` (resp. of the
+two [`LineEnd`](@ref)s), under the instance name `systembase`.
+
+Every component that needs a global base declares a local shadow bound to it:
+
+```julia
+@parameters begin
+    Sbase, [bound_to = :systembase₊Sbase]
+    ωbase, [bound_to = :systembase₊ωbase]
+end
+```
+
+Hand-rolled bus/line `System`s must add a `SystemBase` themselves;
+a missing one makes the `bound_to` resolution fail at [`compile_bus`](@ref) /
+[`compile_line`](@ref).
+
+# Parameters
+- `Sbase`: system power base [MVA], defaults to the global [`SBASE`](@ref)
+- `ωbase`: system frequency base [rad/s], defaults to the global [`ωBASE`](@ref)
+- `ωframe`: speed of the global dq reference frame [pu]. **Pinned to `1` in 5.0** — it is a
+  gauge, present so that frame-dependent terms (`ωbase*(ω - ωframe)`, cross-coupling in EMT
+  branches) name it explicitly instead of hiding an invisible `1`. Do not change it.
+
+See also: [`BusBar`](@ref), [`LineEnd`](@ref), [`set_Sbase!`](@ref), [`set_ωbase!`](@ref)
+"""
+@component function SystemBase(; name, defaults...)
+    params = @parameters begin
+        Sbase = SBASE[], [description="System power base [MVA]"]
+        ωbase = ωBASE[], [description="System frequency base [rad/s]"]
+        ωframe = 1.0,    [description="Global dq frame speed [pu] (gauge; pinned to 1 in 5.0)"]
+    end
+    vars = @variables begin
+        fbase(t), [description="System frequency [Hz] (ωbase/2π)"]
+    end
+    eqs = Equation[
+        fbase ~ ωbase/(2π)
+    ]
+    set_mtk_defaults(System(eqs, t, vars, params; name), defaults)
+end
+
+"""
+    BusBase(; name, Vbase=VBASE[])
+
+The bare bus interface (the ND-facing input/output side of a bus): complex voltage
+`u_r`/`u_i` (outputs), complex current `i_r`/`i_i` (inputs), pu power observables, and the
+per-unit bases plus SI observables.
+"""
+@component function BusBase(; name, defaults...)
+    params = @parameters begin
+        # VBASE[] via initf instead of default so we can distinguish between
+        # soft default from global fallback vs hard default from user.
+        # compile_bus special treats thes initf: directly applies for voltage
+        # sources and drops for satellite buses
+        Vbase, [initf_weak = VBASE[], description="Bus voltage base [kV]"]
+        # global bases: structural aliases of the bus's `systembase` sibling
+        Sbase, [bound_to = :systembase₊Sbase, description="System power base [MVA]"]
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        # auto demoted to observables (bound params)
+        Ibase = Sbase/Vbase,   [description="Current base [kA] (Sbase/Vbase)"]
+        Zbase = Vbase^2/Sbase, [description="Impedance base [Ω] (Vbase²/Sbase)"]
+        Ybase = Sbase/Vbase^2, [description="Admittance base [S] (Sbase/Vbase²)"]
+    end
+    vars = @variables begin
         u_r(t)=1, [description="bus d-voltage", output=true]
         u_i(t)=0, [description="bus q-voltage", output=true]
         i_r(t), [description="bus d-current (flowing into bus)", input=true]
@@ -37,9 +163,14 @@ end
         u_arg(t), [description="bus voltage argument"]
         i_mag(t), [description="bus current magnitude"]
         i_arg(t), [description="bus current argument"]
+        # SI observables (physical units, derived from pu quantities and the bus bases)
+        u_kV(t), [description="bus voltage magnitude [kV]"]
+        P_MW(t), [description="bus active power into network [MW]"]
+        Q_MVAr(t), [description="bus reactive power into network [MVAr]"]
+        i_kA(t), [description="bus current magnitude [kA]"]
         # ω(t), [description="bus angular frequency"]
     end
-    @equations begin
+    eqs = [
         #observed equations
         # attension: flipped sign in P and Q, flow direction opposite to i
         P ~ u_r * (-i_r) + u_i * (-i_i)
@@ -48,8 +179,14 @@ end
         u_arg ~ atan(u_i, u_r)
         i_mag ~ sqrt(i_r^2 + i_i^2)
         i_arg ~ atan(i_i, i_r)
+        # SI observables: u_mag is pu on Vbase, P/Q pu on Sbase, i_mag pu on Ibase
+        u_kV ~ u_mag * Vbase
+        P_MW ~ P * Sbase
+        Q_MVAr ~ Q * Sbase
+        i_kA ~ i_mag * Ibase
         # ω ~ Dt(u_arg) # this can lead to Dt(i_r) and Dt(i_i) in the rhs of the equations
-    end
+    ]
+    set_mtk_defaults(System(eqs, t, vars, params; name), defaults)
 end
 
 """
@@ -66,21 +203,23 @@ NetworkDynamics.VertexModel-Tuple{}) by calling [`compile_bus`](@ref).
 
 See also: [`Terminal`](@ref), [`MTKBus`](@ref), [`compile_bus`](@ref)
 """
-@mtkmodel BusBar begin
-    @extend BusBase()
-    @components begin
-        terminal = Terminal()
-    end
-    @equations begin
+@component function BusBar(; name, defaults...)
+    @named base = BusBase()
+    @named terminal = Terminal()
+    @unpack u_r, u_i, i_r, i_i = base
+    eqs = [
         u_r ~ terminal.u_r
         u_i ~ terminal.u_i
         i_r ~ terminal.i_r
         i_i ~ terminal.i_i
-    end
+    ]
+    sys = extend(System(eqs, t; name, systems=[terminal]), base)
+    set_mtk_defaults(sys, defaults)
 end
 
+
 """
-    LineEnd
+    LineEnd(; name, side, defaults...)
 
 A ModelingToolkit model representing one end of a transmission line in power systems.
 It represents the physical connection point at the end of a transmission line.
@@ -92,13 +231,27 @@ NetworkDynamics world: A MTK model containing two `LineEnd`s (named `:src` and
 transformed in an [`EdgeModel`](@extref NetworkDynamics.EdgeModel-Tuple{}) by
 calling [`compile_line`](@ref).
 
+`side=:src/:dst` determines where the line end gets inherits it `Vbase` from.
+
 See also: [`Terminal`](@ref), [`MTKLine`](@ref), [`compile_line`](@ref)
 """
-@mtkmodel LineEnd begin
-    @components begin
-        terminal = Terminal()
+@component function LineEnd(; name, side, defaults...)
+    side in (:src, :dst) ||
+        throw(ArgumentError("LineEnd: `side` must be :src or :dst, got $(repr(side)). \
+                             It selects which incident bus this end inherits `Vbase` from."))
+    @named terminal = Terminal()
+    params = @parameters begin
+        # inherit from Vbase from incident bus via default_from
+        Vbase, [default_from = (side, :busbar₊Vbase), description="Line-end voltage base [kV]"]
+        # global bases: structural aliases of the line's `systembase` sibling
+        Sbase, [bound_to = :systembase₊Sbase, description="System power base [MVA]"]
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        # Derived bases (parameter bindings -> observables); see BusBase.
+        Ibase = Sbase/Vbase,   [description="Current base [kA] (Sbase/Vbase)"]
+        Zbase = Vbase^2/Sbase, [description="Impedance base [Ω] (Vbase²/Sbase)"]
+        Ybase = Sbase/Vbase^2, [description="Admittance base [S] (Sbase/Vbase²)"]
     end
-    @variables begin
+    vars = @variables begin
         u_r(t), [description="line end d-voltage", input=true]
         u_i(t), [description="line end q-voltage", input=true]
         i_r(t), [description="line end d-current", output=true]
@@ -109,8 +262,13 @@ See also: [`Terminal`](@ref), [`MTKLine`](@ref), [`compile_line`](@ref)
         u_arg(t), [description="line end voltage argument"]
         i_mag(t), [description="line end current magnitude"]
         i_arg(t), [description="line end current argument"]
+        # SI observables (physical units, derived from pu quantities and the end bases)
+        u_kV(t), [description="line end voltage magnitude [kV]"]
+        P_MW(t), [description="line end active power [MW]"]
+        Q_MVAr(t), [description="line end reactive power [MVAr]"]
+        i_kA(t), [description="line end current magnitude [kA]"]
     end
-    @equations begin
+    eqs = [
         u_r ~  terminal.u_r
         u_i ~  terminal.u_i
         i_r ~ -terminal.i_r
@@ -122,7 +280,13 @@ See also: [`Terminal`](@ref), [`MTKLine`](@ref), [`compile_line`](@ref)
         u_arg ~ atan(u_i, u_r)
         i_mag ~ sqrt(i_r^2 + i_i^2)
         i_arg ~ atan(i_i, i_r)
-    end
+        # SI observables
+        u_kV ~ u_mag * Vbase
+        P_MW ~ P * Sbase
+        Q_MVAr ~ Q * Sbase
+        i_kA ~ i_mag * Ibase
+    ]
+    set_mtk_defaults(System(eqs, t, vars, params; name, systems=[terminal]), defaults)
 end
 
 """
@@ -155,25 +319,29 @@ MTKBus(o┤Generator│, o┤Load│) => ││BusBar├o           │
 
 See also: [`compile_bus`](@ref), [`BusBar`](@ref), [`isinjectormodel`](@ref)
 """
-function MTKBus(injectors...; name=:bus)
+function MTKBus(injectors...; name=:bus, Vbase=nothing)
     if !all(isinjectormodel.(injectors))
         throw(ArgumentError("All components must satisfy the injector model interface!"))
     end
-    @named busbar = BusBar()
+    @named busbar = BusBar(; _busbar_defaults(Vbase)...)
+    @named systembase = SystemBase()
     eqs = [connect(busbar.terminal, inj.terminal) for inj in injectors]
-    System(eqs, t; systems=[busbar, injectors...], name)
+    System(eqs, t; systems=[busbar, systembase, injectors...], name)
 end
 
-function MTKBus(systems::Union{AbstractVector,Tuple,Set}, eqs=autoconnections(systems); name=:bus)
-    @named busbar = BusBar()
+function MTKBus(systems::Union{AbstractVector,Tuple,Set}, eqs=autoconnections(systems); name=:bus, Vbase=nothing)
+    @named busbar = BusBar(; _busbar_defaults(Vbase)...)
+    @named systembase = SystemBase()
     for sys in systems
         if isinjectormodel(sys)
             eq = connect(sys.terminal, busbar.terminal)
             push!(eqs, eq)
         end
     end
-    System(eqs, t; systems=vcat(busbar, systems), name)
+    System(eqs, t; systems=vcat(busbar, systembase, systems), name)
 end
+
+_busbar_defaults(Vbase) = isnothing(Vbase) ? (;) : (; Vbase)
 
 """
     MTKLine(branches...; name=:line)
@@ -210,8 +378,9 @@ function MTKLine(branches...; name=:line)
         throw(ArgumentError("All components must satisfy the branch model interface!"))
     end
     systems = @named begin
-        src = LineEnd()
-        dst = LineEnd()
+        src = LineEnd(; side=:src)
+        dst = LineEnd(; side=:dst)
+        systembase = SystemBase()
     end
 
     eqs = [[connect(src.terminal, branch.src) for branch in branches]...,
@@ -227,6 +396,7 @@ end
 @mtkmodel KirchoffBus begin
     @components begin
         busbar = BusBase()
+        systembase = SystemBase()
     end
     @equations begin
         busbar.i_r ~ implicit_output(busbar.u_r)

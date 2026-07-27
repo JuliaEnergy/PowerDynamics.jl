@@ -29,8 +29,12 @@
     end
 
     @parameters begin
+        # System bases: inherited structurally from the bus this machine attaches to.
+        Sbase, [bound_to = :systembase₊Sbase, description="System power base [MVA]"]
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+
         # Machine parameters (free parameters - need guess values)
-        M_b, [description="Machine base power [MVA]"]
+        M_b, [initf_weak = Sbase, description="Machine base power [MVA]"]
         Tpd0, [description="d-axis transient open-circuit time constant [s]"]
         Tppd0, [description="d-axis sub-transient open-circuit time constant [s]"]
         Tppq0, [description="q-axis sub-transient open-circuit time constant [s]"]
@@ -45,9 +49,8 @@
         S10, [description="Saturation factor at 1.0 pu [pu]"]
         S12, [description="Saturation factor at 1.2 pu [pu]"]
 
-        # System parameters (free parameters from pfComponent)
-        S_b, [description="System power basis [MVA]"]
-        fn=50, [description="System frequency [Hz]"]
+        CoB = M_b/Sbase, [description="base conversion factor M_b/Sbase"]
+        fn = ωbase/(2π), [description="System frequency [Hz]"]
 
         # Fixed parameters (with default values)
         R_a=0, [description="Armature resistance [pu]"]
@@ -81,11 +84,6 @@
         # Input/parameter variables
         pmech(t), [description="mechanical power [pu]"]
         efd(t), [description="field voltage [pu]"]
-    end
-
-    begin
-        # Derived parameters (used in equations)
-        CoB = M_b/S_b # Base conversion factor
     end
 
     @equations begin

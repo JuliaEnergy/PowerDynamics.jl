@@ -42,12 +42,11 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         T″_q0, [description="q-axis subtransient time constant"]
         H, [description="inertia constant"]
         D=0, [description="direct shaft damping"]
-        # System and machine base
-        S_b, [description="System power basis in MVA"]
-        V_b, [description="System voltage basis in kV"]
-        ω_b, [description="System base frequency in rad/s"]
-        Sn, [description="Machine power rating in MVA"]
-        Vn, [description="Machine voltage rating in kV"]
+        Sbase, [bound_to = :systembase₊Sbase, description="System power base [MVA]"]
+        Vbase, [bound_to = :busbar₊Vbase, description="Bus voltage base [kV]"]
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        Sn, [initf_weak = Sbase, description="Machine power rating [MVA]"]
+        Vn, [initf_weak = Vbase, description="Machine voltage rating [kV]"]
         # input/parameter switches
         if !vf_input
             vf_set, [guess=1, bounds=(0,Inf), description="field voltage"]
@@ -92,20 +91,20 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     end
     @equations begin
         # Park's transformations
-        [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q] * (Vn/V_b)
-        [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i] * (Ibase(S_b, V_b)/Ibase(Sn, Vn))
+        [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q] * (Vn/Vbase)
+        [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i] * (Ibase(Sbase, Vbase)/Ibase(Sn, Vn))
 
         τ_e ~ ψ_d*I_q - ψ_q*I_d
         # for static ψ, this becomes which makes sense!
         # τ_e ~  (P + R_s*(I_d^2 + I_q^2))/ω
 
-        Dt(δ) ~ ω_b*(ω - 1)
+        Dt(δ) ~ ωbase*(ω - 1)
         2*H * Dt(ω) ~ τ_m  - τ_e - D*(ω - 1)
 
         if stator_dynamics
             # stator equations
-            1/ω_b * Dt(ψ_d) ~ R_s*I_d + ω * ψ_q + V_d
-            1/ω_b * Dt(ψ_q) ~ R_s*I_q - ω * ψ_d + V_q
+            1/ωbase * Dt(ψ_d) ~ R_s*I_d + ω * ψ_q + V_d
+            1/ωbase * Dt(ψ_q) ~ R_s*I_q - ω * ψ_d + V_q
         else
             # static fomulation
             0 ~ R_s*I_d + ω * ψ_q + V_d

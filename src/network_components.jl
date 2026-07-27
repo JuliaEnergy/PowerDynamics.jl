@@ -47,6 +47,7 @@ function compile_bus(
     ff_to_constraint=!current_source,
     extin=nothing,
     mtkcompile=nothing,
+    Vbase=nothing,
     kwargs...)
     if !isbusmodel(sys)
         msg = "The system must satisfy the bus model interface!"
@@ -55,9 +56,52 @@ function compile_bus(
         end
         throw(ArgumentError(msg))
     end
+    # `Vbase` convenience kwarg: sugar for the `busbar₊Vbase => …` default override
+    vbase_override = isnothing(Vbase) ? (;) : NamedTuple{(Symbol("busbar₊Vbase"),)}((Vbase,))
     io = _busio(sys, :busbar, current_source)
     vertexf = VertexModel(sys, io.in, io.out; verbose, name, assume_io_coupling, check, ff_to_constraint, extin, mtkcompile)
-    compile_bus(vertexf; copy=false, check, kwargs...)
+    _resolve_busbar_vbase!(vertexf, current_source)
+    compile_bus(vertexf; copy=false, check, kwargs..., vbase_override...)
+end
+
+# The busbar's `Vbase` fallback is declared as a *weak init formula* (see `BusBase`) so that
+# its provenance stays distinguishable from a value the user set, which always arrives as a
+# real `default`. `compile_bus` is the one place that knows whether a bus is a *satellite*
+# (an injector node attached to a hub bus via a `LoopbackConnection`), so it is where that
+# fallback is resolved into its final storage class:
+#
+#   satellite  → drop the fallback and inherit from the hub instead. The swap is
+#                unconditional: a user-set `Vbase` is a `default` and beats the inherited
+#                weak formula on its own, so no `has_default` test is needed here.
+#   plain bus  → *materialize* the fallback into a real `default`. This is not just tidiness:
+#                `default_from` (used by line ends and by satellites) copies the source's
+#                `default` in a pre-pass that runs before any init formula, so it cannot see
+#                a weak formula. A bus that kept its fallback as a formula would silently
+#                fail to feed its neighbours — `default_from` would skip and the line end
+#                would be left with no value at all.
+#
+# Either way the fallback formula is consumed here, so it never reaches init.
+function _resolve_busbar_vbase!(vertexf, satellite)
+    sym = :busbar₊Vbase
+    # get rid of weak init formula set by BusBar(), capture its value
+    fallback = _strip_weak_initf!(vertexf, sym)
+    if satellite
+        set_default_from!(vertexf, sym, (:hub, sym))
+    elseif !has_default(vertexf, sym) && !isnothing(fallback)
+        set_default!(vertexf, sym, fallback)
+    end
+    vertexf
+end
+function _strip_weak_initf!(c, sym)
+    has_initformula(c) || return nothing
+    formulas = collect(get_initformulas(c))
+    idx = findfirst(f -> f.weak && f.outsym == [sym] && isempty(f.sym), formulas)
+    isnothing(idx) && return nothing
+    f = popat!(formulas, idx)
+    isempty(formulas) ? delete_initformulas!(c) : set_initformula!(c, Tuple(formulas))
+    out = SymbolicView(zeros(1), f.outsym)
+    f(out, Float64[])
+    out[sym]
 end
 """
     compile_bus(template::VertexModel; copy=true, pf=nothing, name=template.name, check=true, pairs...)
