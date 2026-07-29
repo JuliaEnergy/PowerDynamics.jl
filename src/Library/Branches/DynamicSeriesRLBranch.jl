@@ -1,5 +1,5 @@
 """
-    DynamicSeriesRLBranch(; R, L, ω0, r_src=1, r_dst=1)
+    DynamicSeriesRLBranch(; R, L, r_src=1, r_dst=1)
 
 Dynamic transmission line modeled as a series R-L circuit with optional transformer ratios.
 
@@ -11,8 +11,7 @@ The line current is a differential state, suitable for:
 
 # Parameters
 - `R`: Line resistance [pu]
-- `L`: Line reactance [pu] at frequency ω0. Related to physical inductance by L = ω0 * L_actual.
-- `ω0`: Frame angular frequency [rad/s]. Default: 2π*50 rad/s.
+- `L`: Line reactance [pu] at frequency `ωbase`. Related to physical inductance by L = ωbase * L_actual.
 - `r_src`: Transformer voltage ratio at source. Default: 1.
 - `r_dst`: Transformer voltage ratio at destination. Default: 1.
 
@@ -22,7 +21,8 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     @parameters begin
         R, [description="Line resistance [pu]"]
         L, [description="Line reactance [pu] (frequency-normalized inductance)"]
-        ω0=2π*50, [description="Frame angular frequency [rad/s]"]
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
         r_src = 1, [description="Transformer voltage ratio at source"]
         r_dst = 1, [description="Transformer voltage ratio at destination"]
     end
@@ -36,9 +36,11 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         i_mag(t), [description="Current magnitude [pu]"]
     end
     @equations begin
-        # Series RL current dynamics in rotating dq frame
-        Dt(i_line_r) ~ ω0 / L * (r_src*src.u_r - r_dst*dst.u_r) - R / L * ω0 * i_line_r + ω0 * i_line_i
-        Dt(i_line_i) ~ ω0 / L * (r_src*src.u_i - r_dst*dst.u_i) - R / L * ω0 * i_line_i - ω0 * i_line_r
+        # Series RL current dynamics in the rotating dq frame, in the classical
+        # reactance-parameterized form: the only ωbase is the L/ωbase coefficient of the
+        # derivative (unit), the cross terms carry the frame speed ωframe [pu].
+        L/ωbase * Dt(i_line_r) ~ (r_src*src.u_r - r_dst*dst.u_r) - R*i_line_r + ωframe*L*i_line_i
+        L/ωbase * Dt(i_line_i) ~ (r_src*src.u_i - r_dst*dst.u_i) - R*i_line_i - ωframe*L*i_line_r
 
         # Terminal currents scaled by transformer ratios (for power conservation)
         dst.i_r ~ i_line_r * r_dst

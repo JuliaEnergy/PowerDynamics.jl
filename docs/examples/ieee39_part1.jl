@@ -148,7 +148,7 @@ The system data is stored in CSV files containing:
     | `T2` | Second transient time constant [s] |
     | `T3` | Third transient time constant [s] |
     | `DT` | Turbine damping coefficient |
-    | `ω_ref` | Reference frequency [pu] |
+    | `ω_ref` | Frequency setpoint [pu] |
 =#
 
 branch_df = CSV.read(joinpath(DATA_DIR, "branch.csv"), DataFrame)

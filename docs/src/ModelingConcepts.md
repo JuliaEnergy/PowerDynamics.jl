@@ -330,7 +330,7 @@ First, we define an `MTKBus` consisting of two predefined injector models from t
 library: a `Swing` generator model and a `PQLoad`.
 To do so, we use the [`MTKBus(injectors...)`](@ref MTKBus) constructor.
 ```@example concepts
-@named swing = Swing(; Pm=1, V=1, D=0.1)
+@named swing = Swing(; Pm=1, V=1, D=30) # D ≫ default, so the transient settles quickly
 @named load = PQLoad(; Pset=-.5, Qset=0)
 bus1mtk = MTKBus(swing, load; name=:swingbus)
 show(stdout, MIME"text/plain"(), bus1mtk) #hide

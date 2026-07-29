@@ -34,14 +34,15 @@ using Test
 end
 
 @testset "Swing bus" begin
-    @named swing = Swing(Pm=1, D=0.1, M=0.005, θ=0, ω=1, V=1)
+    # parameters updated since we introduced ωbase to the swing from lib
+    @named swing = Swing(Pm=1, D=0.1*2π*50, M=0.005*2π*50, θ=0, ω=1, V=1)
     bus = compile_bus(MTKBus(swing));
     toi = bus_on_slack(bus)
     # isinteractive() && plottoi(toi)
     @reftest "SwingBus_1" toi
 
     # swing bus with load
-    @named swing = Swing(Pm=1, D=0.1, M=0.005, θ=0, ω=1, V=1)
+    @named swing = Swing(Pm=1, D=0.1*2π*50, M=0.005*2π*50, θ=0, ω=1, V=1)
     @named pqload = PQLoad(Pset=-0.5, Qset=-0.2)
     bm = MTKBus(swing, pqload)
     bus = compile_bus(bm)

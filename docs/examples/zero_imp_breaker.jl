@@ -58,8 +58,8 @@ as connection points for the breaker.
 =#
 
 @named swing = Swing()
-G1 = compile_bus(MTKBus(swing); name=:G1, vidx=1, pf=pfSlack(V=1.), swing₊M=0.1, swing₊D=0.1)
-G2 = compile_bus(MTKBus(swing); name=:G2, vidx=2, pf=pfPV(V=0.95, P=1.0), swing₊D=0.1)
+G1 = compile_bus(MTKBus(swing); name=:G1, vidx=1, pf=pfSlack(V=1.), swing₊M=20, swing₊D=30)
+G2 = compile_bus(MTKBus(swing); name=:G2, vidx=2, pf=pfPV(V=0.95, P=1.0), swing₊D=30)
 
 ## Constant admittance loads
 @named load = ConstantYLoad()

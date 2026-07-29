@@ -45,6 +45,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         Sbase, [bound_to = :systembase₊Sbase, description="System power base [MVA]"]
         Vbase, [bound_to = :busbar₊Vbase, description="Bus voltage base [kV]"]
         ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
         Sn, [initf_weak = Sbase, description="Machine power rating [MVA]"]
         Vn, [initf_weak = Vbase, description="Machine voltage rating [kV]"]
         # input/parameter switches
@@ -98,11 +99,15 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         # for static ψ, this becomes which makes sense!
         # τ_e ~  (P + R_s*(I_d^2 + I_q^2))/ω
 
-        Dt(δ) ~ ωbase*(ω - 1)
+        # δ is measured against the global dq frame → ωframe; the `1` in the damping
+        # term is nominal speed (a setpoint), which is frame-invariant.
+        Dt(δ) ~ ωbase*(ω - ωframe)
         2*H * Dt(ω) ~ τ_m  - τ_e - D*(ω - 1)
 
         if stator_dynamics
-            # stator equations
+            # stator equations, in the *rotor* frame: the cross-coupling speed is the
+            # rotor speed ω (a state), not the global frame. The bare 1/ωbase is the
+            # flux base Vbase/ωbase, i.e. the unit of the differentiated quantity.
             1/ωbase * Dt(ψ_d) ~ R_s*I_d + ω * ψ_q + V_d
             1/ωbase * Dt(ψ_q) ~ R_s*I_q - ω * ψ_d + V_q
         else

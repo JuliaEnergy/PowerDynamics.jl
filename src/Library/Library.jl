@@ -166,12 +166,14 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         V, [guess=1, description="bus voltage magnitude"]
         ω = 1, [description="slack frequency in pu (base ωbase)"]
         ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
     end
     @variables begin
         δ(t), [guess=0, description="voltage angle"]
     end
     @equations begin
-        Dt(δ) ~ ωbase*(ω - 1)
+        # δ is measured against the global dq frame, hence ωframe (not a setpoint)
+        Dt(δ) ~ ωbase*(ω - ωframe)
         busbar.u_r ~ V * cos(δ)
         busbar.u_i ~ V * sin(δ)
     end

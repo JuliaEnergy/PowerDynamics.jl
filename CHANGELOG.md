@@ -23,11 +23,165 @@ PowerDynamics itself.
   `ModelingToolkitBase` (MIT) and `ModelingToolkit` (AGPL); PowerDynamics depends only on
   the MIT half, and `@mtkmodel` moved out into `SciCompDSL`. Along with it: `Symbolics` ≥7, `SciMLBase` ≥3, `NetworkDynamics` ≥1, and the
   `OrdinaryDiffEq*` subpackages ≥2.
-- **`Sn` and `Vn` no longer default to `S_b`/`V_b`**
-  ([#261](https://github.com/JuliaEnergy/PowerDynamics.jl/pull/261)) in `SauerPaiMachine`
-  and `ClassicalMachine`. They were *symbolic* defaults, which under MTK v11 would turn
-  into permanent parameter bindings rather than a one-time value. Pass the machine rating
-  explicitly, e.g. `SauerPaiMachine(; S_b=100, V_b=1, Sn=100, Vn=1, …)`.
+- **Per-unit bases are now part of the model, not per-device constructor arguments.** On
+  v4 every base was an ordinary parameter you had to pass to each device
+  (`SauerPaiMachine(; S_b=100, V_b=18, ω_b=2π*60, Sn=100, Vn=18)`), and `BusBar`/`LineEnd`
+  carried no bases at all. In 5.0 the bases live on the bus/line and the devices inherit
+  them. Requires NetworkDynamics ≥ 1.1.0. The pieces:
+  - **Module-level globals with accessors.** A global power base (100 MVA), frequency base
+    (2π·50 rad/s) and *fallback* voltage base (1.0 kV), reached through the new exported
+    `get_Sbase`/`set_Sbase!`, `get_ωbase`/`set_ωbase!`, `get_fbase`/`set_fbase!` (Hz) and
+    `get_Vbase`/`set_Vbase!`. They are read at **model construction**, so set them *before*
+    building anything; changing them afterwards does not touch models that already exist.
+    Each setter defaults its argument to the original value, so a script that changes a base
+    can restore it with a bare `set_Sbase!()`.
+  - **New `SystemBase` component** carrying the *global* quantities: `Sbase` [MVA], `ωbase`
+    [rad/s], `ωframe` [pu], plus the observable `fbase` [Hz]. Exactly one instance named
+    `systembase` sits at the top level of every bus and every line. `MTKBus`/`MTKLine` add
+    it; `compile_bus`/`compile_line` inject one if a hand-rolled model does not bring its
+    own.
+    (The name is recycled: an unused Dynawo-style `SystemBase` model with `SnRef`/`fNom`/
+    `ωNom`/`ωRef0Pu`/`ω0Pu` has been **removed** from `PowerDynamics.Library`.)
+  - **`BusBar` gained `Vbase`** (the one genuinely per-bus base) and **`LineEnd` gained a
+    per-end `Vbase`**, together with derived `Ibase`/`Zbase`/`Ybase` observables and SI
+    observables `u_kV`, `P_MW`, `Q_MVAr`, `i_kA`. Both also carry bound shadows of
+    `Sbase`/`ωbase` (observables `busbar₊Sbase`, `src₊Sbase`, …).
+  - A compiled bus exposes `busbar₊Vbase` plus `systembase₊Sbase/ωbase/ωframe` as its only
+    base parameters; a line exposes `src₊Vbase`, `dst₊Vbase` and the same three.
+  - **`ωframe`** is the speed of the global dq reference frame in pu. It is **pinned to `1`**
+    in 5.0 and exists so that frame-dependent terms name the frame explicitly instead of
+    hiding an invisible `1`. Do not change it.
+- **Devices no longer take `S_b`/`V_b`/`ω_b`.** `SauerPaiMachine`, `ClassicalMachine`, the
+  PSS/E machines (`PSSE_GENCLS`, `PSSE_BaseMachine` and its extenders `PSSE_GENSALIENT`/
+  `PSSE_GENROUND`) and `PSSE_Load` lost those constructor arguments. They now declare
+  `Sbase`/`Vbase`/`ωbase` parameters that are structurally bound (`bound_to`) —
+  `Sbase`/`ωbase`/`ωframe` to the container's `systembase`, `Vbase` to the `busbar` — and
+  eliminated at `compile_bus`. **At a call site you simply drop them**; set the system
+  power/frequency base globally (`set_Sbase!`, `set_fbase!`/`set_ωbase!`) and the per-bus
+  voltage base with the new `MTKBus(…; Vbase=…)` / `compile_bus(…; Vbase=…)` keyword.
+  Related: the PSS/E `CoB = M_b/Sbase` and `fn = ωbase/2π` are now parameter bindings
+  (observables) rather than a hidden local and a free `fn=50` parameter respectively.
+- **`Sn`/`Vn` are optional and weakly default to the bus base** (`SauerPaiMachine`,
+  `ClassicalMachine`; the PSS/E `M_b` likewise defaults to `Sbase`). On v4 these were
+  required parameters. Now the nameplate rating carries a *weak* default (`initf_weak`) to
+  the enclosing bus's `Sbase`/`Vbase`: leave it unset and the machine runs on the system
+  base, or set it explicitly for a genuine `Sn ≠ Sbase`. This restores the convenience that
+  the symbolic-default removal
+  ([#261](https://github.com/JuliaEnergy/PowerDynamics.jl/pull/261)) had to drop — now
+  without a permanent parameter binding, since NetworkDynamics ≥ 1.1.0 supports weak
+  defaults via `initf_weak`.
+- **`Vbase` is inherited across components.** You normally set the voltage base once per bus
+  and everything attached to it follows:
+  - a **line end** takes `Vbase` from the bus it is connected to
+    (`default_from = (:src|:dst, :busbar₊Vbase)`). A transformer is just a line whose two
+    ends resolve to different values, with the ratio falling out of the two bases.
+  - a **satellite/injector bus** (`compile_bus(…; current_source=true)`, connected through
+    a `LoopbackConnection`) takes `Vbase` from its hub bus.
+
+  In both cases an explicitly set value wins over the inherited one. Mechanically, the
+  `VBASE[]` fallback is attached to `BusBar` as a *weak init formula* rather than a plain
+  default, so that it stays distinguishable from a value you set; `compile_bus` then
+  materializes it into a real default on an ordinary bus, or drops it in favour of the hub
+  inheritance on a satellite.
+- **`LineEnd` requires a `side` keyword.** `LineEnd(; name, side)` with `side ∈ (:src,
+  :dst)` — it selects which incident bus the end inherits `Vbase` from. `MTKLine` passes it
+  automatically; **hand-rolled line models must now write `LineEnd(; side=:src)` /
+  `LineEnd(; side=:dst)`** instead of a bare `LineEnd()`.
+- **Setpoint naming rule: `…set`, except in ported models.** A quantity a user or an outer
+  controller *commands* is spelled with a `set` suffix — `Pset`, `Qset`, `Vset`, `δset`,
+  and now `ωset`. The suffixes `n`/`nom` are reserved exclusively for genuine nameplate
+  ratings (`Sn`, `Vn`), which may legitimately differ from the corresponding setpoint — a
+  machine's nominal voltage `Vn` is not its voltage setpoint `Vset`. The exception is a
+  model ported from elsewhere, which keeps its source's names so it can be checked against
+  the original: hence `vref` on the AVRs, `ω_ref`/`p_ref` on the governors and `n_ref` on
+  `PSSE_HYGOV` are unchanged. The rule renames a symbol only where its old name was actually
+  ambiguous; an unambiguous `…_ref` on a ported model is left alone rather than churned.
+- **`VoltageDependentLoad`: `Vn` → `Vset`.** It is the ZIP reference voltage — a setpoint,
+  not a device rating.
+- **Frame frequency `ω0` on dynamic shunts and inverters is now the bus `ωbase`.**
+  `DynamicCShunt`, `DynamicParallelRCShunt` (shunts) and the `ComposableInverter` models
+  (`VoltageSource`, `CurrentSource`, `SimpleGFL`, `SimpleGFLDC`, `DroopOuter`/`DroopInverter`)
+  no longer take an `ω0 = 2π*50` keyword; they carry `ωbase` bound to `:systembase₊ωbase`,
+  so the frame frequency comes from the bus (default still `2π*50`). Set it globally with
+  `set_fbase!`/`set_ωbase!`. `DynamicSeriesRLBranch` lost its `ω0` keyword the same way.
+- **Frequency vocabulary split: `ωbase` vs `ωframe` vs `ωset`.** One symbol used to do
+  three unrelated jobs. They are now separated everywhere in the library:
+
+  | symbol | kind | unit | meaning |
+  |---|---|---|---|
+  | `ωbase` | **unit** | rad/s | converts SI time ↔ pu; the frequency at which `X = ωbase·L`, `B = ωbase·C` were evaluated |
+  | `ωframe` | **gauge** | pu | speed of the global dq frame; pinned to `1` |
+  | `ωset` | **setpoint** | pu | frequency a droop/damping law is commanded to hold |
+
+  Every place where the reference *frame* was previously an invisible literal `1` now names
+  it: `Dt(δ) ~ ωbase*(ω - ωframe)` in `SauerPaiMachine`, `ClassicalMachine`, `PSSE_GENCLS`,
+  `PSSE_BaseMachine`, `VariableFrequencySlack`, `Swing`, `IdealDroopInverter` and
+  `DroopOuter`; and the dq cross-coupling terms of the EMT components
+  (`DynamicCShunt`, `DynamicParallelRCShunt`, `DynamicSeriesRLBranch`, `LFilter`/`LCFilter`/
+  `LCLFilter`) gained the explicit `ωframe` factor they were missing. Since `ωframe == 1`,
+  every one of these is algebraically the same equation as before — the OpenIPSL comparison
+  tests still pass at their 1e-5 tolerance. (`DynamicSeriesRLBranch` was additionally
+  rewritten from `Dt(i) ~ ωbase/L*Δu - …` into the classical `L/ωbase*Dt(i) ~ Δu - R*i +
+  ωframe*L*i` form, so that the only `ωbase` left is the coefficient of the derivative;
+  same equation, different floating-point association.) The genuine behaviour changes are
+  the three models listed below. Renames:
+  - **`ω_ref` → `ωset` in `Swing`**, where the one symbol was doing both jobs at once
+    (`Dt(θ) ~ ω - ω_ref` *and* `D*(ω - ω_ref)`): the frame half became `ωframe`, the
+    setpoint half `ωset`. The governors (`TurbineGovTypeI`, `TGOV1`) keep `ω_ref` — there it
+    only ever meant the setpoint, so there was nothing to disambiguate and no reason to
+    break call sites. The IEEE39 example's `gov.csv` column stays `ω_ref` accordingly.
+  - **`Swing`: the `ω_ref_input`/`ωset_input` structural parameter is removed**; `ωset` is
+    always a plain parameter. It entered the model only through the damping term
+    `D*(ω - ωset)`, so driving it was indistinguishable from driving `Pm` by `D*Δωset` — a
+    redundant spelling of the already existing `Pm_input` port. Use `Pm_input=true` to
+    actuate the machine from a controller.
+  - **`PSSE_GENCLS`: output port `ωout` → `SPEED_out`**, matching `PSSE_BaseMachine`. It
+    carries a speed *deviation* (OpenIPSL convention) while `ωout` on `SauerPaiMachine`/
+    `ClassicalMachine` carries an absolute pu speed, so the shared name was actively
+    misleading. Nothing consumed it.
+  - **`PLL_LPF`: `ω` → `Δω`, `ω_pll_i` → `Δω_pll_i`; `SimplePLL`: `ω_pll` → `Δω_pll`.**
+    These are frame-*relative* frequency deviations in rad/s that lock to zero, not pu
+    absolute frequencies. `PLL_LPF`'s stale `guess = 2π*50` on that lock-to-zero quantity
+    is fixed to `0`.
+- **`Swing` and `IdealDroopInverter` had no `ωbase` at all** — their angle equations
+  (`Dt(θ) ~ ω - ω_ref`) implicitly assumed normalized time, so with `ω` in pu the rotor
+  angle advanced ~314× too slowly. Both now use `Dt(θ) ~ ωbase*(ω - ωframe)`, and their
+  **parameters therefore change meaning and default value**:
+  - `Swing`: `M` is now the inertia `M = 2H` in **seconds** (default `0.005` → `6.0`, i.e.
+    `H = 3 s`) and `D` is a damping power coefficient in pu power per pu frequency
+    (default `0.0001` → `2.0`).
+  - `IdealDroopInverter`: `Kp` is a droop in pu frequency per pu power (default `1` →
+    `0.05`, a conventional 5 % droop) and the measurement filters `τ_p`/`τ_q` default to
+    `0.1 s` instead of `1 s`.
+
+  Existing `Swing`/`IdealDroopInverter` parameter sets do **not** carry over; retune them
+  against the units above. A physically-sized machine on a stiff line is lightly damped, so
+  demo/test call sites that want a quickly settling transient now pass a `D` well above the
+  model default.
+- **`DroopOuter`/`DroopInverter` droop is in pu.** `ω` used to be an absolute angular
+  frequency in rad/s (with `ω0 = 2π*50` doubling as the frame speed), which made `Kp` a
+  rad/s-per-pu-power coefficient. Now `ω` is pu, the setpoint is `ωset = 1` and
+  `Dt(δ) ~ ωbase*(ω - ωframe)`, so **`Kp` is a dimensionless droop** (default `0.4` →
+  `0.05`, i.e. 5 %). Convert an existing value with `Kp_new = Kp_old/ωbase` — with that
+  substitution the rewrite is an exact identity (`Dt(δ)` was `-Kp_old·ΔP` and is now
+  `-ωbase·Kp_new·ΔP`), and since `ω` is an algebraic observable rather than a state, the
+  linearization of `DroopInverter` is unchanged.
+- **`IdealDroopInverter` and `DroopOuter`/`DroopInverter` now share the same droop defaults**,
+  `Kp = Kq = 0.05` (the two models previously disagreed on `Kq`, so swapping one for the other
+  silently changed the voltage stiffness). `Kq = 0.05` means rated reactive output costs a 5 %
+  voltage deviation; it acts as a virtual reactance in series with the coupling reactance `X`
+  (`Q - Qset = (Vset - V_grid)/(X + Kq)`), and 0.05 pu is the same order as a typical converter
+  transformer. Since the frame rework already forces `Kp` to be retuned, retune `Kq` with it
+  rather than relying on the default.
+
+### Fixed
+
+- **`TurbineGovTypeI` could not be constructed at all.** Its droop equation used the
+  `ω_meas` *connector* instead of `ω_meas.u` (`MethodError: no method matching -(::Num,
+  ::System)`), and used the raw `p_ref` where the `p_ref_input`-aware `_p_ref` was intended,
+  so a `RealInput` power reference was silently ignored. Found while auditing the frequency
+  symbols; the model is now constructible, but note it remains **untested** — there is no
+  reference trajectory for it in the test suite.
 
 ### Initialization
 
@@ -50,7 +204,7 @@ PowerDynamics itself.
 
 - **New: optional stator dynamics in `SauerPaiMachine`** via
   `SauerPaiMachine(; stator_dynamics=true)`, which replaces the algebraic stator
-  formulation with `1/ω_b · Dt(ψ_d,ψ_q)`.
+  formulation with `1/ωbase · Dt(ψ_d,ψ_q)`.
 - **New: `mtkcompile` keyword on `compile_bus` and `compile_line`**, forwarded to
   `VertexModel`/`EdgeModel`. Pass `true` for MTK's (AGPL) simplification pipeline or
   `:compare` to print both side by side.

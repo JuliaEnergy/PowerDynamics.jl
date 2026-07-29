@@ -30,6 +30,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         Sbase, [bound_to = :systembase₊Sbase, description="System power base [MVA]"]
         Vbase, [bound_to = :busbar₊Vbase, description="Bus voltage base [kV]"]
         ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
         Sn, [initf_weak = Sbase, description="Machine power rating [MVA]"]
         Vn, [initf_weak = Vbase, description="Machine voltage rating [kV]"]
         # field voltage
@@ -63,7 +64,9 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         [I_d, I_q] .~ -T_park(-δ)*[terminal.i_r, terminal.i_i] * (Ibase(Sbase, Vbase)/Ibase(Sn, Vn))
 
         # mechanical swing equation
-        Dt(δ) ~ ωbase*(ω - 1)
+        # δ is measured against the global dq frame → ωframe; the `1` in the damping
+        # term is nominal speed (a setpoint), which is frame-invariant.
+        Dt(δ) ~ ωbase*(ω - ωframe)
         2*H * Dt(ω) ~ τ_m / ω - τ_e - D*(ω-1)
 
         τ_e ~ (V_q + R_s*I_q)*I_q + (V_d + R_s*I_d)*I_d

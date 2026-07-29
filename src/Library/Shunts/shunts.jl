@@ -42,8 +42,6 @@ current-source buses and modelling shunt capacitor banks without resistive losse
 # Parameters
 - `C`: Shunt susceptance [pu] at frequency `ωbase`. Related to physical capacitance by C = ωbase * C_actual.
 
-The frequency base `ωbase` is inherited from the container's `systembase` (`bound_to = :systembase₊ωbase`), not set here.
-
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
 @mtkmodel DynamicCShunt begin
@@ -52,6 +50,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     end
     @parameters begin
         ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
         C, [description="Shunt susceptance [pu] (frequency-normalized capacitance)"]
     end
     @variables begin
@@ -61,9 +60,10 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         i_C_i(t), [guess=0, description="Capacitor current imaginary part (dq frame) [pu]"]
     end
     @equations begin
-        # Capacitor dynamics in rotating dq frame (C is susceptance)
-        C/ωbase * Dt(V_C_r) ~ -i_C_r + C*V_C_i
-        C/ωbase * Dt(V_C_i) ~ -i_C_i - C*V_C_r
+        # Capacitor dynamics in the rotating dq frame (C is susceptance). The cross
+        # terms are the transport-theorem jω contribution → frame speed ωframe [pu].
+        C/ωbase * Dt(V_C_r) ~ -i_C_r + ωframe*C*V_C_i
+        C/ωbase * Dt(V_C_i) ~ -i_C_i - ωframe*C*V_C_r
         # Terminal voltage = capacitor voltage
         terminal.u_r ~ V_C_r
         terminal.u_i ~ V_C_i
@@ -88,8 +88,6 @@ The capacitor voltage is a differential state, suitable for:
 - `R`: Shunt resistance [pu]
 - `C`: Shunt susceptance [pu] at frequency `ωbase`. Related to physical capacitance by C = ωbase * C_actual.
 
-The frequency base `ωbase` is inherited from the container's `systembase` (`bound_to = :systembase₊ωbase`), not set here.
-
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
 @mtkmodel DynamicParallelRCShunt begin
@@ -98,6 +96,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     end
     @parameters begin
         ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
         R, [description="Shunt resistance [pu]"]
         C, [description="Shunt susceptance [pu] (frequency-normalized capacitance)"]
     end
@@ -110,9 +109,10 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         i_R_i(t), [guess=0, description="Resistor current imaginary part (dq frame) [pu]"]
     end
     @equations begin
-        # Capacitor dynamics in rotating dq frame (C is susceptance)
-        C/ωbase * Dt(V_C_r) ~ -i_C_r + C*V_C_i
-        C/ωbase * Dt(V_C_i) ~ -i_C_i - C*V_C_r
+        # Capacitor dynamics in the rotating dq frame (C is susceptance). The cross
+        # terms are the transport-theorem jω contribution → frame speed ωframe [pu].
+        C/ωbase * Dt(V_C_r) ~ -i_C_r + ωframe*C*V_C_i
+        C/ωbase * Dt(V_C_i) ~ -i_C_i - ωframe*C*V_C_r
         # Resistor current (Ohm's law)
         i_R_r ~ -terminal.u_r / R
         i_R_i ~ -terminal.u_i / R

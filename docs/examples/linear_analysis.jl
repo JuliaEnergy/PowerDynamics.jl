@@ -54,7 +54,8 @@ using Test #src
         D, [description="Damping coefficient [pu]"]
         wL, [description="Stator inductance * base frequency [pu]"]
         R, [description="Stator resistance [pu]"]
-        ω0, [description="Base frequency [rad/s]"]
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
         psi_f, [guess=1, description="Field flux linkage [pu]"]
         T_m, [guess=1, description="Mechanical torque [pu]"]
     end
@@ -70,9 +71,9 @@ using Test #src
         Te(t), [guess=1, description="Electrical torque [pu]"]
     end
     begin
-        J_pu = J*2/ω0^2
-        D_pu = D/ω0^2
-        L = wL/ω0
+        J_pu = J*2/ωbase^2
+        D_pu = D/ωbase^2
+        L = wL/ωbase
         T_to_loc(α)  = [ cos(α) sin(α);
                         -sin(α)  cos(α)]
         T_to_glob(α) = T_to_loc(-α)
@@ -89,7 +90,9 @@ using Test #src
         Dt(i_q) ~ (v_q - R*i_q - w*psi_d)/L
         ## swing equation
         Dt(w) ~ (Te - T_m - D_pu*w)/J_pu
-        Dt(theta) ~ w - ω0
+        ## `w` is the *absolute* rotor speed in [rad/s], `theta` is measured against the
+        ## global dq frame, whose speed in [rad/s] is ωbase*ωframe.
+        Dt(theta) ~ w - ωbase*ωframe
     end
 end
 nothing #hide #md
@@ -153,13 +156,13 @@ The parameters are taken from the SimplusGT example.
 During powerflow, the first machine is modeled as a slack bus, the second one as a PV bus.
 In both cases, we use current source modeling and connect the device to a dynamic shunt bus (which acts like a static shunt during powerflow).
 =#
-ω0 = 2π*50
+ωbase = get_ωbase() ## 2π⋅50hz, the global frequency base the models are built with
 sg1_bus, bus1, loop1 = let
-    @named sm = SyncMachineStatorDynamics(J=3.5, D=1, wL=0.05, R=0.01, ω0=ω0)
+    @named sm = SyncMachineStatorDynamics(J=3.5, D=1, wL=0.05, R=0.01)
     @named sg1_bus = compile_bus(MTKBus(sm); current_source=true)
     set_pfmodel!(sg1_bus, pfSlack(V=1, δ=0; current_source=true, assume_io_coupling=true))
 
-    @named shunt = DynamicParallelRCShunt(R=1/0.6, C=1e-5, ω0=ω0)
+    @named shunt = DynamicParallelRCShunt(R=1/0.6, C=1e-5)
     @named bus1 = compile_bus(MTKBus(shunt))
     set_pfmodel!(bus1, pfShunt(G=0.6, B=1e-5))
 
@@ -169,11 +172,11 @@ sg1_bus, bus1, loop1 = let
 end
 
 sg2_bus, bus2, loop2 = let
-    @named sm = SyncMachineStatorDynamics(J=3.5, D=1, wL=0.05, R=0.01, ω0=ω0)
+    @named sm = SyncMachineStatorDynamics(J=3.5, D=1, wL=0.05, R=0.01)
     @named sg2_bus = compile_bus(MTKBus(sm); current_source=true)
     set_pfmodel!(sg2_bus, pfPV(P=0.5, V=1; current_source=true, assume_io_coupling=true))
 
-    @named shunt = DynamicParallelRCShunt(R=1/0.6, C=1e-5, ω0=ω0)
+    @named shunt = DynamicParallelRCShunt(R=1/0.6, C=1e-5)
     @named bus2 = compile_bus(MTKBus(shunt))
     set_pfmodel!(bus2, pfShunt(G=0.6, B=1e-5))
 
@@ -200,17 +203,16 @@ gfm_bus, bus3, loop3 = let
     @named droop = ComposableInverter.DroopInverter(;
         filter_type = :LCL,
         droop₊Qset = 0,
-        droop₊Kp = xDw*ω0,
-        droop₊ω0 = ω0,
+        droop₊Kp = xDw,
         droop₊Kq = 0,
         droop₊τ_q = Inf,
         droop₊τ_p = 1/(xfdroop*2*pi),
         vsrc₊CC1_F = 0,
-        vsrc₊CC1_KI = (xfidq*2*pi)^2*(xwLf/ω0)/4,
-        vsrc₊CC1_KP = (xfidq*2*pi)*(xwLf/ω0),
+        vsrc₊CC1_KI = (xfidq*2*pi)^2*(xwLf/ωbase)/4,
+        vsrc₊CC1_KP = (xfidq*2*pi)*(xwLf/ωbase),
         vsrc₊CC1_Fcoupl = 0,
-        vsrc₊VC_KP = (xfvdq*2*pi)*(xwCf/ω0),
-        vsrc₊VC_KI = (xfvdq*2*pi)^2*(xwCf/ω0)/4*50,
+        vsrc₊VC_KP = (xfvdq*2*pi)*(xwCf/ωbase),
+        vsrc₊VC_KI = (xfvdq*2*pi)^2*(xwCf/ωbase)/4*50,
         vsrc₊VC_F = 0,
         vsrc₊VC_Fcoupl = 0,
         vsrc₊X_virt = Xov,
@@ -219,13 +221,12 @@ gfm_bus, bus3, loop3 = let
         vsrc₊C = xwCf,
         vsrc₊Rf = Rf,
         vsrc₊Lf = xwLf,
-        vsrc₊ω0 = ω0,
         vsrc₊Rg = Rc,
     )
     @named gfm_bus = compile_bus(MTKBus(droop); current_source=true)
     set_pfmodel!(gfm_bus, pfPV(P=0.5, V=1; current_source=true, assume_io_coupling=true))
 
-    @named shunt = DynamicParallelRCShunt(R=1/0.75, C=1e-5, ω0=ω0)
+    @named shunt = DynamicParallelRCShunt(R=1/0.75, C=1e-5)
     @named bus3 = compile_bus(MTKBus(shunt))
     set_pfmodel!(bus3, pfShunt(G=0.75, B=1e-5))
 
@@ -248,14 +249,13 @@ gfl_bus, bus4, loop4 = let
     f_pll=5; f_tau_pll=300; f_i_dq=600
 
     @named gfl = ComposableInverter.SimpleGFLDC(;
-        ω0 = ω0,
         Lf = xwLf,
         Rf = Rf,
         PLL_Kp = f_pll*2*pi,
         PLL_Ki = (f_pll*2*pi)^2/4,
         PLL_τ_lpf = 1/(f_tau_pll*2*pi),
-        CC1_KP = (xwLf/ω0) * (f_i_dq*2*pi),
-        CC1_KI = (xwLf/ω0) * (f_i_dq*2*pi)^2 / 4,
+        CC1_KP = (xwLf/ωbase) * (f_i_dq*2*pi),
+        CC1_KI = (xwLf/ωbase) * (f_i_dq*2*pi)^2 / 4,
         CC1_F = 0,
         CC1_Fcoupl = 0,
         C_dc = C_dc,
@@ -266,7 +266,7 @@ gfl_bus, bus4, loop4 = let
     @named gfl_bus = compile_bus(MTKBus(gfl); current_source=true)
     set_pfmodel!(gfl_bus, pfPQ(P=0.5, Q=-0.2; current_source=true))
 
-    @named shunt = DynamicParallelRCShunt(R=1/0.05, C=1e-5, ω0=ω0)
+    @named shunt = DynamicParallelRCShunt(R=1/0.05, C=1e-5)
     @named bus4 = compile_bus(MTKBus(shunt))
     set_pfmodel!(bus4, pfShunt(G=0.05, B=1e-5))
 
@@ -284,7 +284,7 @@ Line 3→4 includes a turns ratio of 0.99 in accordance with the SimplusGT model
 Static [`PiLine`](@ref) models are attached for the power flow solver.
 =#
 line12 = let
-    @named branch = DynamicSeriesRLBranch(R=0.01, L=0.3, ω0=ω0)
+    @named branch = DynamicSeriesRLBranch(R=0.01, L=0.3)
     lm = compile_line(MTKLine(branch); name=:l12, src=:bus1, dst=:bus2)
     @named branch_pf = PiLine(R=0.01, X=0.3)
     pfmod = compile_line(MTKLine(branch_pf); name=:l12_pfmod)
@@ -293,7 +293,7 @@ line12 = let
 end
 
 line23 = let
-    @named branch = DynamicSeriesRLBranch(R=0.01, L=0.3, ω0=ω0)
+    @named branch = DynamicSeriesRLBranch(R=0.01, L=0.3)
     lm = compile_line(MTKLine(branch); name=:l23, src=:bus2, dst=:bus3)
     @named branch_pf = PiLine(R=0.01, X=0.3)
     pfmod = compile_line(MTKLine(branch_pf); name=:l23_pfmod)
@@ -302,7 +302,7 @@ line23 = let
 end
 
 line31 = let
-    @named branch = DynamicSeriesRLBranch(R=0.01, L=0.3, ω0=ω0)
+    @named branch = DynamicSeriesRLBranch(R=0.01, L=0.3)
     lm = compile_line(MTKLine(branch); name=:l31, src=:bus3, dst=:bus1)
     @named branch_pf = PiLine(R=0.01, X=0.3)
     pfmod = compile_line(MTKLine(branch_pf); name=:l31_pfmod)
@@ -311,7 +311,7 @@ line31 = let
 end
 
 line34 = let
-    @named branch = DynamicSeriesRLBranch(R=0.01, L=0.3, ω0=ω0, r_dst=0.99)
+    @named branch = DynamicSeriesRLBranch(R=0.01, L=0.3, r_dst=0.99)
     lm = compile_line(MTKLine(branch); name=:l34, src=:bus3, dst=:bus4)
     @named branch_pf = PiLine(R=0.01, X=0.3, r_dst=0.99)
     pfmod = compile_line(MTKLine(branch_pf); name=:l34_pfmod)

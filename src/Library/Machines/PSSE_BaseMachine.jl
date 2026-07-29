@@ -32,6 +32,7 @@
         # System bases: inherited structurally from the bus this machine attaches to.
         Sbase, [bound_to = :systembase₊Sbase, description="System power base [MVA]"]
         ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
 
         # Machine parameters (free parameters - need guess values)
         M_b, [initf_weak = Sbase, description="Machine base power [MVA]"]
@@ -120,7 +121,10 @@
         anglei ~ atan(pii, pir)
 
         # Swing equations (from OpenIPSL line 122-123)
+        # `w` is the speed *deviation* from nominal [pu] (OpenIPSL convention), so the
+        # frame enters as its own deviation `ωframe - 1`, which is exactly 0 while the
+        # frame is pinned to nominal (written this way to avoid 1 + w - 1 cancellation).
         Dt(w) ~ ((pmech - D*w)/(w + 1) - Te)/(2*H)
-        Dt(delta) ~ 2*π*fn*w
+        Dt(delta) ~ ωbase*(w - (ωframe - 1))
     end
 end

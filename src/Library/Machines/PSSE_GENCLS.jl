@@ -31,7 +31,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         terminal = Terminal()
         # outputs
         δout = RealOutput() # rotor angle
-        ωout = RealOutput() # rotor speed [pu]
+        SPEED_out = RealOutput() # Machine speed deviation from nominal [pu]
         v_mag_out = RealOutput() # terminal voltage [pu]
         Pout = RealOutput() # active power [pu]
         Qout = RealOutput() # reactive power [pu]
@@ -47,6 +47,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         # System bases: inherited structurally from the bus this machine attaches to.
         Sbase, [bound_to = :systembase₊Sbase, description="System power base [MVA]"]
         ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
 
         # Derived base quantities: symbolic defaults -> parameter bindings (auto-observed),
         # written like parameters but tracking the bases (not independently settable).
@@ -112,8 +113,10 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         # Swing equation - conditional behavior based on H
         # equivalent to abs(H) > C.eps in OpenIPSL
         # H=0 -> inifinite bus (no dynamics)
+        # `ω` is the speed *deviation* from nominal [pu] (OpenIPSL convention); the frame
+        # enters as its own deviation `ωframe - 1` (exactly 0 while the frame is pinned).
         Dt(δ) ~ ifelse(H>1e-10,
-            ω * 2π * fn,
+            ωbase * (ω - (ωframe - 1)),
             0
         )
         Dt(ω) ~ ifelse(H>1e-10,
@@ -142,7 +145,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 
         # Outputs
         δout.u ~ δ
-        ωout.u ~ ω
+        SPEED_out.u ~ ω
         v_mag_out.u ~ V
         Pout.u ~ P
         Qout.u ~ Q

@@ -103,8 +103,9 @@ The equations of the rotor connected to the infinite bus can be written as:
 P_\mathrm{e} &= \frac{1}{X}\sin{\theta}&&\text{connection to infinite bus with}\ δ=0
 \end{aligned}
 ```
-where $M$ is the inertia, $\omega_s$ is the synchronous speed, $P_m$ is the mechanical power input, and $P_e$ is the electrical power output.
-The state is described by the rotor angle $\theta$ and the angular velocity $\omega$ (deviation from synchronous speed).
+where $M$ is the inertia, $P_m$ is the mechanical power input, and $P_e$ is the electrical power output.
+The state is described by the rotor angle $\theta$ in rad and the angular velocity $\omega$, an
+absolute deviation from synchronous speed in rad/s.
 The ideal rotor is connected to a slack bus via a lossless transmission line with reactance $X$.
 
 To simulate this system, we first need to import some packages...
@@ -258,7 +259,20 @@ full_equations(symbolic_swing) # show all equations
 The equations represent a classic swing equation with no voltage dynamics.
 We passed the keyword argument `V=1` to set the voltage magnitude to 1 p.u.
 So far, this is a "pure" MTK model, similar to the `symbolic_system` from above.
-The equations are structurally identical to the ones we defined manually above only differing in some conventions.
+
+The equations are the same swing equation we wrote by hand above, but in the per-unit
+conventions PowerDynamics uses throughout: $\omega$ is a frequency in p.u. (so it sits at
+$1$ in steady state, not at $0$), and the rotor angle is measured against the global
+reference frame that all bus voltages live in, which rotates at $\omega_\mathrm{frame}$
+[p.u.]. Converting that p.u. frequency into an angle in radians per *second* needs the
+frequency base $\omega_\mathrm{base} = 2\pi\cdot 50\,\mathrm{rad/s}$:
+
+```math
+\dot{\theta} = \omega_\mathrm{base}\,(\omega - \omega_\mathrm{frame})
+```
+
+Consequently `M` is a real inertia $M = 2H$ in seconds and `D` a damping coefficient in
+p.u. power per p.u. frequency.
 
 We can then compile the model to get rid of intermediate variables and make it ready for simulation. We do so by calling `compile_bus`. The additional call to `MTKBus` can be ignored for now and is explained in further tutorials and the [Modeling Concepts](@ref) docs.
 Additionally, we give the bus model an index using the `vidx` keyword (short for vertex index).
@@ -345,12 +359,26 @@ s0[VIndex(:swing, :symbolic_swing₊ω)] = 1 # alternatively, reference vertex b
 nothing #hide #md
 #=
 Instead of using the symbolic indices explicitly, `NWState` supports a more user-friendly syntax for accessing states.
-We set the mechanical power input, the inertia, and the damping of the machine at bus 1:
+We set the mechanical power input, the inertia, and the damping of the machine at bus 1.
+
+We want this to be the *identical* system to the one above, not merely a similar one, so the machine
+constants have to be converted. In the hand-written model $\omega$ was an absolute deviation in
+rad/s; the library model measures it in pu, the two being related by
+$\omega_\mathrm{rad/s} = \omega_\mathrm{base}\,(\omega_\mathrm{pu} - 1)$. Substituting that into the
+swing equation multiplies both constants by $\omega_\mathrm{base} = 2\pi\cdot50\ \mathrm{rad/s}$,
+while $P_\mathrm{m}$, being a per-unit power in both formulations, stays as it is:
 =#
 s0.v[1][:symbolic_swing₊Pm] =  1
-s0.v[1][:symbolic_swing₊M] = 1
-s0.v[:swing][:symbolic_swing₊D] = 1
+s0.v[1][:symbolic_swing₊M] = 1 * 2π*50    ## M = 2H [s]
+s0.v[:swing][:symbolic_swing₊D] = 1 * 2π*50   ## damping [pu power / pu frequency]
 nothing #hide #md
+#=
+!!! warning "These are not realistic machine constants"
+    $M = 2H \approx 314\,\mathrm{s}$ means an inertia constant of $H \approx 157\,\mathrm{s}$, which
+    is far outside the range of any real synchronous machine ($H \approx 2\ldots10\,\mathrm{s}$).
+    They are used here only to reproduce the toy model from the first half of this tutorial exactly.
+    The library defaults, `M=6` ($H = 3\,\mathrm{s}$) and `D=2`, are on a realistic scale.
+=#
 
 #=
 It is important to understand that at its core, `NWState` objects are just "wrappers" around flat arrays.
@@ -425,4 +453,10 @@ end
 We observe the expected behavior:
 - as in the pure MTK example, the swing node accelerates and oscillates around until it settles at a new steady state, where the angle difference between bus 1 and the slack bus (with $\delta=0$) leads to a power flow of $P_\mathrm{e} = P_\mathrm{m} = 1$ p.u.
 - in steady state, the active power injected at bus 1 is equal to the active power extracted at bus 2 (lossless line)
+
+Because we converted the machine constants, this is in fact *the same trajectory* as in the first
+half of the tutorial: $\theta(t)$ and $P_\mathrm{e}(t)$ agree curve for curve. The only quantity
+that looks different is the frequency, and only because of how it is reported: the library model
+tracks a pu frequency settling back to $1$, whereas the hand-written model tracks the absolute
+deviation settling back to $0$.
 =#

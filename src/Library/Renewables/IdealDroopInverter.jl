@@ -3,6 +3,10 @@
 
 Simplified droop-controlled inverter with first-order power filtering and ideal voltage source output.
 
+The droop law sets the inverter frequency `ω` in pu; the voltage angle `δ` is measured
+against the **global dq frame**, hence `Dt(δ) ~ ωbase*(ω - ωframe)`. `ωset` (droop
+setpoint) and `ωframe` (frame gauge) coincide numerically but are distinct quantities.
+
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
 @mtkmodel IdealDroopInverter begin
@@ -14,11 +18,13 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         Pset, [description="Active power setpoint [pu]", guess=1]
         Qset, [description="Reactive power setpoint [pu]", guess=0]
         Vset, [description="Voltage magnitude setpoint [pu]", guess=1]
-        ω₀=1, [description="Nominal frequency [pu]"]
-        Kp=1, [description="Active power droop coefficient"]
-        Kq=0.1, [description="Reactive power droop coefficient"]
-        τ_p = 1, [description="Active Power filter time constant [s]"]
-        τ_q = 1, [description="Reactive Power filter time constant [s]"]
+        ωset=1, [description="Frequency setpoint [pu]"]
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
+        Kp=0.05, [description="Active power droop coefficient [pu freq / pu power]"]
+        Kq=0.05, [description="Reactive power droop coefficient"]
+        τ_p = 0.1, [description="Active Power filter time constant [s]"]
+        τ_q = 0.1, [description="Reactive Power filter time constant [s]"]
     end
 
     @variables begin
@@ -40,12 +46,12 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         τ_p * Dt(Pfilt) ~ Pmeas - Pfilt
         τ_q * Dt(Qfilt) ~ Qmeas - Qfilt
 
-        ## Droop control equations
-        ω ~ ω₀ - Kp * (Pfilt - Pset)  # Frequency decreases with excess power
+        ## Droop control equations (ωset is a setpoint, not the frame speed)
+        ω ~ ωset - Kp * (Pfilt - Pset)  # Frequency decreases with excess power
         V ~ Vset - Kq * (Qfilt - Qset)  # Voltage decreases with excess reactive power
 
-        ## Voltage angle dynamics
-        Dt(δ) ~ ω - ω₀
+        ## Voltage angle dynamics (δ is measured against the global dq frame → ωframe)
+        Dt(δ) ~ ωbase*(ω - ωframe)
 
         ## Output voltage components
         terminal.u_r ~ V*cos(δ)
