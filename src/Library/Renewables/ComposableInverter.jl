@@ -24,11 +24,11 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     @components begin
         terminal = Terminal()
     end
-    @structural_parameters begin
-        ωbase   # System frequency base [rad/s]
-        ωframe  # Global dq frame speed [pu]
-        Rf
-        Lf  # Filter reactance [pu] (frequency-normalized inductance)
+    @parameters begin
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
+        Rf = 0.01, [description="Filter resistance [pu]"]
+        Lf = 0.05, [description="Filter reactance [pu] (frequency-normalized inductance)"]
     end
     @variables begin
         i_f_r(t), [guess=0]
@@ -57,12 +57,12 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     @components begin
         terminal = Terminal()
     end
-    @structural_parameters begin
-        ωbase   # System frequency base [rad/s]
-        ωframe  # Global dq frame speed [pu]
-        Rf
-        Lf  # Filter reactance [pu] (frequency-normalized inductance)
-        C   # Filter susceptance [pu] (frequency-normalized capacitance)
+    @parameters begin
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
+        Rf = 0.01, [description="Filter resistance [pu]"]
+        Lf = 0.007, [description="Filter reactance [pu] (frequency-normalized inductance)"]
+        C = 0.5, [description="Filter susceptance [pu] (frequency-normalized capacitance)"]
     end
     @variables begin
         i_f_r(t), [guess=0]
@@ -108,16 +108,14 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     @components begin
         terminal = Terminal()
     end
-    @structural_parameters begin
-        ωbase   # System frequency base [rad/s]
-        ωframe  # Global dq frame speed [pu]
-        Rf
-        Lf  # Inverter-side reactance [pu] (frequency-normalized inductance)
-        C   # Filter susceptance [pu] (frequency-normalized capacitance)
-        Rg
-        Lg  # Grid-side reactance [pu] (frequency-normalized inductance)
-    end
     @parameters begin
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
+        Rf = 0.01, [description="Inverter-side filter resistance [pu]"]
+        Lf = 0.007, [description="Inverter-side reactance [pu] (frequency-normalized inductance)"]
+        C = 0.5, [description="Filter susceptance [pu] (frequency-normalized capacitance)"]
+        Rg = 0.01, [description="Grid-side filter resistance [pu]"]
+        Lg = 0.007, [description="Grid-side reactance [pu] (frequency-normalized inductance)"]
         connected = 1
     end
     @variables begin
@@ -168,7 +166,14 @@ Inner current controller for the inverter-side inductor current, implementing PI
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
-@component function CC1(; name, Lf, F, Fcoupl=1, KP, KI, defaults...)
+@component function CC1(; name, defaults...)
+    pars = @parameters begin
+        Lf = 0.007, [description="Filter reactance used by the cross-coupling term [pu]"]
+        F = 0, [description="Capacitor voltage feedforward gain"]
+        Fcoupl = 1, [description="dq cross-coupling decoupling gain"]
+        KP = 0.063, [description="Proportional gain"]
+        KI = 63, [description="Integral gain"]
+    end
     vars = @variables begin
         γ_d(t), [guess=0]
         γ_q(t), [guess=0]
@@ -194,7 +199,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         Dt.(γ) .~ i_f_ref - i_f,
         V_I .~ -Fcoupl*Lf*W*i_f + KP*(i_f_ref - i_f) + KI*γ + F*V_C
     )
-    sys = System(eqs, t; name)
+    sys = System(eqs, t, vars, pars; name)
     sys = set_mtk_defaults(sys, defaults)
     return sys
 end
@@ -206,7 +211,14 @@ Voltage controller for the filter capacitor voltage, implementing PI control wit
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
-@component function VC(; name, C, F, Fcoupl=1, KP, KI, defaults...)
+@component function VC(; name, defaults...)
+    pars = @parameters begin
+        C = 0.5, [description="Filter susceptance used by the cross-coupling term [pu]"]
+        F = 0, [description="Grid current feedforward gain"]
+        Fcoupl = 1, [description="dq cross-coupling decoupling gain"]
+        KP = 0.952, [description="Proportional gain"]
+        KI = 317.4, [description="Integral gain"]
+    end
     vars = @variables begin
         γ_d(t), [guess=0]
         γ_q(t), [guess=0]
@@ -232,7 +244,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         Dt.(γ) .~ V_C_ref - V_C,
         i_f_ref .~ -Fcoupl*C*W*V_C + KP*(V_C_ref - V_C) + KI*γ + F*i_g
     )
-    sys = System(eqs, t; name)
+    sys = System(eqs, t, vars, pars; name)
     sys = set_mtk_defaults(sys, defaults)
     return sys
 end
@@ -244,7 +256,14 @@ Outer current controller for the grid-side inductor current, implementing PI con
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
-@component function CC2(; name, Lg, F, Fcoupl=1, KP, KI, defaults...)
+@component function CC2(; name, defaults...)
+    pars = @parameters begin
+        Lg = 0.007, [description="Grid-side reactance used by the cross-coupling term [pu]"]
+        F = 1, [description="Grid voltage feedforward gain"]
+        Fcoupl = 1, [description="dq cross-coupling decoupling gain"]
+        KP = 0.189, [description="Proportional gain"]
+        KI = 0.630, [description="Integral gain"]
+    end
     vars = @variables begin
         γ_d(t), [guess=0]
         γ_q(t), [guess=0]
@@ -270,7 +289,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         Dt.(γ) .~ i_g_ref - i_g,
         V_C_ref .~ -Fcoupl*Lg*W*i_g + KP*(i_g_ref - i_g) + KI*γ + F*V_g
     )
-    sys = System(eqs, t; name)
+    sys = System(eqs, t, vars, pars; name)
     sys = set_mtk_defaults(sys, defaults)
     return sys
 end
@@ -287,26 +306,14 @@ to inner current controller (CC1). Operates in a fixed dq-frame (no PLL). Suitab
 - Islanded or weak-grid operation
 - Droop-controlled systems (via DroopInverter wrapper)
 
-# Parameters
-- `Vset_input`: If true, voltage setpoint comes from RealInput ports. If false, uses internal Vset/δset parameters.
-- `filter_type`: `:LC` for LC filter or `:LCL` for LCL filter.
-- `Lf`: Inverter-side filter reactance [pu]. Related to physical inductance by Lf = ωbase * Lf_actual.
-- `C`: Filter susceptance [pu]. Related to physical capacitance by C = ωbase * C_actual.
-- `Lg`: Grid-side filter reactance [pu]. Related to physical inductance by Lg = ωbase * Lg_actual (LCL only).
-- `ωbase`/`ωframe`: System frequency base [rad/s] and global dq frame speed [pu], inherited from the container's `systembase` (`bound_to = :systembase₊…`); not constructor arguments.
-- Various PI controller gains (CC1_KP, CC1_KI, VC_KP, VC_KI)
-- `defaults...`: Additional parameter/variable defaults (e.g., `Lf=0.01, CC1_KP=0.1`)
-
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
 @component function VoltageSource(; name, Vset_input=false, filter_type=:LC, defaults...)
-    @parameters begin
+    pars = @parameters begin
         # Filter parameters
         Rf  = 0.01
         Lf = 0.007, [description="Inverter-side filter reactance [pu] (frequency-normalized inductance)"]
         C = 0.5,  [description="Filter susceptance [pu] (frequency-normalized capacitance)"]
-        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
-        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
         # cc1
         CC1_KP = 0.063
         CC1_KI = 63
@@ -323,23 +330,23 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     end
     # Grid-side inductor parameters (only for LCL)
     if filter_type == :LCL
-        @parameters begin
+        append!(pars, @parameters begin
             Rg  = 0.01
             Lg = 0.007, [description="Grid-side filter reactance [pu] (frequency-normalized inductance)"]
-        end
+        end)
     end
     if !Vset_input
-        @parameters begin
+        append!(pars, @parameters begin
             Vset, [guess=1, description="Voltage magnitude setpoint in pu"]
             δset, [guess=0, description="dq-frame position relative to global frame"]
-        end
+        end)
     end
 
     # Create filter subsystem based on filter_type
     if filter_type == :LC
-        @named filter = LCFilter(; ωbase, ωframe, Rf, Lf, C)
+        @named filter = LCFilter(; Rf, Lf, C)
     else  # :LCL
-        @named filter = LCLFilter(; ωbase, ωframe, Rf, Lf, C, Rg, Lg)
+        @named filter = LCLFilter(; Rf, Lf, C, Rg, Lg)
     end
 
     @named cc1 = CC1(; Lf=Lf, F=CC1_F, Fcoupl=CC1_Fcoupl, KP=CC1_KP, KI=CC1_KI)
@@ -375,7 +382,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         vc.V_C_ref_d ~ _Vset - (vc.i_g_d * R_virt - vc.i_g_q * X_virt)
         vc.V_C_ref_q ~       - (vc.i_g_q * R_virt + vc.i_g_d * X_virt)
     ]
-    sys = System(eqs, t; name, systems)
+    sys = System(eqs, t, Num[], pars; name, systems)
     sys = set_mtk_defaults(sys, defaults)
     return sys
 end
@@ -391,25 +398,14 @@ Implements three-loop control: outer current controller (CC2) → voltage contro
 - Renewable energy sources (solar, wind) in grid-connected mode
 - Active/reactive power control applications
 
-# Parameters
-- `iset_input`: If true, current setpoint comes from RealInput ports. If false, uses internal iset_d/iset_q parameters.
-- `Lf`: Inverter-side filter reactance [pu]. Related to physical inductance by Lf = ωbase * Lf_actual.
-- `C`: Filter susceptance [pu]. Related to physical capacitance by C = ωbase * C_actual.
-- `Lg`: Grid-side filter reactance [pu]. Related to physical inductance by Lg = ωbase * Lg_actual.
-- `ωbase`/`ωframe`: System frequency base [rad/s] and global dq frame speed [pu], inherited from the container's `systembase` (`bound_to = :systembase₊…`); not constructor arguments.
-- PLL and controller gains (PLL_Kp, PLL_Ki, CC1_*, VC_*, CC2_*)
-- `defaults...`: Additional parameter/variable defaults (e.g., `Lf=0.01, PLL_Kp=100`)
-
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
 @component function CurrentSource(; name, iset_input=false, defaults...)
-    @parameters begin
+    pars = @parameters begin
         # LCL Filter parameters
         Rf  = 0.01
         Lf = 0.007, [description="Inverter-side filter reactance [pu] (frequency-normalized inductance)"]
         C = 0.5,  [description="Filter susceptance [pu] (frequency-normalized capacitance)"]
-        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
-        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
         Rg  = 0.01
         Lg = 0.007, [description="Grid-side filter reactance [pu] (frequency-normalized inductance)"]
 
@@ -438,14 +434,14 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 
     # Current setpoint parameters (when not using inputs)
     if !iset_input
-        @parameters begin
+        append!(pars, @parameters begin
             iset_d, [guess=0, description="dq-frame current setpoint (d-axis)"]
             iset_q, [guess=0, description="dq-frame current setpoint (q-axis)"]
-        end
+        end)
     end
 
     # Create filter subsystem (always LCL for current control)
-    @named filter = LCLFilter(; ωbase, ωframe, Rf, Lf, C, Rg, Lg)
+    @named filter = LCLFilter(; Rf, Lf, C, Rg, Lg)
 
     # Create PLL subsystem
     @named pll = SimplePLL(; Kp=PLL_Kp, Ki=PLL_Ki)
@@ -506,7 +502,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         cc2.i_g_ref_d ~ _iset_d
         cc2.i_g_ref_q ~ _iset_q
     ]
-    sys = System(eqs, t; name, systems)
+    sys = System(eqs, t, Num[], pars; name, systems)
     sys = set_mtk_defaults(sys, defaults)
     return sys
 end
@@ -532,7 +528,7 @@ Power droop outer control loop implementing P-f and Q-V droop for grid-forming i
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
-@component function DroopOuter(; name, pq_input=false, Pset=nothing, Qset=nothing, defaults...)
+@component function DroopOuter(; name, pq_input=false, defaults...)
     @parameters begin
         Vset, [description = "Voltage magnitude setpoint [pu]", guess=1]
         ωset = 1, [description = "Frequency setpoint [pu]"]
@@ -556,8 +552,8 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         append!(systems, (P_in, Q_in))
     else
         @parameters begin
-            Pset=Pset, [guess=1, description = "Active power setpoint [pu]"]
-            Qset=Qset, [guess=0, description = "Reactive power setpoint [pu]"]
+            Pset, [guess=1, description = "Active power setpoint [pu]"]
+            Qset, [guess=0, description = "Reactive power setpoint [pu]"]
         end
     end
     _Pset = pq_input ? P_in.u : Pset
@@ -652,7 +648,11 @@ frequency in pu is `ωframe + Δω_pll/ωbase`.
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
-@component function SimplePLL(; name, Kp, Ki, defaults...)
+@component function SimplePLL(; name, defaults...)
+    pars = @parameters begin
+        Kp = 250, [description="Proportional gain"]
+        Ki = 1000, [description="Integral gain"]
+    end
     vars = @variables begin
         δ_pll(t), [guess=0, description="PLL angle against the global dq frame [rad]"]
         Δω_pll(t), [guess=0, description="PLL frequency deviation from the global dq frame [rad/s]"]
@@ -670,7 +670,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         Dt(δ_pll) ~ Δω_pll + Kp*u_q
         Dt(Δω_pll) ~ Ki*u_q
     ]
-    sys = System(eqs, t; name)
+    sys = System(eqs, t, vars, pars; name)
     sys = set_mtk_defaults(sys, defaults)
     return sys
 end
@@ -694,7 +694,12 @@ estimated frequency `Δω`.
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
-@component function PLL_LPF(; name, Kp, Ki, τ_lpf, defaults...)
+@component function PLL_LPF(; name, defaults...)
+    pars = @parameters begin
+        Kp = 2π*10, [description="Proportional gain"]
+        Ki = (2π*10)^2/4, [description="Integral gain"]
+        τ_lpf = 1/(2π*300), [description="Frequency low-pass filter time constant [s]"]
+    end
     vars = @variables begin
         Δω_pll_i(t), [guess=0, description="PI integrator state [rad/s]"]
         Δω(t), [guess=0, description="Frequency deviation from the global dq frame [rad/s]"]
@@ -711,7 +716,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         Dt(Δω) ~ (Δω_pll_i + e_ang*Kp - Δω) / τ_lpf
         Dt(θ) ~ Δω
     ]
-    sys = System(eqs, t; name)
+    sys = System(eqs, t, vars, pars; name)
     sys = set_mtk_defaults(sys, defaults)
     return sys
 end
@@ -730,18 +735,15 @@ Suitable for:
 # Parameters
 - `iset_input`: If true, current setpoint comes from RealInput ports. If false, uses internal iset_d/iset_q parameters.
 - `Lf`: Filter reactance [pu]. Related to physical inductance by Lf = ωbase * Lf_actual.
-- `ωbase`/`ωframe`: System frequency base [rad/s] and global dq frame speed [pu], inherited from the container's `systembase` (`bound_to = :systembase₊…`); not constructor arguments.
 - PLL and CC1 controller gains
 - `defaults...`: Additional parameter/variable defaults (e.g., `Lf=0.05, PLL_Kp=50`)
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
 @component function SimpleGFL(; name, iset_input=false, defaults...)
-    @parameters begin
+    pars = @parameters begin
         Rf  = 0.01
         Lf = 0.05, [description="Filter reactance [pu] (frequency-normalized inductance)"]
-        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
-        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
         # PLL
         PLL_Kp = 2π*10
         PLL_Ki = (2π*10)^2/4
@@ -754,13 +756,13 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     end
 
     if !iset_input
-        @parameters begin
+        append!(pars, @parameters begin
             iset_d, [guess=0, description="dq-frame current setpoint (d-axis)"]
             iset_q, [guess=0, description="dq-frame current setpoint (q-axis)"]
-        end
+        end)
     end
 
-    @named filter = LFilter(; ωbase, ωframe, Rf, Lf)
+    @named filter = LFilter(; Rf, Lf)
     @named pll = PLL_LPF(; Kp=PLL_Kp, Ki=PLL_Ki, τ_lpf=PLL_τ_lpf)
     @named cc1 = CC1(; Lf=Lf, F=CC1_F, Fcoupl=CC1_Fcoupl, KP=CC1_KP, KI=CC1_KI)
 
@@ -795,7 +797,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         cc1.i_f_ref_d ~ _iset_d
         cc1.i_f_ref_q ~ _iset_q
     ]
-    sys = System(eqs, t; name, systems)
+    sys = System(eqs, t, Num[], pars; name, systems)
     sys = set_mtk_defaults(sys, defaults)
     return sys
 end
@@ -811,24 +813,12 @@ The DC voltage controller generates active current reference (q-axis). Suitable 
 - Renewable sources with DC power input (solar PV, battery storage)
 - Studies requiring DC-side transient analysis
 
-# Parameters
-- `Lf`: Filter reactance [pu]. Related to physical inductance by Lf = ωbase * Lf_actual.
-- `ωbase`/`ωframe`: System frequency base [rad/s] and global dq frame speed [pu], inherited from the container's `systembase` (`bound_to = :systembase₊…`); not constructor arguments.
-- `C_dc`: DC-link capacitance [pu]
-- `V_dc`: DC voltage reference [pu]
-- `kp_v_dc`, `ki_v_dc`: DC voltage PI controller gains
-- `P_dc`: External DC power draw [pu]
-- PLL and CC1 controller gains
-- `defaults...`: Additional parameter/variable defaults (e.g., `Lf=0.03, V_dc=2.0`)
-
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
 @component function SimpleGFLDC(; name, defaults...)
-    @parameters begin
+    pars = @parameters begin
         Rf  = 0.01
         Lf = 0.03, [description="Filter reactance [pu] (frequency-normalized inductance)"]
-        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
-        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
         # PLL
         PLL_Kp = 2π*5
         PLL_Ki = (2π*5)^2/4
@@ -849,12 +839,12 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         P_dc, [guess=0, description="External DC power draw"]
     end
 
-    @variables begin
+    vars = @variables begin
         v_dc_state(t), [guess=2.5, description="DC capacitor voltage"]
         v_dc_i(t), [guess=0, description="DC voltage PI integrator"]
     end
 
-    @named filter = LFilter(; ωbase, ωframe, Rf, Lf)
+    @named filter = LFilter(; Rf, Lf)
     @named pll = PLL_LPF(; Kp=PLL_Kp, Ki=PLL_Ki, τ_lpf=PLL_τ_lpf)
     @named cc1 = CC1(; Lf=Lf, F=CC1_F, Fcoupl=CC1_Fcoupl, KP=CC1_KP, KI=CC1_KI)
 
@@ -889,7 +879,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         C_dc * Dt(v_dc_state) ~ (P_ac - P_dc) / v_dc_state
         Dt(v_dc_i) ~ (V_dc - v_dc_state) * ki_v_dc
     ]
-    sys = System(eqs, t; name, systems)
+    sys = System(eqs, t, vars, pars; name, systems)
     sys = set_mtk_defaults(sys, defaults)
     return sys
 end
