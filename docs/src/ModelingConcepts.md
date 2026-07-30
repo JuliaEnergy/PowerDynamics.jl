@@ -301,6 +301,9 @@ however they will be kept around as so-called "observed" states, meaning we can 
                                       ╚═════════════════════════╝
 ```
 
+If you hand `compile_bus` a bare *injector* instead of a bus, it wraps it in a single-injector
+`MTKBus` for you; `compile_bus(machine)` is exactly `compile_bus(MTKBus(machine))`.
+
 ### (MTK) Line Model to EdgeModel: `compile_line`
 ```asciiart
 
@@ -317,6 +320,9 @@ however they will be kept around as so-called "observed" states, meaning we can 
 └─────────────────────────────┘         ║ └──────────────────────────┘ ║
                                         ╚══════════════════════════════╝
 ```
+
+The same sugar applies here: a bare *branch* is wrapped into a single-branch `MTKLine`, so
+`compile_line(piline)` is `compile_line(MTKLine(piline))`.
 
 ### End to End Example
 Putting the knowledge from this document together, we can start a short simulation of an example network:
@@ -415,7 +421,38 @@ i_lines ──→│          │  (t)
 It receives the sum of all line currents as an input and balances this with the currents flowing into the terminal.
 As an output, it forwards the terminal voltage to the backend.
 
-### Model: `LineEnd()`
+Besides that interface, the busbar owns the **voltage base of the bus**:
+
+| Parameter | Unit | Meaning |
+|:----------|:-----|:--------|
+| `Vbase`   | kV   | Voltage base of this bus |
+| `Ibase`   | kA   | `Sbase/Vbase`, derived |
+| `Zbase`   | Ω    | `Vbase²/Sbase`, derived |
+| `Ybase`   | S    | `Sbase/Vbase²`, derived |
+
+`Sbase` and `ωbase` appear on the busbar too, but only as shadows bound to the bus'
+`systembase` (see below). `Vbase` is the one base that is genuinely **per bus**: a generator
+bus behind a step-up transformer sits at a different voltage level than the transmission bus
+it feeds. Set it with the `Vbase` keyword of either constructor
+```julia
+bus = MTKBus(machine; Vbase=16.5)         # on the symbolic model
+vertex = compile_bus(bus; Vbase=16.5)     # or when compiling
+```
+or, on an already compiled model, with
+[`set_default!(vertex, :busbar₊Vbase, 16.5)`](@extref NetworkDynamics.set_default!).
+If none of these is given, the bus falls back to the module-level global read at construction
+time ([`get_Vbase`](@ref)/[`set_Vbase!`](@ref), `1.0` by default).
+
+Everything the bus computes is in per unit; the bases exist to convert back. The busbar
+therefore also carries the SI observables `u_kV`, `P_MW`, `Q_MVAr` and `i_kA` — the pu
+quantities times the matching base, and thus only as meaningful as the bases you set.
+
+The neighbors of a bus inherit this value rather than declaring their own: the ends of every
+incident line take it from their bus (see [`LineEnd()`](@ref lineend-model) below), and a
+satellite bus takes it from its hub (see [Current Injector Bus](@ref current-injector-bus)).
+[`check_base_consistency`](@ref) verifies after initialization that this actually holds.
+
+### [Model: `LineEnd()`](@id lineend-model)
 A `LineEnd` model is very similar to the `BusBar` model.
 It represents one end of a transmission line.
 ```asciiart
@@ -428,6 +465,9 @@ i_line ←──│           │
 
 It has special input/output connectors which handle the network interconnection.
 The main difference being the distinct input/output conventions for the network interface.
+It carries the same bases and SI observables as the `BusBar` (`Vbase` with the derived
+`Ibase`/`Zbase`/`Ybase`, and `u_kV`/`P_MW`/`Q_MVAr`/`i_kA`), but it does not own its voltage
+base:
 
 A `LineEnd` is always constructed with a `side` kwarg (`:src` or `:dst`) telling it which end
 of the line it is. That is what allows it to inherit its voltage base from the bus it is
