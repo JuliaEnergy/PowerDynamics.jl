@@ -123,7 +123,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         xg1(t), [guess=1]
         # xg1_sat(t)
         xg2(t), [guess=0]
-        Δω(t), [description="Speed deviation from the setpoint [pu]"]
+        Δω(t), [description="Speed deviation from ω_ref [pu]"]
     end
     begin
         _ω_ref = ω_ref_input ? ω_ref.u : ω_ref
@@ -134,9 +134,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         # https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20TGOV1%20and%20TGOV1D.htm
         # and milano
 
-        # TODO: GOV: Δω absolute or relative?
-        # Δω ~ ω_meas.u - _ω_ref
-        Δω ~ ω_meas.u / _ω_ref - 1
+        Δω ~ ω_meas.u - _ω_ref
 
         ref_sig ~ 1/R*(_p_ref  - Δω)
 
