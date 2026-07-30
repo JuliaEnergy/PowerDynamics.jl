@@ -171,6 +171,11 @@ PowerDynamics itself.
   (`Q - Qset = (Vset - V_grid)/(X + Kq)`), and 0.05 pu is the same order as a typical converter
   transformer. Since the frame rework already forces `Kp` to be retuned, retune `Kq` with it
   rather than relying on the default.
+- **EMT parameters are named for what they hold: `X` (reactance) and `B` (susceptance).**
+  The dynamic EMT components stored reactance/susceptance values under inductance/capacitance
+  *names*, so `L = 0.3` meant a reactance of 0.3 pu and every docstring needed a sentence
+  explaining that `L` was not an inductance. The names now match the values. The topology (C or L) is
+  given in model name so X/B are not ambiguous.
 
 ### Fixed
 

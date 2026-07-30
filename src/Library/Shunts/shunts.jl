@@ -32,15 +32,18 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 end
 
 """
-    DynamicCShunt(; C)
+    DynamicCShunt(; B)
 
 Dynamic shunt element modeled as a pure capacitor.
 
-The capacitor voltage is a differential state, suitable for DAE index reduction at
-current-source buses and modelling shunt capacitor banks without resistive losses.
+**Differential state: the capacitor voltage** `V_C_r`/`V_C_i` — suitable for DAE index
+reduction at current-source buses and for modelling shunt capacitor banks without
+resistive losses.
 
 # Parameters
-- `C`: Shunt susceptance [pu] at frequency `ωbase`. Related to physical capacitance by C = ωbase * C_actual.
+- `B`: Shunt susceptance [pu], evaluated at `ωbase` (physical capacitance is `B/ωbase` [pu·s]).
+       Capacitive, i.e. `B > 0`; an inductive shunt has the reactor current as its state and
+       is therefore a different model.
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
@@ -51,7 +54,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     @parameters begin
         ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
         ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
-        C, [description="Shunt susceptance [pu] (frequency-normalized capacitance)"]
+        B, [description="Shunt susceptance [pu] at ωbase"]
     end
     @variables begin
         V_C_r(t), [guess=1, description="Capacitor voltage real part (dq frame) [pu]"]
@@ -60,10 +63,10 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         i_C_i(t), [guess=0, description="Capacitor current imaginary part (dq frame) [pu]"]
     end
     @equations begin
-        # Capacitor dynamics in the rotating dq frame (C is susceptance). The cross
-        # terms are the transport-theorem jω contribution → frame speed ωframe [pu].
-        C/ωbase * Dt(V_C_r) ~ -i_C_r + ωframe*C*V_C_i
-        C/ωbase * Dt(V_C_i) ~ -i_C_i - ωframe*C*V_C_r
+        # Capacitor dynamics in the rotating dq frame. The cross terms are the
+        # transport-theorem jω contribution → frame speed ωframe [pu].
+        B/ωbase * Dt(V_C_r) ~ -i_C_r + ωframe*B*V_C_i
+        B/ωbase * Dt(V_C_i) ~ -i_C_i - ωframe*B*V_C_r
         # Terminal voltage = capacitor voltage
         terminal.u_r ~ V_C_r
         terminal.u_i ~ V_C_i
@@ -74,19 +77,23 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 end
 
 """
-    DynamicParallelRCShunt(; R, C)
+    DynamicParallelRCShunt(; R, B)
 
 Dynamic shunt element modeled as a parallel R ∥ C circuit.
 
 This model represents a parallel combination of resistance and capacitance connected to a bus.
-The capacitor voltage is a differential state, suitable for:
+**Differential state: the capacitor voltage** `V_C_r`/`V_C_i`. Suitable for:
 - Shunt capacitor banks with resistive losses
 - Dynamic susceptance for DAE index reduction at current-source buses
 - Fast transient behavior of reactive compensation
 
+Note that the phasor admittance `Y = 1/R + jB` does not by itself determine the dynamics —
+a series R–C shunt has the same `Y` at nominal frequency but different transients. The
+topology is fixed by the model choice, after which `R` and `B` are unambiguous.
+
 # Parameters
 - `R`: Shunt resistance [pu]
-- `C`: Shunt susceptance [pu] at frequency `ωbase`. Related to physical capacitance by C = ωbase * C_actual.
+- `B`: Shunt susceptance [pu], evaluated at `ωbase` (physical capacitance is `B/ωbase` [pu·s])
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
@@ -98,7 +105,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
         ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
         R, [description="Shunt resistance [pu]"]
-        C, [description="Shunt susceptance [pu] (frequency-normalized capacitance)"]
+        B, [description="Shunt susceptance [pu] at ωbase"]
     end
     @variables begin
         V_C_r(t), [guess=1, description="Capacitor voltage real part (dq frame) [pu]"]
@@ -109,10 +116,10 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         i_R_i(t), [guess=0, description="Resistor current imaginary part (dq frame) [pu]"]
     end
     @equations begin
-        # Capacitor dynamics in the rotating dq frame (C is susceptance). The cross
-        # terms are the transport-theorem jω contribution → frame speed ωframe [pu].
-        C/ωbase * Dt(V_C_r) ~ -i_C_r + ωframe*C*V_C_i
-        C/ωbase * Dt(V_C_i) ~ -i_C_i - ωframe*C*V_C_r
+        # Capacitor dynamics in the rotating dq frame. The cross terms are the
+        # transport-theorem jω contribution → frame speed ωframe [pu].
+        B/ωbase * Dt(V_C_r) ~ -i_C_r + ωframe*B*V_C_i
+        B/ωbase * Dt(V_C_i) ~ -i_C_i - ωframe*B*V_C_r
         # Resistor current (Ohm's law)
         i_R_r ~ -terminal.u_r / R
         i_R_i ~ -terminal.u_i / R

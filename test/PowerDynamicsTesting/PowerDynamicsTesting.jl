@@ -33,8 +33,7 @@ include("reftests.jl")
 
 using PowerDynamics.Library: SauerPaiMachine, ConstantYLoad, AVRTypeI, TGOV1
 using PowerDynamics: CompositeInjector, MTKBus, pfSlack, pfPV, pfPQ
-using PowerDynamics: set_Sbase!, set_ωbase!, set_fbase!, set_Vbase!
-using PowerDynamics: get_Sbase, get_ωbase, get_fbase, get_Vbase
+using PowerDynamics: set_ωbase!, set_fbase!, get_ωbase
 include("testsystems.jl")
 
 export OpenIPSL_SMIB, ref_rms_error

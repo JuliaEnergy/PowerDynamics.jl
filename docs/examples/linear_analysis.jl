@@ -162,7 +162,7 @@ sg1_bus, bus1, loop1 = let
     @named sg1_bus = compile_bus(MTKBus(sm); current_source=true)
     set_pfmodel!(sg1_bus, pfSlack(V=1, δ=0; current_source=true, assume_io_coupling=true))
 
-    @named shunt = DynamicParallelRCShunt(R=1/0.6, C=1e-5)
+    @named shunt = DynamicParallelRCShunt(R=1/0.6, B=1e-5)
     @named bus1 = compile_bus(MTKBus(shunt))
     set_pfmodel!(bus1, pfShunt(G=0.6, B=1e-5))
 
@@ -176,7 +176,7 @@ sg2_bus, bus2, loop2 = let
     @named sg2_bus = compile_bus(MTKBus(sm); current_source=true)
     set_pfmodel!(sg2_bus, pfPV(P=0.5, V=1; current_source=true, assume_io_coupling=true))
 
-    @named shunt = DynamicParallelRCShunt(R=1/0.6, C=1e-5)
+    @named shunt = DynamicParallelRCShunt(R=1/0.6, B=1e-5)
     @named bus2 = compile_bus(MTKBus(shunt))
     set_pfmodel!(bus2, pfShunt(G=0.6, B=1e-5))
 
@@ -217,16 +217,16 @@ gfm_bus, bus3, loop3 = let
         vsrc₊VC_Fcoupl = 0,
         vsrc₊X_virt = Xov,
         vsrc₊R_virt = 0,
-        vsrc₊Lg = xwLc,
-        vsrc₊C = xwCf,
+        vsrc₊Xg = xwLc,
+        vsrc₊Bc = xwCf,
         vsrc₊Rf = Rf,
-        vsrc₊Lf = xwLf,
+        vsrc₊Xf = xwLf,
         vsrc₊Rg = Rc,
     )
     @named gfm_bus = compile_bus(MTKBus(droop); current_source=true)
     set_pfmodel!(gfm_bus, pfPV(P=0.5, V=1; current_source=true, assume_io_coupling=true))
 
-    @named shunt = DynamicParallelRCShunt(R=1/0.75, C=1e-5)
+    @named shunt = DynamicParallelRCShunt(R=1/0.75, B=1e-5)
     @named bus3 = compile_bus(MTKBus(shunt))
     set_pfmodel!(bus3, pfShunt(G=0.75, B=1e-5))
 
@@ -249,7 +249,7 @@ gfl_bus, bus4, loop4 = let
     f_pll=5; f_tau_pll=300; f_i_dq=600
 
     @named gfl = ComposableInverter.SimpleGFLDC(;
-        Lf = xwLf,
+        Xf = xwLf,
         Rf = Rf,
         PLL_Kp = f_pll*2*pi,
         PLL_Ki = (f_pll*2*pi)^2/4,
@@ -266,7 +266,7 @@ gfl_bus, bus4, loop4 = let
     @named gfl_bus = compile_bus(MTKBus(gfl); current_source=true)
     set_pfmodel!(gfl_bus, pfPQ(P=0.5, Q=-0.2; current_source=true))
 
-    @named shunt = DynamicParallelRCShunt(R=1/0.05, C=1e-5)
+    @named shunt = DynamicParallelRCShunt(R=1/0.05, B=1e-5)
     @named bus4 = compile_bus(MTKBus(shunt))
     set_pfmodel!(bus4, pfShunt(G=0.05, B=1e-5))
 
@@ -284,7 +284,7 @@ Line 3→4 includes a turns ratio of 0.99 in accordance with the SimplusGT model
 Static [`PiLine`](@ref) models are attached for the power flow solver.
 =#
 line12 = let
-    @named branch = DynamicSeriesRLBranch(R=0.01, L=0.3)
+    @named branch = DynamicSeriesRLBranch(R=0.01, X=0.3)
     lm = compile_line(MTKLine(branch); name=:l12, src=:bus1, dst=:bus2)
     @named branch_pf = PiLine(R=0.01, X=0.3)
     pfmod = compile_line(MTKLine(branch_pf); name=:l12_pfmod)
@@ -293,7 +293,7 @@ line12 = let
 end
 
 line23 = let
-    @named branch = DynamicSeriesRLBranch(R=0.01, L=0.3)
+    @named branch = DynamicSeriesRLBranch(R=0.01, X=0.3)
     lm = compile_line(MTKLine(branch); name=:l23, src=:bus2, dst=:bus3)
     @named branch_pf = PiLine(R=0.01, X=0.3)
     pfmod = compile_line(MTKLine(branch_pf); name=:l23_pfmod)
@@ -302,7 +302,7 @@ line23 = let
 end
 
 line31 = let
-    @named branch = DynamicSeriesRLBranch(R=0.01, L=0.3)
+    @named branch = DynamicSeriesRLBranch(R=0.01, X=0.3)
     lm = compile_line(MTKLine(branch); name=:l31, src=:bus3, dst=:bus1)
     @named branch_pf = PiLine(R=0.01, X=0.3)
     pfmod = compile_line(MTKLine(branch_pf); name=:l31_pfmod)
@@ -311,7 +311,7 @@ line31 = let
 end
 
 line34 = let
-    @named branch = DynamicSeriesRLBranch(R=0.01, L=0.3, r_dst=0.99)
+    @named branch = DynamicSeriesRLBranch(R=0.01, X=0.3, r_dst=0.99)
     lm = compile_line(MTKLine(branch); name=:l34, src=:bus3, dst=:bus4)
     @named branch_pf = PiLine(R=0.01, X=0.3, r_dst=0.99)
     pfmod = compile_line(MTKLine(branch_pf); name=:l34_pfmod)
@@ -1021,7 +1021,7 @@ show_eigenvalue_sensitivity(s0, critical_mode_i; params=psyms, threshold=0.01, s
 
 #=
 The most impactful parameters are:
-- The grid-side filter resistance `Rg` and inductance `Lg` (can't be "tuned" since they are physical parameters)
+- The grid-side filter resistance `Rg` and reactance `Xg` (can't be "tuned" since they are physical parameters)
 - The topology parameter `connected` which is not tunable
 - The proportional and integral gains of the voltage controller `VC_KP` and `VC_KI`
 
