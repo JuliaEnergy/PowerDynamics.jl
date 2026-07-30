@@ -4,6 +4,7 @@ using PowerDynamics: @capture, postwalk
 using Graphs
 using ModelingToolkitBase
 using ModelingToolkitBase: t_nounits as t, D_nounits as Dt
+using SciCompDSL: @mtkmodel
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using PowerDynamics.Library
 using NetworkDynamics: set_mtk_defaults

@@ -524,12 +524,24 @@ For two parallel branches to behave like the original single branch:
 - Shunt admittances (G, B): 0.5× original (parallel combination gives original)
 - Transformation ratios (r): same as original
 
+The replacement also has to sit on the same per-unit bases as the network it joins. Bases are
+baked into a model when it is *constructed*, and `protected_template` was compiled at the top
+of this page — long before the IEEE39 model set its 60 Hz frequency base. So we copy the
+global bases off the line we are replacing, alongside the electrical parameters. (`Vbase` on
+the two line ends needs no attention: it is inherited from the incident buses at
+initialization.) [`check_base_consistency`](@ref), which `initialize_from_pf!` runs for us,
+would otherwise refuse the resulting network.
+
 =#
 function protected_line_from_line(e::EdgeModel)
     new = copy(protected_template)
     ## copy src and destination information
     src_dst = get_graphelement(e)
     set_graphelement!(new, src_dst)
+    ## adopt the network's global per-unit bases
+    for base in [:systembase₊Sbase, :systembase₊ωbase, :systembase₊ωframe]
+        set_default!(new, base, get_default(e, base))
+    end
     for branch in [:pibranchA, :pibranchB]
         ## Impedances: double them (2× original)
         set_default!(new, Symbol(branch, "₊", :R), 2 * get_default(e, :piline₊R))
