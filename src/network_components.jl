@@ -3,14 +3,21 @@
 ####
 
 """
-    compile_bus(sys::System; verbose=false, name=getname(sys), assume_io_coupling=false, check=true, kwargs...)
+    compile_bus(sys::System; verbose=false, name=nothing, assume_io_coupling=false, check=true, kwargs...)
 
 Create a VertexModel from an `System` that satisfies the bus model interface.
 
+As a convenience, a system which satisfies the *injector* model interface (see
+[`isinjectormodel`](@ref)) instead is wrapped into a single-injector bus automatically:
+`compile_bus(machine)` is fully equivalent to `compile_bus(MTKBus(machine))`, including the
+resulting name (`:bus`, the [`MTKBus`](@ref) default) — pass `name` to override it.
+
 # Arguments
 - `sys::System`: The system must satisfy the bus model interface (see [`isbusmodel`](@ref))
+  or the injector model interface, in which case it is wrapped in an [`MTKBus`](@ref)
 - `verbose::Bool=false`: Enable verbose output during creation
-- `name`: Name for the bus (defaults to system name)
+- `name`: Name for the bus (defaults to the name of the bus system, i.e. `:bus` when a bare
+  injector was wrapped)
 - `assume_io_coupling::Bool=false`: If true, assume output depends on inputs (see NetworkDynamics.jl docs)
 - `check::Bool=true`: If false, skip component validation checks
 - `current_source::Bool=false`: If true, compile for use as an injector node via a [`LoopbackConnection`](@extref NetworkDynamics.LoopbackConnection)
@@ -40,7 +47,7 @@ See also: [`MTKBus`](@ref)
 function compile_bus(
     sys::System;
     verbose=false,
-    name=getname(sys),
+    name=nothing,
     assume_io_coupling=false,
     check=true,
     current_source=false,
@@ -50,12 +57,14 @@ function compile_bus(
     Vbase=nothing,
     kwargs...)
     if !isbusmodel(sys)
-        msg = "The system must satisfy the bus model interface!"
         if isinjectormodel(sys)
-            msg *= " $(get_name(sys)) satisfies the component interface, did you mean to use `MTKBus`?"
+            sys = MTKBus(sys)
+        else
+            throw(ArgumentError("The system must satisfy the bus model interface!"))
         end
-        throw(ArgumentError(msg))
     end
+    # resolved *after* wrapping, so the sugar is equivalent to the explicit spelling
+    name = isnothing(name) ? getname(sys) : name
     # `Vbase` convenience kwarg: sugar for the `busbar₊Vbase => …` default override
     vbase_override = isnothing(Vbase) ? (;) : NamedTuple{(Symbol("busbar₊Vbase"),)}((Vbase,))
     sys = add_systembase(sys) # no-opt if present
@@ -165,14 +174,21 @@ end
 #### Network level Line representation
 ####
 """
-    compile_line(sys::System; verbose=false, name=getname(sys), assume_io_coupling=false, check=true, kwargs...)
+    compile_line(sys::System; verbose=false, name=nothing, assume_io_coupling=false, check=true, kwargs...)
 
 Create an EdgeModel from a `System` that satisfies the line model interface.
 
+As a convenience, a system which satisfies the *branch* model interface (see
+[`isbranchmodel`](@ref)) instead is wrapped into a single-branch line automatically:
+`compile_line(piline)` is fully equivalent to `compile_line(MTKLine(piline))`, including the
+resulting name (`:line`, the [`MTKLine`](@ref) default) — pass `name` to override it.
+
 # Arguments
 - `sys::System`: The system must satisfy the line model interface (see [`islinemodel`](@ref))
+  or the branch model interface, in which case it is wrapped in an [`MTKLine`](@ref)
 - `verbose::Bool=false`: Enable verbose output during creation
-- `name`: Name for the line (defaults to system name)
+- `name`: Name for the line (defaults to the name of the line system, i.e. `:line` when a
+  bare branch was wrapped)
 - `assume_io_coupling::Bool=false`: If true, assume output depends on inputs (see NetworkDynamics.jl docs)
 - `check::Bool=true`: If false, skip component validation checks
 - `kwargs...`: Additional keyword arguments passed to the Line constructor
@@ -203,19 +219,21 @@ See also: [`MTKLine`](@ref)
 function compile_line(
     sys::System;
     verbose=false,
-    name=getname(sys),
+    name=nothing,
     assume_io_coupling=false,
     check=true,
     mtkcompile=nothing,
     kwargs...
 )
     if !islinemodel(sys)
-        msg = "The system must satisfy the line model interface!"
         if isbranchmodel(sys)
-            msg *= " $(get_name(sys)) satisfies the branch interface, did you mean to use `MTKLine`?"
+            sys = MTKLine(sys)
+        else
+            throw(ArgumentError("The system must satisfy the line model interface!"))
         end
-        throw(ArgumentError(msg))
     end
+    # resolved *after* wrapping, so the sugar is equivalent to the explicit spelling
+    name = isnothing(name) ? getname(sys) : name
     sys = add_systembase(sys) # no-opt if present
     io = _lineio(sys, :src, :dst)
     edgef = EdgeModel(sys, io.srcin, io.dstin, io.srcout, io.dstout; verbose, name, assume_io_coupling, check, mtkcompile)

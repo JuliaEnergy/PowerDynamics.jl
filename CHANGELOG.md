@@ -215,6 +215,11 @@ PowerDynamics itself.
 - **New: optional stator dynamics in `SauerPaiMachine`** via
   `SauerPaiMachine(; stator_dynamics=true)`, which replaces the algebraic stator
   formulation with `1/ωbase · Dt(ψ_d,ψ_q)`.
+- **`compile_bus`/`compile_line` accept a bare injector/branch.** A single component that
+  satisfies the injector interface (or the branch interface) is wrapped automatically, so
+  `compile_bus(machine)` means `compile_bus(MTKBus(machine))` and `compile_line(piline)` means
+  `compile_line(MTKLine(piline))`. Previously this was an error suggesting you add the
+  `MTKBus`/`MTKLine` call yourself.
 - **New: `mtkcompile` keyword on `compile_bus` and `compile_line`**, forwarded to
   `VertexModel`/`EdgeModel`. Pass `true` for MTK's (AGPL) simplification pipeline or
   `:compare` to print both side by side.

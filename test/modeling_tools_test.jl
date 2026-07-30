@@ -140,3 +140,28 @@ end
     end
 end
 
+@testset "compile_bus/compile_line wrap bare injectors/branches" begin
+    @named swing = Swing(Pm=1.0)
+    @named piline = PiLine(R=0.01, X=0.1)
+
+    # a bare injector/branch is wrapped in MTKBus/MTKLine, giving the same model
+    # as the explicit two-step spelling — name included
+    @test compile_bus(swing).psym == compile_bus(MTKBus(swing)).psym
+    @test compile_bus(swing).name == compile_bus(MTKBus(swing)).name == :bus
+    @test compile_line(piline).psym == compile_line(MTKLine(piline)).psym
+    @test compile_line(piline).name == compile_line(MTKLine(piline)).name == :line
+    # an explicit name still wins, in both spellings
+    @test compile_bus(swing; name=:mybus).name == :mybus
+    @test compile_line(piline; name=:myline).name == :myline
+
+    # kwargs still apply to the wrapped model
+    @test get_default(compile_bus(swing; Vbase=110), :busbar₊Vbase) == 110
+    @test get_default_from(compile_bus(swing; current_source=true), :busbar₊Vbase) ==
+        (:hub, :busbar₊Vbase)
+
+    # a system which satisfies neither interface is still rejected
+    @named neither = RealOutput()
+    @test_throws ArgumentError compile_bus(neither)
+    @test_throws ArgumentError compile_line(neither)
+end
+
