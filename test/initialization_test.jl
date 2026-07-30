@@ -357,3 +357,92 @@ end
     nw(du, uflat(s0), pflat(s0), 0.0)
     @test maximum(abs, du) < 1e-10
 end
+
+@testset "per unit base consistency check" begin
+    ## minimal current source injector, so the network has a satellite/hub pair.
+    ## The injected current is free (guess only) so it can meet the powerflow solution.
+    @mtkmodel ConstIInjector begin
+        @components begin
+            terminal = Terminal()
+        end
+        @parameters begin
+            Iset_r, [guess=0.5, description="injected d-current"]
+            Iset_i, [guess=0.1, description="injected q-current"]
+        end
+        @equations begin
+            terminal.i_r ~ Iset_r
+            terminal.i_i ~ Iset_i
+        end
+    end
+
+    ## slack --line-- hub bus, with the injector hanging off the hub as a satellite
+    function build_nw(; Sbase_line=nothing)
+        slackbus = compile_bus(SlackDifferential(name=:slack); vidx=1, pf=pfSlack(V=1), Vbase=380)
+
+        @named shunt = DynamicParallelRCShunt(R=1/0.05, B=1e-5)
+        hubbus = compile_bus(MTKBus(shunt; name=:hub); vidx=2, Vbase=380)
+        set_pfmodel!(hubbus, pfShunt(G=0.05, B=1e-5))
+
+        @named inj = ConstIInjector()
+        satbus = compile_bus(MTKBus(inj; name=:sat); vidx=3, current_source=true)
+        set_pfmodel!(satbus, pfPQ(P=0.5, Q=0.1; current_source=true))
+
+        line = compile_line(MTKLine(PiLine(; name=:piline, R=0.01, X=0.1, B_src=0, B_dst=0)); src=1, dst=2)
+        isnothing(Sbase_line) || set_default!(line, :systembase₊Sbase, Sbase_line)
+        loop = LoopbackConnection(; potential=[:u_r, :u_i], flow=[:i_r, :i_i], src=:sat, dst=:hub, name=:loop)
+
+        Network([slackbus, hubbus, satbus], [line, loop]; warn_order=false)
+    end
+
+    nw = build_nw()
+    s0 = initialize_from_pf(nw; verbose=false)
+    ## consistent network: the satellite inherited its hub's Vbase, both line ends their bus'
+    @test s0.p[VIndex(3, :busbar₊Vbase)] == 380
+    @test s0.p[EIndex(1, :src₊Vbase)] == 380
+    @test isnothing(check_base_consistency(s0))
+
+    ## every base is checked; each case tweaks the initialized state in place
+    let s = copy(s0) # global power base, diverging on a vertex
+        s.p[VIndex(2, :systembase₊Sbase)] = 250
+        @test_throws ErrorException check_base_consistency(s)
+        @test_logs (:warn,) check_base_consistency(s; check=:warn)
+        @test_logs check_base_consistency(s; check=:none)
+    end
+    let s = copy(s0) # global frequency base, diverging on an edge
+        s.p[EIndex(1, :systembase₊ωbase)] = 2π*60
+        @test_throws ErrorException check_base_consistency(s)
+        @test_logs (:warn,) check_base_consistency(s; check=:warn)
+        @test_logs check_base_consistency(s; check=:none)
+    end
+    let s = copy(s0) # frame speed
+        s.p[VIndex(3, :systembase₊ωframe)] = 1.01
+        @test_throws ErrorException check_base_consistency(s)
+        @test_logs (:warn,) check_base_consistency(s; check=:warn)
+        @test_logs check_base_consistency(s; check=:none)
+    end
+    let s = copy(s0) # line end vs the bus it is attached to
+        s.p[EIndex(1, :dst₊Vbase)] = 110
+        @test_throws ErrorException check_base_consistency(s)
+        @test_logs (:warn,) check_base_consistency(s; check=:warn)
+        @test_logs check_base_consistency(s; check=:none)
+    end
+    let s = copy(s0) # satellite vs its hub, reached through the loopback edge
+        s.p[VIndex(3, :busbar₊Vbase)] = 110
+        @test_throws ErrorException check_base_consistency(s)
+        @test_logs (:warn,) check_base_consistency(s; check=:warn)
+        @test_logs check_base_consistency(s; check=:none)
+    end
+
+    ## odd one out reporting: majority summarized by count, minority named individually
+    let s = copy(s0)
+        s.p[VIndex(2, :systembase₊Sbase)] = 250
+        msg = try; check_base_consistency(s); catch err; err.msg; end
+        @test occursin("100.0 on 3 components", msg)
+        @test occursin("250.0 on VIndex(2) (hub)", msg)
+    end
+
+    ## and it is wired into initialize_from_pf, bypassable via `check`
+    nw_broken = build_nw(; Sbase_line=250)
+    @test_throws ErrorException initialize_from_pf(nw_broken; verbose=false)
+    @test initialize_from_pf(nw_broken; verbose=false, check=:none) isa NWState
+end

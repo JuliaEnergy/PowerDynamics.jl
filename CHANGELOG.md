@@ -199,6 +199,13 @@ PowerDynamics itself.
   (`@pfinitconstraint :x * scale - @pf(:z)` inside a loop). They now capture locals
   correctly, and `show` prints the macro form the user wrote instead of leaking
   `Expr(:escape, …)` into the output.
+- **New: `check_base_consistency(s::NWState)`**, applied automatically to the initialized
+  state by `initialize_from_pf[!]` via its new `check` keyword (`:error` by default, `:warn`
+  and `:none` to downgrade or skip). It verifies that
+  - `systembase₊Sbase`, `systembase₊ωbase` and `systembase₊ωframe` are identical on every bus
+    and every line,
+  - every line end's `Vbase` matches `busbar₊Vbase` of the bus it is attached to ,
+  - every satellite (injector) bus carries the `Vbase` of its hub.
 - **`initialize_from_pf` no longer ignores `pfs0`** — the supplied start state was
   overwritten with the powerflow *network*, so a hand-tuned powerflow guess had no effect.
 - `tol` and `nwtol` are forwarded through `initialize_from_pf` to the residual check.

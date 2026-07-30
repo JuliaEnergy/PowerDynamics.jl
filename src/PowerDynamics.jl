@@ -2,7 +2,7 @@ module PowerDynamics
 
 using Reexport: Reexport, @reexport
 @reexport using NetworkDynamics
-using NetworkDynamics: SymbolicView, getcomp
+using NetworkDynamics: SymbolicView, getcomp, is_loopback
 
 using SciMLBase: SciMLBase
 using NonlinearSolve: NonlinearSolve
@@ -50,7 +50,7 @@ using DataFrames: DataFrame
 using OrderedCollections: OrderedDict
 export pfSlack, pfPV, pfPQ, pfShunt
 export solve_powerflow, initialize_from_pf!, initialize_from_pf, show_powerflow
-export powerflow_model, ispfmodel
+export powerflow_model, ispfmodel, check_base_consistency
 export has_pfmodel, get_pfmodel, set_pfmodel!, delete_pfmodel!
 include("powerflow.jl")
 

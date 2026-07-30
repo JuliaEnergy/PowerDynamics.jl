@@ -74,6 +74,7 @@ initialize_from_pf
 show_powerflow
 powerflow_model
 ispfmodel
+check_base_consistency
 ```
 
 ### Power Flow Model Management Functions
