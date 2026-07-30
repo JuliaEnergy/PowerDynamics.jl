@@ -139,10 +139,8 @@ PowerDynamics itself.
     carries a speed *deviation* (OpenIPSL convention) while `ωout` on `SauerPaiMachine`/
     `ClassicalMachine` carries an absolute pu speed, so the shared name was actively
     misleading. Nothing consumed it.
-  - **`PLL_LPF`: `ω` → `Δω`, `ω_pll_i` → `Δω_pll_i`; `SimplePLL`: `ω_pll` → `Δω_pll`.**
-    These are frame-*relative* frequency deviations in rad/s that lock to zero, not pu
-    absolute frequencies. `PLL_LPF`'s stale `guess = 2π*50` on that lock-to-zero quantity
-    is fixed to `0`.
+  - **The two PLLs' states are renamed and unified.** See docstring and model sources for details.
+    Main reason: highlight that tracking frequency is in rad/s and unify output states θ and ω.
 - **`Swing` and `IdealDroopInverter` had no `ωbase` at all** — their angle equations
   (`Dt(θ) ~ ω - ω_ref`) implicitly assumed normalized time, so with `ω` in pu the rotor
   angle advanced ~314× too slowly. Both now use `Dt(θ) ~ ωbase*(ω - ωframe)`, and their

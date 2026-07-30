@@ -476,19 +476,19 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         pll.u_i ~ terminal.u_i
 
         # CC1 measurements (using PLL angle)
-        [cc1.i_f_d, cc1.i_f_q] .~ _ri_to_dq(filter.i_f_r, filter.i_f_i, pll.δ_pll)
-        [cc1.V_C_d, cc1.V_C_q] .~ _ri_to_dq(filter.V_C_r, filter.V_C_i, pll.δ_pll)
+        [cc1.i_f_d, cc1.i_f_q] .~ _ri_to_dq(filter.i_f_r, filter.i_f_i, pll.θ)
+        [cc1.V_C_d, cc1.V_C_q] .~ _ri_to_dq(filter.V_C_r, filter.V_C_i, pll.θ)
 
         # VC measurements
-        [vc.V_C_d, vc.V_C_q] .~ _ri_to_dq(filter.V_C_r, filter.V_C_i, pll.δ_pll)
-        [vc.i_g_d, vc.i_g_q] .~ _ri_to_dq(filter.i_g_r, filter.i_g_i, pll.δ_pll)
+        [vc.V_C_d, vc.V_C_q] .~ _ri_to_dq(filter.V_C_r, filter.V_C_i, pll.θ)
+        [vc.i_g_d, vc.i_g_q] .~ _ri_to_dq(filter.i_g_r, filter.i_g_i, pll.θ)
 
         # CC2 measurements (grid current and terminal voltage)
-        [cc2.i_g_d, cc2.i_g_q] .~ _ri_to_dq(filter.i_g_r, filter.i_g_i, pll.δ_pll)
-        [cc2.V_g_d, cc2.V_g_q] .~ _ri_to_dq(terminal.u_r, terminal.u_i, pll.δ_pll)
+        [cc2.i_g_d, cc2.i_g_q] .~ _ri_to_dq(filter.i_g_r, filter.i_g_i, pll.θ)
+        [cc2.V_g_d, cc2.V_g_q] .~ _ri_to_dq(terminal.u_r, terminal.u_i, pll.θ)
 
         # CC1 output → filter
-        [filter.V_I_r, filter.V_I_i] .~ _dq_to_ri(cc1.V_I_d, cc1.V_I_q, pll.δ_pll)
+        [filter.V_I_r, filter.V_I_i] .~ _dq_to_ri(cc1.V_I_d, cc1.V_I_q, pll.θ)
 
         # VC output → CC1 reference
         cc1.i_f_ref_d ~ vc.i_f_ref_d
@@ -637,9 +637,9 @@ end
 Basic PLL that tracks the grid voltage angle by driving the q-axis voltage to zero.
 Uses a PI controller on the angle error signal `u_q`.
 
-`δ_pll` is measured against the global dq frame, so the tracked frequency `Δω_pll` is a
-**deviation from the frame** in [rad/s] and locks to zero in steady state. The absolute
-frequency in pu is `ωframe + Δω_pll/ωbase`.
+`θ` is measured against the global dq frame, so the tracked frequency `Δω_rad_s` is a
+**deviation from the frame** in [rad/s] and locks to zero in steady state. Consume `ω`
+instead for the tracked grid frequency as an absolute quantity in pu.
 
 # Parameters
 - `Kp`: Proportional gain
@@ -652,23 +652,28 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     pars = @parameters begin
         Kp = 250, [description="Proportional gain"]
         Ki = 1000, [description="Integral gain"]
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
     end
     vars = @variables begin
-        δ_pll(t), [guess=0, description="PLL angle against the global dq frame [rad]"]
-        Δω_pll(t), [guess=0, description="PLL frequency deviation from the global dq frame [rad/s]"]
+        θ(t), [guess=0, description="PLL angle against the global dq frame [rad]"]
+        Δω_rad_s(t), [guess=0, description="PLL frequency deviation from the global dq frame [rad/s]"]
+        ω(t), [guess=1, description="Tracked grid frequency [pu], absolute"]
         u_q(t)                  # q-axis voltage (internal)
         u_r(t)                  # measured voltage (real)
         u_i(t)                  # measured voltage (imag)
     end
 
-    # u_q drives to zero when δ_pll tracks grid angle
-    # u_q = (u_r*sin(-δ) + u_i*cos(-δ)) / |u|
+    # u_q drives to zero when θ tracks grid angle
+    # u_q = (u_r*sin(-θ) + u_i*cos(-θ)) / |u|
     u_mag = sqrt(u_r^2 + u_i^2)
 
     eqs = [
-        u_q ~ (u_r*sin(-δ_pll) + u_i*cos(-δ_pll)) / u_mag
-        Dt(δ_pll) ~ Δω_pll + Kp*u_q
-        Dt(Δω_pll) ~ Ki*u_q
+        u_q ~ (u_r*sin(-θ) + u_i*cos(-θ)) / u_mag
+        Dt(θ) ~ Δω_rad_s + Kp*u_q
+        Dt(Δω_rad_s) ~ Ki*u_q
+        # The state is frame-relative; this is the frame-independent quantity to consume.
+        ω ~ ωframe + Δω_rad_s/ωbase
     ]
     sys = System(eqs, t, vars, pars; name)
     sys = set_mtk_defaults(sys, defaults)
@@ -682,9 +687,9 @@ PLL with an additional low-pass filter on the frequency output.
 Uses a PI controller on the angle error, followed by a first-order LPF on the
 estimated frequency `Δω`.
 
-`θ` is measured against the global dq frame, so `Δω` is a **deviation from the frame** in
-[rad/s] and locks to zero in steady state. The absolute frequency in pu is
-`ωframe + Δω/ωbase`.
+`θ` is measured against the global dq frame, so `Δω_rad_s` is a **deviation from the frame**
+in [rad/s] and locks to zero in steady state. Consume `ω` instead for the tracked grid
+frequency as an absolute quantity in pu.
 
 # Parameters
 - `Kp`: Proportional gain
@@ -699,11 +704,14 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         Kp = 2π*10, [description="Proportional gain"]
         Ki = (2π*10)^2/4, [description="Integral gain"]
         τ_lpf = 1/(2π*300), [description="Frequency low-pass filter time constant [s]"]
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
     end
     vars = @variables begin
-        Δω_pll_i(t), [guess=0, description="PI integrator state [rad/s]"]
-        Δω(t), [guess=0, description="Frequency deviation from the global dq frame [rad/s]"]
+        Δω_i_rad_s(t), [guess=0, description="PI integrator state [rad/s]"]
+        Δω_rad_s(t), [guess=0, description="Frequency deviation from the global dq frame [rad/s]"]
         θ(t), [guess=0, description="PLL angle against the global dq frame [rad]"]
+        ω(t), [guess=1, description="Tracked grid frequency [pu], absolute"]
         e_ang(t)
         u_r(t)
         u_i(t)
@@ -712,9 +720,11 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     eqs = [
         # Error signal: v_q in d-axis aligned convention (drives q→0 at lock)
         e_ang ~ -sin(θ)*u_r + cos(θ)*u_i
-        Dt(Δω_pll_i) ~ e_ang * Ki
-        Dt(Δω) ~ (Δω_pll_i + e_ang*Kp - Δω) / τ_lpf
-        Dt(θ) ~ Δω
+        Dt(Δω_i_rad_s) ~ e_ang * Ki
+        Dt(Δω_rad_s) ~ (Δω_i_rad_s + e_ang*Kp - Δω_rad_s) / τ_lpf
+        Dt(θ) ~ Δω_rad_s
+        # The state is frame-relative; this is the frame-independent quantity to consume.
+        ω ~ ωframe + Δω_rad_s/ωbase
     ]
     sys = System(eqs, t, vars, pars; name)
     sys = set_mtk_defaults(sys, defaults)

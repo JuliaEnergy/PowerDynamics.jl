@@ -123,7 +123,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         xg1(t), [guess=1]
         # xg1_sat(t)
         xg2(t), [guess=0]
-        Δω(t), [description="Speed deviation"]
+        Δω(t), [description="Speed deviation from the setpoint [pu]"]
     end
     begin
         _ω_ref = ω_ref_input ? ω_ref.u : ω_ref
