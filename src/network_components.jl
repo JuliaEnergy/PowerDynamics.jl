@@ -135,16 +135,6 @@ function compile_bus(template::VertexModel; copy=true, vidx=nothing, pf=nothing,
 end
 
 """
-    Bus(args...; kwargs...) => compile_bus(args...; kwargs...)
-
-DEPRECATED! Use [`compile_bus`](@ref) instead.
-"""
-function Bus(args...; kwargs...)
-    @warn "`Bus(...)` is deprecated in favor of `compile_bus(...)`" maxlog=1
-    compile_bus(args...; kwargs...)
-end
-
-"""
     simplify_mtkbus(sys::System; busbar=:busbar)
 
 Structurally simplify a bus model `System` by eliminating equations.
@@ -248,16 +238,6 @@ function compile_line(edgef::EdgeModel; copy=true, src=nothing, dst=nothing, nam
     end
 
     edgef
-end
-
-"""
-    Line(args...; kwargs...) => compile_line(args...; kwargs...)
-
-DEPRECATED! Use [`compile_line`](@ref) instead.
-"""
-function Line(args...; kwargs...)
-    @warn "`Line(...)` is deprecated in favor of `compile_line(...)`" maxlog=1
-    compile_line(args...; kwargs...)
 end
 
 """
