@@ -37,7 +37,7 @@ In order to obtain the **local** dq-frame voltages and currents, we need to appl
 In addition to the transformation, the model is defined by the following equations:
 ```math
 \begin{aligned}
-\frac{d\delta}{dt} &= \omega_b(\omega - 1) &\text{(Milano 15.5)} \\
+\frac{d\delta}{dt} &= \omega_\mathrm{base}(\omega - \omega_\mathrm{frame}) &\text{(Milano 15.5)} \\
 2H \frac{d\omega}{dt} &= \frac{P_m}{\omega} - \tau_e &\text{(Power form of Milano 15.5)} \\
 \psi_d &= V_q + R_s I_q &\text{(Milano 15.11)} \\
 \psi_q &= -V_d - R_s I_d &\text{(Milano 15.11)} \\
@@ -46,6 +46,13 @@ In addition to the transformation, the model is defined by the following equatio
 0 &= V_d + R_s I_d - X'_d I_q &\text{(Milano 15.36)}
 \end{aligned}
 ```
+$\delta$ is measured against the global dq frame, so its derivative is driven by the
+*difference* between rotor speed and frame speed $\omega_\mathrm{frame}$ — both in pu, scaled
+into rad/s by $\omega_\mathrm{base}$. Milano writes this with a literal $1$ in place of
+$\omega_\mathrm{frame}$, which is the same equation as long as the frame runs at nominal
+speed (it is pinned to $1$ in PowerDynamics). Naming the frame explicitly is what keeps it
+distinguishable from a frequency *setpoint*, which is a different quantity that happens to
+have the same value here.
 
 We can use the ModelingToolkit DSL to define the full injector model:
 =#
@@ -64,10 +71,11 @@ using CairoMakie
         R_s=0.000124, [description="stator resistance"]
         X′_d=0.0608, [description="d-axis transient reactance"]
         H=23.64, [description="inertia constant"]
-        ## The frequency base is a system-level quantity. Instead of carrying its own
-        ## copy, the machine declares a shadow that is structurally bound to the
-        ## `systembase` of whatever bus it is placed in.
+        ## The frequency base and the speed of the global dq frame are system-level
+        ## quantities. Instead of carrying its own copies, the machine declares shadows
+        ## that are structurally bound to the `systembase` of whatever bus it is placed in.
         ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
         vf_set, [guess=1, description="field voltage"]
         P_m, [guess=1, description="mechanical power"]
     end
@@ -94,7 +102,7 @@ using CairoMakie
         [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i]
 
         ## mechanical swing equation Milano 15.5
-        Dt(δ) ~ ωbase*(ω - 1)
+        Dt(δ) ~ ωbase*(ω - ωframe)
         2*H * Dt(ω) ~ P_m/ω - τ_e
 
         ## static flux linkage equations Milano 15.11
@@ -127,9 +135,14 @@ There are two ways of doing so: manually and using the `MTKBus` constructor.
 
 **Manual Construction**
 
-We need to define a new MTK model, which has 3 components: a busbar, the machine and a component holding the system base.
-Both electrical components have a `terminal` as a subcomponent, we can use the `connect` function
+We need to define a new MTK model with two components: a busbar and the machine.
+Both have a `terminal` as a subcomponent, so we can use the `connect` function
 to hook the machine on the busbar.
+
+Note that the machine's `ωbase`/`ωframe` shadows point at a `systembase` component that we
+never declare. We do not have to: `compile_bus` adds one if the model does not bring its own.
+You *can* write `@named systembase = SystemBase()` yourself, which is how you would bake
+non-default bases into the symbolic model (e.g. `SystemBase(ωbase=2π*60)`).
 =#
 @mtkmodel MyMTKBus begin
     @components begin
@@ -336,10 +349,11 @@ First, we create a modified Milano machine with control inputs/outputs:
         R_s=0.000124, [description="stator resistance"]
         X′_d=0.0608, [description="d-axis transient reactance"]
         H=23.64, [description="inertia constant"]
-        ## The frequency base is a system-level quantity. Instead of carrying its own
-        ## copy, the machine declares a shadow that is structurally bound to the
-        ## `systembase` of whatever bus it is placed in.
+        ## The frequency base and the speed of the global dq frame are system-level
+        ## quantities. Instead of carrying its own copies, the machine declares shadows
+        ## that are structurally bound to the `systembase` of whatever bus it is placed in.
         ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
         P_m, [guess=1, description="mechanical power"]
     end
     @variables begin
@@ -365,7 +379,7 @@ First, we create a modified Milano machine with control inputs/outputs:
         [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i]
 
         ## mechanical swing equation Milano 15.5
-        Dt(δ) ~ ωbase*(ω - 1)
+        Dt(δ) ~ ωbase*(ω - ωframe)
         2*H * Dt(ω) ~ P_m/ω - τ_e
 
         ## static flux linkage equations Milano 15.11

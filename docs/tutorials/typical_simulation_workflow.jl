@@ -162,7 +162,7 @@ we told each component at the compile step where it is placed in the network (se
 =#
 nw = Network([bus1, bus2, bus3], [line12, line13, line23])
 #=
-The Network object tells us that we've just defined a system with 7 States and 39 parameters. We have 3 vertices of 2 unique types
+The Network object tells us that we've just defined a system with 7 States and 66 parameters. We have 3 vertices of 2 unique types
 (the inverter bus and the load bus) and 3 edges of a single unique type (all power lines are the same pi-line type).
 
 The "states" and "parameters" already hint at a very important property of PowerDynamics/NetworkDynamics:

@@ -44,8 +44,6 @@ compile_bus
 compile_line
 simplify_mtkbus
 simplify_mtkline
-Bus
-Line
 ```
 
 ## Interface Checking Functions

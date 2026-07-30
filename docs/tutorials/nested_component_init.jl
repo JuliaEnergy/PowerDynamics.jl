@@ -277,6 +277,7 @@ the governor.
         ## constructor argument, the component declares a local shadow that is
         ## structurally bound to the bus's `systembase`, and is filled in at compile time.
         ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
     end
     components = @named begin
         terminal = Terminal()
@@ -308,8 +309,8 @@ the governor.
         ## Park transformations
         [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q]
         [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i]
-        ## swing equation
-        Dt(δ) ~ ωbase*(ω - 1)
+        ## swing equation; δ is measured against the global dq frame, which rotates at ωframe [pu]
+        Dt(δ) ~ ωbase*(ω - ωframe)
         2*H*Dt(ω) ~ P_m/ω - τ_e
         τ_e ~ (V_q + R_s*I_q)*I_q + (V_d + R_s*I_d)*I_d
         ## magnetic equations

@@ -62,7 +62,7 @@ using Test #src
     @variables begin
         i_d(t), [guess=0, description="d-axis stator current [pu]"]
         i_q(t), [guess=1, description="q-axis stator current [pu]"]
-        w(t), [guess=2*pi*50, description="Rotor speed deviation [rad/s]"]
+        w(t), [guess=2*pi*50, description="Rotor speed [rad/s]"]
         theta(t), [guess=0, description="Rotor angle [rad]"]
         v_d(t), [guess=1, description="d-axis terminal voltage [pu]"]
         v_q(t), [guess=0, description="q-axis terminal voltage [pu]"]

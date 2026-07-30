@@ -187,6 +187,13 @@ Often, the hub bus will be a pure junction bus (pure KCL constraint).
 For EMT simulations, it might be a capacitive shunt as described above.
 In principle, it can be any type of model.
 
+!!! note "Satellites inherit their voltage base from the hub"
+    A satellite is electrically *at* the hub bus, so it does not carry a voltage base of its
+    own: `compile_bus(…; current_source=true)` makes its `busbar₊Vbase` inherit from the hub's
+    during initialization. Set `Vbase` on the hub and the injectors follow. An explicitly set
+    value on a satellite still wins, but [`check_base_consistency`](@ref) (which
+    `initialize_from_pf[!]` runs for you) then errors if it disagrees with the hub.
+
 
 ### Current Injector Bus Example
 
