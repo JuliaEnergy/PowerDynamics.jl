@@ -71,7 +71,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         _p_ref = p_ref_input ? p_ref.u : p_ref
     end
     @equations begin
-        p_droop ~ p_ref + 1/R * (_ω_ref - ω_meas)
+        p_droop ~ _p_ref + 1/R * (_ω_ref - ω_meas.u)
         p_lim ~ _clamp(p_droop, p_min, p_max)
         Ts * Dt(xg1) ~ p_lim - xg1
         Tc * Dt(xg2) ~ (1-T3/Tc)*xg1 - xg2

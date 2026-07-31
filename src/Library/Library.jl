@@ -4,7 +4,7 @@ using ..PowerDynamics: PowerDynamics, Terminal, BusBase, SystemBase, Ibase
 using NetworkDynamics: NetworkDynamics, ComponentCondition, ComponentAffect,
                        VertexModel, VIndex, EIndex, NWState,
                        VectorContinuousComponentCallback, DiscreteComponentCallback, ComponentPostprocessing,
-                       set_initf
+                       set_initf, set_mtk_defaults
 using ModelingToolkitBase: ModelingToolkitBase, @named, simplify, t_nounits as t, D_nounits as Dt,
                            @component
 # needed for @mtkmodel
@@ -135,7 +135,7 @@ Slack bus with differential voltage states, holding voltage constant via zero de
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
-function SlackDifferential(; name=:slackdiff, u_init_r=1, u_init_i=0)
+function SlackDifferential(; name=:slackdiff, u_init_r=1, u_init_i=0, defaults...)
     @named busbar = BusBase()
     @named systembase = SystemBase()
     params = @parameters begin
@@ -147,7 +147,8 @@ function SlackDifferential(; name=:slackdiff, u_init_r=1, u_init_i=0)
         Dt(busbar.u_i) ~ 0
     ]
     sys = System(eqs, t, [], params; systems=[busbar, systembase], name)
-    set_initf(sys, busbar.u_r => u_init_r, busbar.u_i => u_init_i)
+    sys = set_initf(sys, busbar.u_r => u_init_r, busbar.u_i => u_init_i)
+    set_mtk_defaults(sys, defaults)
 end
 
 """

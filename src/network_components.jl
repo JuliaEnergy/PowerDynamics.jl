@@ -66,6 +66,8 @@ function compile_bus(
     # resolved *after* wrapping, so the sugar is equivalent to the explicit spelling
     name = isnothing(name) ? getname(sys) : name
     # `Vbase` convenience kwarg: sugar for the `busbar₊Vbase => …` default override
+    !isnothing(Vbase) && haskey(kwargs, Symbol("busbar₊Vbase")) &&
+        throw(ArgumentError("Pass either `Vbase` or `busbar₊Vbase`, not both."))
     vbase_override = isnothing(Vbase) ? (;) : NamedTuple{(Symbol("busbar₊Vbase"),)}((Vbase,))
     sys = add_systembase(sys) # no-opt if present
     io = _busio(sys, :busbar, current_source)
@@ -97,8 +99,16 @@ function _resolve_busbar_vbase!(vertexf, satellite)
     fallback = _strip_weak_initf!(vertexf, sym)
     if satellite
         set_default_from!(vertexf, sym, (:hub, sym))
-    elseif !has_default(vertexf, sym) && !isnothing(fallback)
-        set_default!(vertexf, sym, fallback)
+    elseif !has_default(vertexf, sym)
+        if !isnothing(fallback)
+            set_default!(vertexf, sym, fallback)
+        elseif sym ∈ psym(vertexf)
+            # `Vbase` exists but has neither a default nor the fallback formula
+            throw(ArgumentError("Could not resolve `$sym` of bus `$(vertexf.name)`: it has no \
+                default and no fallback to materialize. Pass `compile_bus(…; Vbase=…)` to set \
+                it explicitly."))
+        end
+        # `sym` absent entirely: a hand-rolled, purely per-unit bus without bases. skip.
     end
     vertexf
 end
@@ -113,6 +123,7 @@ function _strip_weak_initf!(c, sym)
     f(out, Float64[])
     out[sym]
 end
+
 """
     compile_bus(template::VertexModel; copy=true, pf=nothing, name=template.name, check=true, pairs...)
 

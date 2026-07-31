@@ -69,7 +69,7 @@ per unit. That is the classical way to parameterize these elements, and it is th
 throughout the library — a `pu·s` inductance is never an input.
 =#
 
-ω0 = 2π*get_fbase()  # Nominal angular frequency [rad/s]
+ω0 = get_ωbase()  # Nominal angular frequency [rad/s]
 
 Rline = 1            # Line resistance [Ω]
 Lline = (1/100π)     # Line inductance [H]

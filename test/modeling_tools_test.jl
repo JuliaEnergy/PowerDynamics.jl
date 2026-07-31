@@ -158,6 +158,13 @@ end
     @test get_default(compile_bus(swing; Vbase=110), :busbar₊Vbase) == 110
     @test get_default_from(compile_bus(swing; current_source=true), :busbar₊Vbase) ==
         (:hub, :busbar₊Vbase)
+    # without an explicit `Vbase`, the weak fallback is *materialized* into a real default —
+    # `default_from` reads defaults in a pre-pass and cannot see a formula, so a bus that
+    # kept the fallback would silently fail to feed its line ends
+    @test get_default(compile_bus(swing), :busbar₊Vbase) == get_Vbase()
+    @test !has_initformula(compile_bus(swing))
+    # ... and neither spelling of the voltage base may be given twice
+    @test_throws ArgumentError compile_bus(swing; Vbase=110, var"busbar₊Vbase"=220)
 
     # a system which satisfies neither interface is still rejected
     @named neither = RealOutput()
