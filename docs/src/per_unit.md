@@ -13,8 +13,10 @@ There are three primitive bases. Everything else is derived from them.
 | `ωbase` | rad/s | global      | the frequency at which reactances were evaluated; converts SI time ↔ pu |
 | `Vbase` | kV    | **per bus** | the voltage level the bus' `busbar` belongs to                          |
 
-Derived and never set directly: `Ibase = Sbase/(√3·Vbase)`, `Zbase = Vbase²/Sbase`,
-`Ybase = Sbase/Vbase²`, and `fbase = ωbase/2π` [Hz].
+Derived and never set directly: `Ibase = Sbase/(√3·Vbase)` [kA], `Zbase = Vbase²/Sbase` [Ω]
+and `Ybase = Sbase/Vbase²` [S] — the units fall out of the kV/MVA choice, since MVA/kV = kA and
+kV²/MVA = Ω. `fbase = ωbase/2π` [Hz] is derived from `ωbase` too, but unlike those three it has
+a convenience setter of its own, because data sheets quote Hz.
 
 `Sbase` is a **three-phase** power and `Vbase` a **line-to-line** voltage — the convention
 every data set and every power flow case you are likely to import uses. The derived bases
@@ -76,7 +78,8 @@ nothing # hide
 
     For the same reason the globals leak between models built in the same session. Every
     setter restores its default when called without an argument, so a script that changes a
-    base should undo that at the end — a bare [`set_fbase!`](@ref)`()` is "back to 50 Hz".
+    base should undo that at the end — a bare [`set_fbase!`](@ref)`()` is "back to 50 Hz",
+    a bare [`set_Sbase!`](@ref)`()` "back to 100 MVA".
 
 `Vbase` is per bus, so it is a keyword rather than a global:
 
@@ -88,8 +91,11 @@ set_default!(vertex, :busbar₊Vbase, 16.5) # or afterwards
 
 [`set_Vbase!`](@ref) exists too, but it is only the *fallback* for buses that were given
 nothing — useful when the whole network sits at one voltage level, pointless otherwise. Its
-default is `1.0`, which makes every SI observable an identity of the pu value: a
-self-announcing "no voltage base was set" rather than a plausible fiction.
+default is `1.0`. That keeps a model which never sets a voltage base fully simulable — the pu
+physics is untouched — while making the SI observables self-announcing rather than plausible
+fictions: `u_kV` degenerates to the pu value and `i_kA` comes out implausibly large
+(`Sbase/√3`, so 173 kA on the 300 MVA base above). If you intend to read the SI observables at
+all, set `Vbase` per bus.
 
 ## [Inheritance: who takes `Vbase` from whom](@id vbase-inheritance)
 
@@ -174,8 +180,15 @@ confusion with the `ref` of a reference value, i.e. a setpoint.
 
 ## Reading results in SI units
 
-Every busbar and line end carries the SI observables `u_kV`, `P_MW`, `Q_MVAr` and `i_kA` — the
-pu quantity times the matching base, and therefore exactly as meaningful as the bases you set:
+Every busbar and line end carries four SI observables — the pu quantity times the matching
+base, and therefore exactly as meaningful as the bases you set. They inherit the convention of
+the bases they are built from:
+
+| observable        | is                                        |
+|:------------------|:------------------------------------------|
+| `u_kV`            | voltage magnitude, line-to-line, RMS      |
+| `i_kA`            | current magnitude, line current, RMS      |
+| `P_MW`, `Q_MVAr`  | three-phase totals                        |
 
 ```@example pu
 slack = compile_bus(SlackAlgebraic(; name=:slack); vidx=1, Vbase=230)
@@ -189,9 +202,7 @@ s0 = initialize_from_pf!(nw)
    P_MW = s0[VIndex(2, :busbar₊P_MW)])
 ```
 
-0.8 pu on a 300 MVA base is 240 MW, and 1.02 pu on an 18 kV bus is 18.36 kV. Matching the
-convention above, `u_kV` is a line-to-line voltage, `P_MW`/`Q_MVAr` are three-phase, and
-`i_kA` is the line current. The two buses sit
+0.8 pu on a 300 MVA base is 240 MW, and 1.02 pu on an 18 kV bus is 18.36 kV. The two buses sit
 at different levels, so the `PiLine` between them is a transformer in the sense of the previous
 section — its two ends resolve to different `Vbase` values.
 
@@ -211,17 +222,22 @@ Components that carry none of these symbols — a hand-rolled pure-pu model with
 legitimate. All findings are collected into a single message. Pass `check=:warn` or
 `check=:none` to `initialize_from_pf!` if you have a good reason to allow a mismatch.
 
-What a mismatch actually costs:
+What each of those mismatches actually costs:
 
-| situation                     | consequence                                                                 |
-|:------------------------------|:----------------------------------------------------------------------------|
-| no `Vbase` set anywhere       | pu physics exact, SI observables meaningless — the tool degrades to pure pu |
-| `Vbase` wrong on one line end | wrong implied transformer ratio, wrong SI values at that end                |
-| `Sbase` disagrees             | power silently mis-converted at every device boundary                       |
-| `ωbase` disagrees             | time constants silently rescaled per component                              |
-| `ωframe` disagrees            | frames rotate apart, no steady state exists                                 |
+| situation                        | consequence                                                  |
+|:---------------------------------|:-------------------------------------------------------------|
+| `Vbase` wrong on one line end    | wrong implied transformer ratio, wrong SI values at that end |
+| `Vbase` of a satellite ≠ its hub | same, at the injector's own terminal                         |
+| `Sbase` disagrees                | power silently mis-converted at every device boundary        |
+| `ωbase` disagrees                | time constants silently rescaled per component               |
+| `ωframe` disagrees               | frames rotate apart, no steady state exists                  |
 
 The voltage side degrades softly, the power and frequency side does not.
+
+One failure mode the check cannot see is setting *no* `Vbase` at all: every component then
+agrees on the fallback `1.0`, so the network is consistent by construction and passes. The pu
+physics stays exact and only the SI observables are meaningless — the tool degrades to pure pu,
+which is why this is a default rather than an error.
 
 Finally, this page changed two globals, so it puts them back — the rule from the top applied
 to the page itself:
