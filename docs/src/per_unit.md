@@ -16,10 +16,37 @@ There are three primitive bases. Everything else is derived from them.
 Derived and never set directly: `Ibase = Sbase/Vbase`, `Zbase = Vbase²/Sbase`,
 `Ybase = Sbase/Vbase²`, and `fbase = ωbase/2π` [Hz].
 
-The bases live in the model, not in a global configuration: `Sbase`, `ωbase` (and `ωframe`,
-see below) on a [`SystemBase`](@ref) component named `systembase`, one per bus and one per
-line; `Vbase` on the bus' [`BusBar`](@ref). The "Internals" section of
-[Modeling Concepts](@ref) shows the anatomy.
+## Where the bases live
+
+The bases live in the model, not in a global configuration. Every bus and every line carries a
+[`SystemBase`](@ref) component named `systembase`, holding `Sbase`, `ωbase` and the frame speed
+`ωframe`. It is added by `MTKBus`/`MTKLine`. Note that it is *duplicated* per bus and
+per line rather than shared — which is why the values have to be checked for agreement, see
+[Consistency](@ref) below.
+
+`Vbase` is not on it. It belongs to the bus' [`BusBar`](@ref), and each of a line's two
+[`LineEnd`](@ref)s carries its own.
+
+```asciiart
+        bus 1                       line 1→2                      bus 2
+┌──────────────────────┐  ┌───────────────────────────┐  ┌──────────────────────┐
+│ SystemBase           │  │ SystemBase                │  │ SystemBase           │
+│  Sbase ωbase ωframe  │  │  Sbase ωbase ωframe       │  │  Sbase ωbase ωframe  │
+│  (reads global)      │  │  (reads global)           │  │  (reads global)      │
+├──────────────────────┤  ├─────────────┬─────────────┤  ├──────────────────────┤
+│ BusBar               │  │ LineEnd src │ LineEnd dst │  │ BusBar               │
+│  Vbase ──────────────────→ Vbase      ╵  Vbase ←───────── Vbase               │
+│  (manual)            │  │       (inherited)         │  │  (manual)            │
+├──────────────────────┤  └───────────────────────────┘  ├──────────────────────┤
+│ Machine              │                                 │ Load                 │
+│  Sn  Vn (manual)     │                                 │  (no local base)     │
+└──────────────────────┘                                 └──────────────────────┘
+```
+
+Those are the names a model refers to: `:systembase₊Sbase`, `:busbar₊Vbase`, `:src₊Vbase`. The
+arrows are the inheritance covered [below](@ref vbase-inheritance); `Sn` and `Vn` on the machine
+are a device-local system, not a base of the bus. The "Internals" section of
+[Modeling Concepts](@ref) describes each of the three components in full.
 
 ## Setting the bases
 
@@ -56,7 +83,7 @@ nothing — useful when the whole network sits at one voltage level, pointless o
 default is `1.0`, which makes every SI observable an identity of the pu value: a
 self-announcing "no voltage base was set" rather than a plausible fiction.
 
-## Inheritance: who takes `Vbase` from whom
+## [Inheritance: who takes `Vbase` from whom](@id vbase-inheritance)
 
 Only buses own a voltage base. Their neighbours inherit it:
 
