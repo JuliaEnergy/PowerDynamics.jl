@@ -42,7 +42,6 @@ include("Library/Library.jl")
 using .Library
 
 export compile_line, compile_bus
-export Line, Bus
 export simplify_mtkline, simplify_mtkbus
 include("network_components.jl")
 
