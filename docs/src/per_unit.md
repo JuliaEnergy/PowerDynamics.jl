@@ -13,8 +13,16 @@ There are three primitive bases. Everything else is derived from them.
 | `ωbase` | rad/s | global      | the frequency at which reactances were evaluated; converts SI time ↔ pu |
 | `Vbase` | kV    | **per bus** | the voltage level the bus' `busbar` belongs to                          |
 
-Derived and never set directly: `Ibase = Sbase/Vbase`, `Zbase = Vbase²/Sbase`,
+Derived and never set directly: `Ibase = Sbase/(√3·Vbase)`, `Zbase = Vbase²/Sbase`,
 `Ybase = Sbase/Vbase²`, and `fbase = ωbase/2π` [Hz].
+
+`Sbase` is a **three-phase** power and `Vbase` a **line-to-line** voltage — the convention
+every data set and every power flow case you are likely to import uses. The derived bases
+follow from it: `Ibase` is the line current, so `Sbase = √3·Vbase·Ibase`, and `Zbase` is the
+per-phase (star-equivalent) impedance that transmission line data is given in, so
+`Zbase = (Vbase/√3)/Ibase`. The `√3` appears only in `Ibase`; `Zbase` and `Ybase` happen to
+take the same value whether you read the pair as three-phase/line-to-line or as
+per-phase/line-to-neutral.
 
 ## Where the bases live
 
@@ -181,7 +189,9 @@ s0 = initialize_from_pf!(nw)
    P_MW = s0[VIndex(2, :busbar₊P_MW)])
 ```
 
-0.8 pu on a 300 MVA base is 240 MW, and 1.02 pu on an 18 kV bus is 18.36 kV. The two buses sit
+0.8 pu on a 300 MVA base is 240 MW, and 1.02 pu on an 18 kV bus is 18.36 kV. Matching the
+convention above, `u_kV` is a line-to-line voltage, `P_MW`/`Q_MVAr` are three-phase, and
+`i_kA` is the line current. The two buses sit
 at different levels, so the `PiLine` between them is a transformer in the sense of the previous
 section — its two ends resolve to different `Vbase` values.
 

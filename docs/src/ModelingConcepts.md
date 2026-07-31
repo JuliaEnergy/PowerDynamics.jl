@@ -425,10 +425,13 @@ Besides that interface, the busbar owns the **voltage base of the bus**:
 
 | Parameter | Unit | Meaning |
 |:----------|:-----|:--------|
-| `Vbase`   | kV   | Voltage base of this bus |
-| `Ibase`   | kA   | `Sbase/Vbase`, derived |
-| `Zbase`   | Ω    | `Vbase²/Sbase`, derived |
-| `Ybase`   | S    | `Sbase/Vbase²`, derived |
+| `Vbase`   | kV   | Voltage base of this bus, line-to-line |
+| `Ibase`   | kA   | `Sbase/(√3·Vbase)`, derived; line current |
+| `Zbase`   | Ω    | `Vbase²/Sbase`, derived; per-phase |
+| `Ybase`   | S    | `Sbase/Vbase²`, derived; per-phase |
+
+`Sbase` is three-phase and `Vbase` line-to-line, which is where the `√3` in `Ibase` comes
+from; see [Per-Unit Systems](@ref) for the full convention.
 
 `Sbase` and `ωbase` appear on the busbar too, but only as shadows bound to the bus'
 `systembase` (see below). `Vbase` is the one base that is genuinely **per bus**: a generator

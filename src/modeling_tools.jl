@@ -194,7 +194,7 @@ per-unit bases plus SI observables.
         Sbase, [bound_to = :systembase₊Sbase, description="System power base [MVA]"]
         ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
         # auto demoted to observables (bound params)
-        Ibase = Sbase/Vbase,   [description="Current base [kA] (Sbase/Vbase)"]
+        Ibase = Sbase/(sqrt(3)*Vbase), [description="Current base [kA] (Sbase/(√3·Vbase))"]
         Zbase = Vbase^2/Sbase, [description="Impedance base [Ω] (Vbase²/Sbase)"]
         Ybase = Sbase/Vbase^2, [description="Admittance base [S] (Sbase/Vbase²)"]
     end
@@ -293,7 +293,7 @@ See also: [`Terminal`](@ref), [`MTKLine`](@ref), [`compile_line`](@ref)
         Sbase, [bound_to = :systembase₊Sbase, description="System power base [MVA]"]
         ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
         # Derived bases (parameter bindings -> observables); see BusBase.
-        Ibase = Sbase/Vbase,   [description="Current base [kA] (Sbase/Vbase)"]
+        Ibase = Sbase/(sqrt(3)*Vbase), [description="Current base [kA] (Sbase/(√3·Vbase))"]
         Zbase = Vbase^2/Sbase, [description="Impedance base [Ω] (Vbase²/Sbase)"]
         Ybase = Sbase/Vbase^2, [description="Admittance base [S] (Sbase/Vbase²)"]
     end
@@ -560,14 +560,20 @@ end
 """
     Ibase(S, V)
 
-Calculates current pu base based on Sbase and Vbase: Ibase = Sbase/Vbase.
+Calculates current pu base based on Sbase and Vbase: Ibase = Sbase/(√3·Vbase).
+
+`S` is the three-phase power base and `V` the line-to-line voltage base, so `Ibase` is
+the line current, i.e. `Sbase = √3·Vbase·Ibase`. See [`Zbase`](@ref), [`Ybase`](@ref).
 """
-Ibase(S, V) = S/V
+Ibase(S, V) = S/(sqrt(3)*V)
 
 """
     Zbase(S, V)
 
 Calculates impedance pu base based on Sbase and Vbase: Zbase = Vbase²/Sbase.
+
+This is the per-phase (star-equivalent) impedance, the form transmission line data comes
+in: `Zbase = (Vbase/√3)/Ibase`. See [`Ibase`](@ref), [`Ybase`](@ref).
 """
 Zbase(S, V) = V^2/S
 
@@ -575,5 +581,7 @@ Zbase(S, V) = V^2/S
     Ybase(S, V)
 
 Calculates admittance pu base based on Sbase and Vbase: Ybase = Sbase/Vbase².
+
+Per-phase, the reciprocal of [`Zbase`](@ref). See also [`Ibase`](@ref).
 """
 Ybase(S, V) = S/V^2

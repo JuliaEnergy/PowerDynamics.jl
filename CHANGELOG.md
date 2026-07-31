@@ -45,7 +45,12 @@ PowerDynamics itself.
   - **`BusBar` gained `Vbase`** (the one genuinely per-bus base) and **`LineEnd` gained a
     per-end `Vbase`**, together with derived `Ibase`/`Zbase`/`Ybase` observables and SI
     observables `u_kV`, `P_MW`, `Q_MVAr`, `i_kA`. Both also carry bound shadows of
-    `Sbase`/`ωbase` (observables `busbar₊Sbase`, `src₊Sbase`, …).
+    `Sbase`/`ωbase` (observables `busbar₊Sbase`, `src₊Sbase`, …). `Sbase` is a three-phase
+    power and `Vbase` a line-to-line voltage, hence `Ibase = Sbase/(√3·Vbase)` (line
+    current) while `Zbase = Vbase²/Sbase` and `Ybase = Sbase/Vbase²` are per-phase. The
+    exported helpers `Ibase(S, V)`/`Zbase(S, V)`/`Ybase(S, V)` follow the same convention,
+    so `Ibase(S, V)` is no longer `S/V`; it is only ever used as a *ratio* between two base
+    systems, where the `√3` cancels.
   - A compiled bus exposes `busbar₊Vbase` plus `systembase₊Sbase/ωbase/ωframe` as its only
     base parameters; a line exposes `src₊Vbase`, `dst₊Vbase` and the same three.
   - **`ωframe`** is the speed of the global dq reference frame in pu. It is **pinned to `1`**
