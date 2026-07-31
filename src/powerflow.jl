@@ -313,6 +313,7 @@ initialize_from_pf_docstring = raw"""
         pfs0 = NWState(pfnw),
         pfs = solve_powerflow(nw; pfnw, pfs0, verbose),
         sparsepf = nv(nw) > 50,
+        check = :error,
         kwargs...
     )
 
@@ -346,6 +347,8 @@ state again, as it is stored in the metadata.
 - `pfs0`: Initial state for power flow calculation (default: created from `pfnw`)
 - `pfs`: Power flow solution (default: calculated using `solve_powerflow`)
 - `sparsepf`: Whether to use a sparse solver for power flow (default: for networks with more than 50 buses)
+- `check`: Check per-unit base consistency by applying [`check_base_consistency`](@ref) to
+  the initialized state. Either `:error` (default), `:warn` or `:none`.
 - Additional keyword arguments are passed to `initialize_componentwise[!]`
 
 ## Returns
@@ -365,6 +368,7 @@ function _init_from_pf(
     pfs0 = nothing,
     pfs = nothing,
     sparsepf = nv(nw) > 50,
+    check = :error,
     kwargs...
 )
     if isnothing(pfs)
@@ -394,13 +398,17 @@ function _init_from_pf(
         default_overrides = interface_vals
     end
 
-    initf(
+    s0 = initf(
         nw;
         default_overrides,
         additional_initconstraint = pfinitconstraints,
         additional_initformula = pfinitformulas,
         verbose, subverbose, kwargs...
     )
+
+    check_base_consistency(s0; check)
+
+    s0
 end
 
 """
@@ -439,4 +447,119 @@ function check_pfmodel(pfm, m)
                - PF mod outputs: $pfout\n\
                Maybe you're trying to attach an voltage source pf model to a current source component?"
     end
+end
+
+####
+#### Per-unit base consistency
+####
+"""
+    check_base_consistency(s::NWState; check=:error)
+
+Verify that the per-unit bases of an initialized network agree with one another. Called
+automatically at the end of [`initialize_from_pf`](@ref); `check` picks the severity
+(`:error`, `:warn` or `:none`).
+
+The *global* bases (Sbase, ωbase, ωframe) must be identical across every bus and every line.
+
+The voltage base is genuinely per bus, so it is checked against the neighbors instead:
+
+- each line end's `Vbase` must equal `busbar₊Vbase` of the bus it is attached to. This is
+  per end, so a transformer with a different base on each side is fine — each end is
+  compared against its own bus,
+- each satellite (injector) bus must carry the same `busbar₊Vbase` as its hub, since it
+  sits electrically *at* the hub bus.
+
+Components which do not carry these symbols at all — a hand-rolled, purely per-unit model
+without a [`SystemBase`](@ref), say — are skipped rather than failed; mixing based and
+baseless components is legitimate. Missing and `NaN` values are skipped for the same reason
+they are harmless: they fail loudly further downstream, rather than quietly producing a
+plausible wrong number, which is the only failure mode this check exists to catch.
+"""
+function check_base_consistency(s::NWState; check=:error)
+    check === :none && return nothing
+    if check !== :error && check !== :warn
+        throw(ArgumentError("`check` must be one of :error, :warn or :none, got $(repr(check))."))
+    end
+    nw = extract_nw(s)
+    p = pflat(s)
+
+    _vidxs(sym) = nv(nw) == 0 ? [] : SII.parameter_index(nw, VIndex(:, sym))
+    _eidxs(sym) = ne(nw) == 0 ? [] : SII.parameter_index(nw, EIndex(:, sym))
+    _val(i) = isnothing(i) || isnan(p[i]) ? nothing : p[i]
+
+    msgs = String[]
+
+    # global bases: exactly one value for the whole network, buses and lines alike
+    allidxs = vcat(VIndex.(1:nv(nw)), EIndex.(1:ne(nw)))
+    _globalvals(sym) = vcat(_val.(_vidxs(sym)), _val.(_eidxs(sym)))
+
+    _check_uniform_base!(msgs, nw, :systembase₊Sbase,
+        "power is mis-converted at every device/bus boundary",
+        allidxs, _globalvals(:systembase₊Sbase))
+    _check_uniform_base!(msgs, nw, :systembase₊ωbase,
+        "time constants are silently rescaled per component",
+        allidxs, _globalvals(:systembase₊ωbase))
+    _check_uniform_base!(msgs, nw, :systembase₊ωframe,
+        "the dq frames rotate apart, so no steady state exists",
+        allidxs, _globalvals(:systembase₊ωframe))
+
+    # `Vbase` is per bus, so it is checked locally. A single pass over the edges covers both
+    # cases: a loopback edge attaches a satellite (src) to its hub (dst), any other edge
+    # attaches two line ends to their respective buses.
+    busV = _val.(_vidxs(:busbar₊Vbase))
+    srcV = _val.(_eidxs(:src₊Vbase))
+    dstV = _val.(_eidxs(:dst₊Vbase))
+    for (e, edge) in pairs(nw.im.edgevec)
+        if is_loopback(nw.im.edgem[e])
+            _check_matching_base!(msgs, busV[edge.src], busV[edge.dst],
+                "`busbar₊Vbase` of satellite $(_cdescr(nw, VIndex(edge.src)))",
+                "its hub $(_cdescr(nw, VIndex(edge.dst)))",
+                "the satellite sits electrically at the hub bus")
+        else
+            _check_matching_base!(msgs, srcV[e], busV[edge.src],
+                "`src₊Vbase` of $(_cdescr(nw, EIndex(e)))",
+                "its bus $(_cdescr(nw, VIndex(edge.src)))",
+                "implies an unintended transformer ratio and wrong SI observables")
+            _check_matching_base!(msgs, dstV[e], busV[edge.dst],
+                "`dst₊Vbase` of $(_cdescr(nw, EIndex(e)))",
+                "its bus $(_cdescr(nw, VIndex(edge.dst)))",
+                "implies an unintended transformer ratio and wrong SI observables")
+        end
+    end
+
+    isempty(msgs) && return nothing
+    str = "The per-unit bases of this network are inconsistent:\n" * join(msgs, "\n") * "\n\
+           Bases are copied into the components at *construction* time: set the global ones \
+           with `set_Sbase!`/`set_ωbase!` before building, or explicitly via `SystemBase(…)`, \
+           and the per-bus voltage base via `MTKBus(…; Vbase)`/`compile_bus(…; Vbase)`. \
+           Pass `check=:warn` or `check=:none` to `initialize_from_pf` to bypass this check."
+    check === :error ? error(str) : @warn str
+    nothing
+end
+function _check_uniform_base!(msgs, nw, sym, consequence, idxs, vals)
+    keep = .!isnothing.(vals)
+    any(keep) || return msgs
+    idxs = idxs[keep]
+    vals = convert(Vector{Float64}, vals[keep])
+    allequal(vals) && return msgs
+
+    groups = [(v, idxs[vals .== v]) for v in unique(vals)]
+    sort!(groups; by=g -> length(g[2]), rev=true)
+    parts = map(enumerate(groups)) do (i, (v, gidxs))
+        if i == 1 && length(gidxs) > 1
+            "$v on $(length(gidxs)) components"
+        else
+            "$v on $(_cdescrs(nw, gidxs))"
+        end
+    end
+    push!(msgs, " - `$sym` differs across the network ($consequence): " * join(parts, ", "))
+end
+function _check_matching_base!(msgs, a, b, adescr, bdescr, consequence)
+    (isnothing(a) || isnothing(b) || a == b) && return msgs
+    push!(msgs, " - $adescr is $a but $bdescr has $b ($consequence)")
+end
+_cdescr(nw, idx) = "$idx ($(nw[idx].name))"
+function _cdescrs(nw, idxs; max=8)
+    shown = join((_cdescr(nw, idx) for idx in Iterators.take(idxs, max)), ", ")
+    length(idxs) > max ? shown * " and $(length(idxs) - max) more" : shown
 end

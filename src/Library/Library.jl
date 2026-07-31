@@ -1,9 +1,10 @@
 module Library
 
-using ..PowerDynamics: PowerDynamics, Terminal, BusBase, Ibase
+using ..PowerDynamics: PowerDynamics, Terminal, BusBase, SystemBase, Ibase
 using NetworkDynamics: NetworkDynamics, ComponentCondition, ComponentAffect,
                        VertexModel, VIndex, EIndex, NWState,
-                       VectorContinuousComponentCallback, DiscreteComponentCallback, ComponentPostprocessing
+                       VectorContinuousComponentCallback, DiscreteComponentCallback, ComponentPostprocessing,
+                       set_initf, set_mtk_defaults
 using ModelingToolkitBase: ModelingToolkitBase, @named, simplify, t_nounits as t, D_nounits as Dt,
                            @component
 # needed for @mtkmodel
@@ -100,16 +101,6 @@ macro no_simplify(ex)
     end
 end
 
-@mtkmodel SystemBase begin
-    @parameters begin
-        SnRef = 100, [description="System base"]
-        fNom = 50, [description="AC system frequency"]
-        ωNom = 2 * π * fNom, [description="System angular frequency"]
-        ωRef0Pu = 1, [description="Reference for system angular frequency (pu base ωNom)"]
-        ω0Pu = 1, [description="System angular frequency (pu base ωNom)"]
-   end
-end
-
 ####
 #### Slack Models
 ####
@@ -125,6 +116,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 @mtkmodel SlackAlgebraic begin
     @components begin
         busbar = BusBase()
+        systembase = SystemBase()
     end
     @parameters begin
         u_set_r=1, [description="bus d-voltage setpoint"]
@@ -143,18 +135,20 @@ Slack bus with differential voltage states, holding voltage constant via zero de
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
-@mtkmodel SlackDifferential begin
-    @parameters begin
-        u_init_r=1, [description="bus d-voltage initial value"]
-        u_init_i=0, [description="bus q-voltage initial value"]
+function SlackDifferential(; name=:slackdiff, u_init_r=1, u_init_i=0, defaults...)
+    @named busbar = BusBase()
+    @named systembase = SystemBase()
+    params = @parameters begin
+        u_init_r = u_init_r, [description="bus d-voltage initial value"]
+        u_init_i = u_init_i, [description="bus q-voltage initial value"]
     end
-    @components begin
-        busbar = BusBase(;u_r=u_init_r, u_i=u_init_i)
-    end
-    @equations begin
+    eqs = [
         Dt(busbar.u_r) ~ 0
         Dt(busbar.u_i) ~ 0
-    end
+    ]
+    sys = System(eqs, t, [], params; systems=[busbar, systembase], name)
+    sys = set_initf(sys, busbar.u_r => u_init_r, busbar.u_i => u_init_i)
+    set_mtk_defaults(sys, defaults)
 end
 
 """
@@ -167,17 +161,20 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 @mtkmodel VariableFrequencySlack begin
     @components begin
         busbar = BusBase()
+        systembase = SystemBase()
     end
     @parameters begin
         V, [guess=1, description="bus voltage magnitude"]
-        ω = 1, [description="slack frequency in pu (base ωNom)"]
-        ω_b=2π*50, [description="System base frequency in rad/s"]
+        ω = 1, [description="slack frequency in pu (base ωbase)"]
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
     end
     @variables begin
         δ(t), [guess=0, description="voltage angle"]
     end
     @equations begin
-        Dt(δ) ~ ω_b*(ω - 1)
+        # δ is measured against the global dq frame, hence ωframe (not a setpoint)
+        Dt(δ) ~ ωbase*(ω - ωframe)
         busbar.u_r ~ V * cos(δ)
         busbar.u_i ~ V * sin(δ)
     end

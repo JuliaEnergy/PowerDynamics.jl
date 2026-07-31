@@ -162,7 +162,7 @@ we told each component at the compile step where it is placed in the network (se
 =#
 nw = Network([bus1, bus2, bus3], [line12, line13, line23])
 #=
-The Network object tells us that we've just defined a system with 7 States and 39 parameters. We have 3 vertices of 2 unique types
+The Network object tells us that we've just defined a system with 7 States and 66 parameters. We have 3 vertices of 2 unique types
 (the inverter bus and the load bus) and 3 edges of a single unique type (all power lines are the same pi-line type).
 
 The "states" and "parameters" already hint at a very important property of PowerDynamics/NetworkDynamics:
@@ -176,20 +176,24 @@ most importantly, [DifferentialEquations.jl](https://docs.sciml.ai/DiffEqDocs/st
 
 =#
 @assert dim(nw) == 7 #hide
-@assert pdim(nw) == 39 #hide
+@assert pdim(nw) == 66 #hide
 @assert dim(bus1) == 3 #hide
-@assert pdim(bus1) == 8 #hide
+@assert pdim(bus1) == 12 #hide
 @assert dim(bus2) == dim(bus2) == 2 #hide
-@assert pdim(bus2) == pdim(bus3) == 2 #hide
+@assert pdim(bus2) == pdim(bus3) == 6 #hide
 @assert dim(line12) == dim(line13) == dim(line23) == 0 #hide
-@assert pdim(line12) == pdim(line13) == pdim(line23) == 9 #hide
+@assert pdim(line12) == pdim(line13) == pdim(line23) == 14 #hide
 #=
 The 7 states are essentially just the states of our models stacked on top of eachother.
 Look at the representation of our Vertex and EdgeModels above to see their contribution:
-- Bus 1: 3 states, 8 parameters
-- Bus 2 & 3: 2 states, 2 parameters each
-- Lines 1,2 and 3: 0 states, 9 parameters each
-In sum, we get the 7 states and 39 parameters.
+- Bus 1: 3 states, 12 parameters
+- Bus 2 & 3: 2 states, 6 parameters each
+- Lines 1,2 and 3: 0 states, 14 parameters each
+In sum, we get the 7 states and 66 parameters.
+
+Note that every bus and every line carries four per-unit base parameters on top of its
+model parameters (`busbar₊Vbase` resp. `src₊Vbase`/`dst₊Vbase`, and
+`systembase₊Sbase`/`ωbase`/`ωframe`); see [Modeling Concepts](@ref) for what they mean.
 
 !!! tip "Advanced: State and Parameter Ordering"
     Even though the states and parameters are essential "just stacked" on top of eachother, the ordering is not

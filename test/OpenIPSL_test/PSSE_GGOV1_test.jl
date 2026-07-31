@@ -4,6 +4,7 @@ using Main.PowerDynamicsTesting
 
 using PowerDynamics.Library
 using ModelingToolkitBase
+using ModelingToolkit # needed for mtkcompile=:compare
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 
@@ -42,8 +43,6 @@ ref = CSV.read(
 
 BUS = let
     # System parameters
-    S_b = 100e6
-    M_b = 100e6
 
     Xppd = 0.2
     Xppq = 0.2
@@ -69,7 +68,7 @@ BUS = let
 
     # Create GENROU machine with EFD input enabled for exciter control
     @named genrou = PSSE_GENROU(;
-        S_b, H, M_b, D,
+        H, D,
         Xd, Xq, Xpd, Xpq, Xppd, Xppq, Xl,
         Tpd0, Tpq0, Tppd0, Tppq0,
         S10, S12, R_a,

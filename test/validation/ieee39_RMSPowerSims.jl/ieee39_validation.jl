@@ -225,6 +225,11 @@ gov_csv = select(_gov_df,
 CSV.write(joinpath(pkgdir(PowerDynamics), "docs", "examples", "ieee39data", "gov.csv"), gov_csv)
 =#
 
+# The per-unit bases are global and are baked into every component at *construction*
+# time, so they have to be set before anything is built. Only `Vbase` is per bus and is
+# passed to `compile_bus` below.
+set_Sbase!(json["baseMVA"])
+set_fbase!(json["dynamic_model_parameters"]["f_nom"])
 
 @time branches = let
     branches = []
@@ -285,9 +290,9 @@ end;
                 T′_d0 = p.Td_d, T′_q0 = p.Tq_d,
                 T″_d0 = p.Td_dd, T″_q0 = p.Tq_dd,
                 H = p.H,
-                S_b = json["baseMVA"], Sn = p.mbase,
-                V_b = p.base_kv, Vn = p.vbase,
-                ω_b = json["dynamic_model_parameters"]["f_nom"]*2π,
+                # System bases come from the bus; only the machine's own nameplate
+                # ratings are given here.
+                Sn = p.mbase, Vn = p.vbase,
             )
 
             # add dynamic or fixed avr
@@ -341,7 +346,8 @@ end;
             pfSlack(;V=p.vg, δ=0)
         end
 
-        bus = compile_bus(MTKBus(components...); vidx=i, pf=pfmodel, name=Symbol("bus$i"))
+        bus = compile_bus(MTKBus(components...); vidx=i, pf=pfmodel,
+                          Vbase=p.base_kv, name=Symbol("bus$i"))
 
         # to thelp the init of loads, we can add a init formula
         if has_load(i)
@@ -504,3 +510,8 @@ end
         @test states_deviation(i, :Pv, :ctrld_gen₊gov₊xg1) < 1e-7
     end
 end
+
+# Restore the global per-unit bases: they are module-level state, so leaving them at this
+# system's 100 MVA / 60 Hz would leak into any model built later in the same session.
+set_Sbase!()
+set_fbase!()

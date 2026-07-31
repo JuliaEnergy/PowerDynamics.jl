@@ -4,6 +4,7 @@ using Main.PowerDynamicsTesting
 
 using PowerDynamics.Library
 using ModelingToolkitBase
+using ModelingToolkit # needed for mtkcompile=:compare
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 
@@ -41,8 +42,6 @@ BUS = let
     # Create GENSAL machine with EFD and PMECH inputs enabled
     @named gensal = PSSE_GENSAL(;
         # System parameters
-        S_b = 100e6,
-        M_b = 100e6,
         # GENSAL machine parameters from OpenIPSL HYGOV.mo (lines 4-19)
         H = 4.41,
         D = 0,

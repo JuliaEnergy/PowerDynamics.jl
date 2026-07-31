@@ -2,7 +2,7 @@ module PowerDynamics
 
 using Reexport: Reexport, @reexport
 @reexport using NetworkDynamics
-using NetworkDynamics: SymbolicView, getcomp
+using NetworkDynamics: SymbolicView, getcomp, is_loopback
 
 using SciMLBase: SciMLBase
 using NonlinearSolve: NonlinearSolve
@@ -14,7 +14,7 @@ using Setfield: @set, @set!
 using SymbolicIndexingInterface: SymbolicIndexingInterface as SII
 using MacroTools: postwalk, @capture
 
-using ModelingToolkitBase: ModelingToolkitBase, @connector, @named,
+using ModelingToolkitBase: ModelingToolkitBase, @connector, @named, @component, extend,
                            System, getname, unknowns, get_name, t_nounits as t, Equation,
                            mtkcompile
 # needed for @mtkmodel
@@ -27,8 +27,10 @@ using SciMLBase: SciMLBase
 using SparseConnectivityTracer: SparseConnectivityTracer
 using SparseMatrixColorings: SparseMatrixColorings
 
-export Terminal, BusBar, LineEnd
+export Terminal, BusBar, LineEnd, SystemBase
 export MTKBus, MTKLine, CompositeInjector, Ibase, Zbase, Ybase
+export get_Sbase, get_ωbase, get_fbase, get_Vbase
+export set_Sbase!, set_ωbase!, set_fbase!, set_Vbase!
 include("modeling_tools.jl")
 
 export isinjectormodel, isbusmodel, isbranchmodel, islinemodel
@@ -40,7 +42,6 @@ include("Library/Library.jl")
 using .Library
 
 export compile_line, compile_bus
-export Line, Bus
 export simplify_mtkline, simplify_mtkbus
 include("network_components.jl")
 
@@ -48,7 +49,7 @@ using DataFrames: DataFrame
 using OrderedCollections: OrderedDict
 export pfSlack, pfPV, pfPQ, pfShunt
 export solve_powerflow, initialize_from_pf!, initialize_from_pf, show_powerflow
-export powerflow_model, ispfmodel
+export powerflow_model, ispfmodel, check_base_consistency
 export has_pfmodel, get_pfmodel, set_pfmodel!, delete_pfmodel!
 include("powerflow.jl")
 

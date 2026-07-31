@@ -12,16 +12,28 @@ Returns an uninitialized Network object with:
 This network is ready for powerflow solving and initialization testing.
 """
 function load_ieee9bus()
+    # The IEEE 9-bus system is a 60 Hz system. The per-unit bases are baked into the
+    # components at *construction* time, so the global frequency base has to be set before
+    # any model is built — and restored afterwards, so it does not leak into other test
+    # systems built later in the same session.
+    ωbase_before = get_ωbase()
+    set_fbase!(60)
+    try
+        _load_ieee9bus()
+    finally
+        set_ωbase!(ωbase_before)
+    end
+end
+
+function _load_ieee9bus()
     # Generator Bus Model
     function GeneratorBus(; machine_p=(;), avr_p=(;), gov_p=(;))
+        # No bases are given: the machine inherits `Sbase`/`ωbase` from the bus's
+        # `systembase` and `Vbase` from its busbar, and its unset `Sn`/`Vn` nameplate ratings
+        # weakly collapse onto those — i.e. the machine sits on the system base.
         @named machine = SauerPaiMachine(;
             vf_input=true,
             τ_m_input=true,
-            S_b=100,
-            V_b=1,
-            Sn=100,
-            Vn=1,
-            ω_b=2π*60,
             R_s=0.000125,
             T″_d0=0.01,
             T″_q0=0.01,

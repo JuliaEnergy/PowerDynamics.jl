@@ -58,7 +58,7 @@ end
 
     @testset "real components autoconnections" begin
         @named machine = SauerPaiMachine(;
-            vf_input=true, τ_m_input=true, S_b=100, V_b=1, Sn=100, Vn=1, ω_b=2π*60, R_s=0.000125, T″_d0=0.01,
+            vf_input=true, τ_m_input=true, R_s=0.000125, T″_d0=0.01,
             T″_q0=0.01, X_ls=0.01460, X_d=0.1460, X′_d=0.0608, X″_d=0.06, X_q=0.1000, X′_q=0.0969,
             X″_q=0.06, T′_d0=8.96, T′_q0=0.310, H=23.64
         )
@@ -90,7 +90,7 @@ end
         end
 
         @named machine = SauerPaiMachine(;
-            vf_input=true, τ_m_input=true, S_b=100, V_b=1, Sn=100, Vn=1, ω_b=2π*60, R_s=0.000125,
+            vf_input=true, τ_m_input=true, R_s=0.000125,
             T″_d0=0.01, T″_q0=0.01, H=23.64
         )
 
@@ -116,7 +116,7 @@ end
 
     @testset "CompositeInjector with autoconnections" begin
         @named machine = SauerPaiMachine(;
-            vf_input=true, τ_m_input=true, S_b=100, V_b=1, Sn=100, Vn=1, ω_b=2π*60, R_s=0.000125, T″_d0=0.01,
+            vf_input=true, τ_m_input=true, R_s=0.000125, T″_d0=0.01,
             T″_q0=0.01, X_ls=0.01460, X_d=0.1460, X′_d=0.0608, X″_d=0.06, X_q=0.1000, X′_q=0.0969,
             X″_q=0.06, T′_d0=8.96, T′_q0=0.310, H=23.64
         )
@@ -138,5 +138,37 @@ end
         @test mtkbus isa System
         compile_bus(mtkbus) # can compile?
     end
+end
+
+@testset "compile_bus/compile_line wrap bare injectors/branches" begin
+    @named swing = Swing(Pm=1.0)
+    @named piline = PiLine(R=0.01, X=0.1)
+
+    # a bare injector/branch is wrapped in MTKBus/MTKLine, giving the same model
+    # as the explicit two-step spelling — name included
+    @test compile_bus(swing).psym == compile_bus(MTKBus(swing)).psym
+    @test compile_bus(swing).name == compile_bus(MTKBus(swing)).name == :bus
+    @test compile_line(piline).psym == compile_line(MTKLine(piline)).psym
+    @test compile_line(piline).name == compile_line(MTKLine(piline)).name == :line
+    # an explicit name still wins, in both spellings
+    @test compile_bus(swing; name=:mybus).name == :mybus
+    @test compile_line(piline; name=:myline).name == :myline
+
+    # kwargs still apply to the wrapped model
+    @test get_default(compile_bus(swing; Vbase=110), :busbar₊Vbase) == 110
+    @test get_default_from(compile_bus(swing; current_source=true), :busbar₊Vbase) ==
+        (:hub, :busbar₊Vbase)
+    # without an explicit `Vbase`, the weak fallback is *materialized* into a real default —
+    # `default_from` reads defaults in a pre-pass and cannot see a formula, so a bus that
+    # kept the fallback would silently fail to feed its line ends
+    @test get_default(compile_bus(swing), :busbar₊Vbase) == get_Vbase()
+    @test !has_initformula(compile_bus(swing))
+    # ... and neither spelling of the voltage base may be given twice
+    @test_throws ArgumentError compile_bus(swing; Vbase=110, var"busbar₊Vbase"=220)
+
+    # a system which satisfies neither interface is still rejected
+    @named neither = RealOutput()
+    @test_throws ArgumentError compile_bus(neither)
+    @test_throws ArgumentError compile_line(neither)
 end
 

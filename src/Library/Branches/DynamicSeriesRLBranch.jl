@@ -1,18 +1,17 @@
 """
-    DynamicSeriesRLBranch(; R, L, ω0, r_src=1, r_dst=1)
+    DynamicSeriesRLBranch(; R, X, r_src=1, r_dst=1)
 
 Dynamic transmission line modeled as a series R-L circuit with optional transformer ratios.
 
 This model represents a series resistance and inductance connecting two buses.
-The line current is a differential state, suitable for:
+**Differential state: the line current** `i_line_r`/`i_line_i`. Suitable for:
 - Transmission lines with significant inductive reactance
 - Transformer models with leakage impedance
 - Dynamic analysis requiring explicit current dynamics
 
 # Parameters
 - `R`: Line resistance [pu]
-- `L`: Line reactance [pu] at frequency ω0. Related to physical inductance by L = ω0 * L_actual.
-- `ω0`: Frame angular frequency [rad/s]. Default: 2π*50 rad/s.
+- `X`: Line reactance [pu], evaluated at `ωbase` (physical inductance is `X/ωbase` [pu·s])
 - `r_src`: Transformer voltage ratio at source. Default: 1.
 - `r_dst`: Transformer voltage ratio at destination. Default: 1.
 
@@ -21,8 +20,9 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 @mtkmodel DynamicSeriesRLBranch begin
     @parameters begin
         R, [description="Line resistance [pu]"]
-        L, [description="Line reactance [pu] (frequency-normalized inductance)"]
-        ω0=2π*50, [description="Frame angular frequency [rad/s]"]
+        X, [description="Line reactance [pu] at ωbase"]
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
         r_src = 1, [description="Transformer voltage ratio at source"]
         r_dst = 1, [description="Transformer voltage ratio at destination"]
     end
@@ -36,9 +36,11 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         i_mag(t), [description="Current magnitude [pu]"]
     end
     @equations begin
-        # Series RL current dynamics in rotating dq frame
-        Dt(i_line_r) ~ ω0 / L * (r_src*src.u_r - r_dst*dst.u_r) - R / L * ω0 * i_line_r + ω0 * i_line_i
-        Dt(i_line_i) ~ ω0 / L * (r_src*src.u_i - r_dst*dst.u_i) - R / L * ω0 * i_line_i - ω0 * i_line_r
+        # Series RL current dynamics in the rotating dq frame, in the classical
+        # reactance-parameterized form: the only ωbase is the X/ωbase coefficient of the
+        # derivative (unit), the cross terms carry the frame speed ωframe [pu].
+        X/ωbase * Dt(i_line_r) ~ (r_src*src.u_r - r_dst*dst.u_r) - R*i_line_r + ωframe*X*i_line_i
+        X/ωbase * Dt(i_line_i) ~ (r_src*src.u_i - r_dst*dst.u_i) - R*i_line_i - ωframe*X*i_line_r
 
         # Terminal currents scaled by transformer ratios (for power conservation)
         dst.i_r ~ i_line_r * r_dst

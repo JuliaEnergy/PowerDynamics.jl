@@ -71,7 +71,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         _p_ref = p_ref_input ? p_ref.u : p_ref
     end
     @equations begin
-        p_droop ~ p_ref + 1/R * (_ω_ref - ω_meas)
+        p_droop ~ _p_ref + 1/R * (_ω_ref - ω_meas.u)
         p_lim ~ _clamp(p_droop, p_min, p_max)
         Ts * Dt(xg1) ~ p_lim - xg1
         Tc * Dt(xg2) ~ (1-T3/Tc)*xg1 - xg2
@@ -123,7 +123,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         xg1(t), [guess=1]
         # xg1_sat(t)
         xg2(t), [guess=0]
-        Δω(t), [description="Speed deviation"]
+        Δω(t), [description="Speed deviation from ω_ref [pu]"]
     end
     begin
         _ω_ref = ω_ref_input ? ω_ref.u : ω_ref
@@ -134,9 +134,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         # https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20TGOV1%20and%20TGOV1D.htm
         # and milano
 
-        # TODO: GOV: Δω absolute or relative?
-        # Δω ~ ω_meas.u - _ω_ref
-        Δω ~ ω_meas.u / _ω_ref - 1
+        Δω ~ ω_meas.u - _ω_ref
 
         ref_sig ~ 1/R*(_p_ref  - Δω)
 

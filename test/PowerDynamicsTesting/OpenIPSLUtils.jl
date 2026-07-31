@@ -2,6 +2,8 @@ function OpenIPSL_SMIB(_bus1; just_init=false, tol=1e-10, nwtol=1e-10)
     # copy constructor and set vidxs
     bus1 = VertexModel(_bus1, vidx=1, name=:GEN1)
 
+    # The OpenIPSL reference data is in SI (VA). Only used here to turn the SI powerflow
+    # results into pu — the components themselves take their bases from their bus.
     S_b = 100e6
 
     bus2 = let
@@ -10,7 +12,7 @@ function OpenIPSL_SMIB(_bus1; just_init=false, tol=1e-10, nwtol=1e-10)
         Q_0=10e6
         v_0=0.9919935
 
-        @named constantLoad = PSSE_Load(; v_0, S_b, characteristic=2)
+        @named constantLoad = PSSE_Load(; v_0, characteristic=2)
         busmodel = MTKBus(constantLoad; name=:LOAD)
         bm = compile_bus(busmodel, pf=pfPQ(P=-P_0/S_b, Q=-Q_0/S_b), vidx=2)
     end
@@ -18,11 +20,8 @@ function OpenIPSL_SMIB(_bus1; just_init=false, tol=1e-10, nwtol=1e-10)
     bus3 = let
         # OpenIPSL infinite bus parameters from SMIB base class
         H = 0                    # H=0 makes it behave like infinite bus
-        M_b = 100e6
         X_d = 0.2               # Internal impedance
         D = 0
-        # V_b = 400e3
-        ω_b = 2π*50
 
         # pf results, just used for pf modek
         # P_0 = 10.017110e6       # From OpenIPSL SMIB.mo
@@ -30,7 +29,9 @@ function OpenIPSL_SMIB(_bus1; just_init=false, tol=1e-10, nwtol=1e-10)
         v_0 = 1.0
         angle_0 = 0.0           # From OpenIPSL SMIB.mo
 
-        @named gencls_inf = PSSE_GENCLS(; S_b, ω_b, H, M_b, X_d, D)
+        # `M_b` is left unset: it weakly collapses onto the bus `Sbase`, which is what the
+        # old explicit `S_b == M_b == 100e6` amounted to (base conversion factor `CoB` = 1).
+        @named gencls_inf = PSSE_GENCLS(; H, X_d, D)
         busmodel = MTKBus(gencls_inf; name=:GEN2)
         compile_bus(busmodel, pf=pfSlack(V=v_0, δ=angle_0), vidx=3)
     end
@@ -103,12 +104,8 @@ end
 # Default GENROE machine for SMIB system for testing controllers
 function default_controller_smib_genroe()
     # Machine parameters from OpenIPSL IEEET1 test case (lines 5-25)
-    S_b = 100e6
-    M_b = 100e6
     H = 4.28
     D = 0
-    # V_b = 400e3
-    # ω_b = 2π*50
 
     # GENROE machine parameters (matching OpenIPSL test exactly)
     Tpd0 = 5
@@ -134,7 +131,6 @@ function default_controller_smib_genroe()
         Tpd0, Tppd0, Tpq0, Tppq0, H, D,
         Xd, Xq, Xpd, Xpq, Xppd, Xppq, Xl,
         S10, S12, R_a,
-        M_b, S_b,
         pmech_input=false,
         efd_input=true,
         name=:machine

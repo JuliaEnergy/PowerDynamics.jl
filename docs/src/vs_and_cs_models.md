@@ -187,6 +187,13 @@ Often, the hub bus will be a pure junction bus (pure KCL constraint).
 For EMT simulations, it might be a capacitive shunt as described above.
 In principle, it can be any type of model.
 
+!!! note "Satellites inherit their voltage base from the hub"
+    A satellite is electrically *at* the hub bus, so it does not carry a voltage base of its
+    own: `compile_bus(…; current_source=true)` makes its `busbar₊Vbase` inherit from the hub's
+    during initialization. Set `Vbase` on the hub and the injectors follow. An explicitly set
+    value on a satellite still wins, but [`check_base_consistency`](@ref) (which
+    `initialize_from_pf[!]` runs for you) then errors if it disagrees with the hub.
+
 
 ### Current Injector Bus Example
 
@@ -243,7 +250,7 @@ We also define the line model:
 #### Modeling as a 2-Bus System
 For the two-bus system we start by defining two generator models with some default parameters:
 ```@example modelborders
-genp = (vf_input=false, τ_m_input=false, S_b=100, V_b=1, ω_b=2π*50, R_s=0.000125, T″_d0=0.01, T″_q0=0.01, X_ls=0.01460, X_d=0.1460, X′_d=0.0608, X″_d=0.06, X_q=0.1000, X′_q=0.0969, X″_q=0.06, T′_d0=8.96, T′_q0=0.310, H=23.64, Sn=100, Vn=1)
+genp = (vf_input=false, τ_m_input=false, R_s=0.000125, T″_d0=0.01, T″_q0=0.01, X_ls=0.01460, X_d=0.1460, X′_d=0.0608, X″_d=0.06, X_q=0.1000, X′_q=0.0969, X″_q=0.06, T′_d0=8.96, T′_q0=0.310, H=23.64)
 @named genA = SauerPaiMachine(; genp...)
 @named genB = SauerPaiMachine(; genp...)
 nothing

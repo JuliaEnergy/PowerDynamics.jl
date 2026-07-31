@@ -99,6 +99,9 @@ macro pfinitconstraint(ex)
         ex = Base.remove_linenums!(Expr(:block, ex))
     end
 
+    # capture the macro-form source before the symbols get wrapped into `u[:sym]`/`pfu[:sym]`
+    s = _macro_source_string("@pfinitconstraint", ex)
+
     sym = Symbol[]
     pfsym = Symbol[]
     out = :__out__
@@ -115,12 +118,6 @@ macro pfinitconstraint(ex)
     end
     unique!(sym)
     unique!(pfsym)
-
-    s = join(string.(body), "\n")
-    s = replace(s, string(out) => "    out")
-    s = replace(s, string(u) => "u")
-    s = replace(s, string(pfu) => "pfu")
-    s = "PFInitConstraint($sym, $pfsym, $dim) do out, u, pfu\n" * s * "\nend"
 
     body_esc = _escape_all.(body)
 
@@ -151,6 +148,15 @@ function _escape_all(ex::Expr)
     postwalk(ex) do x
         x isa Symbol ? esc(x) : x
     end
+end
+
+# Reproduce the `@name begin … end` source the user wrote, so a constraint/formula prints as
+# its macro call rather than as the expanded inline `do`-block — it reads nicer. Must be called
+# before the symbols are wrapped into `u[:sym]`/`pfu[:sym]`. The `#= file:line =#` location
+# comment on nested macro calls (`@pf(:x)`) survives `remove_linenums!`, so strip it here.
+function _macro_source_string(macroname, ex)
+    lines = [replace(string("    ", a), r"#=.*?=# " => "") for a in ex.args if a isa Union{Expr, QuoteNode}]
+    string(macroname, " begin\n", join(lines, "\n"), "\nend")
 end
 
 """
@@ -186,6 +192,9 @@ macro pfinitformula(ex)
         ex = Base.remove_linenums!(Expr(:block, ex))
     end
 
+    # capture the macro-form source before the symbols get wrapped into `u[:sym]`/`pfu[:sym]`
+    s = _macro_source_string("@pfinitformula", ex)
+
     sym = Symbol[]
     pfsym = Symbol[]
     outsym = Symbol[]
@@ -218,12 +227,6 @@ macro pfinitformula(ex)
     unique!(sym)
     unique!(pfsym)
     unique!(outsym)
-
-    s = join(string.(body), "\n")
-    s = replace(s, string(out) => "    out")
-    s = replace(s, string(u) => "u")
-    s = replace(s, string(pfu) => "pfu")
-    s = "PFInitFormula($outsym, $sym, $pfsym) do out, u, pfu\n" * s * "\nend"
 
     body_esc = _escape_all.(body)
 

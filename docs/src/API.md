@@ -9,6 +9,19 @@ The following functions are designed for public use.
 Terminal
 BusBar
 LineEnd
+SystemBase
+```
+
+### Global Per-Unit Bases
+```@docs
+get_Sbase
+set_Sbase!
+get_ωbase
+set_ωbase!
+get_fbase
+set_fbase!
+get_Vbase
+set_Vbase!
 ```
 
 ### Bus and Line Construction
@@ -31,8 +44,6 @@ compile_bus
 compile_line
 simplify_mtkbus
 simplify_mtkline
-Bus
-Line
 ```
 
 ## Interface Checking Functions
@@ -61,6 +72,7 @@ initialize_from_pf
 show_powerflow
 powerflow_model
 ispfmodel
+check_base_consistency
 ```
 
 ### Power Flow Model Management Functions

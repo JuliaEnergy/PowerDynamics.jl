@@ -21,6 +21,9 @@ using Main.PowerDynamicsTesting
         @info "Begin Package quatlity tests"
         Aqua.test_all(PowerDynamics;
             deps_compat=VERSION ≥ v"1.11", # don't check compat on LTS
+            # on LTS, [sources] in test/Project.toml is ignored, so CI installs the
+            # unregistered Testfiles into the main project -> not a real dependency
+            stale_deps=(; ignore=[:Testfiles]),
             ambiguities=false,
             persistent_tasks=false)
         @test_broken isempty(Docs.undocumented_names(PowerDynamics))

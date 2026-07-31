@@ -34,14 +34,15 @@ using Test
 end
 
 @testset "Swing bus" begin
-    @named swing = Swing(Pm=1, D=0.1, M=0.005, θ=0, ω=1, V=1)
+    # parameters updated since we introduced ωbase to the swing from lib
+    @named swing = Swing(Pm=1, D=0.1*2π*50, M=0.005*2π*50, θ=0, ω=1, V=1)
     bus = compile_bus(MTKBus(swing));
     toi = bus_on_slack(bus)
     # isinteractive() && plottoi(toi)
     @reftest "SwingBus_1" toi
 
     # swing bus with load
-    @named swing = Swing(Pm=1, D=0.1, M=0.005, θ=0, ω=1, V=1)
+    @named swing = Swing(Pm=1, D=0.1*2π*50, M=0.005*2π*50, θ=0, ω=1, V=1)
     @named pqload = PQLoad(Pset=-0.5, Qset=-0.2)
     bm = MTKBus(swing, pqload)
     bus = compile_bus(bm)
@@ -60,11 +61,6 @@ end
             machine = PowerDynamics.Library.SauerPaiMachine(;
                 vf_input=false,
                 τ_m_input=false,
-                S_b=100,
-                V_b=18,
-                Sn=100,
-                Vn=18,
-                ω_b=2π*60,
                 X_d=0.146, X′_d=0.0608, X″_d=0.06,
                 X_q=0.1, X′_q=0.0969, X″_q=0.06,
                 R_s=0.000124,
@@ -75,7 +71,10 @@ end
                 T″_q0=0.01,
                 H=23.64,
             )
-            busbar = BusBar()
+            # The machine takes its bases from the bus: `Sn`/`Vn` are unset and weakly
+            # collapse onto `Sbase`/`Vbase`, i.e. the machine sits on the system base.
+            busbar = BusBar(Vbase=18)
+            systembase = SystemBase(ωbase=2π*60)
         end
         @equations begin
             connect(machine.terminal, busbar.terminal)
@@ -100,11 +99,6 @@ end
             machine = PowerDynamics.Library.SauerPaiMachine(;
                 vf_input=true,
                 τ_m_input=true,
-                S_b=100,
-                V_b=18,
-                Sn=100,
-                Vn=18,
-                ω_b=2π*60,
                 X_d=0.146, X′_d=0.0608, X″_d=0.06,
                 X_q=0.1, X′_q=0.0969, X″_q=0.06,
                 R_s=0.000124,
@@ -135,7 +129,8 @@ end
                 DT=0,
                 V_max=5,
                 V_min=-5)
-            busbar = BusBar()
+            busbar = BusBar(Vbase=18)
+            systembase = SystemBase(ωbase=2π*60)
         end
         @equations begin
             connect(machine.terminal, busbar.terminal)
@@ -167,7 +162,7 @@ end
     # isinteractive() && plottoi(toi)
     @reftest "PQLoad_1" toi
 
-    @named load = VoltageDependentLoad(Pset=-0.5, Qset=-0.5, Vn=1, αP=1, αQ=1)
+    @named load = VoltageDependentLoad(Pset=-0.5, Qset=-0.5, Vset=1, αP=1, αQ=1)
     bus = compile_bus(MTKBus(load));
     toi = bus_on_slack(bus)
     # isinteractive() && plottoi(toi)
@@ -229,16 +224,12 @@ end
         @components begin
             machine = Library.ClassicalMachine(;
                 τ_m_input=false,
-                S_b=100,
-                V_b=18,
-                Sn=100,
-                Vn=18,
-                ω_b=2π*60,
                 X′_d=0.0608,
                 R_s=0.000124,
                 H=23.64,
             )
-            busbar = BusBar()
+            busbar = BusBar(Vbase=18)
+            systembase = SystemBase(ωbase=2π*60)
         end
         @equations begin
             connect(machine.terminal, busbar.terminal)

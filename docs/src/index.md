@@ -32,17 +32,24 @@ as those explain lots of the underlying functionality and concepts
 ### Reference & Concepts
 
 - **[Modeling Concepts](@ref)** - Learn the fundamental concepts behind PowerDynamics modeling
+- **[Per-Unit Systems](@ref)** - Which bases exist, where they live, and how to set them
 - **[On Voltage and Current Sources](@ref vc-and-cs)** - Understand how voltage source and current source models interact with the network
 - **[Component Library](@ref)** - Explore the available power system component models
 - **[Powergrid Initialization](@ref)** - Understand how to properly initialize power system simulations
+- **[Advanced Component Initialization](@ref)** - What to do when a component cannot be initialized from the power flow alone
 - **[API Reference](@ref API)** - Complete function and type documentation
 
 ### Tutorials
-- **[Julia Setup for New Users](@ref julia-setup)** - Set up your Julia development environment for working with PowerDynamics.jl
 - **[Getting Started](@ref getting-started)** - Introduction to the core philosophy behind PowerDynamics.jl and its integration with the SciML ecosystem
 - **[Typical Simulation Workflow](@ref typical-simulation-workflow)** - Hands-on walkthrough of a small 3-bus example system, covering all stages from modeling to simulation
 - **[Custom Components](@ref custom-bus)** - Shows how to implement Milano's classical synchronous machine model with a power system stabilizer (PSS)
 - **[Custom Transmission Lines](@ref custom-line)** - Demonstrates creating a PI-branch transmission line model with overcurrent protection that can trip during faults
+- **[Backward Initialization of Nested Models](@ref nested-init)** - Builds a generator bus whose components each carry their own initialization recipe, so the whole bus initializes from the power flow with no nonlinear solve
+
+### Getting Started with Julia
+- **[Julia Setup for New Users](@ref julia-setup)** - Install Julia and set up an editor
+- **[Environment Management](@ref env-management)** - How packages, versions and environments actually work
+- **[How to Structure Research Projects](@ref research-projects)** - An opinionated guide to laying out a project built on PowerDynamics
 
 ### Advanced Examples
 - **[IEEE 9-Bus System](@ref ieee9bus)** - Simulates the complete 9-bus IEEE test system with synchronous generators and dynamic load changes

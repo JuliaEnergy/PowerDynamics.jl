@@ -127,11 +127,13 @@ We can define the following MTKModel to represent the droop inverter:
         Pset, [description="Active power setpoint", guess=1]
         Qset, [description="Reactive power setpoint", guess=0]
         Vset, [description="Voltage magnitude setpoint", guess=1]
-        ω₀=1, [description="Nominal frequency"]
-        Kp=1, [description="Active power droop coefficient"]
+        ωset=1, [description="Frequency setpoint [pu]"]
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
+        Kp = 0.0027, [description="Active power droop coefficient [pu freq / pu power]"]
         Kq=0.1, [description="Reactive power droop coefficient"]
-        τ_p = 1, [description="Active Power filter time constant"]
-        τ_q = 1, [description="Reactive Power filter time constant"]
+        τ_p = 1.0, [description="Active Power filter time constant [s]"]
+        τ_q = 1.0, [description="Reactive Power filter time constant [s]"]
     end
 
     @variables begin
@@ -153,12 +155,13 @@ We can define the following MTKModel to represent the droop inverter:
         τ_p * Dt(Pfilt) ~ Pmeas - Pfilt
         τ_q * Dt(Qfilt) ~ Qmeas - Qfilt
 
-        ## Droop control equations
-        ω ~ ω₀ - Kp * (Pfilt - Pset)  # Frequency decreases with excess power
+        ## Droop control equations (ωset is a *setpoint*, not the frame speed)
+        ω ~ ωset - Kp * (Pfilt - Pset)  # Frequency decreases with excess power
         V ~ Vset - Kq * (Qfilt - Qset)  # Voltage decreases with excess reactive power
 
-        ## Voltage angle dynamics
-        Dt(δ) ~ ω - ω₀
+        ## Voltage angle dynamics: δ is measured against the global dq frame, which
+        ## rotates at ωframe [pu], i.e. ωbase*ωframe [rad/s].
+        Dt(δ) ~ ωbase*(ω - ωframe)
 
         ## Output voltage components
         terminal.u_r ~ V*cos(δ)
@@ -186,9 +189,18 @@ interface  ║  │ MTKBus             │ ║
 ```
 =#
 
+## Part I restored the global bases when it finished, so we set them again for the bus we
+## build here. The droop model above is written entirely in per unit and never reads them,
+## but the bus we are about to splice into the network gets its own `systembase` — and a
+## single bus sitting on a different base than its 38 neighbours is a trap worth avoiding.
+set_Sbase!(BASE_MVA); set_fbase!(BASE_FREQ)
+
 @named inverter = DroopInverter()
 mtkbus = MTKBus(inverter)
 droop_bus_template = compile_bus(mtkbus; name=:DroopInverter)
+
+set_Sbase!(); set_fbase!() # hide #md
+droop_bus_template #hide #md
 
 #=
 We see that the droop inverter has 3 free parameters (you can check `free_p(droop_bus_template)` or `dump_initial_state(droop_bus_template)`).
@@ -405,7 +417,20 @@ nothing #hide #md
 #=
 ### Optimization Execution
 
-We use the Optimization.jl ecosystem with the Adam optimizer:
+We use the Optimization.jl ecosystem, with `Rprop` as the optimizer.
+
+The choice matters here, because our four parameters differ by three orders of magnitude
+(`Kp ≈ 0.0027` against `τ_q = 1`). That rules out any method taking a common step in all
+directions: a step large enough to move the time constants sends `Kp` straight through zero
+on the first iteration, and a negative droop coefficient inverts the feedback (frequency
+*rises* with excess power), so the simulation diverges rather than merely scoring badly.
+Adam does not rescue us — it adapts to the *gradient's* magnitude, not the parameter's, and
+those rescale inversely.
+
+`Rprop` handles it natively: it discards the gradient's magnitude and uses only its sign,
+carrying a **separate step size per parameter** that grows while the sign stays consistent
+and halves whenever it flips. Every parameter finds its own scale within a few iterations,
+so `η` below is only a starting step rather than a rate we have to tune per parameter.
 =#
 
 ## Create optimization function with automatic differentiation
@@ -432,7 +457,7 @@ With that, we can run the optimization:
 optprob = Optimization.OptimizationProblem(optf, p0; callback)
 VERBOSE_CALLBACK = false #hide #md
 
-@time optsol = Optimization.solve(optprob, Optimisers.Adam(0.06), maxiters = 50)
+@time optsol = Optimization.solve(optprob, Optimisers.Rprop(3e-4), maxiters = 50)
 
 println("\nOptimization completed!")
 println("Initial parameters: ", p0)

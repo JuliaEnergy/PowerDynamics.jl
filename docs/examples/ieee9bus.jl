@@ -17,6 +17,17 @@ using OrdinaryDiffEqNonlinearSolve
 using CairoMakie
 
 #=
+## Per-unit bases
+
+The IEEE 9-bus system is a 60 Hz system on a 100 MVA base. `Sbase` and `ωbase` are *global*
+quantities in PowerDynamics: they are set once, before any model is constructed, and are then
+baked into every component that is built afterwards. (100 MVA is already the default, so only
+the frequency actually needs setting here.)
+=#
+set_Sbase!(100)  # MVA — the default, spelled out for clarity
+set_fbase!(60)   # Hz
+
+#=
 ## Generator Buses
 
 The 3 generator buses are modeled using a SauerPai 6th order machine model with
@@ -27,11 +38,6 @@ function GeneratorBus(; machine_p=(;), avr_p=(;), gov_p=(;))
     @named machine = SauerPaiMachine(;
         vf_input=true,
         τ_m_input=true,
-        S_b=100,
-        V_b=1,
-        Sn=100,
-        Vn=1,
-        ω_b=2π*60,
         R_s=0.000125,
         T″_d0=0.01,
         T″_q0=0.01,
@@ -100,25 +106,30 @@ mtkbus9 = MTKBus()
 nothing #hide #md
 
 #=
-After this, we can build the `NetworkDynamics` components using the `Bus`-constructor.
-
-The `Bus` constructor is essentially a thin wrapper around the `VertexModel` constructor which,
-per default, adds some metadata. For example the `vidx` property which later on allows for
-"graph free" network dynamics instantiation.
+After this, we can compile the symbolic bus models into `NetworkDynamics` components using
+[`compile_bus`](@ref). Besides compiling, it attaches some metadata: for example the `vidx`
+property, which later on allows for "graph free" network dynamics instantiation.
 
 We use the `pf` keyword to specify the models which should be used in the powerflow calculation.
 Here, generator 1 is modeled as a slack bus while the other two generators are modeled as PV buses.
 The loads are modeled as PQ buses.
+
+The `Vbase` keyword sets the voltage base of each bus. This is the one per-unit base that is
+genuinely *per bus*: the three generators sit at their machine terminal voltages while the
+transmission system runs at 230 kV, and a transformer between the two is simply a line whose
+two ends resolve to different bases. It does not enter the dynamics — those are formulated in
+per unit throughout — but it is what makes the SI observables (`busbar₊u_kV`, `P_MW`, …)
+report real numbers, and each incident line inherits it during initialization.
 =#
-@named bus1 = compile_bus(mtkbus1; vidx=1, pf=pfSlack(V=1.04))
-@named bus2 = compile_bus(mtkbus2; vidx=2, pf=pfPV(V=1.025, P=1.63))
-@named bus3 = compile_bus(mtkbus3; vidx=3, pf=pfPV(V=1.025, P=0.85))
-@named bus4 = compile_bus(mtkbus4; vidx=4)
-@named bus5 = compile_bus(mtkbus5; vidx=5, pf=pfPQ(P=-1.25, Q=-0.5))
-@named bus6 = compile_bus(mtkbus6; vidx=6, pf=pfPQ(P=-0.9, Q=-0.3))
-@named bus7 = compile_bus(mtkbus7; vidx=7)
-@named bus8 = compile_bus(mtkbus8; vidx=8, pf=pfPQ(P=-1.0, Q=-0.35))
-@named bus9 = compile_bus(mtkbus9; vidx=9)
+@named bus1 = compile_bus(mtkbus1; vidx=1, pf=pfSlack(V=1.04), Vbase=16.5)
+@named bus2 = compile_bus(mtkbus2; vidx=2, pf=pfPV(V=1.025, P=1.63), Vbase=18.0)
+@named bus3 = compile_bus(mtkbus3; vidx=3, pf=pfPV(V=1.025, P=0.85), Vbase=13.8)
+@named bus4 = compile_bus(mtkbus4; vidx=4, Vbase=230)
+@named bus5 = compile_bus(mtkbus5; vidx=5, pf=pfPQ(P=-1.25, Q=-0.5), Vbase=230)
+@named bus6 = compile_bus(mtkbus6; vidx=6, pf=pfPQ(P=-0.9, Q=-0.3), Vbase=230)
+@named bus7 = compile_bus(mtkbus7; vidx=7, Vbase=230)
+@named bus8 = compile_bus(mtkbus8; vidx=8, pf=pfPQ(P=-1.0, Q=-0.35), Vbase=230)
+@named bus9 = compile_bus(mtkbus9; vidx=9, Vbase=230)
 nothing #hide #md
 
 #=
@@ -255,3 +266,6 @@ end
 axislegend(ax)
 
 fig #hide #md
+
+#-
+set_Sbase!(); set_fbase!() #hide #md

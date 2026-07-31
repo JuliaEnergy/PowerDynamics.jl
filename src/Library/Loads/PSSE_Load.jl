@@ -27,7 +27,8 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         # Q_0, [description="Initial reactive power [Mvar]"]
         v_0, [guess=1, description="Initial voltage magnitude [pu]"]
         # angle_0, [description="Initial voltage angle [rad]"]
-        S_b, [description="System base power [MVA]"]
+        # System base: inherited structurally from the bus this load attaches to.
+        Sbase, [bound_to = :systembase₊Sbase, description="System power base [MVA]"]
 
         # ZIP Load Components (from OpenIPSL Load model)
         S_p_re, [guess=0, description="Real part of original constant power load [MW]"]
@@ -70,12 +71,12 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     begin
         # Complex ZIP load components (from baseLoad protected parameters)
         # Convert MW/Mvar to pu and apply load transfer fractions
-        S_P_re = ((1 - a_re - b_re) * S_p_re) / S_b
-        S_P_im = ((1 - a_im - b_im) * S_p_im) / S_b
-        S_I_re = (S_i_re + (a_re * S_p_re / v_0)) / S_b
-        S_I_im = (S_i_im + (a_im * S_p_im / v_0)) / S_b
-        S_Y_re = (S_y_re + (b_re * S_p_re / v_0^2)) / S_b
-        S_Y_im = (S_y_im + (b_im * S_p_im / v_0^2)) / S_b
+        S_P_re = ((1 - a_re - b_re) * S_p_re) / Sbase
+        S_P_im = ((1 - a_im - b_im) * S_p_im) / Sbase
+        S_I_re = (S_i_re + (a_re * S_p_re / v_0)) / Sbase
+        S_I_im = (S_i_im + (a_im * S_p_im / v_0)) / Sbase
+        S_Y_re = (S_y_re + (b_re * S_p_re / v_0^2)) / Sbase
+        S_Y_im = (S_y_im + (b_im * S_p_im / v_0^2)) / Sbase
 
         # Voltage dependency coefficients for characteristic 2
         a2 = 1.502  # Constant current load coefficient

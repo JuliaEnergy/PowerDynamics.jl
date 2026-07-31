@@ -4,6 +4,7 @@ using Main.PowerDynamicsTesting
 
 using PowerDynamics.Library
 using ModelingToolkitBase
+using ModelingToolkit # needed for mtkcompile=:compare
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 
@@ -28,8 +29,6 @@ BUS = let
     # Create GENROU machine with EFD input enabled for exciter control
     @named genrou = PSSE_GENROU(;
         # System parameters
-        S_b = 100e6,
-        M_b = 100e6,
         # GENROU machine parameters from OpenIPSL SCRX.mo (lines 6-28)
         H = 4.28,
         D = 0,

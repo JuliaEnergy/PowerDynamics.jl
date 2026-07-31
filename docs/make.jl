@@ -52,7 +52,9 @@ doc = makedocs(;
     pages=[
         "Home" => "index.md",
         "Modeling Concepts" => "ModelingConcepts.md",
+        "Per-Unit Systems" => "per_unit.md",
         "Initialization" => "initialization.md",
+        "Advanced Initialization" => "advanced_initialization.md",
         "Component Library" => "Library.md",
         "vs_and_cs_models.md",
         "Tutorials" => [
@@ -60,6 +62,7 @@ doc = makedocs(;
             "Typical Simulation Workflow" => "generated/typical_simulation_workflow.md",
             "Custom Generator Bus" => "generated/custom_bus.md",
             "Custom Transmission Line" => "generated/custom_line.md",
+            "Backward Initialization of Nested Models" => "generated/nested_component_init.md",
         ],
         "Advanced Examples" => [
             "generated/ieee9bus.md",

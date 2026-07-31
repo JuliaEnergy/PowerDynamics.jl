@@ -105,20 +105,24 @@ You can check if a model satisfies the injector interface using the [`isinjector
 
 #### [Model class `MTKBus`](@id MTKBus Interface)
 A `MTKBus` is a class of models, which are used to describe the dynamic behavior of a full bus in a power grid.
-Each `MTKBus` must contain a predefined model of type `BusBar()` (named `:busbar`).
+Each `MTKBus` must contain a predefined model of type [`BusBar`](@ref) (named `:busbar`).
 This busbar represents the connection point to the grid.
+It also contains a [`SystemBase`](@ref) named `:systembase`, which carries the *global*
+per-unit bases (`Sbase`, `ωbase`) and the reference frame speed `ωframe`.
+Components inside the bus bind their own base shadows to it (`bound_to = :systembase₊Sbase`).
 Optionally, it may contain various injectors.
+Both `busbar` and `systembase` will be added automaticially if you use the `MTKBus` constructor.
 If there are no injectors, the model just describes a junction bus; i.e., a bus that just satisfies the Kirchhoff constraint for the flows of connected lines.
 
 ```asciiart
  ┌───────────────────────────────────┐
- │ MTKBus             ┌───────────┐  │
- │  ┌──────────┐   ┌──┤ Generator │  │
- │  │          │   │  └───────────┘  │
- │  │  BusBar  ├───o                 │
- │  │          │   │  ┌───────────┐  │
- │  └──────────┘   └──┤ Load      │  │
- │                    └───────────┘  │
+ │ MTKBus                            │
+ │  ┌──────────┐      ┌───────────┐  │
+ │  │  BusBar  ├───o──┤ Generator │  │
+ │  └──────────┘   │  └───────────┘  │
+ │  ╭──────────┐   │  ┌───────────┐  │
+ │  │SystemBase│   └──┤ Load      │  │
+ │  └──────────┘      └───────────┘  │
  └───────────────────────────────────┘
 ```
 Sometimes it is not possible to connect all injectors directly but instead one needs or wants `Branches` between the busbar and injector terminal.
@@ -133,6 +137,7 @@ You can check if a model satisfies the bus interface using the [`isbusmodel`](@r
     using PowerDynamics, PowerDynamics.Library, ModelingToolkitBase, SciCompDSL
     @mtkmodel MyMTKBus begin
         @components begin
+            systembase = SystemBase() # optional, injected at compile_bus
             busbar = BusBar()
             swing = Swing()
             load = PQLoad()
@@ -192,7 +197,11 @@ You can check if a model satisfies the branch interface using the [`isbranchmode
 #### [Model class: `MTKLine`](@id MTKLine Interface)
 Similar to the `MTKBus`, a `MTKLine` is a model class which represents a transmission line in the network.
 
-It must contain two `LineEnd()` instances, one called `:src`, one called `:dst`.
+It must contain two [`LineEnd`](@ref) instances, one called `:src`, one called `:dst`.
+Each is constructed with a matching `side` kwarg (`LineEnd(; side=:src)` / `LineEnd(; side=:dst)`),
+which is what lets the line end inherit its voltage base `Vbase` from the bus it is attached to.
+Like a bus, a line carries a [`SystemBase`](@ref) named `:systembase`; [`MTKLine`](@ref) adds it and
+[`compile_line`](@ref) injects one if it is missing.
 
 ```asciiart
  ┌────────────────────────────────────────────────┐
@@ -203,6 +212,7 @@ It must contain two `LineEnd()` instances, one called `:src`, one called `:dst`.
  │  │         │  │  ┌──────────┐  │  │         │  │
  │  └─────────┘  └──┤ Branch B ├──┘  └─────────┘  │
  │                  └──────────┘                  │
+ │  + SystemBase                                  │
  └────────────────────────────────────────────────┘
 ```
 
@@ -231,8 +241,9 @@ You can check if a model satisfies the line interface using the [`islinemodel`](
     using PowerDynamics, PowerDynamics.Library, ModelingToolkitBase, SciCompDSL
     @mtkmodel MyMTKLine begin
         @components begin
-            src = LineEnd()
-            dst = LineEnd()
+            systembase = SystemBase() # optional, injected at compile_line
+            src = LineEnd(; side=:src)
+            dst = LineEnd(; side=:dst)
             branch1 = PiLine()
             branch2 = PiLine()
         end
@@ -260,7 +271,9 @@ and variable names to be compiled into [`VertexModel`](@extref NetworkDynamics C
 models.
 To do so, PowerDynamics.jl provides the [`compile_line`](@ref) and [`compile_bus`](@ref) functions.
 
-At their core, both `compile_*` functions use ModelingToolkit's [`mtkcompile`](@extref ModelingToolkitBase.mtkcompile) to perform **symbolic simplifications** on your models and reduce the number of states.
+At their core, both `compile_*` functions perform **symbolic simplifications** on your models to reduce the number of states.
+This is done by NetworkDynamics' own simplification pipeline (alias and linear-state elimination, algebraic and nonlinear loop breaking, simple DAE index reduction).
+Alternatively, you can pass `mtkcompile=true` to use ModelingToolkit's [`mtkcompile`](@extref ModelingToolkitBase.mtkcompile) instead, or `mtkcompile=:compare` to print the results of both side by side.
 Most notably, this process can drastically reduce the number of equations, while all previously defined states remain "observable", i.e. inspectable after simulation.
 For example, in the above code example of the PQ load we defined equations for active and reactive powers $P$ and $Q$. Those equations don't add anything to the actual behavior of the system,
 however they will be kept around as so-called "observed" states, meaning we can reconstruct and plot them from dynamical simulations.
@@ -288,6 +301,9 @@ however they will be kept around as so-called "observed" states, meaning we can 
                                       ╚═════════════════════════╝
 ```
 
+If you hand `compile_bus` a bare *injector* instead of a bus, it wraps it in a single-injector
+`MTKBus` for you; `compile_bus(machine)` is exactly `compile_bus(MTKBus(machine))`.
+
 ### (MTK) Line Model to EdgeModel: `compile_line`
 ```asciiart
 
@@ -305,6 +321,9 @@ however they will be kept around as so-called "observed" states, meaning we can 
                                         ╚══════════════════════════════╝
 ```
 
+The same sugar applies here: a bare *branch* is wrapped into a single-branch `MTKLine`, so
+`compile_line(piline)` is `compile_line(MTKLine(piline))`.
+
 ### End to End Example
 Putting the knowledge from this document together, we can start a short simulation of an example network:
 ```@example concepts
@@ -319,7 +338,7 @@ First, we define an `MTKBus` consisting of two predefined injector models from t
 library: a `Swing` generator model and a `PQLoad`.
 To do so, we use the [`MTKBus(injectors...)`](@ref MTKBus) constructor.
 ```@example concepts
-@named swing = Swing(; Pm=1, V=1, D=0.1)
+@named swing = Swing(; Pm=1, V=1, D=30) # D ≫ default, so the transient settles quickly
 @named load = PQLoad(; Pset=-.5, Qset=0)
 bus1mtk = MTKBus(swing, load; name=:swingbus)
 show(stdout, MIME"text/plain"(), bus1mtk) #hide
@@ -387,7 +406,7 @@ fig #hide
 ## Internals
 
 Internally, we use different input/output conventions for bus and line models.
-The predefined models `BusBar()` and `LineEnd()` are defined in the following way:
+The predefined models `BusBar()`, `LineEnd()` and `SystemBase()` are defined in the following way:
 
 ### Model: `BusBar()`
 A busbar is a concrete model used in bus modeling.
@@ -402,7 +421,41 @@ i_lines ──→│          │  (t)
 It receives the sum of all line currents as an input and balances this with the currents flowing into the terminal.
 As an output, it forwards the terminal voltage to the backend.
 
-### Model: `LineEnd()`
+Besides that interface, the busbar owns the **voltage base of the bus**:
+
+| Parameter | Unit | Meaning |
+|:----------|:-----|:--------|
+| `Vbase`   | kV   | Voltage base of this bus, line-to-line |
+| `Ibase`   | kA   | `Sbase/(√3·Vbase)`, derived; line current |
+| `Zbase`   | Ω    | `Vbase²/Sbase`, derived; per-phase |
+| `Ybase`   | S    | `Sbase/Vbase²`, derived; per-phase |
+
+`Sbase` is three-phase and `Vbase` line-to-line, which is where the `√3` in `Ibase` comes
+from; see [Per-Unit Systems](@ref) for the full convention.
+
+`Sbase` and `ωbase` appear on the busbar too, but only as shadows bound to the bus'
+`systembase` (see below). `Vbase` is the one base that is genuinely **per bus**: a generator
+bus behind a step-up transformer sits at a different voltage level than the transmission bus
+it feeds. Set it with the `Vbase` keyword of either constructor
+```julia
+bus = MTKBus(machine; Vbase=16.5)         # on the symbolic model
+vertex = compile_bus(bus; Vbase=16.5)     # or when compiling
+```
+or, on an already compiled model, with
+[`set_default!(vertex, :busbar₊Vbase, 16.5)`](@extref NetworkDynamics.set_default!).
+If none of these is given, the bus falls back to the module-level global read at construction
+time ([`get_Vbase`](@ref)/[`set_Vbase!`](@ref), `1.0` by default).
+
+Everything the bus computes is in per unit; the bases exist to convert back. The busbar
+therefore also carries the SI observables `u_kV`, `P_MW`, `Q_MVAr` and `i_kA` — the pu
+quantities times the matching base, and thus only as meaningful as the bases you set.
+
+The neighbors of a bus inherit this value rather than declaring their own: the ends of every
+incident line take it from their bus (see [`LineEnd()`](@ref lineend-model) below), and a
+satellite bus takes it from its hub (see [Current Injector Bus](@ref current-injector-bus)).
+[`check_base_consistency`](@ref) verifies after initialization that this actually holds.
+
+### [Model: `LineEnd()`](@id lineend-model)
 A `LineEnd` model is very similar to the `BusBar` model.
 It represents one end of a transmission line.
 ```asciiart
@@ -415,3 +468,37 @@ i_line ←──│           │
 
 It has special input/output connectors which handle the network interconnection.
 The main difference being the distinct input/output conventions for the network interface.
+It carries the same bases and SI observables as the `BusBar` (`Vbase` with the derived
+`Ibase`/`Zbase`/`Ybase`, and `u_kV`/`P_MW`/`Q_MVAr`/`i_kA`), but it does not own its voltage
+base:
+
+A `LineEnd` is always constructed with a `side` kwarg (`:src` or `:dst`) telling it which end
+of the line it is. That is what allows it to inherit its voltage base from the bus it is
+attached to; a transformer is simply a line whose two ends resolve to different `Vbase`
+values, with the turns ratio falling out of the two bases.
+
+### Model: `SystemBase()`
+A parameter-only model carrying the quantities that are *global* to the system rather than
+local to a bus or a line:
+
+| Parameter | Unit | Meaning |
+|:----------|:-----|:--------|
+| `Sbase`   | MVA  | System power base |
+| `ωbase`   | rad/s | System frequency base |
+| `ωframe`  | pu   | Speed of the global dq reference frame (pinned to `1`) |
+| `fbase`   | Hz   | `ωbase/2π`, an observable |
+
+Exactly one instance, named `:systembase`, sits at the top level of every bus and every line
+next to the `busbar` resp. the two `LineEnd`s.
+Because the instance name is the same in every container, a component that needs a global
+base always spells the binding the same way, whether it lives in a bus or in a line:
+```julia
+@parameters begin
+    Sbase, [bound_to = :systembase₊Sbase]
+    ωbase, [bound_to = :systembase₊ωbase]
+end
+```
+Such a shadow is eliminated at compile time (it becomes an observable of the target), so the
+whole bus or line has exactly one settable knob per global base. The defaults come from the
+module-level globals at construction time — see [`set_Sbase!`](@ref), [`set_ωbase!`](@ref)
+and [`set_fbase!`](@ref).

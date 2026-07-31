@@ -29,8 +29,13 @@
     end
 
     @parameters begin
+        # System bases: inherited structurally from the bus this machine attaches to.
+        Sbase, [bound_to = :systembase₊Sbase, description="System power base [MVA]"]
+        ωbase, [bound_to = :systembase₊ωbase, description="System frequency base [rad/s]"]
+        ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
+
         # Machine parameters (free parameters - need guess values)
-        M_b, [description="Machine base power [MVA]"]
+        M_b, [initf_weak = Sbase, description="Machine base power [MVA]"]
         Tpd0, [description="d-axis transient open-circuit time constant [s]"]
         Tppd0, [description="d-axis sub-transient open-circuit time constant [s]"]
         Tppq0, [description="q-axis sub-transient open-circuit time constant [s]"]
@@ -45,9 +50,8 @@
         S10, [description="Saturation factor at 1.0 pu [pu]"]
         S12, [description="Saturation factor at 1.2 pu [pu]"]
 
-        # System parameters (free parameters from pfComponent)
-        S_b, [description="System power basis [MVA]"]
-        fn=50, [description="System frequency [Hz]"]
+        CoB = M_b/Sbase, [description="base conversion factor M_b/Sbase"]
+        fn = ωbase/(2π), [description="System frequency [Hz]"]
 
         # Fixed parameters (with default values)
         R_a=0, [description="Armature resistance [pu]"]
@@ -81,11 +85,6 @@
         # Input/parameter variables
         pmech(t), [description="mechanical power [pu]"]
         efd(t), [description="field voltage [pu]"]
-    end
-
-    begin
-        # Derived parameters (used in equations)
-        CoB = M_b/S_b # Base conversion factor
     end
 
     @equations begin
@@ -122,7 +121,10 @@
         anglei ~ atan(pii, pir)
 
         # Swing equations (from OpenIPSL line 122-123)
+        # `w` is the speed *deviation* from nominal [pu] (OpenIPSL convention), so the
+        # frame enters as its own deviation `ωframe - 1`, which is exactly 0 while the
+        # frame is pinned to nominal (written this way to avoid 1 + w - 1 cancellation).
         Dt(w) ~ ((pmech - D*w)/(w + 1) - Te)/(2*H)
-        Dt(delta) ~ 2*π*fn*w
+        Dt(delta) ~ ωbase*(w - (ωframe - 1))
     end
 end

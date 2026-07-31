@@ -4,6 +4,7 @@ using Main.PowerDynamicsTesting
 
 using PowerDynamics.Library
 using ModelingToolkitBase
+using ModelingToolkit # needed for mtkcompile=:compare
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
 
@@ -22,8 +23,6 @@ ref = CSV.read(
 # GENROU+IEEET1+IEEEG1 bus model parameters from OpenIPSL IEEEG1 test case
 BUS = let
     # System parameters
-    S_b = 100e6
-    M_b = 100e6
 
     # GENROU machine parameters from OpenIPSL IEEEG1.mo (lines 4-25)
     H = 4.0
@@ -49,7 +48,7 @@ BUS = let
 
     # Create GENROU machine with EFD and PMECH inputs enabled for controller operation
     @named genrou = PSSE_GENROU(;
-        S_b, H, M_b, D,
+        H, D,
         Xd, Xq, Xpd, Xpq, Xppd, Xppq, Xl,
         Tpd0, Tpq0, Tppd0, Tppq0,
         S10, S12, R_a,
