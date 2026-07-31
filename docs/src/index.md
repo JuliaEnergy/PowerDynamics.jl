@@ -35,6 +35,7 @@ as those explain lots of the underlying functionality and concepts
 - **[On Voltage and Current Sources](@ref vc-and-cs)** - Understand how voltage source and current source models interact with the network
 - **[Component Library](@ref)** - Explore the available power system component models
 - **[Powergrid Initialization](@ref)** - Understand how to properly initialize power system simulations
+- **[Advanced Component Initialization](@ref)** - What to do when a component cannot be initialized from the power flow alone
 - **[API Reference](@ref API)** - Complete function and type documentation
 
 ### Tutorials

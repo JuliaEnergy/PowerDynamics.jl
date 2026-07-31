@@ -53,6 +53,7 @@ doc = makedocs(;
         "Home" => "index.md",
         "Modeling Concepts" => "ModelingConcepts.md",
         "Initialization" => "initialization.md",
+        "Advanced Initialization" => "advanced_initialization.md",
         "Component Library" => "Library.md",
         "vs_and_cs_models.md",
         "Tutorials" => [
