@@ -21,7 +21,7 @@ coincide numerically today but are not the same quantity.
 - `M`: Inertia ``M = 2H`` [s].
 - `D`: Damping coefficient [pu power / pu frequency].
 - `ωset`: Frequency setpoint [pu] the damping holds against.
-- `Pm`: Mechanical power [pu] (or a `RealInput` if `Pm_input=true`).
+- `Pm`: Mechanical power in pu, or a `RealInput` if `Pm_input=true`.
 - `V`: Terminal voltage magnitude [pu].
 - `ωbase`/`ωframe` are inherited from the container's `systembase`; not constructor arguments.
 
