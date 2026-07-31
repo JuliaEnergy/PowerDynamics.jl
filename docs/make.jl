@@ -52,6 +52,7 @@ doc = makedocs(;
     pages=[
         "Home" => "index.md",
         "Modeling Concepts" => "ModelingConcepts.md",
+        "Per-Unit Systems" => "per_unit.md",
         "Initialization" => "initialization.md",
         "Advanced Initialization" => "advanced_initialization.md",
         "Component Library" => "Library.md",

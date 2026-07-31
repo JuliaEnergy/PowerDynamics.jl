@@ -32,6 +32,7 @@ as those explain lots of the underlying functionality and concepts
 ### Reference & Concepts
 
 - **[Modeling Concepts](@ref)** - Learn the fundamental concepts behind PowerDynamics modeling
+- **[Per-Unit Systems](@ref)** - Which bases exist, where they live, and how to set them
 - **[On Voltage and Current Sources](@ref vc-and-cs)** - Understand how voltage source and current source models interact with the network
 - **[Component Library](@ref)** - Explore the available power system component models
 - **[Powergrid Initialization](@ref)** - Understand how to properly initialize power system simulations
