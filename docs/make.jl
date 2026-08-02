@@ -86,6 +86,7 @@ doc = makedocs(;
     linkcheck_ignore = [
         r"^\.\./assets/OpenIPSL_valid/.*\.png$",  # Match ../assets/OpenIPSL_valid/*.png
         "https://marketplace.visualstudio.com/items?itemName=julialang.language-julia", # curl blocked?
+        "https://code.visualstudio.com/Download", # intermittent 500 for CI runners
         ],
     warnonly=true,
     debug=true, # return doc object
