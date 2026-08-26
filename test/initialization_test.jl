@@ -327,8 +327,15 @@ end
     gen = CompositeInjector([machine, avr, gov]; name=:gen)
     genbus = compile_bus(MTKBus(gen; name=:genbus); vidx=2, pf=pfPV(V=1, P=1))
 
-    # the AVR's set_initf pinned the PI output observable
-    @test NetworkDynamics.pinned_obssyms(genbus) == Set([:gen₊avr₊pi₊y])
+    # the AVR's set_initf targets the PI output observable directly — a symbol with no storage
+    # slot of its own, which is what makes it a pin rather than an ordinary write. The rules
+    # canonicalize the formula's targets, so an output written under an alias resolves to the
+    # settable symbol behind it and drops out here.
+    let am = NetworkDynamics.get_aliasmap(genbus), settable = NetworkDynamics.settable_symbols(genbus)
+        pins = Set(s for f in NetworkDynamics.get_initformulas(genbus)
+                     for s in NetworkDynamics.ResolutionRule(f, am).outsym if s ∉ settable)
+        @test pins == Set([:gen₊avr₊pi₊y])
+    end
 
     slackbus = compile_bus(PowerDynamics.VariableFrequencySlack(name=:slack); vidx=1, pf=pfSlack(V=1))
     line = compile_line(MTKLine(PiLine(; name=:piline, R=0.01, X=0.1, B_src=0, B_dst=0)); src=1, dst=2)
@@ -341,7 +348,7 @@ end
     io = IOBuffer()
     initialize_component(nw[VIndex(2)]; verbose=true, io)
     out = String(take!(io))
-    @test occursin("(pinned observable)", out)
+    @test occursin(r":gen₊avr₊pi₊y.*\(obs\)", out)
     @test occursin("No free variables!", out)
 
     # hand-computed reference: v_meas = V_pf = 1 at the PV bus, so err = 0 and the PI
@@ -446,4 +453,60 @@ end
     nw_broken = build_nw(; Sbase_line=250)
     @test_throws ErrorException initialize_from_pf(nw_broken; verbose=false)
     @test initialize_from_pf(nw_broken; verbose=false, check=:none) isa NWState
+end
+
+@testset "powerflow start values for current-source buses" begin
+    ## On a bus compiled with `current_source=true` the busbar currents are outputs. If the
+    ## powerflow constraint cannot be solved for them explicitly — a PV constraint fixes the
+    ## voltage magnitude and says nothing about the current — they stay as algebraic states
+    ## of the powerflow model. Those states have no default, so `solve_powerflow` has to fall
+    ## back to the `guess=0` that `Terminal` declares. That guess sits on an alias of
+    ## `busbar₊i_r`, not on the symbol itself.
+    @mtkmodel ConstIInjector begin
+        @components begin
+            terminal = Terminal()
+        end
+        @parameters begin
+            Iset_r, [guess=0.5]
+            Iset_i, [guess=0.1]
+        end
+        @equations begin
+            terminal.i_r ~ Iset_r
+            terminal.i_i ~ Iset_i
+        end
+    end
+
+    ## slack --line-- hub, with the current source hanging off the hub as a satellite
+    slackbus = compile_bus(SlackDifferential(name=:slack); vidx=1, pf=pfSlack(V=1))
+    @named shunt = DynamicParallelRCShunt(R=1/0.05, B=1e-5)
+    hubbus = compile_bus(MTKBus(shunt; name=:hub); vidx=2)
+    set_pfmodel!(hubbus, pfShunt(G=0.05, B=1e-5))
+
+    @named inj = ConstIInjector()
+    satbus = compile_bus(MTKBus(inj; name=:sat); vidx=3, current_source=true)
+    set_pfmodel!(satbus, compile_bus(MTKBus(Library.PVConstraint(; P=0.5, V=1.0, name=:pv));
+                                     current_source=true, assume_io_coupling=true))
+
+    line = compile_line(MTKLine(PiLine(; name=:piline, R=0.01, X=0.1, B_src=0, B_dst=0)); src=1, dst=2)
+    loop = LoopbackConnection(; potential=[:u_r, :u_i], flow=[:i_r, :i_i], src=:sat, dst=:hub, name=:loop)
+    nw = Network([slackbus, hubbus, satbus], [line, loop]; warn_order=false)
+
+    pfnw = powerflow_model(nw)
+    ## the satellite contributes two undefaulted algebraic states to the powerflow
+    @test count(isnan, uflat(NWState(pfnw))) == 2
+
+    s = solve_powerflow(nw; verbose=false)
+    ur, ui = s[VIndex(2, :busbar₊u_r)], s[VIndex(2, :busbar₊u_i)]
+    ir, ii = s[VIndex(3, :busbar₊i_r)], s[VIndex(3, :busbar₊i_i)]
+    @test hypot(ur, ui) ≈ 1.0          # PV constraint holds the voltage
+    @test ur*ir + ui*ii ≈ -0.5         # and injects P, busbar current points into the bus
+
+    ## the busbar flat start would cover the currents on its own, so switch it off to pin down
+    ## that the guesses alone get resolved through the alias
+    s_noflat = solve_powerflow(nw; fill_busbar_defaults=false, verbose=false)
+    @test uflat(s_noflat) ≈ uflat(s)
+
+    s0 = initialize_from_pf(nw; verbose=false)
+    @test s0.p[VIndex(3, :inj₊Iset_r)] ≈ -ir
+    @test s0.p[VIndex(3, :inj₊Iset_i)] ≈ -ii
 end

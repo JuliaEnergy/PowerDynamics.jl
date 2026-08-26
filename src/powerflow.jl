@@ -238,7 +238,7 @@ Uses [`find_fixpoint`](@extref NetworkDynamics.find_fixpoint) from NetworkDynami
 - `nw`: The dynamic network model
 - `pfnw`: The power flow network model (default: created from `nw`)
 - `pfs0`: Initial state for the power flow calculation
-- `fill_busbar_defaults`: Whether to fill missing default values for busbar states (i.e. u_r=1 u_i=0)
+- `fill_busbar_defaults`: Whether to flat-start busbar states which have no value yet (u_r=1, u_i=0, i_r=0, i_i=0)
 - `use_guesses`: Whether to fall back to "guess" values instead of "default" values if available.
 - `sparse`: Whether to use a sparse solver (default: for networks with more than 50 buses)
 - `verbose`: Whether to print the power flow solution
@@ -277,23 +277,26 @@ function solve_powerflow(
         end
     end
 
+    # Flat start for whichever busbar pair the bus exposes as states: the voltage in the usual
+    # orientation, the current on a current source.
     if fill_busbar_defaults && any(isnan, uflat(pfs0))
-        urinds = generate_indices(pfnw, VIndex(:), :busbar₊u_r, s=true, obs=false, out=false, in=false, p=false)
-        nanidx = findall(isnan, pfs0[urinds])
-        if !isempty(nanidx)
-            pfs0[urinds[nanidx]] .= 1.0
-        end
-        uiinds = generate_indices(pfnw, VIndex(:), :busbar₊u_i, s=true, obs=false, out=false, in=false, p=false)
-        nanidx = findall(isnan, pfs0[uiinds])
-        if !isempty(nanidx)
-            pfs0[uiinds[nanidx]] .= 0.0
+        for (sym, val) in ((:busbar₊u_r, 1.0), (:busbar₊u_i, 0.0),
+                           (:busbar₊i_r, 0.0), (:busbar₊i_i, 0.0))
+            inds = generate_indices(pfnw, VIndex(:), sym, s=true, obs=false, out=false, in=false, p=false)
+            nanidx = findall(isnan, pfs0[inds])
+            if !isempty(nanidx)
+                pfs0[inds[nanidx]] .= val
+            end
         end
     end
+    # Anything left is a state off the busbar. Its guess may sit on any member of an alias
+    # class rather than on the symbol itself, so let `NWState` resolve them instead of looking
+    # up each symbol directly.
     if use_guesses && any(isnan, uflat(pfs0))
-        for (i, idx) in enumerate(SII.variable_symbols(pfs0))
+        guessed = uflat(NWState(pfnw; guess=true))
+        for i in eachindex(uflat(pfs0))
             isnan(uflat(pfs0)[i]) || continue
-            has_guess(pfnw, idx) || continue
-            uflat(pfs0)[i] = get_guess(pfnw, idx)
+            uflat(pfs0)[i] = guessed[i]
         end
     end
 
