@@ -310,7 +310,9 @@ in as `pfs=`.
     set_default!(nw[VIndex(2)], :machine₊V, 1.0)
     try#hide
     initialize_from_pf!(nw)
+    @assert false "Expected to throw"#hide
     catch e#hide
+    e isa AssertionError && rethrow()#hide
     showerror(stdout, e)#hide
     end#hide
     ```

@@ -162,7 +162,9 @@ We can use [`initialize_component`](@extref `NetworkDynamics.initialize_componen
 =#
 try #hide #md
 initialize_component(gen)
+@assert false "Expected to throw" #hide #md
 catch e #hide #md
+    e isa AssertionError && rethrow() #hide #md
     @error e.msg #hide #md
 end #hide #md
 #=
@@ -220,7 +222,9 @@ interf_v39 = Dict(
 )
 try #hide #md
 initialize_component!(nw[VIndex(39)]; default_overrides=interf_v39)
+@assert false "Expected to throw" #hide #md
 catch e #hide #md
+    e isa AssertionError && rethrow() #hide #md
     @error e.msg #hide #md
 end #hide #md
 

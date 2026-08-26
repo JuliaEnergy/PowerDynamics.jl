@@ -315,7 +315,9 @@ zero, and from a flat start it does.
 =#
 try #hide #md
 find_fixpoint(nw; alg=DynamicSS(Rodas5P()))
+@assert false "Expected to throw" #hide #md
 catch e #hide #md
+    e isa AssertionError && rethrow() #hide #md
     @error e #hide #md
 end #hide #md
 
