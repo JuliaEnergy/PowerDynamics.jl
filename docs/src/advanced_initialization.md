@@ -63,7 +63,9 @@ gives up:
 ```@example adv
 try#hide
 initialize_from_pf!(nw)
+@assert false "Expected to throw"#hide
 catch e#hide
+e isa AssertionError && rethrow()#hide
 showerror(stdout, e)#hide
 end#hide
 nothing # hide

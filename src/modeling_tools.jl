@@ -199,8 +199,10 @@ per-unit bases plus SI observables.
         Ybase = Sbase/Vbase^2, [description="Admittance base [S] (Sbase/Vbase²)"]
     end
     vars = @variables begin
-        u_r(t)=1, [description="bus d-voltage", output=true]
-        u_i(t)=0, [description="bus q-voltage", output=true]
+        # flat start as a guess, not a default: a default here would silently satisfy a bus
+        # initialization that is missing its powerflow interface values.
+        u_r(t), [guess=1, description="bus d-voltage", output=true]
+        u_i(t), [guess=0, description="bus q-voltage", output=true]
         i_r(t), [description="bus d-current (flowing into bus)", input=true]
         i_i(t), [description="bus d-current (flowing into bus)", input=true]
         P(t), [description="bus active power (flowing into network)"]

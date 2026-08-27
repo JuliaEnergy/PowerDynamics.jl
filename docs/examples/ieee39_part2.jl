@@ -151,22 +151,18 @@ Let's take a look at the bus model at bus 30:
 =#
 gen = nw[VIndex(30)]
 #=
-We have a system with 15 States and 42 parameters. Of those, most are fixed, i.e. have a `default` metadata set.
+We have a system with 14 states and 43 parameters. Of those, most are fixed, i.e. have a `default` metadata set.
 In the VertexModel printout, defaults are shown with `=` while guesses are shown with `≈`.
 We can use [`dump_initial_state`](@extref `NetworkDynamics.dump_initial_state`) to get an overview of the free and set states:
 =#
 dump_initial_state(gen; obs=false)
 #=
-Right now, we have 2 free parameters, 2 free inputs, 2 free outputs and 15 free states.
-We can use [`initialize_component`](@extref `NetworkDynamics.initialize_component`) to find values for the free symbols:
-=#
-try #hide #md
-initialize_component(gen)
-catch e #hide #md
-    @error e.msg #hide #md
-end #hide #md
-#=
-Wait! The initialization failed! Why? Well, we need to apply additional defaults, so called `default_overwrites` for the inputs/outputs to make the system solvable.
+Right now, 2 parameters, 2 inputs, 2 outputs and 14 states are still free.
+
+Among them is the bus interface itself: the currents `busbar₊i_r`/`busbar₊i_i` flowing in and
+the voltage `busbar₊u_r`/`busbar₊u_i` the bus puts out. Those are precisely the values the power
+flow solution gives us, so we pin them down with `default_overrides` and let
+[`initialize_component`](@extref `NetworkDynamics.initialize_component`) solve for the rest:
 =#
 interf_v30 = Dict( # manually define interface values for demonstration
     :busbar₊u_r => 1.04573,
@@ -210,7 +206,9 @@ together with a load on bus 39.
             ╚════════════════════════════════╝
 ```
 
-If we try to initialize this component as before, we run into a problem:
+This component cannot be initialized the same way. Let's fix its interface values first --
+this time by writing them into the model as real defaults, so they stay put for the rest of
+this section -- and then look at what is left free:
 =#
 interf_v39 = Dict(
   :busbar₊u_r => 1.01419,
@@ -218,27 +216,23 @@ interf_v39 = Dict(
   :busbar₊i_i => -1.72223,
   :busbar₊i_r => 0.720135,
 )
-try #hide #md
-initialize_component!(nw[VIndex(39)]; default_overrides=interf_v39)
-catch e #hide #md
-    @error e.msg #hide #md
-end #hide #md
-
-#=
-Even though we set the interface values, the problem is still underconstrained!
-Let's check the free symbols:
-=#
+for (sym, val) in interf_v39
+    set_default!(nw[VIndex(39)], sym, val)
+end
 println("free u: ", free_u(nw[VIndex(39)]))
 println("free p: ", free_p(nw[VIndex(39)]))
 nothing #hide #md
 #=
-We see 8 free states and 3 free parameters, however we only have 8 state + 2 output equations:
+With the interface pinned down, 6 states and 3 parameters are still free, against 8 state
+equations and 2 output equations:
 =#
 nw[VIndex(39)] #hide #md
 
 #=
+The count looks healthy, but the solution is not unique.
 Even though we have enough set parameters to initialize machine and load on its own, we cannot do it simultaneously.
-Intuitively speaking, it's just not clear for the solver which of the two components provides how much power.
+Intuitively speaking, it's just not clear for the solver which of the two components provides how much power:
+`machine₊τ_m_set` and `ZIPLoad₊Vset` trade off against each other without changing anything the bus interface can see.
 
 To solve this, we have essentially 3 methods:
 
@@ -255,7 +249,8 @@ nothing #hide #md
 The initialization succeeded now!
 
 !!! note "No more default_overrides"
-    Note how we can skip the `default_overrides` keyword argument, since the first (failing) call of `initialize_component!` already "burned in" the default overrides! Mutating state is a powerful tool, but it needs care!
+    Note how we can skip the `default_overrides` keyword argument here: the interface values
+    are already `default`s on the model, because we wrote them there with `set_default!` above.
 
 ### Method 2: Adding an `init_formula`
 The problem with the previous method is that it is quite manual.
@@ -283,7 +278,7 @@ nothing #hide #md
 #=
 The init formula is applied early in the initialization process, essentially writing a new `default` for `ZIPLoad₊Vset` based on the other defaults.
 
-This reduced the number of free variables to 10, thus the system was solvable.
+The formula fixes `ZIPLoad₊Vset` up front, leaving 8 free variables for the 10 equations.
 
 ### Method 3: Using an `InitConstraint`
 Sometimes, your additional initialization needs are more complicated.
@@ -302,7 +297,7 @@ end
 set_initconstraint!(vm_constraint, constraint)
 vm_constraint #hide #md
 #=
-With this added constraint, the initialization process is solvable again, since we now have 11 equations for the 11 free variables.
+With this added constraint, the initialization process is well posed again, since we now have 11 equations for the 9 free variables.
 =#
 initialize_component!(vm_constraint)
 nothing #hide #md
