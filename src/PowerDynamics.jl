@@ -5,7 +5,6 @@ using Reexport: Reexport, @reexport
 using NetworkDynamics: SymbolicView, getcomp, is_loopback
 
 using SciMLBase: SciMLBase
-using NonlinearSolve: NonlinearSolve
 using ForwardDiff: ForwardDiff
 using LinearAlgebra: LinearAlgebra
 using Graphs: nv, ne
