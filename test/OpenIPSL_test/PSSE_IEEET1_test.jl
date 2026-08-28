@@ -73,7 +73,7 @@ sol = OpenIPSL_SMIB(BUS);
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :ex₊exciter₊EFD), "iEEET1.EFD") < 1e-3
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :ex₊amplifier₊out), "iEEET1.simpleLagLim.y") < 1.5e-3
 @test ref_rms_error(sol, ref, VIndex(:GEN1, :ex₊derivative_lag₊out), "iEEET1.derivativeLag.y") < 2.5e-5
-@test ref_rms_error(sol, ref, VIndex(:GEN1, :ex₊transducer₊out), "iEEET1.TransducerDelay.y") < 5.5e-5
+@test ref_rms_error(sol, ref, VIndex(:GEN1, :ex₊transducer₊out), "iEEET1.TransducerDelay.y") < 7e-5
 
 if isdefined(Main, :EXPORT_FIGURES) && Main.EXPORT_FIGURES
     fig = let

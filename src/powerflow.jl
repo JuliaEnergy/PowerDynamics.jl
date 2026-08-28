@@ -227,6 +227,7 @@ delete_pfmodel!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfmodel!(get
                     fill_busbar_defaults=true,
                     use_guesses=true,
                     sparse=nv(pfnw) > 50,
+                    alg=nothing,
                     verbose=true,
                     kwargs...)
 
@@ -240,7 +241,8 @@ Uses [`find_fixpoint`](@extref NetworkDynamics.find_fixpoint) from NetworkDynami
 - `pfs0`: Initial state for the power flow calculation
 - `fill_busbar_defaults`: Whether to flat-start busbar states which have no value yet (u_r=1, u_i=0, i_r=0, i_i=0)
 - `use_guesses`: Whether to fall back to "guess" values instead of "default" values if available.
-- `sparse`: Whether to use a sparse solver (default: for networks with more than 50 buses)
+- `sparse`: Whether to compute a sparse jacobian prototype (default: for networks with more than 50 buses). With a prototype present, `find_fixpoint` picks a sparse-aware solver.
+- `alg`: Nonlinear solver algorithm. If `nothing`, `find_fixpoint` chooses.
 - `verbose`: Whether to print the power flow solution
 - `kwargs`: Additional keyword arguments passed to `find_fixpoint`
 
@@ -263,17 +265,13 @@ function solve_powerflow(
     # don't enforce this, check happens in `powerflow_model`
     # pfnw.mass_matrix == LinearAlgebra.UniformScaling(0) || error("Powerflow model must have a mass matrix of 0!")
 
-    if isnothing(alg)
-        if sparse && isnothing(pfnw.jac_prototype)
-            alg = try
-                set_jac_prototype!(pfnw)
-                NonlinearSolve.FastShortcutNonlinearPolyalg(linsolve=NonlinearSolve.LinearSolve.KLUFactorization())
-            catch e
-                @warn "Could not set sparse jacobian prototype for powerflow model! Falling back to dense solver. Error: $e"
-                NonlinearSolve.FastShortcutNonlinearPolyalg()
-            end
-        else
-            alg = NonlinearSolve.FastShortcutNonlinearPolyalg()
+    # We only decide whether the pattern is worth computing; which solver to use for it is
+    # up to `find_fixpoint`, which reacts to the prototype being present.
+    if sparse && isnothing(pfnw.jac_prototype)
+        try
+            set_jac_prototype!(pfnw)
+        catch e
+            @warn "Could not set sparse jacobian prototype for powerflow model! Falling back to dense solver. Error: $e"
         end
     end
 
