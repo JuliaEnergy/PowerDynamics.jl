@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Backward Initialization of Nested Models · PowerDynamics.jl</title><meta name="title" content="Backward Initialization of Nested Models · PowerDynamics.jl"/><meta property="og:title" content="Backward Initialization of Nested Models · PowerDynamics.jl"/><meta property="twitter:title" content="Backward Initialization of Nested Models · PowerDynamics.jl"/><meta name="description" content="Documentation for PowerDynamics.jl."/><meta property="og:description" content="Documentation for PowerDynamics.jl."/><meta property="twitter:description" content="Documentation for PowerDynamics.jl."/><meta property="og:url" content="https://juliaenergy.github.io/PowerDynamics.jl/generated/nested_component_init/"/><meta property="twitter:url" content="https://juliaenergy.github.io/PowerDynamics.jl/generated/nested_component_init/"/><link rel="canonical" href="https://juliaenergy.github.io/PowerDynamics.jl/generated/nested_component_init/"/><meta property="og:image" content="https://juliaenergy.github.io/PowerDynamics.jl/assets/preview.png"/><meta property="twitter:image" content="https://juliaenergy.github.io/PowerDynamics.jl/assets/preview.png"/><meta property="twitter:card" content="summary_large_image"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="PowerDynamics.jl logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="PowerDynamics.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PowerDynamics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../ModelingConcepts/">Modeling Concepts</a></li><li><a class="tocitem" href="../../per_unit/">Per-Unit Systems</a></li><li><a class="tocitem" href="../../initialization/">Initialization</a></li><li><a class="tocitem" href="../../advanced_initialization/">Advanced Initialization</a></li><li><a class="tocitem" href="../../Library/">Component Library</a></li><li><a class="tocitem" href="../../vs_and_cs_models/">On Voltage and Current Sources</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../getting_started/">Getting Started</a></li><li><a class="tocitem" href="../typical_simulation_workflow/">Typical Simulation Workflow</a></li><li><a class="tocitem" href="../custom_bus/">Custom Generator Bus</a></li><li><a class="tocitem" href="../custom_line/">Custom Transmission Line</a></li><li class="is-active"><a class="tocitem" href>Backward Initialization of Nested Models</a><ul class="internal"><li><a class="tocitem" href="#Two-building-blocks:-a-lag-and-a-PI-controller"><span>Two building blocks: a lag and a PI controller</span></a></li><li><a class="tocitem" href="#A-simple-AVR-built-from-the-blocks"><span>A simple AVR built from the blocks</span></a></li><li><a class="tocitem" href="#A-simple-governor"><span>A simple governor</span></a></li><li><a class="tocitem" href="#The-classical-machine"><span>The classical machine</span></a></li><li><a class="tocitem" href="#Compose-and-compile"><span>Compose and compile</span></a></li><li><a class="tocitem" href="#How-the-formulas-chain-up"><span>How the formulas chain up</span></a></li><li><a class="tocitem" href="#A-minimal-scenario"><span>A minimal scenario</span></a></li><li><a class="tocitem" href="#Initialize"><span>Initialize</span></a></li><li><a class="tocitem" href="#Simulate"><span>Simulate</span></a></li></ul></li></ul></li><li><span class="tocitem">Advanced Examples</span><ul><li><a class="tocitem" href="../ieee9bus/">IEEE 9-Bus Example</a></li><li><a class="tocitem" href="../ieee39_part1/">IEEE39 Part I: Modeling</a></li><li><a class="tocitem" href="../ieee39_part2/">IEEE39 Part II: Initialization</a></li><li><a class="tocitem" href="../ieee39_part3/">IEEE39 Part III: Simulation</a></li><li><a class="tocitem" href="../ieee39_part4/">IEEE39 Part IV: Parameter Tuning</a></li><li><a class="tocitem" href="../linear_analysis/">Linear Analysis of 4-Bus EMT System</a></li><li><a class="tocitem" href="../emt_toymodel/">EMT Toymodel</a></li><li><a class="tocitem" href="../zero_imp_breaker/">Zero-Impedance Circuit Breaker</a></li></ul></li><li><a class="tocitem" href="../../API/">API</a></li><li><a class="tocitem" href="../../networkdynamics_forward/">🔗 NetworkDynamics.jl Docs</a></li><li><span class="tocitem">Getting Started with Julia</span><ul><li><a class="tocitem" href="../../julia_setup/">Julia Setup for New Users</a></li><li><a class="tocitem" href="../../julia_pkgbasics/">Environment Management</a></li><li><a class="tocitem" href="../../julia_workflow/">How to Structure Research Projects</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Backward Initialization of Nested Models</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Backward Initialization of Nested Models</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl/blob/main/docs/tutorials/nested_component_init.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="nested-init"><a class="docs-heading-anchor" href="#nested-init">Backward Initialization of a Nested Bus Model</a><a id="nested-init-1"></a><a class="docs-heading-anchor-permalink" href="#nested-init" title="Permalink"></a></h1><p>A dynamic simulation has to start from a <em>steady state</em> — every derivative zero, the system at rest. Reaching it takes two steps: a powerflow fixes each bus&#39;s voltage and current, and then the <em>internal</em> states and free setpoints of the dynamic models have to be set so that nothing moves.</p><p>That second step runs backwards. Normally a model reads its inputs and computes an output; here we know the terminal voltage and current and need the internal states that would have produced them. PowerDynamics can solve this numerically — it seeds the unknowns with guesses and hands the coupled system to a nonlinear solver — and that is often enough. For a large nested bus, though, the solver can struggle when the guesses are poor.</p><p>Block by block, the backward step is usually straightforward to write down by hand: each steady-state equation rearranges to give one of its own states or setpoints directly, once you know what the block&#39;s output has to be. Rather than leave it all to the solver, you can attach these <strong>init formulas</strong> to the models themselves. Two ways to do it:</p><ul><li><strong><code>initf</code></strong> — a formula written directly on a variable or parameter, in the component that owns it, and</li><li><strong><a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.set_initf"><code>set_initf</code></a></strong> — the same, but declared by a parent for a variable of one of its subcomponents (the only way to reach <em>inside</em> a subcomponent).</li></ul><div class="admonition is-success" id="Guesses-instead-of-hard-formulas-ee66c57ea328b1ee"><header class="admonition-header">Guesses instead of hard formulas<a class="admonition-anchor" href="#Guesses-instead-of-hard-formulas-ee66c57ea328b1ee" title="Permalink"></a></header><div class="admonition-body"><p>You don&#39;t have to commit to exact formulas. The same expressions can instead just <em>seed</em> the solver, via <strong><code>guessf</code></strong> / <strong><a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.set_guessf"><code>set_guessf</code></a></strong> — the guess-side twins of <code>initf</code> / <code>set_initf</code>. They leave the variable free but start it close to the answer, which makes the solve trivial. And since the guess only has to be <em>close</em>, the formulas may be approximate and need not cover everything.</p></div></div><p>Below we build a generator bus from five small models — a <code>Lag</code>, a <code>PIBlock</code>, a <code>SimpleAVR</code>, a <code>SimpleGov</code>, and a <code>ClassicalMachine</code> — each carrying only its own init formulas. Once they are wired together, the formulas chain up on their own and fix <em>every</em> unknown from the powerflow alone. The result: <code>initialize_from_pf!</code> reports <strong>&quot;No free variables!&quot;</strong> — no solver runs at all.</p><p>The backward step itself starts at the <strong>machine</strong>: it is the only block touching the terminal, so it turns the powerflow voltage and current into the field voltage and mechanical power its controllers must supply — and from there the chain unwinds outward to the AVR, the governor, and their inner blocks. We build the models in the opposite order, though, from the small reusable pieces up to the machine, so that each one introduces one new idea before the next leans on it. Keep the machine in mind as the anchor everything resolves back to; the <a href="#How-the-formulas-chain-up">How the formulas chain up</a> section at the end walks the finished chain in its true firing order.</p><pre><code class="language-asciiart hljs">             ╭──────────────────────────────────╮
+             │       ┏━━━━━━━━━━━━━━━━━━━━━━━━┓ │
+       Vmeas │       ┃AVR               ╭───╮ ┃ │
+             ↑   Efd ┃ ╭───╮ ╭────╮  ╭─←┤Lag├←╂─╯
+     ┏━━━━━━━┷━┓  ╭──╂←┤Lag├←┤ PI ├←(-) ╰───╯ ┃
+(t)  ┃         ┠←─╯  ┃ ╰───╯ ╰────╯  ╰─←╴Vref ┃
+ o───┨ Machine ┃     ┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+     ┃         ┠←─╮  ┏━━━━━━━━━━━━━━━━━━━━━━━━┓
+     ┗━━━━━━━┯━┛  │  ┃ Gov     ╭─────╮        ┃
+             ↓    │  ┃ ╭───╮   │Droop├─←╴Pref ┃
+       ωmeas │    ╰──╂←┤Lag├─←─┤  R  ├─←──────╂─╮
+             │       ┃ ╰───╯   ╰─────╯        ┃ │
+             │       ┗━━━━━━━━━━━━━━━━━━━━━━━━┛ │
+             ╰──────────────────────────────────╯</code></pre><pre><code class="language-julia hljs">using PowerDynamics, NetworkDynamics, ModelingToolkitBase, SciCompDSL
+using PowerDynamics.Library
+using ModelingToolkitBase: t_nounits as t, D_nounits as Dt
+using ModelingToolkitStandardLibrary.Blocks
+using NetworkDynamics: set_mtk_defaults
+using OrdinaryDiffEqRosenbrock, OrdinaryDiffEqNonlinearSolve
+using CairoMakie</code></pre><h2 id="Two-building-blocks:-a-lag-and-a-PI-controller"><a class="docs-heading-anchor" href="#Two-building-blocks:-a-lag-and-a-PI-controller">Two building blocks: a lag and a PI controller</a><a id="Two-building-blocks:-a-lag-and-a-PI-controller-1"></a><a class="docs-heading-anchor-permalink" href="#Two-building-blocks:-a-lag-and-a-PI-controller" title="Permalink"></a></h2><p>Two generic blocks recur all over the bus. The first is a first-order <code>Lag</code>,</p><p class="math-container">\[T\,\dot{x} = K\,u - x, \qquad y = x,\]</p><p>the smoothing element behind every measurement and actuator delay in the model.</p><pre><code class="language-julia hljs">@component function Lag(; name, defaults...)
+    @parameters begin
+        K = 1, [description=&quot;gain&quot;]
+        T = 1, [description=&quot;time constant&quot;]
+    end
+    @variables begin
+        u(t), [description=&quot;input&quot;]
+        y(t), [description=&quot;output&quot;]
+        x(t), [guess=0, description=&quot;lag state&quot;]
+    end
+    eqs = [
+        T*Dt(x) ~ K*u - x,
+        y ~ x,
+    ]
+    sys = System(eqs, t; name)
+    sys = set_mtk_defaults(sys, defaults)
+end</code></pre><p>The second block is a PI controller, error <span>$\mathrm{err}$</span> in, output <span>$y$</span> out:</p><p class="math-container">\[\dot{x} = \mathrm{err}, \qquad y = K_p\,\mathrm{err} + K_i\,x.\]</p><p>The integrator state <span>$x$</span> is the one that needs a formula. In steady state <span>$x$</span> has to be whatever makes the output equal the required value, so solve the output equation for it:</p><p class="math-container">\[x := \frac{y - K_p\,\mathrm{err}}{K_i}.\]</p><p>That formula uses only the block&#39;s own symbols, so it goes right on <span>$x$</span> as an <code>initf</code> annotation. Its one dependency is the block&#39;s <em>own</em> output <span>$y$</span>, which only means something once something outside says what <span>$y$</span> should be — exactly what the AVR does next.</p><pre><code class="language-julia hljs">@component function PIBlock(; name, defaults...)
+    @parameters begin
+        K_p, [description=&quot;proportional gain&quot;]
+        K_i, [description=&quot;integral gain&quot;]
+    end
+    @variables begin
+        err(t), [description=&quot;control error (input)&quot;]
+        y(t), [description=&quot;controller output&quot;]
+    end
+    @variables begin
+        x(t), [guess=0, initf = (y - K_p*err)/K_i, description=&quot;integrator state&quot;]
+    end
+    eqs = [
+        Dt(x) ~ err,
+        y ~ K_p*err + K_i*x,
+    ]
+    sys = System(eqs, t; name)
+    sys = set_mtk_defaults(sys, defaults)
+    sys
+end</code></pre><h2 id="A-simple-AVR-built-from-the-blocks"><a class="docs-heading-anchor" href="#A-simple-AVR-built-from-the-blocks">A simple AVR built from the blocks</a><a id="A-simple-AVR-built-from-the-blocks-1"></a><a class="docs-heading-anchor-permalink" href="#A-simple-AVR-built-from-the-blocks" title="Permalink"></a></h2><p>A measurement lag, the PI regulator, and a field-circuit lag in series:</p><p class="math-container">\[T_m\,\dot{v}_\mathrm{meas} = v_\mathrm{mag} - v_\mathrm{meas}, \qquad
+T_e\,\dot{v}_f = y_\mathrm{pi} - K_e v_f\]</p><p>Three init formulas belong here:</p><ul><li><code>v_meas</code> (a <em>state</em>): at rest the measurement equals what it measures, <span>$v_\mathrm{meas} := v_\mathrm{mag}$</span>.</li><li><code>v_ref</code> (a <em>parameter</em>): zero control error at rest, <span>$v_\mathrm{ref} := v_\mathrm{meas}$</span>. Back-computing a free setpoint like this is the bread-and-butter of power-system init.</li><li>the field circuit at rest, solved for the PI output: <span>$y_\mathrm{pi} := K_e v_f$</span> — the output value the PI block was waiting for.</li></ul><p>We collect all three in a <code>set_initf</code> block at the end, where every symbol is already in scope. <code>v_meas</code> and <code>v_ref</code> could equally use an inline <code>initf</code> (like the PI block); <code>pi.y</code> is the one that <em>needs</em> <code>set_initf</code>, because it lives inside the PI subcomponent. Setting it is how the AVR tells the PI what its output must be — and the PI&#39;s own formula then fills in its state.</p><pre><code class="language-julia hljs">@component function SimpleAVR(; name, defaults...)
+    pars = @parameters begin
+        T_m, [description=&quot;voltage measurement time constant&quot;]
+        T_e, [description=&quot;field circuit time constant&quot;]
+        K_e, [description=&quot;field circuit gain&quot;]
+        v_ref, [guess=1, description=&quot;terminal voltage setpoint&quot;]
+    end
+    components = @named begin
+        v_mag_in = RealInput()      # measured terminal voltage
+        vf_out = RealOutput()       # field voltage to the machine
+        lag_v = Lag(T=T_m)          # voltage measurement lag
+        pi = PIBlock()
+        lag_f = Lag(K=K_e, T=T_e)   # field circuit lag
+    end
+    vars = @variables begin
+        v_meas(t), [guess=1, description=&quot;lagged voltage measurement&quot;]
+        v_f(t), [guess=1, description=&quot;field voltage&quot;]
+    end
+    eqs = [
+        lag_v.u ~ v_mag_in.u,
+        v_meas ~ lag_v.y,
+        pi.err ~ v_ref - v_meas,
+        lag_f.u ~ pi.y,
+        v_f ~ lag_f.y,
+        vf_out.u ~ v_f,
+    ]
+    sys = System(eqs, t, vars, pars; name, systems=components)
+    # Initialization equations
+    sys = set_initf(sys,
+        v_meas =&gt; v_mag_in.u,       # measurement equals the measured value
+        v_ref  =&gt; v_meas,           # zero control error
+        pi.y   =&gt; v_f / K_e,        # PI output that holds the field circuit
+    )
+    sys = set_mtk_defaults(sys, defaults)
+    sys
+end</code></pre><h2 id="A-simple-governor"><a class="docs-heading-anchor" href="#A-simple-governor">A simple governor</a><a id="A-simple-governor-1"></a><a class="docs-heading-anchor-permalink" href="#A-simple-governor" title="Permalink"></a></h2><p>Droop plus a turbine lag. Again the formula targets a <em>parameter</em>: at rest the turbine gives <span>$P_m$</span> and the droop sets <span>$P_\mathrm{in} = P_\mathrm{ref} + (1-ω)/R$</span>, so the setpoint is whatever the machine&#39;s mechanical power needs it to be:</p><p class="math-container">\[P_\mathrm{ref} := P_m - \frac{1-ω}{R}\]</p><pre><code class="language-julia hljs">@component function SimpleGov(; name, defaults...)
+    pars = @parameters begin
+        R, [description=&quot;droop&quot;]
+        T_g, [description=&quot;turbine time constant&quot;]
+        P_ref, [guess=1, description=&quot;power setpoint&quot;]
+    end
+    components = @named begin
+        ω_in = RealInput()      # rotor speed
+        Pm_out = RealOutput()   # mechanical power to the machine
+        lag = Lag(T=T_g)        # turbine lag
+    end
+    vars = @variables begin
+        P_m(t), [guess=1, description=&quot;mechanical power&quot;]
+        P_in(t), [description=&quot;turbine input power&quot;]
+    end
+    eqs = [
+        P_in ~ P_ref + (1 - ω_in.u)/R,
+        lag.u ~ P_in,
+        P_m ~ lag.y,
+        Pm_out.u ~ P_m,
+    ]
+    sys = System(eqs, t, vars, pars; name, systems=components)
+    # The governor&#39;s one init formula: the setpoint follows from the power the machine needs.
+    sys = set_initf(sys,
+        P_ref =&gt; P_m - (1 - ω_in.u)/R
+    )
+    sys = set_mtk_defaults(sys, defaults)
+    sys
+end</code></pre><h2 id="The-classical-machine"><a class="docs-heading-anchor" href="#The-classical-machine">The classical machine</a><a id="The-classical-machine-1"></a><a class="docs-heading-anchor-permalink" href="#The-classical-machine" title="Permalink"></a></h2><p>The machine is where the backward chain starts: it is the only block touching the terminal, so it turns the powerflow voltage and current into everything else. From the internal emf</p><p class="math-container">\[e = u + (R_s + \mathrm{j} X&#39;_d)\,i\]</p><p>it reads off the rotor angle and the field voltage it must be fed, and from the electrical torque, the mechanical power:</p><p class="math-container">\[δ := \operatorname{atan}(e_i, e_r), \qquad
+v_f := |e| = \sqrt{e_r^2 + e_i^2}, \qquad
+P_m := ω\,τ_e\]</p><p>Here <code>v_f</code> and <code>P_m</code> are the machine&#39;s own <strong>inputs</strong> — it simply states &quot;for this terminal condition my inputs must be these.&quot; Once everything is wired up they turn out to be the same variables as <code>avr₊v_f</code> and <code>gov₊P_m</code>, so these two formulas end up initializing the AVR and the governor.</p><pre><code class="language-julia hljs">@component function ClassicalMachine(; name, defaults...)
+    pars = @parameters begin
+        R_s, [description=&quot;stator resistance&quot;]
+        X′_d, [description=&quot;d-axis transient reactance&quot;]
+        H, [description=&quot;inertia constant&quot;]
+        # The frequency base is a *system* quantity: rather than taking it as a
+        # constructor argument, the component declares a local shadow that is
+        # structurally bound to the bus&#39;s `systembase`, and is filled in at compile time.
+        ωbase, [bound_to = :systembase₊ωbase, description=&quot;System frequency base [rad/s]&quot;]
+        ωframe, [bound_to = :systembase₊ωframe, description=&quot;Global dq frame speed [pu]&quot;]
+    end
+    components = @named begin
+        terminal = Terminal()
+        vf_in = RealInput()
+        Pm_in = RealInput()
+        v_mag_out = RealOutput()
+        ω_out = RealOutput()
+    end
+    vars = @variables begin
+        ω(t)=1, [description=&quot;rotor speed [pu]&quot;]
+        V_d(t), [description=&quot;d-axis voltage&quot;]
+        V_q(t), [description=&quot;q-axis voltage&quot;]
+        I_d(t), [description=&quot;d-axis current&quot;]
+        I_q(t), [description=&quot;q-axis current&quot;]
+        τ_e(t), [description=&quot;electrical torque&quot;]
+        v_mag(t), [description=&quot;terminal voltage magnitude&quot;]
+        e_r(t), [description=&quot;internal emf, real part&quot;]
+        e_i(t), [description=&quot;internal emf, imaginary part&quot;]
+        δ(t), [guess=0, description=&quot;rotor angle&quot;]
+        v_f(t), [guess=1, description=&quot;field voltage (input)&quot;]
+        P_m(t), [guess=1, description=&quot;mechanical power (input)&quot;]
+    end
+    T_to_loc(α)  = [ sin(α) -cos(α); cos(α)  sin(α)]
+    T_to_glob(α) = [ sin(α)  cos(α); -cos(α) sin(α)]
+    eqs = [
+        # name the inputs locally
+        v_f ~ vf_in.u
+        P_m ~ Pm_in.u
+        # Park transformations
+        [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q]
+        [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i]
+        # swing equation; δ is measured against the global dq frame, which rotates at ωframe [pu]
+        Dt(δ) ~ ωbase*(ω - ωframe)
+        2*H*Dt(ω) ~ P_m/ω - τ_e
+        τ_e ~ (V_q + R_s*I_q)*I_q + (V_d + R_s*I_d)*I_d
+        # magnetic equations
+        0 ~ V_q + R_s*I_q + X′_d*I_d - v_f
+        0 ~ V_d + R_s*I_d - X′_d*I_q
+        # internal emf e = u + (R_s + j X′_d) i, in the global frame
+        e_r ~ terminal.u_r + R_s*terminal.i_r - X′_d*terminal.i_i
+        e_i ~ terminal.u_i + R_s*terminal.i_i + X′_d*terminal.i_r
+        # outputs
+        v_mag ~ sqrt(V_d^2 + V_q^2)
+        v_mag_out.u ~ v_mag
+        ω_out.u ~ ω
+    ]
+    sys = System(eqs, t, vars, pars; name, systems=components)
+    # The machine&#39;s init formulas
+    sys = set_initf(sys,
+        δ   =&gt; atan(e_i, e_r),          # rotor angle from the internal emf
+        v_f =&gt; sqrt(e_r^2 + e_i^2),     # field voltage the machine must be fed
+        P_m =&gt; ω * τ_e,                 # mechanical power the machine must be fed
+    )
+    sys = set_mtk_defaults(sys, defaults)
+    sys
+end</code></pre><h2 id="Compose-and-compile"><a class="docs-heading-anchor" href="#Compose-and-compile">Compose and compile</a><a id="Compose-and-compile-1"></a><a class="docs-heading-anchor-permalink" href="#Compose-and-compile" title="Permalink"></a></h2><p><code>CompositeInjector</code> wires matching <code>RealInput</code>/<code>RealOutput</code> connector names together and hooks the machine&#39;s terminal to a shared terminal.</p><pre><code class="language-julia hljs">@named machine = ClassicalMachine(; R_s=0.01, X′_d=0.3, H=5)
+@named avr = SimpleAVR(; T_m=0.02, T_e=0.5, K_e=1.0, pi₊K_p=2, pi₊K_i=1)
+@named gov = SimpleGov(; R=0.05, T_g=0.5)
+
+gen = CompositeInjector([machine, avr, gov]; name=:gen)
+mtkbus = MTKBus(gen; name=:genbus)
+genbus = compile_bus(mtkbus; vidx=2, pf=pfPV(V=1, P=1))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:genbus</span> <span class="sgr94">PureStateMap()</span> @ Vertex 2
+ ├─  2 inputs:  [busbar₊i_r, busbar₊i_i]
+ ├─  8 states:  [gen₊gov₊lag₊x<span class="sgr90">≈0</span>, gen₊avr₊lag_f₊x<span class="sgr90">≈0</span>, gen₊avr₊pi₊x<span class="sgr90">≈0</span>, gen₊avr₊lag_v₊x<span class="sgr90">≈0</span>, gen₊machine₊ω=1, gen₊machine₊δ<span class="sgr90">≈0</span>, busbar₊u_r<span class="sgr90">≈1</span>, busbar₊u_i<span class="sgr90">≈0</span>]
+ |     with diagonal mass matrix [1, 1, 1, 1, 1, 1, 0, 0]
+ ├─  2 outputs: [busbar₊u_r<span class="sgr90">≈1</span>, busbar₊u_i<span class="sgr90">≈0</span>]
+ ├─ 18 params:  [busbar₊Vbase=1, systembase₊Sbase=100, systembase₊ωbase=314.16, systembase₊ωframe=1, gen₊machine₊R_s=0.01, gen₊machine₊X′_d=0.3, gen₊machine₊H=5, gen₊avr₊T_m=0.02, gen₊avr₊T_e=0.5, gen₊avr₊K_e=1, gen₊avr₊v_ref<span class="sgr90">≈1</span>, gen₊avr₊lag_v₊K=1, gen₊avr₊pi₊K_p=2, gen₊avr₊pi₊K_i=1, gen₊gov₊R=0.05, gen₊gov₊T_g=0.5, gen₊gov₊P_ref<span class="sgr90">≈1</span>, gen₊gov₊lag₊K=1]
+ └─  1 InitFormula cluster:
+       explicitly initializes 7/9 variables (via 1 pinned obs) from seeds [busbar₊i_i, busbar₊i_r, busbar₊u_i, busbar₊u_r, gen₊machine₊ω + 6 already set params]
+<span class="sgr34"><span class="sgr1">Powerflow model </span></span>:pvbus with [busbar₊Vbase=1, systembase₊Sbase=100, systembase₊ωbase=314.16, systembase₊ωframe=1, pv₊P=1, pv₊V=1]</code></pre><p>The compiled model prints the dataflow it worked out: all eight formulas end up in one connected group, fed only by the four interface values plus <code>ω</code>.</p><h2 id="How-the-formulas-chain-up"><a class="docs-heading-anchor" href="#How-the-formulas-chain-up">How the formulas chain up</a><a id="How-the-formulas-chain-up-1"></a><a class="docs-heading-anchor-permalink" href="#How-the-formulas-chain-up" title="Permalink"></a></h2><p>None of the five models knows about the others, yet once they are wired together the eight formulas form a single chain — and nobody arranged them. Two things make that work. Connecting two ports makes their variables <em>the same</em> variable, so the machine&#39;s formula for its input <code>v_f</code> automatically becomes the initializer for <code>avr₊v_f</code>. And where one formula needs a value another formula produces, they resolve in order.</p><p>Written out, the eight formulas with what each one reads (<span>$\leftarrow$</span>):</p><p class="math-container">\[\begin{aligned}
+\textbf{machine:}\quad
+  &amp; \delta                       &amp;&amp; := \operatorname{atan}(e_i, e_r)          &amp;&amp;\leftarrow u_r, u_i, i_r, i_i\\
+  &amp; v_f \;\left[= v_f^{\mathrm{avr}}\right] &amp;&amp; := \textstyle\sqrt{e_r^2+e_i^2} &amp;&amp;\leftarrow u_r, u_i, i_r, i_i\\
+  &amp; P_m \;\left[= P_m^{\mathrm{gov}}\right] &amp;&amp; := \omega\,\tau_e              &amp;&amp;\leftarrow \omega,\; \delta,\; u, i\\[0.4em]
+\textbf{avr:}\quad
+  &amp; v_\mathrm{meas}              &amp;&amp; := v_\mathrm{mag}                          &amp;&amp;\leftarrow \delta,\; u \quad(\text{Park})\\
+  &amp; y_{\mathrm{pi}}              &amp;&amp; := K_e\,v_f^{\mathrm{avr}}                 &amp;&amp;\leftarrow v_f^{\mathrm{avr}}\\
+  &amp; v_\mathrm{ref}               &amp;&amp; := v_\mathrm{meas}                         &amp;&amp;\leftarrow v_\mathrm{meas}\\[0.4em]
+\textbf{gov:}\quad
+  &amp; P_\mathrm{ref}               &amp;&amp; := P_m^{\mathrm{gov}} - (1-\omega)/R       &amp;&amp;\leftarrow P_m^{\mathrm{gov}},\; \omega\\[0.4em]
+\textbf{pi:}\quad
+  &amp; x                            &amp;&amp; := (y - K_p\,\mathrm{err})/K_i             &amp;&amp;\leftarrow y_{\mathrm{pi}},\; v_\mathrm{ref},\; v_\mathrm{meas}
+\end{aligned}\]</p><p>The <span>$[= v_f^{\mathrm{avr}}]$</span> marks a machine input that the wiring makes identical to the composite&#39;s own variable. Every value on the far right is an interface quantity or <span>$ω$</span>, so starting from the powerflow the whole chain unwinds top to bottom — which is exactly the order the verbose log below reports.</p><h2 id="A-minimal-scenario"><a class="docs-heading-anchor" href="#A-minimal-scenario">A minimal scenario</a><a id="A-minimal-scenario-1"></a><a class="docs-heading-anchor-permalink" href="#A-minimal-scenario" title="Permalink"></a></h2><p>Machine against a slack bus, with a step on the governor power setpoint at t = 1.</p><pre><code class="language-julia hljs">slackbus = compile_bus(PowerDynamics.VariableFrequencySlack(name=:slack); vidx=1, pf=pfSlack(V=1))
+line = compile_line(MTKLine(PiLine(; name=:piline, R=0.01, X=0.1, B_src=0, B_dst=0)); src=1, dst=2)
+
+set_callback!(genbus, PresetTimeComponentCallback(
+    1, ComponentAffect([], [:gen₊gov₊P_ref]) do u, p, ctx
+        p[:gen₊gov₊P_ref] += 0.02
+    end))
+
+nw = Network([slackbus, genbus], line)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Network with 9 states and 38 parameters
+ ├─ 2 vertices (2 unique types)
+ └─ 1 edges (1 unique type)
+Edge-Aggregation using SequentialAggregator(+)
+1 callback set across 1 vertex and 0 edges</code></pre><h2 id="Initialize"><a class="docs-heading-anchor" href="#Initialize">Initialize</a><a id="Initialize-1"></a><a class="docs-heading-anchor-permalink" href="#Initialize" title="Permalink"></a></h2><p>Watch the verbose output: the formulas fire in order and the run ends with <strong>No free variables!</strong> — the operating point was computed outright, not solved for.</p><pre><code class="language-julia hljs">initialize_from_pf!(nw; verbose=true, subverbose=[VIndex(2)])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Initialize VIndex(1) </span>-&gt; 0.0
+<span class="sgr1">Initialize VIndex(2) </span>
+ - Additional defaults:
+   - :busbar₊u_r =  0.99494
+   - :busbar₊u_i =  0.10049
+   - :busbar₊i_i = -0.14962
+   - :busbar₊i_r = -0.98998
+ - De-aliased guesses (5 conflicting dropped):
+   - :busbar₊terminal₊i_i ⇒ :busbar₊i_i        ( 0)
+   - :busbar₊terminal₊i_r ⇒ :busbar₊i_r        ( 0)
+   - :gen₊avr₊v_f         ⇒ :gen₊avr₊lag_f₊x   ( 1) dropped, class holds  0
+   - :gen₊avr₊v_mag_in₊u  ⇒ :gen₊machine₊v_mag ( 0)
+   - :gen₊avr₊v_meas      ⇒ :gen₊avr₊lag_v₊x   ( 1) dropped, class holds  0
+   - :gen₊gov₊P_m         ⇒ :gen₊gov₊lag₊x     ( 1) dropped, class holds  0
+   - :gen₊gov₊ω_in₊u      ⇒ :gen₊machine₊ω     ( 0)
+   - :gen₊machine₊P_m     ⇒ :gen₊gov₊lag₊x     ( 1) dropped, class holds  0
+   - :gen₊machine₊v_f     ⇒ :gen₊avr₊lag_f₊x   ( 1) dropped, class holds  0
+ - InitFormulas set:
+   - :gen₊machine₊δ   =  0.39391       (via gen₊machine₊δ = atan(gen₊machine₊e_i, gen₊machine₊e_r))
+   - :gen₊avr₊lag_f₊x =  1.0396        (via gen₊machine₊v_f = sqrt(gen₊machine₊e_i^2 + gen₊machine₊e_r^2))
+   - :gen₊gov₊lag₊x   =  1.01          (via gen₊machine₊P_m = gen₊machine₊τ_e*gen₊machine₊ω)
+   - :gen₊avr₊lag_v₊x =  1             (via gen₊avr₊v_meas = gen₊avr₊v_mag_in₊u)
+   - :gen₊avr₊v_ref   =  1             (via gen₊avr₊v_ref = gen₊avr₊v_meas)
+   - :gen₊avr₊lag_f₊u =  1.0396  (obs) (via gen₊avr₊pi₊y = gen₊avr₊v_f / gen₊avr₊K_e)
+   - :gen₊avr₊pi₊x    =  1.0396        (via gen₊avr₊pi₊x = (gen₊avr₊pi₊y - gen₊avr₊pi₊K_p*gen₊avr₊pi₊err) / gen₊avr₊pi₊K_i)
+   - :gen₊gov₊P_ref   =  1.01          (via gen₊gov₊P_ref = gen₊gov₊P_m + (-1 + gen₊gov₊ω_in₊u) / gen₊gov₊R)
+ - No free variables! Residual 1.3668035872266426e-16
+
+<span class="sgr1">Initialize EIndex(1) </span>-&gt; 0.0
+Initialized network with residual 1.3668035872266426e-16!</code></pre><h2 id="Simulate"><a class="docs-heading-anchor" href="#Simulate">Simulate</a><a id="Simulate-1"></a><a class="docs-heading-anchor-permalink" href="#Simulate" title="Permalink"></a></h2><p>Because we hit the steady state exactly, the run sits perfectly flat until the setpoint step at t = 1 — then it responds and settles.</p><pre><code class="language-julia hljs">prob = ODEProblem(nw, NWState(nw), (0, 20))
+sol = solve(prob, Rodas5P())
+
+let
+    fig = Figure(size=(800, 700))
+    ax1 = Axis(fig[1,1]; ylabel=&quot;v [pu]&quot;, title=&quot;terminal voltage &amp; setpoint&quot;)
+    lines!(ax1, sol; idxs=VIndex(2, :gen₊avr₊v_meas), label=&quot;v_meas&quot;)
+    axislegend(ax1)
+    ax2 = Axis(fig[2,1]; ylabel=&quot;v_f [pu]&quot;, title=&quot;field voltage&quot;)
+    lines!(ax2, sol; idxs=VIndex(2, :gen₊avr₊v_f))
+    ax3 = Axis(fig[3,1]; ylabel=&quot;ω [pu]&quot;, title=&quot;rotor speed&quot;)
+    lines!(ax3, sol; idxs=VIndex(2, :gen₊machine₊ω))
+    ax4 = Axis(fig[4,1]; ylabel=&quot;P [pu]&quot;, xlabel=&quot;t [s]&quot;, title=&quot;mechanical power&quot;)
+    lines!(ax4, sol; idxs=VIndex(2, :gen₊gov₊P_m))
+    fig
+end</code></pre><img src="a96faeeb.png" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../custom_line/">« Custom Transmission Line</a><a class="docs-footer-nextpage" href="../ieee9bus/">IEEE 9-Bus Example »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Friday 28 August 2026 16:39">Friday 28 August 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

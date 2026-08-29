@@ -1,0 +1,47 @@
+% \documentclass[tikz,convert={outfile=\jobname.svg}]{standalone}
+\documentclass[tikz,convert=pdf2svg,border=20pt]{standalone}
+%\usetikzlibrary{...}% tikz package already loaded by 'tikz' option
+\usetikzlibrary{arrows, arrows.meta}
+% \tikzset{
+%   >=stealth',
+% }
+
+\usepackage{amsmath,amssymb}
+\usepackage{ndtheme}
+
+\newcommand{\dqangle}{60} % angle between coordinate systems in degrees
+\newcommand{\pointx}{2.5} % x coordinate of the point
+\newcommand{\pointy}{1.1} % y coordinate of the point
+
+\begin{document}
+\begin{tikzpicture}[\ndtheme]
+  \draw[thick, ->](0,0)--(3,0) node[right]{$r$};
+  \draw[thick, ->](0,0)--(0,3) node[above]{$i$};
+  \draw[thick, color=worange, ->](0,0)--({3*cos(\dqangle)}, {3*sin(\dqangle)}) node[above right, color=worange]{$q$};
+  \draw[thick, color=worange, ->](0,0)--({3*cos(\dqangle-90)}, {3*sin(\dqangle-90)}) node[below right, color=worange]{$d$};
+  \draw[->, color=worange] (1,0) arc (0:\dqangle:1) node[midway, above right,color=worange] {$\delta$};
+  \draw[thick, color=wblue, ->](0,0)--(\pointx,\pointy) node[above right, color=wblue]{$X$};
+  \draw[dotted] (\pointx,\pointy)--(\pointx,0) node[below, font=\tiny] {$X_r$};
+  \draw[dotted] (\pointx,\pointy)--(0,\pointy) node[left, font=\tiny] {$X_i$};
+
+  % Projections onto d-q axes
+  \pgfmathsetmacro{\xd}{\pointx*sin(\dqangle) - \pointy*cos(\dqangle)}
+  \pgfmathsetmacro{\xq}{\pointx*cos(\dqangle) + \pointy*sin(\dqangle)}
+  \draw[dotted, color=worange] (\pointx,\pointy)--({(\xq)*cos(\dqangle)}, {(\xq)*sin(\dqangle)}) node[color=worange, above left, font=\tiny] {$X_q$};
+  \draw[dotted, color=worange] (\pointx,\pointy)--({(\xd)*cos(\dqangle-90)}, {(\xd)*sin(\dqangle-90)}) node[color=worange, below left, font=\tiny] {$X_d$};
+  
+  % Transformation equations
+  \node[right] at (4,1.5) {
+    $\begin{aligned}
+    X_{dq} &= \begin{pmatrix}
+        \phantom{-}\,\mathrm{sin}\,\delta & -\,\mathrm{cos}\,\delta\\
+        \phantom{-}\,\mathrm{cos}\,\delta & \phantom{-}\,\mathrm{sin}\,\delta
+    \end{pmatrix} X_{ri}\\
+    X_{ri} &= \begin{pmatrix}
+        \phantom{-}\,\mathrm{sin}\,\delta &  \phantom{-}\,\mathrm{cos}\,\delta\\
+        -\,\mathrm{cos}\,\delta &  \phantom{-}\,\mathrm{sin}\,\delta
+    \end{pmatrix} X_{dq}\\
+    \end{aligned}$
+  };
+\end{tikzpicture}
+\end{document}
