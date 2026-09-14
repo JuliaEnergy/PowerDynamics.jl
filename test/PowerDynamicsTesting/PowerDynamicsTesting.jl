@@ -11,7 +11,7 @@ using PowerDynamics.NetworkDynamics.DiffEqCallbacks: PresetTimeCallback
 using PowerDynamics.ModelingToolkitBase: @named
 
 using OrdinaryDiffEqRosenbrock: Rodas5P
-using OrdinaryDiffEqNonlinearSolve: OrdinaryDiffEqNonlinearSolve
+using OrdinaryDiffEqNonlinearSolve: OrdinaryDiffEqNonlinearSolve, BrownFullBasicInit
 using Makie: Makie, Figure, Axis, axislegend, lines!, Cycled
 
 using PowerDynamics: PowerDynamics, compile_bus, compile_line, MTKLine, initialize_from_pf!
