@@ -112,24 +112,24 @@ function compare(_toi1, _toi2; verbose=false)
     absres/N
 end
 
+# On disk we only store Base containers (vectors of pairs), so the files don't depend on the
+# internal struct layout of OrderedDict or ranges.
 function savetoi(path, toi)
     path = contains(path, r"\.jld2$") ? path : path*".jld2"
     ftoi = finalizetoi(toi)
-    JLD2.save_object(path, ftoi)
+    ts = collect(Float64, ftoi.ts)
+    syms = [title => [label => data for (label, data) in series] for (title, series) in ftoi.syms]
+    JLD2.jldsave(path; ts, syms)
 end
 function loadtoi(path)
     path = contains(path, r"\.jld2$") ? path : path*".jld2"
-    toi = JLD2.load_object(path)
-    # JLD2 serializes the internal hash table of OrderedDict, which breaks across
-    # Julia versions that change hash(::String). Rebuild by reinserting all entries.
-    _syms = empty(toi.syms)
-    for (title, series) in toi.syms
-        _syms[title] = empty(series)
-        for (label, data) in series
-            _syms[title][label] = data
-        end
+    ts, syms = JLD2.load(path, "ts", "syms")
+    T = eltype(last(first(last(first(syms)))))
+    _syms = OrderedDict{String, OrderedDict{String, Vector{T}}}()
+    for (title, series) in syms
+        _syms[title] = OrderedDict{String, Vector{T}}(series)
     end
-    FinalTrajectoriesOfInterest(toi.ts, _syms)
+    FinalTrajectoriesOfInterest(ts, _syms)
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", toi::TrajectoriesOfInterest)

@@ -96,7 +96,7 @@ function _save_and_compare(name::String, toi; tol=1e-5)
             end
             mv(tmppath, pluspath, force=true)
 
-            if !ismissing(Makie.current_backend())
+            if !isnothing(reftoi) && !ismissing(Makie.current_backend())
                 plotpath = replace(refpath, r"\.jld2$" => s"_comparison.png")
                 try
                     fig = plottoi(toi, reftoi; names=["new", "ref"])
