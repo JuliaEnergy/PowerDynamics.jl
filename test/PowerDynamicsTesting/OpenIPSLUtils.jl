@@ -95,7 +95,11 @@ function OpenIPSL_SMIB(_bus1; just_init=false, tol=1e-10, nwtol=1e-10)
 
     s0 = initialize_from_pf!(nw; subverbose=false, verbose=false, tol, nwtol)
 
-    prob = ODEProblem(nw, s0, (0, 10))
+    # After the fault is cleared the algebraic states have to jump back from a near-zero voltage.
+    # The default Broyden-based reinit can wander off to a collapsed low-voltage root there,
+    # Newton lands reliably on the recovering one.
+    initializealg = BrownFullBasicInit(; nlsolve=OrdinaryDiffEqNonlinearSolve.NewtonRaphson())
+    prob = ODEProblem(nw, s0, (0, 10); initializealg)
     sol = solve(prob, Rodas5P())
     @assert SciMLBase.successful_retcode(sol) "Simulation was not successful: retcode=$(sol.retcode)"
     sol
