@@ -199,10 +199,10 @@ initialize_component(gen; default_overrides=interf_v30)</code></pre><pre class="
    - :ctrld_gen₊machine₊δ    (guess= 0)
    - :ctrld_gen₊avr₊vref     (guess= 1)
    - :ctrld_gen₊gov₊p_ref    (guess= 1)
- - Initialization successful with residual 1.5855344267734324e-14
+ - Initialization successful with residual 1.5855369605350334e-14
    - :ctrld_gen₊gov₊xg2      =&gt;  0.25
    - :ctrld_gen₊gov₊xg1      =&gt;  0.25
-   - :ctrld_gen₊avr₊v_fb     =&gt; -1.6016e-25
+   - :ctrld_gen₊avr₊v_fb     =&gt; -1.7638e-24
    - :ctrld_gen₊avr₊vfout    =&gt;  1.2089
    - :ctrld_gen₊avr₊vr       =&gt; -0.058633
    - :ctrld_gen₊avr₊vm       =&gt;  1.0475
@@ -246,10 +246,10 @@ dump_initial_state(gen; obs=false)</code></pre><pre class="documenter-example-ou
    - :ctrld_gen₊machine₊δ    (guess= 0)
    - :ctrld_gen₊avr₊vref     (guess= 1)
    - :ctrld_gen₊gov₊p_ref    (guess= 1)
- - Initialization successful with residual 1.5855344267734324e-14
+ - Initialization successful with residual 1.5855369605350334e-14
    - :ctrld_gen₊gov₊xg2      =&gt;  0.25
    - :ctrld_gen₊gov₊xg1      =&gt;  0.25
-   - :ctrld_gen₊avr₊v_fb     =&gt; -1.6016e-25
+   - :ctrld_gen₊avr₊v_fb     =&gt; -1.7638e-24
    - :ctrld_gen₊avr₊vfout    =&gt;  1.2089
    - :ctrld_gen₊avr₊vr       =&gt; -0.058633
    - :ctrld_gen₊avr₊vm       =&gt;  1.0475
@@ -267,7 +267,7 @@ dump_initial_state(gen; obs=false)</code></pre><pre class="documenter-example-ou
 <span class="sgr1">States:</span>
   busbar₊u_i                     = <span class="sgr34">-0.060919</span>   (guess  0)
   busbar₊u_r                     = <span class="sgr34"> 1.0457</span>     (guess  1)
-  ctrld_gen₊avr₊v_fb             = <span class="sgr33">-1.6016e-25</span> (guess  0)
+  ctrld_gen₊avr₊v_fb             = <span class="sgr33">-1.7638e-24</span> (guess  0)
   ctrld_gen₊avr₊vfout            = <span class="sgr33"> 1.2089</span>     (guess  1) (bounds 0.0..Inf)
   ctrld_gen₊avr₊vm               = <span class="sgr33"> 1.0475</span>     (guess  1)
   ctrld_gen₊avr₊vr               = <span class="sgr33">-0.058633</span>   (guess  0)
@@ -458,7 +458,7 @@ set_initconstraint!(vm_constraint, constraint)</code></pre><pre class="documente
    - :machine₊vf_set  (guess= 1)
    - :machine₊τ_m_set (guess= 1)
    - :ZIPLoad₊Vset    (guess= 1)
- - Initialization successful with residual 1.2953358381134826e-15
+ - Initialization successful with residual 1.2953395488600261e-15
    - :machine₊ψ″_q    =&gt; -0.1506
    - :machine₊ψ″_d    =&gt;  1.0219
    - :machine₊E′_d    =&gt;  0.10354
@@ -484,7 +484,7 @@ set_initformula!(nw[VIndex(39)], formula)</code></pre><p>With that, the componen
   ├─ VIndex(39, :machine₊E′_d)           =&gt; 0.1035370420461373
   ├─ VIndex(39, :machine₊E′_q)           =&gt; 1.0295343873218628
   ├─ VIndex(39, :machine₊ω)              =&gt; 1.0
-  ├─ VIndex(39, :machine₊δ)              =&gt; -0.0009449613162645345
+  ├─ VIndex(39, :machine₊δ)              =&gt; -0.0009449613162645344
   ├─ VIndex(39, :busbar₊u_r)             =&gt; 1.014186196767751
   └─ VIndex(39, :busbar₊u_i)             =&gt; -0.1797951594139631<span class="sgr90">
  p = NWParameter([345.0, 100.0, 376.991, 1.0, 345.0, 100.0, 376.991, 1.0, 345.0, 100.0  …  0.97561, 1.0, 0.0, 0.0, 0.0, 0.0, 0.5, 1.0, 0.0, 0.0])
@@ -500,4 +500,4 @@ set_initformula!(nw[VIndex(39)], formula)</code></pre><p>With that, the componen
   Types:<span class="sgr92"><span class="sgr1">  states ✓</span></span><span class="sgr1"><span class="sgr93">  parameters ✓</span><span class="sgr95">  inputs ✓</span><span class="sgr94">  outputs ✓</span><span class="sgr96">  observables ✓</span></span>
 <span class="sgr1">Matching Indices:</span>
   ● VIndex(25, <span class="sgr93">:busbar₊Vbase</span>)   345   :bus25
-  ● VIndex(37, <span class="sgr93">:busbar₊Vbase</span>)   16.5  :bus37</code></pre><p>Only the SI observables depend on this — the dynamics are formulated in per unit throughout — but it means <code>u_kV</code>, <code>P_MW</code> and friends report the right numbers on both sides without anyone having to keep a table of line voltage levels in sync with the buses.</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ieee39_part1/">« IEEE39 Part I: Modeling</a><a class="docs-footer-nextpage" href="../ieee39_part3/">IEEE39 Part III: Simulation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Monday 14 September 2026 16:16">Monday 14 September 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  ● VIndex(37, <span class="sgr93">:busbar₊Vbase</span>)   16.5  :bus37</code></pre><p>Only the SI observables depend on this — the dynamics are formulated in per unit throughout — but it means <code>u_kV</code>, <code>P_MW</code> and friends report the right numbers on both sides without anyone having to keep a table of line voltage levels in sync with the buses.</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ieee39_part1/">« IEEE39 Part I: Modeling</a><a class="docs-footer-nextpage" href="../ieee39_part3/">IEEE39 Part III: Simulation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Tuesday 15 September 2026 10:14">Tuesday 15 September 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
