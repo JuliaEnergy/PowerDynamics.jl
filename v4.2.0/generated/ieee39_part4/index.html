@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>IEEE39 Part IV: Parameter Tuning · PowerDynamics.jl</title><meta name="title" content="IEEE39 Part IV: Parameter Tuning · PowerDynamics.jl"/><meta property="og:title" content="IEEE39 Part IV: Parameter Tuning · PowerDynamics.jl"/><meta property="twitter:title" content="IEEE39 Part IV: Parameter Tuning · PowerDynamics.jl"/><meta name="description" content="Documentation for PowerDynamics.jl."/><meta property="og:description" content="Documentation for PowerDynamics.jl."/><meta property="twitter:description" content="Documentation for PowerDynamics.jl."/><meta property="og:url" content="https://juliaenergy.github.io/PowerDynamics.jl/generated/ieee39_part4/"/><meta property="twitter:url" content="https://juliaenergy.github.io/PowerDynamics.jl/generated/ieee39_part4/"/><link rel="canonical" href="https://juliaenergy.github.io/PowerDynamics.jl/generated/ieee39_part4/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PowerDynamics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../ModelingConcepts/">Modeling Concepts</a></li><li><a class="tocitem" href="../../initialization/">Initialization</a></li><li><a class="tocitem" href="../../Library/">Component Library</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../custom_bus/">Custom Generator Bus</a></li><li><a class="tocitem" href="../custom_line/">Custom Transmission Line</a></li></ul></li><li><span class="tocitem">Advanced Examples</span><ul><li><a class="tocitem" href="../ieee9bus/">IEEE 9-Bus Example</a></li><li><a class="tocitem" href="../ieee39_part1/">IEEE39 Part I: Modeling</a></li><li><a class="tocitem" href="../ieee39_part2/">IEEE39 Part II: Initialization</a></li><li><a class="tocitem" href="../ieee39_part3/">IEEE39 Part III: Simulation</a></li><li class="is-active"><a class="tocitem" href>IEEE39 Part IV: Parameter Tuning</a><ul class="internal"><li><a class="tocitem" href="#Integration-of-a-Droop-Controlled-Inverter"><span>Integration of a Droop-Controlled Inverter</span></a></li><li><a class="tocitem" href="#Parameter-Optimization"><span>Parameter Optimization</span></a></li></ul></li><li><a class="tocitem" href="../emt_toymodel/">EMT Toymodel</a></li></ul></li><li><a class="tocitem" href="../../API/">API</a></li><li><a class="tocitem" href="../../networkdynamics_forward/">🔗 NetworkDynamics.jl Docs</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Advanced Examples</a></li><li class="is-active"><a href>IEEE39 Part IV: Parameter Tuning</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>IEEE39 Part IV: Parameter Tuning</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl/blob/main/docs/examples/ieee39_part4.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="ieee39-part4"><a class="docs-heading-anchor" href="#ieee39-part4">IEEE39 Bus Tutorial - Part IV: Advanced Modeling &amp; Parameter Optimization</a><a id="ieee39-part4-1"></a><a class="docs-heading-anchor-permalink" href="#ieee39-part4" title="Permalink"></a></h1><p>This is the fourth and final part of the IEEE 39-bus tutorial series:</p><ul><li><strong>Part I: Model Creation</strong> - Build the network structure with buses, lines, and components</li><li><strong>Part II: Initialization</strong> - Perform power flow calculations and dynamic initialization</li><li><strong>Part III: Dynamic Simulation</strong> - Run time-domain simulations and analyze system behavior</li><li><strong>Part IV: Advanced Modeling &amp; Parameter Optimization</strong> (this tutorial) - Create custom components and optimize system parameters</li></ul><p>In this tutorial, we&#39;ll demonstrate advanced PowerDynamics.jl capabilities by:</p><ol><li>Creating a custom droop-controlled inverter component</li><li>Integrating it into the IEEE 39-bus system</li><li>Optimizing its parameters to improve system performance</li></ol><p>This tutorial showcases custom component creation and the integration with Julia&#39;s optimization ecosystem for parameter tuning.</p><p>This script can be downloaded as a normal Julia script <a href="../ieee39_part4.jl">here</a>.</p><div class="admonition is-info" id="Note-f3304ea6e9213106"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-f3304ea6e9213106" title="Permalink"></a></header><div class="admonition-body"><p>This tutorial is designed as a pedagogical example. It does not necessarily represent a realistic power system model and analysis, but rather serves to demonstrate the available tools while remaining relatively simple and concise.</p></div></div><pre><code class="language-julia hljs"># Loading required packages and setup
+using PowerDynamics
+using PowerDynamics.Library
+using ModelingToolkit
+using ModelingToolkit: D_nounits as Dt, t_nounits as t
+using NetworkDynamics
+using NetworkDynamics: SII
+using OrdinaryDiffEqRosenbrock
+using OrdinaryDiffEqNonlinearSolve
+using SciMLSensitivity
+using Optimization
+using OptimizationOptimisers
+using CairoMakie
+using LinearAlgebra
+using Graphs
+using SparseConnectivityTracer
+using Sparspak
+
+# Load the network models from previous parts
+EXAMPLEDIR = joinpath(pkgdir(PowerDynamics), &quot;docs&quot;, &quot;examples&quot;)
+include(joinpath(EXAMPLEDIR, &quot;ieee39_part1.jl&quot;))  # Creates the basic network model
+include(joinpath(EXAMPLEDIR, &quot;ieee39_part3.jl&quot;))  # Provides initialized network and reference solution</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr33"><span class="sgr1">┌ Warning: </span></span>The `alias_u0` keyword argument is deprecated. Please use a NonlinearAliasSpecifier, e.g. `alias = NonlinearAliasSpecifier(alias_u0 = true)`.
+<span class="sgr33"><span class="sgr1">└ </span></span><span class="sgr90">@ DiffEqBase ~/.julia/packages/DiffEqBase/dqv41/src/solve.jl:616</span>
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Short circuit activated on line 5→8 at t = 0.1s
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Line 5→8 disconnected at t = 0.2s</code></pre><h2 id="Integration-of-a-Droop-Controlled-Inverter"><a class="docs-heading-anchor" href="#Integration-of-a-Droop-Controlled-Inverter">Integration of a Droop-Controlled Inverter</a><a id="Integration-of-a-Droop-Controlled-Inverter-1"></a><a class="docs-heading-anchor-permalink" href="#Integration-of-a-Droop-Controlled-Inverter" title="Permalink"></a></h2><p>In this section, we&#39;ll modify our network by adding a droop-controlled inverter.</p><h3 id="Mathematical-Background"><a class="docs-heading-anchor" href="#Mathematical-Background">Mathematical Background</a><a id="Mathematical-Background-1"></a><a class="docs-heading-anchor-permalink" href="#Mathematical-Background" title="Permalink"></a></h3><p>The droop-controlled inverter implements a decentralized control strategy commonly used in microgrids and renewable energy integration. It establishes the following relationships:</p><p><strong>Power Measurement:</strong></p><p class="math-container">\[\begin{aligned}
+P_{meas} &amp;= u_r \cdot i_r + u_i \cdot i_i\\
+Q_{meas} &amp;= u_i \cdot i_r - u_r \cdot i_i
+\end{aligned}\]</p><p><strong>Power Filtering (Low-pass filtering for measurement noise reduction):</strong></p><p class="math-container">\[\begin{aligned}
+\tau \cdot \frac{dP_{filt}}{dt} &amp;= P_{meas} - P_{filt} \\
+\tau \cdot \frac{dQ_{filt}}{dt} &amp;= Q_{meas} - Q_{filt}
+\end{aligned}\]</p><p><strong>Droop Control:</strong></p><p class="math-container">\[\begin{aligned}
+\omega &amp;= \omega_0 - K_p \cdot (P_{filt} - P_{set}) \\
+V &amp;= V_{set} - K_q \cdot (Q_{filt} - Q_{set})
+\end{aligned}\]</p><p><strong>Voltage Angle Dynamics:</strong></p><p class="math-container">\[\frac{d\delta}{dt} = \omega - \omega_0\]</p><p><strong>Output Voltage:</strong></p><p class="math-container">\[\begin{aligned}
+u_r &amp;= V \cdot \cos(\delta) \\
+u_i &amp;= V \cdot \sin(\delta)
+\end{aligned}\]</p><p>These equations implement:</p><ul><li><strong>Frequency-Active Power Coupling (f-P)</strong>: Frequency decreases when active power exceeds setpoint</li><li><strong>Voltage-Reactive Power Coupling (V-Q)</strong>: Voltage decreases when reactive power exceeds setpoint</li></ul><p>This mimics the natural behavior of synchronous generators and enables stable power sharing in islanded operation.</p><h3 id="Definition-of-the-Droop-Inverter-Component"><a class="docs-heading-anchor" href="#Definition-of-the-Droop-Inverter-Component">Definition of the Droop Inverter Component</a><a id="Definition-of-the-Droop-Inverter-Component-1"></a><a class="docs-heading-anchor-permalink" href="#Definition-of-the-Droop-Inverter-Component" title="Permalink"></a></h3><p>Network components in PowerDynamics must follow the <a href="../../ModelingConcepts/#Injector-Interface">Injector Interface</a> - they connect to the network through a single <code>Terminal</code>:</p><pre><code class="nohighlight hljs">      ┌──────────────────────────┐
+(t)   │                          │
+ o←───┤ Droop Inverter Equations │
+      │                          │
+      └──────────────────────────┘</code></pre><p>We can define the following MTKModel to represent the droop inverter:</p><pre><code class="language-julia hljs">@mtkmodel DroopInverter begin
+    @components begin
+        terminal = Terminal()
+    end
+
+    @parameters begin
+        Pset, [description=&quot;Active power setpoint&quot;, guess=1]
+        Qset, [description=&quot;Reactive power setpoint&quot;, guess=0]
+        Vset, [description=&quot;Voltage magnitude setpoint&quot;, guess=1]
+        ω₀=1, [description=&quot;Nominal frequency&quot;]
+        Kp=1, [description=&quot;Active power droop coefficient&quot;]
+        Kq=0.1, [description=&quot;Reactive power droop coefficient&quot;]
+        τ_p = 1, [description=&quot;Active Power filter time constant&quot;]
+        τ_q = 1, [description=&quot;Reactive Power filter time constant&quot;]
+    end
+
+    @variables begin
+        Pmeas(t), [description=&quot;Measured active power&quot;, guess=1]
+        Qmeas(t), [description=&quot;Measured reactive power&quot;, guess=0]
+        Pfilt(t), [description=&quot;Filtered active power&quot;, guess=1]
+        Qfilt(t), [description=&quot;Filtered reactive power&quot;, guess=1]
+        ω(t), [description=&quot;Frequency&quot;]
+        δ(t), [description=&quot;Voltage angle&quot;, guess=0]
+        V(t), [description=&quot;Voltage magnitude&quot;]
+    end
+
+    @equations begin
+        # Power measurement from terminal quantities
+        Pmeas ~ terminal.u_r*terminal.i_r + terminal.u_i*terminal.i_i
+        Qmeas ~ terminal.u_i*terminal.i_r - terminal.u_r*terminal.i_i
+
+        # First-order low-pass filtering
+        τ_p * Dt(Pfilt) ~ Pmeas - Pfilt
+        τ_q * Dt(Qfilt) ~ Qmeas - Qfilt
+
+        # Droop control equations
+        ω ~ ω₀ - Kp * (Pfilt - Pset)  # Frequency decreases with excess power
+        V ~ Vset - Kq * (Qfilt - Qset)  # Voltage decreases with excess reactive power
+
+        # Voltage angle dynamics
+        Dt(δ) ~ ω - ω₀
+
+        # Output voltage components
+        terminal.u_r ~ V*cos(δ)
+        terminal.u_i ~ V*sin(δ)
+    end
+end;</code></pre><h3 id="Creating-a-Bus-with-the-Droop-Inverter"><a class="docs-heading-anchor" href="#Creating-a-Bus-with-the-Droop-Inverter">Creating a Bus with the Droop Inverter</a><a id="Creating-a-Bus-with-the-Droop-Inverter-1"></a><a class="docs-heading-anchor-permalink" href="#Creating-a-Bus-with-the-Droop-Inverter" title="Permalink"></a></h3><p>Following the descriptions in <a href="../../ModelingConcepts/#Modeling-Concepts">Modeling Concepts</a>, we build an MTKBus using the droop as the single injector and then compile the bus model, similar to how we define the templates in <a href="../ieee39_part1/#ieee39-part1">part I</a>:</p><pre><code class="nohighlight hljs">           ╔═════════════════════════╗
+           ║ Droop (compiled)        ║
+ Network   ║  ┌────────────────────┐ ║
+interface  ║  │ MTKBus             │ ║
+ current ────→│┌──────┐ ┌────────┐ │ ║
+           ║  ││BusBar├o┤Inverter│ │ ║
+ voltage ←────│└──────┘ └────────┘ │ ║
+           ║  └────────────────────┘ ║
+           ╚═════════════════════════╝</code></pre><pre><code class="language-julia hljs">@named inverter = DroopInverter()
+mtkbus = MTKBus(inverter)
+droop_bus_template = compile_bus(mtkbus; name=:DroopInverter)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:DroopInverter</span> <span class="sgr94">NoFeedForward()</span>
+ ├─ 2 inputs:  [busbar₊i_r, busbar₊i_i]
+ ├─ 3 states:  [inverter₊δ<span class="sgr90">≈0</span>, inverter₊Qfilt<span class="sgr90">≈1</span>, inverter₊Pfilt<span class="sgr90">≈1</span>]
+ ├─ 2 outputs: [busbar₊u_r=1, busbar₊u_i=0]
+ └─ 8 params:  [inverter₊Pset<span class="sgr90">≈1</span>, inverter₊Qset<span class="sgr90">≈0</span>, inverter₊Vset<span class="sgr90">≈1</span>, inverter₊ω₀=1, inverter₊Kp=1, inverter₊Kq=0.1, inverter₊τ_p=1, inverter₊τ_q=1]</code></pre><p>We see that the droop inverter has 3 free parameters (you can check <code>free_p(droop_bus_template)</code> or <code>dump_initial_state(droop_bus_template)</code>). Therefore, similar to what we did in <a href="../ieee39_part2/#ieee39-part2">Part II</a>, we need to help the initialization by attaching an additional initialization formula to the bus:</p><pre><code class="language-julia hljs">set_initformula!(
+    droop_bus_template,
+    @initformula(:inverter₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2))
+)</code></pre><h3 id="Network-Modification-with-Droop-Inverter"><a class="docs-heading-anchor" href="#Network-Modification-with-Droop-Inverter">Network Modification with Droop Inverter</a><a id="Network-Modification-with-Droop-Inverter-1"></a><a class="docs-heading-anchor-permalink" href="#Network-Modification-with-Droop-Inverter" title="Permalink"></a></h3><p>We&#39;ll replace bus 32 (originally a controlled generator bus) with our new droop inverter bus.</p><pre><code class="language-julia hljs">DROOP_BUS_IDX = 32</code></pre><p>To do so, we first collect all the &quot;old&quot; vertex and edge models.</p><div class="admonition is-success" id="Tip-7141b08556fca9ae"><header class="admonition-header">Tip<a class="admonition-anchor" href="#Tip-7141b08556fca9ae" title="Permalink"></a></header><div class="admonition-body"><p>We copy the components, to create individual instances for the new network. Since all the metadata (like the default values, initialize values and so on) are stored in the component models, we would otherwise share metadata between the old and the new network, which can lead to unexpected results.</p></div></div><pre><code class="language-julia hljs">vertex_models = [copy(nw[VIndex(i)]) for i in 1:nv(nw)];
+edge_models = [copy(nw[EIndex(i)]) for i in 1:ne(nw)];</code></pre><p>Now we need to replace the original bus model at index <code>DROOP_BUS_IDX</code> with our new droop inverter bus. However, we don&#39;t want to lose the original power flow model associated with this bus, so we need to attach it to the droop bus model:</p><pre><code class="language-julia hljs">original_pfmodel = get_pfmodel(vertex_models[DROOP_BUS_IDX])</code></pre><p>We can then use the <code>Bus</code> constructor to essentially copy the droop<em>bus</em>template and adjust some properties, like the powerflow model and the vertex index.</p><pre><code class="language-julia hljs">droop_bus = compile_bus(droop_bus_template; pf=original_pfmodel, vidx=DROOP_BUS_IDX)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:DroopInverter</span> <span class="sgr94">NoFeedForward()</span> @ Vertex 32
+ ├─ 2 inputs:  [busbar₊i_r, busbar₊i_i]
+ ├─ 3 states:  [inverter₊δ<span class="sgr90">≈0</span>, inverter₊Qfilt<span class="sgr90">≈1</span>, inverter₊Pfilt<span class="sgr90">≈1</span>]
+ ├─ 2 outputs: [busbar₊u_r=1, busbar₊u_i=0]
+ ├─ 8 params:  [inverter₊Pset<span class="sgr90">≈1</span>, inverter₊Qset<span class="sgr90">≈0</span>, inverter₊Vset<span class="sgr90">≈1</span>, inverter₊ω₀=1, inverter₊Kp=1, inverter₊Kq=0.1, inverter₊τ_p=1, inverter₊τ_q=1]
+ └─ 1 add. init eq. from 1 formula setting [:inverter₊Vset]
+<span class="sgr34"><span class="sgr1">Powerflow model </span></span>:pvbus with [pv₊P=6.5, pv₊V=0.9831]</code></pre><p>We then replace the original bus model in the array with our droop bus and build a network again:</p><pre><code class="language-julia hljs">vertex_models[DROOP_BUS_IDX] = droop_bus
+nw_droop = Network(vertex_models, edge_models)
+set_jac_prototype!(nw_droop; remove_conditions=true)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Network with 189 states and 1272 parameters
+ ├─ 39 vertices (6 unique types)
+ └─ 46 edges (1 unique type)
+Edge-Aggregation using SequentialAggregator(+)
+Jacobian prototype defined: <span class="sgr34">3.45% sparsity</span>
+2 callback sets across 0 vertices and 1 edge</code></pre><p>Additionally, we&#39;ve set the jacobian prototype for performance gains during simulation and optimization, see NetworkDynamics docs on <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/sparsity_detection/">Sparsity Detection</a>.</p><h3 id="Network-Initialization-with-Droop-Inverter"><a class="docs-heading-anchor" href="#Network-Initialization-with-Droop-Inverter">Network Initialization with Droop Inverter</a><a id="Network-Initialization-with-Droop-Inverter-1"></a><a class="docs-heading-anchor-permalink" href="#Network-Initialization-with-Droop-Inverter" title="Permalink"></a></h3><p>The modified network requires the same initialization steps as the original:</p><ol><li>Power flow solution</li><li>Dynamic component initialization</li></ol><p>This all happens within <a href="../../API/#PowerDynamics.initialize_from_pf!"><code>initialize_from_pf!</code></a>:</p><pre><code class="language-julia hljs">s0_droop = initialize_from_pf!(nw_droop; verbose=false)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr33"><span class="sgr1">┌ Warning: </span></span>The `alias_u0` keyword argument is deprecated. Please use a NonlinearAliasSpecifier, e.g. `alias = NonlinearAliasSpecifier(alias_u0 = true)`.
+<span class="sgr33"><span class="sgr1">└ </span></span><span class="sgr90">@ DiffEqBase ~/.julia/packages/DiffEqBase/dqv41/src/solve.jl:616</span></code></pre><p>Let&#39;s examine the initialized state of our droop inverter:</p><pre><code class="language-julia hljs">dump_initial_state(nw_droop[VIndex(DROOP_BUS_IDX)]; obs=false)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Inputs:</span>
+  busbar₊i_i            = <span class="sgr34"> 1.7883</span>
+  busbar₊i_r            = <span class="sgr34">-6.6986</span>
+<span class="sgr1">States:</span>
+  inverter₊Pfilt        = <span class="sgr33"> 6.5</span>      (guess  1)
+  inverter₊Qfilt        = <span class="sgr33"> 2.0514</span>   (guess  1)
+  inverter₊δ            = <span class="sgr33"> 0.044837</span> (guess  0)
+<span class="sgr1">Outputs:</span>
+  busbar₊u_i            = <span class="sgr34"> 0.044064</span>
+  busbar₊u_r            = <span class="sgr34"> 0.98211</span>
+<span class="sgr1">Parameters:</span>
+  inverter₊Kp           = <span class="sgr34"> 1</span>
+  inverter₊Kq           = <span class="sgr34"> 0.1</span>
+  inverter₊Pset         = <span class="sgr33"> 6.5</span>      (guess  1)
+  inverter₊Qset         = <span class="sgr33"> 2.0514</span>   (guess  0)
+  inverter₊Vset         = <span class="sgr33"> 0.9831</span>   (guess  1)
+  inverter₊τ_p          = <span class="sgr34"> 1</span>
+  inverter₊τ_q          = <span class="sgr34"> 1</span>
+  inverter₊ω₀           = <span class="sgr34"> 1</span></code></pre><p>We see that the filtered powers match the setpoints (steady state), and both <span>$P$</span> and <span>$V_\mathrm{set}$</span> are initialized according to the parameters of the PV powerflow model.</p><h3 id="Simulation-with-Droop-Inverter"><a class="docs-heading-anchor" href="#Simulation-with-Droop-Inverter">Simulation with Droop Inverter</a><a id="Simulation-with-Droop-Inverter-1"></a><a class="docs-heading-anchor-permalink" href="#Simulation-with-Droop-Inverter" title="Permalink"></a></h3><p>Now we&#39;ll simulate the modified network and compare it with the original system response:</p><pre><code class="language-julia hljs">prob_droop = ODEProblem(nw_droop, uflat(s0_droop), (0.0, 15.0), copy(pflat(s0_droop));
+                       callback=get_callbacks(nw_droop))
+sol_droop = solve(prob_droop, Rodas5P())
+@assert SciMLBase.successful_retcode(sol_droop)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr36"><span class="sgr1">[ Info: </span></span>Short circuit activated on line 5→8 at t = 0.1s
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Line 5→8 disconnected at t = 0.2s</code></pre><h3 id="Comparison-of-System-Responses"><a class="docs-heading-anchor" href="#Comparison-of-System-Responses">Comparison of System Responses</a><a id="Comparison-of-System-Responses-1"></a><a class="docs-heading-anchor-permalink" href="#Comparison-of-System-Responses" title="Permalink"></a></h3><p>Let&#39;s compare how the droop inverter affects the system&#39;s response to the short circuit disturbance:</p><pre><code class="language-julia hljs">let fig = Figure(; size=(1000, 600))
+    selected_buses = [3, 4, 25, DROOP_BUS_IDX]  # Representative buses including the droop bus
+    ts = range(0, 10, length=1000)
+
+    for (i, bus) in enumerate(selected_buses)
+        row, col = divrem(i-1, 2) .+ (1, 1)
+        ax = Axis(fig[row, col];
+                  title=&quot;Voltage Magnitude at Bus $bus&quot; * (bus==DROOP_BUS_IDX ? &quot; (droop bus)&quot; : &quot;&quot;),
+                  xlabel=&quot;Time [s]&quot;,
+                  ylabel=&quot;Voltage [pu]&quot;)
+
+        # Original system response
+        lines!(ax, ts, sol(ts; idxs=VIndex(bus, :busbar₊u_mag)).u;
+               label=&quot;Original System&quot;, color=:blue, linewidth=2)
+
+        # Droop inverter system response
+        lines!(ax, ts, sol_droop(ts; idxs=VIndex(bus, :busbar₊u_mag)).u;
+               label=&quot;With Droop Inverter&quot;, color=:red, linewidth=2)
+
+        ylims!(ax, 0.85, 1.15)
+        i == 1 &amp;&amp; axislegend(ax; position=:rb)
+    end
+
+    fig
+end</code></pre><img src="6b41d1b2.png" alt="Example block output"/><p>We see that the overall system reacts similarly but distinctly differently to the identical disturbance.</p><h2 id="Parameter-Optimization"><a class="docs-heading-anchor" href="#Parameter-Optimization">Parameter Optimization</a><a id="Parameter-Optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Parameter-Optimization" title="Permalink"></a></h2><p>To showcase advanced capabilities of the SciML-ecosystem and the integration with PowerDynamics.jl, we now want to try to <em>tune</em> the droop inverter parameters so that the overall system behavior more closely resembles the original behavior, i.e., to reduce the difference between the system with generator and the system with droop inverter.</p><h3 id="Optimization-Problem-Formulation"><a class="docs-heading-anchor" href="#Optimization-Problem-Formulation">Optimization Problem Formulation</a><a id="Optimization-Problem-Formulation-1"></a><a class="docs-heading-anchor-permalink" href="#Optimization-Problem-Formulation" title="Permalink"></a></h3><p>We define a loss function that measures the deviation between the original system response and the modified system response:</p><p class="math-container">\[L(p) = \sum_{i,t} |x_{ref}(t)_i - x(t;p)_i|^2\]</p><p>Where we have</p><ul><li>Parameters <span>$p = [K_p, K_q, \tau]$</span> to be optimized</li><li>the reference solution <span>$x_{ref}(t)$</span> (original system)</li><li>the solution of the modified system <span>$x(t;p)$</span> with updated parameters <span>$p$</span></li></ul><p><strong>Goal:</strong> Find parameters <span>$p$</span> that minimize this loss function, making the droop inverter system behave as closely as possible to the original system.</p><h3 id="Setting-Up-the-Optimization"><a class="docs-heading-anchor" href="#Setting-Up-the-Optimization">Setting Up the Optimization</a><a id="Setting-Up-the-Optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Setting-Up-the-Optimization" title="Permalink"></a></h3><p>First, we define the reference solution and identify the tunable parameters.</p><p>We probe the original solution at fixed timepoints, exporting <code>u_r</code> and <code>u_i</code> for every bus:</p><pre><code class="language-julia hljs">opt_ref = sol(0.3:0.1:10, idxs=[VIndex(1:39, :busbar₊u_r), VIndex(1:39, :busbar₊u_i)])</code></pre><p>Next, we need to identify the &quot;tunable&quot; parameters. This is a bit tricky, because the overall <code>nw_droop</code> has 1271 parameters, so we need to find the indices of the parameters we want to tune in the flat parameter array. We can do so, by leveraging NetworkDynamics implementation of the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl">SymbolicIndexingInterface</a>: tunable_parameters = [:inverter₊Kp, :inverter₊Kq, :inverter₊τ]</p><pre><code class="language-julia hljs">tunable_parameters = [:inverter₊Kp, :inverter₊Kq, :inverter₊τ_p, :inverter₊τ_q]
+tp_idx = SII.parameter_index(sol_droop, VIndex(DROOP_BUS_IDX, tunable_parameters))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4-element Vector{Int64}:
+ 503
+ 504
+ 505
+ 506</code></pre><p>We also get their initial values, which we use as the starting point for the optimization.</p><pre><code class="language-julia hljs">p0 = sol_droop(sol_droop.t[begin], idxs=collect(VIndex(DROOP_BUS_IDX, tunable_parameters)))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4-element Vector{Float64}:
+ 1.0
+ 0.1
+ 1.0
+ 1.0</code></pre><h3 id="Loss-Function-Implementation"><a class="docs-heading-anchor" href="#Loss-Function-Implementation">Loss Function Implementation</a><a id="Loss-Function-Implementation-1"></a><a class="docs-heading-anchor-permalink" href="#Loss-Function-Implementation" title="Permalink"></a></h3><p>The loss function simulates the system with given parameters and compares the result to the reference:</p><pre><code class="language-julia hljs">function loss(p)
+    # Create parameter vector for the full system
+    # allp = similar(p, pdim(nw_droop)) # create a vector of the full length
+    allp = similar(p, length(s0_droop.p)) # create a vector of the full length
+    allp .= pflat(s0_droop.p) # copy all &quot;initial&quot; parameters to that vector
+    allp[tp_idx] .= p  # Update only the tunable parameters with the parameters for the given optimization iteration
+
+    # Solve the system with new parameters
+    _sol = solve(prob_droop, Rodas5P(autodiff=true);
+        p = allp,
+        saveat = opt_ref.t,
+        tspan=(0.0, opt_ref.t[end]),
+        initializealg = SciMLBase.NoInit(),
+        abstol=0.01,
+        reltol=0.01
+    )
+
+    # Return infinite loss if simulation failed
+    if !SciMLBase.successful_retcode(_sol)
+        @warn &quot;Retcode $(_sol.retcode) indicates a failed simulation, returning Inf loss&quot;
+        return Inf
+    end
+
+    # Extract solution at reference time points
+    x = _sol(opt_ref.t; idxs=[VIndex(1:39, :busbar₊u_r), VIndex(1:39, :busbar₊u_i)])
+
+    # Compute L2 norm of the difference
+    res = opt_ref.u - x.u
+    l2loss = sum(abs2, reduce(vcat, res))
+end</code></pre><h3 id="Optimization-Execution"><a class="docs-heading-anchor" href="#Optimization-Execution">Optimization Execution</a><a id="Optimization-Execution-1"></a><a class="docs-heading-anchor-permalink" href="#Optimization-Execution" title="Permalink"></a></h3><p>We use the Optimization.jl ecosystem with the Adam optimizer:</p><pre><code class="language-julia hljs"># Create optimization function with automatic differentiation
+optf = Optimization.OptimizationFunction((x, p) -&gt; loss(x), Optimization.AutoForwardDiff())</code></pre><p>To better monitor the optimization progress, we want to store the optimized parameters at every iteration of the optimizer. We can do so by defining a callback function for the optimizer:</p><pre><code class="language-julia hljs">optimization_states = Any[] # global variable to store the optimization parameters at each step
+callback = function (state, l)
+    push!(optimization_states, state)
+    println(&quot;Iteration $(state.iter): loss = $l\t p = $(state.u)&quot;)
+    return false  # Continue optimization
+end</code></pre><p>That callback will snapshot the current parameter values at every step of the gradient descent.</p><p>With that, we can run the optimization:</p><pre><code class="language-julia hljs">optprob = Optimization.OptimizationProblem(optf, p0; callback)
+
+@time optsol = Optimization.solve(optprob, Optimisers.Adam(0.06), maxiters = 50)
+
+println(&quot;\nOptimization completed!&quot;)
+println(&quot;Initial parameters: &quot;, p0)
+println(&quot;Optimized parameters: &quot;, optsol.u)
+println(&quot;Initial loss: &quot;, loss(p0))
+println(&quot;Final loss: &quot;, loss(optsol.u))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Iteration 1: loss = 452.08075188374306	 p = [1.0, 0.1, 1.0, 1.0]
+Iteration 2: loss = 309.92291410422524	 p = [1.059999999999443, 0.15999999999971232, 0.9400000000065613, 0.9400000000258409]
+Iteration 3: loss = 226.82839704753798	 p = [1.119429899936713, 0.21256940171440714, 0.879929525043861, 0.947868891690498]
+Iteration 4: loss = 175.6490386400381	 p = [1.1780147841755706, 0.25777646240837937, 0.8197515909382997, 0.9831253769802571]
+Iteration 5: loss = 128.0715840762257	 p = [1.2355547875002968, 0.2963606610820473, 0.7593807157961712, 1.0282550822294012]
+Iteration 6: loss = 89.87416214839155	 p = [1.2916704173826798, 0.3294265263474166, 0.6987841384665605, 1.0782158940049515]
+Iteration 7: loss = 59.39735846960658	 p = [1.3459519376840596, 0.3579616972355813, 0.6380836254467024, 1.1306462126082624]
+Iteration 8: loss = 35.55759311311985	 p = [1.3979563845396574, 0.3827887307862372, 0.577566686825637, 1.1838819343881544]
+Iteration 9: loss = 19.289563386842634	 p = [1.4472095904450395, 0.40457492739364087, 0.5176550372901897, 1.2364203744906717]
+Iteration 10: loss = 9.48257151282349	 p = [1.4932296277996917, 0.4238524817089607, 0.45910385915662016, 1.286805866604395]
+Iteration 11: loss = 6.306839966619383	 p = [1.5354844284343463, 0.4410253169524846, 0.4034533495179298, 1.3336213443379286]
+Iteration 12: loss = 9.408687455725875	 p = [1.5733917326665372, 0.4563830976254733, 0.3538267708543347, 1.3755900975997502]
+Iteration 13: loss = 16.757691071284928	 p = [1.6063789993541222, 0.47010235131565203, 0.31520091344667717, 1.4118237116343528]
+Iteration 14: loss = 24.6684872694376	 p = [1.6340650960419851, 0.4822826496228751, 0.2918118709392958, 1.4420159040055198]
+Iteration 15: loss = 30.72718859941585	 p = [1.6563620560765537, 0.4930092257761865, 0.2844544196683683, 1.4662888416760076]
+Iteration 16: loss = 33.29000163531275	 p = [1.673434920254641, 0.5023901890777868, 0.2910750894694208, 1.4849613387007996]
+Iteration 17: loss = 32.58296667712008	 p = [1.6856810513711677, 0.5105773032215005, 0.3086430800475795, 1.4984056630989742]
+Iteration 18: loss = 29.820749861222602	 p = [1.6936402483221973, 0.5177506941019066, 0.33440694343962746, 1.5070068208376641]
+Iteration 19: loss = 25.25340868865076	 p = [1.6979007291495571, 0.5240893570334189, 0.3661640809291872, 1.5111863030520813]
+Iteration 20: loss = 20.472909808720505	 p = [1.6991165207788734, 0.5297598948434372, 0.40200025356975333, 1.5114530449969512]
+Iteration 21: loss = 15.731935245176906	 p = [1.697920747409479, 0.5349021984712309, 0.4403412970982441, 1.5083639447327355]
+Iteration 22: loss = 12.296658573170859	 p = [1.6949633153445207, 0.5396144185355314, 0.479596511273643, 1.5026307183264447]
+Iteration 23: loss = 9.812179552257394	 p = [1.690793354324617, 0.5439597843328238, 0.5184806739093692, 1.4949514470979204]
+Iteration 24: loss = 8.28657826312731	 p = [1.6858990712974606, 0.5479706223574872, 0.5559196153538274, 1.486055349484022]
+Iteration 25: loss = 7.5134538468170735	 p = [1.6806980498154565, 0.5516579010127985, 0.5910911708316562, 1.4766589123027076]
+Iteration 26: loss = 7.477497657644927	 p = [1.6755315270721007, 0.5550205511838295, 0.6234503604964299, 1.4674252697797956]
+Iteration 27: loss = 7.831846824704183	 p = [1.6706693317770518, 0.5580509185966609, 0.6526304488330029, 1.4589417657229367]
+Iteration 28: loss = 8.384364180823777	 p = [1.6663191105339321, 0.5607400605279756, 0.6784238077519563, 1.4517034713170733]
+Iteration 29: loss = 9.05231771328504	 p = [1.6626503850764756, 0.5630792752701907, 0.7007259883430305, 1.4461371458029617]
+Iteration 30: loss = 9.731201187863704	 p = [1.6597874189552204, 0.5650630600973974, 0.7195287440130149, 1.4425745828528869]
+Iteration 31: loss = 10.448712106534009	 p = [1.6578099101599524, 0.5666960008252645, 0.7349004637826835, 1.4412123656879146]
+Iteration 32: loss = 10.92809477320099	 p = [1.6567671606386043, 0.567982432713254, 0.746976175554362, 1.442194900029669]
+Iteration 33: loss = 11.234273599995905	 p = [1.6566599355614535, 0.5689348849196265, 0.7559279934519121, 1.4455270970494434]
+Iteration 34: loss = 11.365834194306395	 p = [1.6574580687559661, 0.569571564660422, 0.7619588294400055, 1.4511235446133404]
+Iteration 35: loss = 11.332204729628877	 p = [1.65910269660016, 0.569915916523317, 0.7652957490050643, 1.4588184597835643]
+Iteration 36: loss = 11.155308128575616	 p = [1.6615103832885278, 0.5699957761630424, 0.7661844692273668, 1.4683807785859335]
+Iteration 37: loss = 10.866571754217244	 p = [1.6645777236617778, 0.569835284027337, 0.7648836179969697, 1.4795668955021843]
+Iteration 38: loss = 10.505743381808761	 p = [1.6681856374394792, 0.5694688496313781, 0.7616619101700554, 1.49205670973433]
+Iteration 39: loss = 10.110508961961774	 p = [1.6722042332602065, 0.5689317324391882, 0.7567925721038908, 1.5055122082491648]
+Iteration 40: loss = 9.711341173717583	 p = [1.6764974935218844, 0.5682587291146631, 0.7505490404518271, 1.5195917456684842]
+Iteration 41: loss = 9.334920843200809	 p = [1.680928165833429, 0.567483001367003, 0.7432012169632823, 1.533963014757941]
+Iteration 42: loss = 9.004307492710504	 p = [1.685361823809545, 0.5666351475600072, 0.7350130331244987, 1.54831334931822]
+Iteration 43: loss = 8.687302889206006	 p = [1.6896699207898527, 0.5657425145611897, 0.7262406262339356, 1.5623572347970895]
+Iteration 44: loss = 8.511020005574036	 p = [1.6937095076957418, 0.5648319663231295, 0.717149396799562, 1.5757917446244134]
+Iteration 45: loss = 8.404403212236067	 p = [1.6973701785052482, 0.5639227642376037, 0.7079754306787713, 1.588401967558768]
+Iteration 46: loss = 8.35893356799552	 p = [1.7005546761524475, 0.5630300760305487, 0.6989374854771675, 1.6000119805004944]
+Iteration 47: loss = 8.361022978867306	 p = [1.7031808896308427, 0.5621651350533857, 0.6902331269256734, 1.6104858765891523]
+Iteration 48: loss = 8.39389375624667	 p = [1.7051832980614299, 0.5613356025083737, 0.6820353261678256, 1.6197271403352926]
+Iteration 49: loss = 8.439859945346202	 p = [1.7065140839968342, 0.5605460584154759, 0.6744888657681603, 1.627676926031481]
+Iteration 50: loss = 8.483888850677245	 p = [1.7071438667089234, 0.5597985283708413, 0.6677067035462271, 1.63431164901727]
+Iteration 50: loss = 6.306839966619383	 p = [1.5354844284343463, 0.4410253169524846, 0.4034533495179298, 1.3336213443379286]
+104.443175 seconds (131.95 M allocations: 38.028 GiB, 4.58% gc time, 42.50% compilation time: &lt;1% of which was recompilation)
+
+Optimization completed!
+Initial parameters: [1.0, 0.1, 1.0, 1.0]
+Optimized parameters: [1.5354844284343463, 0.4410253169524846, 0.4034533495179298, 1.3336213443379286]
+Initial loss: 455.72825980863786
+Final loss: 6.273945643671974</code></pre><h3 id="Optimization-Results-Analysis"><a class="docs-heading-anchor" href="#Optimization-Results-Analysis">Optimization Results Analysis</a><a id="Optimization-Results-Analysis-1"></a><a class="docs-heading-anchor-permalink" href="#Optimization-Results-Analysis" title="Permalink"></a></h3><p>Let&#39;s visualize how the optimization improved the system behavior:</p><pre><code class="language-julia hljs">function plot_optimization_comparison(p_initial, p_current)
+    fig = Figure(; size=(1200, 800))
+    selected_buses = [3, 4, 25, DROOP_BUS_IDX]
+    ts = range(0, 10, length=1000)
+
+    # Simulate with optimized parameters
+    allp_opt = @lift let
+        _p = copy(pflat(s0_droop))
+        _p[tp_idx] .= $p_current
+        _p
+    end
+    sol_opt = @lift solve(prob_droop, Rodas5P(); p=$allp_opt)
+
+
+    for (i, bus) in enumerate(selected_buses)
+        row, col = divrem(i-1, 2) .+ (1, 1)
+        ax = Axis(fig[row, col];
+                  title=&quot;Voltage Magnitude at Bus $bus&quot; * (bus==DROOP_BUS_IDX ? &quot; (droop bus)&quot; : &quot;&quot;),
+                  xlabel=&quot;Time [s]&quot;,
+                  ylabel=&quot;Voltage [pu]&quot;)
+
+        # Reference (original system)
+        lines!(ax, ts, sol(ts; idxs=VIndex(bus, :busbar₊u_mag)).u;
+               label=&quot;Reference&quot;, linestyle=:solid, color=:blue, linewidth=2)
+
+        # Initial droop parameters
+        lines!(ax, ts, sol_droop(ts; idxs=VIndex(bus, :busbar₊u_mag)).u;
+               label=&quot;Initial Droop&quot;, linestyle=:dash, color=:red, linewidth=2)
+
+        # Optimized droop parameters
+        dat = @lift $(sol_opt)(ts; idxs=VIndex(bus, :busbar₊u_mag)).u
+        lines!(ax, ts, dat; label=&quot;Optimized Droop&quot;, color=:green, linewidth=2)
+
+        ylims!(ax, 0.85, 1.15)
+        i == 1 &amp;&amp; axislegend(ax; position=:rb)
+    end
+
+    fig
+end
+
+pobs = Observable(p0)
+comparison_fig = plot_optimization_comparison(p0, pobs)
+record(comparison_fig, &quot;parameter_evolution.mp4&quot;, optimization_states; framerate=10) do s
+    pobs[] = s.u
+end</code></pre><p><video src="../parameter_evolution.mp4" controls="true" title="timeseries evolution animation"><a href="../parameter_evolution.mp4">timeseries evolution animation</a></video></p><h3 id="Parameter-Evolution-During-Optimization"><a class="docs-heading-anchor" href="#Parameter-Evolution-During-Optimization">Parameter Evolution During Optimization</a><a id="Parameter-Evolution-During-Optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Parameter-Evolution-During-Optimization" title="Permalink"></a></h3><p>Let&#39;s see how each parameter changed during the optimization process:</p><pre><code class="language-julia hljs">let fig = Figure(; size=(1000, 800))
+    param_names = [&quot;Kp&quot;, &quot;Kq&quot;, &quot;τ_p&quot;, &quot;τ_q&quot;]
+    for (i, param_name) in enumerate(param_names)
+        row = (i-1) ÷ 2 + 1
+        col = (i-1) % 2 + 1
+        ax = Axis(fig[row, col];
+                  title=&quot;Parameter Evolution: $param_name&quot;,
+                  xlabel=&quot;Iteration&quot;,
+                  ylabel=&quot;Parameter Value&quot;)
+
+        # Extract parameter values over iterations
+        param_values = [state.u[i] for state in optimization_states[1:end-1]]
+        iterations = [state.iter for state in optimization_states[1:end-1]]
+
+        scatterlines!(ax, iterations, param_values; linewidth=3, markersize=6, color=:blue)
+
+        # Mark initial and final values
+        hlines!(ax, [p0[i]]; linestyle=:dash, color=:gray, alpha=0.7)
+        text!(ax, 1, p0[i]; text=&quot;Initial: $(round(p0[i], digits=3))&quot;,
+              fontsize=10, color=:gray)
+
+        lossax = Axis(fig[row, col],
+            yticklabelcolor=:black,
+            yaxisposition = :right,
+            ylabel=&quot;loss&quot;, yscale=log10,
+            xgridvisible=false, ygridvisible=false
+        )
+        scatterlines!(
+            lossax,
+            iterations,
+            [loss(s.u) for s in optimization_states[1:end-1]],
+            color=:black, linewidth=1, markersize=3,
+        )
+    end
+    fig
+end</code></pre><img src="50779ef3.png" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ieee39_part3/">« IEEE39 Part III: Simulation</a><a class="docs-footer-nextpage" href="../emt_toymodel/">EMT Toymodel »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Tuesday 16 September 2025 14:49">Tuesday 16 September 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
