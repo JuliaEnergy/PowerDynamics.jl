@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="400" height="400" viewBox="0 0 400 400">
+<style>
+@keyframes rotor { to { transform: rotate(-360.0deg); } }
+@keyframes anchor { to { transform: rotate(360.0deg); } }
+@keyframes shaft {
+  0.0% { transform: scaleY(1.0); }
+  3.125% { transform: scaleY(1.061); }
+  6.25% { transform: scaleY(1.12); }
+  9.375% { transform: scaleY(1.174); }
+  12.5% { transform: scaleY(1.222); }
+  15.625% { transform: scaleY(1.261); }
+  18.75% { transform: scaleY(1.29); }
+  21.875% { transform: scaleY(1.308); }
+  25.0% { transform: scaleY(1.314); }
+  28.125% { transform: scaleY(1.308); }
+  31.25% { transform: scaleY(1.29); }
+  34.375% { transform: scaleY(1.261); }
+  37.5% { transform: scaleY(1.222); }
+  40.625% { transform: scaleY(1.174); }
+  43.75% { transform: scaleY(1.12); }
+  46.875% { transform: scaleY(1.061); }
+  50.0% { transform: scaleY(1.0); }
+  53.125% { transform: scaleY(0.939); }
+  56.25% { transform: scaleY(0.88); }
+  59.375% { transform: scaleY(0.826); }
+  62.5% { transform: scaleY(0.778); }
+  65.625% { transform: scaleY(0.739); }
+  68.75% { transform: scaleY(0.71); }
+  71.875% { transform: scaleY(0.692); }
+  75.0% { transform: scaleY(0.686); }
+  78.125% { transform: scaleY(0.692); }
+  81.25% { transform: scaleY(0.71); }
+  84.375% { transform: scaleY(0.739); }
+  87.5% { transform: scaleY(0.778); }
+  90.625% { transform: scaleY(0.826); }
+  93.75% { transform: scaleY(0.88); }
+  96.875% { transform: scaleY(0.939); }
+  100.0% { transform: scaleY(1.0); }
+}
+@keyframes arrow {
+  0.0% { transform: translateY(0.0px); }
+  3.125% { transform: translateY(5.267px); }
+  6.25% { transform: translateY(10.332px); }
+  9.375% { transform: translateY(15.0px); }
+  12.5% { transform: translateY(19.092px); }
+  15.625% { transform: translateY(22.45px); }
+  18.75% { transform: translateY(24.945px); }
+  21.875% { transform: translateY(26.481px); }
+  25.0% { transform: translateY(27.0px); }
+  28.125% { transform: translateY(26.481px); }
+  31.25% { transform: translateY(24.945px); }
+  34.375% { transform: translateY(22.45px); }
+  37.5% { transform: translateY(19.092px); }
+  40.625% { transform: translateY(15.0px); }
+  43.75% { transform: translateY(10.332px); }
+  46.875% { transform: translateY(5.267px); }
+  50.0% { transform: translateY(0.0px); }
+  53.125% { transform: translateY(-5.267px); }
+  56.25% { transform: translateY(-10.332px); }
+  59.375% { transform: translateY(-15.0px); }
+  62.5% { transform: translateY(-19.092px); }
+  65.625% { transform: translateY(-22.45px); }
+  68.75% { transform: translateY(-24.945px); }
+  71.875% { transform: translateY(-26.481px); }
+  75.0% { transform: translateY(-27.0px); }
+  78.125% { transform: translateY(-26.481px); }
+  81.25% { transform: translateY(-24.945px); }
+  84.375% { transform: translateY(-22.45px); }
+  87.5% { transform: translateY(-19.092px); }
+  90.625% { transform: translateY(-15.0px); }
+  93.75% { transform: translateY(-10.332px); }
+  96.875% { transform: translateY(-5.267px); }
+  100.0% { transform: translateY(-0.0px); }
+}
+.rotor { transform-origin: 77.5px 82.5px; animation: rotor 8.0s linear infinite; }
+.anchor { transform-origin: 190.0px 355.0px; animation: anchor 4.0s linear infinite; }
+.shaft { transform-origin: 352.5px 160.0px; animation: shaft 16.0s linear infinite; }
+.arrow { animation: arrow 16.0s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .rotor, .anchor, .shaft, .arrow { animation: none; }
+}
+</style>
+<g><path fill="none" stroke-width="5" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(100%, 100%, 100%)" stroke-opacity="1" stroke-miterlimit="10" d="M 140 210 L 140 172.5 L 190 122.5 L 290 122.5 L 290 197.5 L 240 247.5 L 240 285 L 140 285 Z M 140 210 "/>
+<path fill-rule="nonzero" fill="rgb(22%, 59.6%, 14.9%)" fill-opacity="1" d="M 40 205 L 177.5 205 L 177.5 215 L 40 215 Z M 40 205 "/>
+<path fill-rule="nonzero" fill="rgb(22%, 59.6%, 14.9%)" fill-opacity="1" d="M 77.5 210 L 85.75 210 C 82.375 184.5 82.375 184.5 80.5 82.5 L 74.5 82.5 C 72.625 184.5 72.625 184.5 69.25 210 Z M 77.5 210 "/>
+<path fill-rule="nonzero" fill="rgb(58.4%, 34.5%, 69.8%)" fill-opacity="1" d="M 252.5 155 L 390 155 L 390 165 L 252.5 165 Z M 252.5 155 "/>
+<path fill-rule="nonzero" fill="rgb(79.6%, 23.5%, 20%)" fill-opacity="1" d="M 102.5 280 L 277.5 280 L 277.5 290 L 102.5 290 Z M 102.5 280 "/>
+<path fill="none" stroke-width="8" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(79.6%, 23.5%, 20%)" stroke-opacity="1" stroke-miterlimit="10" d="M 190 285 L 190 317.5 "/>
+<path fill="none" stroke-width="8" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(79.6%, 23.5%, 20%)" stroke-opacity="1" stroke-miterlimit="10" d="M 227.5 355 C 227.5 375.710938 210.710938 392.5 190 392.5 C 169.289062 392.5 152.5 375.710938 152.5 355 C 152.5 334.289062 169.289062 317.5 190 317.5 C 210.710938 317.5 227.5 334.289062 227.5 355 Z M 227.5 355 "/></g>
+<g class="rotor"><path fill-rule="nonzero" fill="rgb(22%, 59.6%, 14.9%)" fill-opacity="1" d="M 77.5 82.5 L 81.175781 81.753906 L 64.070312 8.695312 L 61.128906 9.292969 C 71.601562 76.042969 71.601562 76.042969 73.824219 83.246094 Z M 77.5 82.5 L 76.308594 86.054688 L 148.128906 107.769531 L 149.085938 104.925781 C 86.042969 80.617188 86.042969 80.617188 78.691406 78.945312 Z M 77.5 82.5 L 75.015625 79.691406 L 20.300781 131.03125 L 22.285156 133.28125 C 74.859375 90.839844 74.859375 90.839844 79.984375 85.308594 Z M 77.5 82.5 "/></g>
+<g class="anchor"><path fill="none" stroke-width="8" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(79.6%, 23.5%, 20%)" stroke-opacity="1" stroke-miterlimit="10" d="M 202.5 365 L 202.5 377.226562 C 210.53125 372.710938 215.5 364.214844 215.5 355 C 215.5 345.785156 210.53125 337.289062 202.5 332.773438 L 202.5 345 L 177.5 345 L 177.5 332.773438 C 169.46875 337.289062 164.5 345.785156 164.5 355 C 164.5 364.214844 169.46875 372.710938 177.5 377.226562 L 177.5 365 Z M 202.5 365 "/></g>
+<g class="shaft"><path fill="none" stroke-width="8" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(58.4%, 34.5%, 69.8%)" stroke-opacity="1" stroke-miterlimit="10" d="M 352.5 160 L 352.5 246 "/></g>
+<g class="arrow"><path fill="none" stroke-width="8" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(58.4%, 34.5%, 69.8%)" stroke-opacity="1" stroke-miterlimit="10" d="M 332.5 230 L 352.5 250 L 372.5 230 "/></g>
+</svg>

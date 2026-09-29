@@ -1,5 +1,9 @@
 using Luxor
 
+# `layer` selects which part of the logo gets drawn, so the moving parts can be rendered on their
+# own for the animated SVG. `:all` draws everything, `:static` everything that never moves.
+draws(layer, part) = layer === :all || layer === part
+
 function blade(thicken)
     height = 100 + thicken
     thickness_bot = 10 + thicken
@@ -32,7 +36,7 @@ function rotor(;p=Point(0,0), s=1.0, α=0, thicken=0)
     newpath()
     path
 end
-function windturbine(;p=Point(0,0), s=1.0, α=0)
+function windturbine(;p=Point(0,0), s=1.0, α=0, layer=:all)
     gsave()
     translate(p)
     scale(s)
@@ -64,10 +68,12 @@ function windturbine(;p=Point(0,0), s=1.0, α=0)
     # rotorpath_clip = rotor(; p=prot, s, α, thicken=3)
 
     # drawpath(rotorpath_clip, :clip)
-    drawpath(basepath, :fill)
-    drawpath(rotorpath, :fill)
+    draws(layer, :static) && drawpath(basepath, :fill)
+    draws(layer, :rotor) && drawpath(rotorpath, :fill)
 
+    pivot = getworldposition(prot; centered=false)
     grestore()
+    pivot
 end
 
 function bus(;p, l, r)
@@ -78,7 +84,7 @@ function bus(;p, l, r)
     rect(xmin, ymin, l+r, height, :fill)
 end
 
-function load(; p, load_scale=1.0)
+function load(; p, load_scale=1.0, layer=:all)
     length = 90 * load_scale
     arrowwidth = 40
     linewidth = 8
@@ -90,13 +96,14 @@ function load(; p, load_scale=1.0)
 
     pl = pm + Point(-arrowwidth/2, -arrowwidth/2)
     pr = pm + Point(arrowwidth/2, -arrowwidth/2)
-    poly([p, pm_red], action=:stroke, close=false)
-    poly([pl, pm, pr], action=:stroke, close=false)
+    draws(layer, :shaft) && poly([p, pm_red], action=:stroke, close=false)
+    draws(layer, :arrow) && poly([pl, pm, pr], action=:stroke, close=false)
+    pivot = getworldposition(p; centered=false)
     grestore()
-
+    pivot
 end
 
-function gen(; p, α=0)
+function gen(; p, α=0, layer=:all)
     offset = 70
     # linewidth = 7.5
     linewidth = 8
@@ -111,12 +118,15 @@ function gen(; p, α=0)
 
     gsave()
     setline(linewidth)
-    line(p, p + Point(0, offset-diameter/2), :stroke)
-    circle(center, diameter/2, :stroke)
+    if draws(layer, :static)
+        line(p, p + Point(0, offset-diameter/2), :stroke)
+        circle(center, diameter/2, :stroke)
+    end
 
     secrad = diameter/2 - linewidth - gap
 
     translate(center)
+    pivot = getworldposition(; centered=false)
     rotate(α)
 
     # middle part of anchor
@@ -149,13 +159,17 @@ function gen(; p, α=0)
     carc2r(Point(0,0), p_ttl, p_bbl)
     line(p_bl)
     closepath()
-    strokepath()
+    draws(layer, :anchor) ? strokepath() : newpath()
 
     grestore()
+    pivot
 end
 
+"""
+Draws the logo and returns the world positions of the pivots of the moving parts.
+"""
 function powerdynamics_logo(; p=Point(0,0), s=1.0, foreground="black",
-                              wt_phase=-0.2, gen_phase=0.0, load_scale=1.0)
+                              wt_phase=-0.2, gen_phase=0.0, load_scale=1.0, layer=:all)
     gsave()
 
     translate(p)
@@ -178,33 +192,21 @@ function powerdynamics_logo(; p=Point(0,0), s=1.0, foreground="black",
     rline(Point(-2*units, 0))
     p_gen_conl = currentpoint()
     closepath()
-    strokepath()
+    draws(layer, :static) ? strokepath() : newpath()
 
     sethue(Luxor.julia_green)
-    bus(p=p_wt_con, l=2units, r=.75units)
-    windturbine(; p=p_wt_con - Point(1.25*units,0), s=.75, α=wt_phase)
+    draws(layer, :static) && bus(p=p_wt_con, l=2units, r=.75units)
+    rotor = windturbine(; p=p_wt_con - Point(1.25*units,0), s=.75, α=wt_phase, layer)
     # windturbine(; p=p_wt_con - Point(1.25*units,0), s=.75, α=-π/6)
 
     sethue(Luxor.julia_purple)
-    bus(p=p_load_con, l=.75units, r=2units)
-    load(p=p_load_con + Point(1.25*units, 0), load_scale=load_scale)
+    draws(layer, :static) && bus(p=p_load_con, l=.75units, r=2units)
+    load_top = load(; p=p_load_con + Point(1.25*units, 0), load_scale, layer)
 
     sethue(Luxor.julia_red)
-    bus(p=p_gen_conl, l=.75units, r=2.75units)
-    gen(p=(p_gen_conl + p_gen_conr)/2, α=gen_phase)
+    draws(layer, :static) && bus(p=p_gen_conl, l=.75units, r=2.75units)
+    anchor = gen(; p=(p_gen_conl + p_gen_conr)/2, α=gen_phase, layer)
 
     grestore()
+    (; rotor, anchor, load_top)
 end
-
-path = joinpath(dirname(@__DIR__), "docs", "src", "assets", "logo.svg")
-path_dark = joinpath(dirname(@__DIR__), "docs", "src", "assets", "logo-dark.svg")
-
-function logo_svg(path, color="black")
-    Drawing(400, 400, path)
-    origin()
-    # sethue(Luxor.julia_blue)
-    finish()
-    preview()
-end
-logo_svg(path, "black")
-logo_svg(path_dark, "white")

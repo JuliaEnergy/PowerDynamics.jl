@@ -22,6 +22,11 @@ links["NetworkDynamics"]("Sparsity") # search for name in all
 
 DocMeta.setdocmeta!(PowerDynamics, :DocTestSetup, :(using PowerDynamics); recursive=true)
 
+# logos live in the top-level logo folder, Documenter picks them up from assets
+for logo in ("logo.svg", "logo-dark.svg")
+    cp(joinpath(pkgdir(PowerDynamics), "logo", logo), joinpath(@__DIR__, "src", "assets", logo); force=true)
+end
+
 # generate examples
 example_dir = joinpath(@__DIR__, "examples")
 tutorial_dir = joinpath(@__DIR__, "tutorials")
