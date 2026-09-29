@@ -50,7 +50,7 @@ doc = makedocs(;
     pagesonly=true,
     plugins=[links],
     format=Documenter.HTML(;
-        canonical="https://juliaenergy.github.io/PowerDynamics.jl",
+        canonical="https://juliaenergy.github.io/PowerDynamics.jl/stable",
         edit_link="main",
         assets=String["assets/custom.css"],
     ),
