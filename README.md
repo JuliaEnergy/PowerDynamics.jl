@@ -1,5 +1,5 @@
-![PowerDynamics Banner](./docs/src/assets/banner-dark.png#gh-dark-mode-only)
-![PowerDynamics Banner](./docs/src/assets/banner.png#gh-light-mode-only)
+![PowerDynamics Banner](./logo/banner-animated-dark.svg#gh-dark-mode-only)
+![PowerDynamics Banner](./logo/banner-animated.svg#gh-light-mode-only)
 
 [![codecov](https://codecov.io/gh/JuliaEnergy/PowerDynamics.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaEnergy/PowerDynamics.jl)
 [![Stable Docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliaenergy.github.io/PowerDynamics.jl/stable/)

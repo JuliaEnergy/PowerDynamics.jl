@@ -22,6 +22,11 @@ links["NetworkDynamics"]("Sparsity") # search for name in all
 
 DocMeta.setdocmeta!(PowerDynamics, :DocTestSetup, :(using PowerDynamics); recursive=true)
 
+# logos live in the top-level logo folder, Documenter picks them up from assets (sidebar + link preview)
+for logo in ("logo.svg", "logo-dark.svg", "preview.png")
+    cp(joinpath(pkgdir(PowerDynamics), "logo", logo), joinpath(@__DIR__, "src", "assets", logo); force=true)
+end
+
 # generate examples
 example_dir = joinpath(@__DIR__, "examples")
 tutorial_dir = joinpath(@__DIR__, "tutorials")
@@ -45,7 +50,7 @@ doc = makedocs(;
     pagesonly=true,
     plugins=[links],
     format=Documenter.HTML(;
-        canonical="https://juliaenergy.github.io/PowerDynamics.jl",
+        canonical="https://juliaenergy.github.io/PowerDynamics.jl/stable",
         edit_link="main",
         assets=String["assets/custom.css"],
     ),
