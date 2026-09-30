@@ -512,10 +512,13 @@ function _generate_limint_callbacks(namespace, x)
     if use_discrete_callback
         # TODO: merge both discrete conditions and move condition below function for performance
         function _discrete_cond(u,p,t)
-            # account for numerical inaccuracies at the boundaries
-            u[1] < u[2] - 1e-10 || u[1] > u[3] + 1e-10
+            # account for numerical inaccuracies at the boundaries. While saturated x is
+            # frozen, so crossing the same bound again is only solver noise: don't re-clamp
+            insatmin = !iszero(p[1])
+            insatmax = !iszero(p[2])
+            !insatmin && u[1] < u[2] - 1e-10 || !insatmax && u[1] > u[3] + 1e-10
         end
-        discrete_condition = ComponentCondition(_discrete_cond, [x, min, max], [])
+        discrete_condition = ComponentCondition(_discrete_cond, [x, min, max], [satmin, satmax])
         discrete_affect = ComponentAffect([x],[satmin, satmax]) do u, p, ctx
             comp = get_compidx(ctx)
             verbose = get_callback_verbosity()
