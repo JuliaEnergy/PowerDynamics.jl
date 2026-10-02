@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Custom Transmission Line · PowerDynamics.jl</title><meta name="title" content="Custom Transmission Line · PowerDynamics.jl"/><meta property="og:title" content="Custom Transmission Line · PowerDynamics.jl"/><meta property="twitter:title" content="Custom Transmission Line · PowerDynamics.jl"/><meta name="description" content="Documentation for PowerDynamics.jl."/><meta property="og:description" content="Documentation for PowerDynamics.jl."/><meta property="twitter:description" content="Documentation for PowerDynamics.jl."/><meta property="og:url" content="https://juliaenergy.github.io/PowerDynamics.jl/generated/custom_line/"/><meta property="twitter:url" content="https://juliaenergy.github.io/PowerDynamics.jl/generated/custom_line/"/><link rel="canonical" href="https://juliaenergy.github.io/PowerDynamics.jl/generated/custom_line/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PowerDynamics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../ModelingConcepts/">Modeling Concepts</a></li><li><a class="tocitem" href="../../initialization/">Initialization</a></li><li><a class="tocitem" href="../../Library/">Component Library</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../custom_bus/">Custom Generator Bus</a></li><li class="is-active"><a class="tocitem" href>Custom Transmission Line</a><ul class="internal"><li><a class="tocitem" href="#Basic-PI-Branch-Model"><span>Basic PI-Branch Model</span></a></li><li><a class="tocitem" href="#Implement-the-CustomPiBranch-MTKModel"><span>Implement the CustomPiBranch MTKModel</span></a></li><li><a class="tocitem" href="#Extending-the-model-for-dynamic-over-current-Protection"><span>Extending the model for dynamic over-current Protection</span></a></li><li><a class="tocitem" href="#Creating-the-Dual-Branch-MTKLine"><span>Creating the Dual-Branch MTKLine</span></a></li><li><a class="tocitem" href="#Simulate-the-IEEE39-Grid-with-the-ProtectedLine"><span>Simulate the IEEE39 Grid with the ProtectedLine</span></a></li></ul></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../ieee9bus/">IEEE 9Bus Example</a></li><li><a class="tocitem" href="../ieee39_part1/">IEEE39 Part I: Modeling</a></li><li><a class="tocitem" href="../ieee39_part2/">IEEE39 Part II: Initialization</a></li><li><a class="tocitem" href="../ieee39_part3/">IEEE39 Part III: Simulation</a></li><li><a class="tocitem" href="../ieee39_part4/">IEEE39 Part IV: Parameter Tuning</a></li><li><a class="tocitem" href="../emt_toymodel/">EMT Toymodel</a></li></ul></li><li><a class="tocitem" href="../../API/">API</a></li><li><a class="tocitem" href="../../networkdynamics_forward/">🔗 NetworkDynamics.jl Docs</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Custom Transmission Line</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Custom Transmission Line</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl/blob/main/docs/tutorials/custom_line.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="custom-line"><a class="docs-heading-anchor" href="#custom-line">Tutorial on custom Transmission Line Models</a><a id="custom-line-1"></a><a class="docs-heading-anchor-permalink" href="#custom-line" title="Permalink"></a></h1><p>In this tutorial we&#39;ll implement a custom transmission line model:</p><ul><li>we start by defining a PI-branch component with optional fault admittance,</li><li>we combine two PI-branch components into one MTKLine, to essentially model a dual-branch transmission line.</li></ul><p>To make it more interesting, we add protection logic to the branches:</p><ul><li>each branch continuously checks the current magnitude against a limit,</li><li>if the current exceeds the limit, the branch is switched off after a delay time.</li></ul><p>This script can be downloaded as a normal Julia script <a href="../custom_line.jl">here</a>.</p><pre><code class="language-julia hljs">using PowerDynamics
+using ModelingToolkit
+using ModelingToolkit: D_nounits as Dt, t_nounits as t
+using NetworkDynamics
+using OrdinaryDiffEqRosenbrock
+using OrdinaryDiffEqNonlinearSolve
+using CairoMakie
+using Graphs</code></pre><h2 id="Basic-PI-Branch-Model"><a class="docs-heading-anchor" href="#Basic-PI-Branch-Model">Basic PI-Branch Model</a><a id="Basic-PI-Branch-Model-1"></a><a class="docs-heading-anchor-permalink" href="#Basic-PI-Branch-Model" title="Permalink"></a></h2><p>We start by defining a basic PI-branch model, which is similar to the one in <code>PiLine_fault.jl</code> as an MTKModel. This model should fulfill the <a href="../../ModelingConcepts/#Branch-Interface">Branch Interface</a>, i.e. it needs to have two <a href="../../ModelingConcepts/#Terminal"><code>Terminal</code></a>, one called <code>:src</code> the other called <code>:dst</code>:</p><pre><code class="nohighlight hljs">      ┌───────────┐
+(src) │           │ (dst)
+  o←──┤  Branch   ├──→o
+      │           │
+      └───────────┘</code></pre><p>The PI-branch we want to describe looks like this. We have:</p><ul><li>two terminals <code>:src</code> and <code>:dst</code> with their<ul><li>voltages <span>$V_\mathrm{src}$</span> and <span>$V_\mathrm{dst}$</span>,</li><li>currents <span>$i_\mathrm{src}$</span> and <span>$i_\mathrm{dst}$</span>,</li></ul></li><li>two shunt admittances <span>$Y_\mathrm{src}$</span> and <span>$Y_\mathrm{dst}$</span>,</li><li>an impedance <span>$Z$</span>, which is split into two parts <span>$Z_a$</span> and <span>$Z_b$</span> by the fault position <span>$\mathrm{pos}$</span>.</li></ul><pre><code class="nohighlight hljs">              i_src  V₁   i_a   Vₘ   i_b   V₂  i_dst
+     V_src o────←────o───Z_a─→──o───Z_b─→──o────→────o V_dst
+              r_src  │          │          │   r_dst
+                     ↓ i₁       ↓ i_f   i₂ ↓
+                     ┴          ┴          ┴
+Y_src = G_src+jB_src ┬          ┬ Y_f      ┬  Y_dst = G_dst+jB_dst
+                     │          │          │
+                     ⏚          ⏚          ⏚
+                   (fault enabled by breaker)</code></pre><p>The fault admittance <span>$Y_f = G_f + jB_f$</span> can represent any fault impedance.</p><p>To model this, we introduce the internal voltages <span>$V_1$</span>, <span>$V_2$</span> and <span>$V_\mathrm{m}$</span>. We consider the equations of the PI-branch in quasi-static-state. Therefore, we can use complex variables to describe the voltages and the currents. What we need in the end are equations for the currents at the terminals, i.e. <span>$i_\mathrm{src}$</span> and <span>$i_\mathrm{dst}$</span> as a function of all the parameters and the given node voltages. Lets start writing down the equations:</p><p>First, we &quot;split&quot; the impedance <span>$Z$</span> into two parts <span>$Z_a$</span> and <span>$Z_b$</span>:</p><p class="math-container">\[\begin{aligned}
+Z_\mathrm{a} &amp;= Z \, \mathrm{pos}\\
+Z_\mathrm{b} &amp;= Z \, (1-\mathrm{pos})
+\end{aligned}\]</p><p>Next, we can define the internal voltages <span>$V_1$</span> and <span>$V_2$</span> in terms of the terminal voltages and the transformation ratios:</p><p class="math-container">\[\begin{aligned}
+V_1 &amp;= r_\mathrm{src} \, V_\mathrm{src}\\
+V_2 &amp;= r_\mathrm{dst} \, V_\mathrm{dst}
+\end{aligned}\]</p><p>Once we have the shunt voltages, we can directly calculate the shunt currents</p><p class="math-container">\[\begin{aligned}
+i_1 &amp;= Y_\mathrm{src} \, V_1\\
+i_2 &amp;= Y_\mathrm{dst} \, V_2
+\end{aligned}\]</p><p>To calculate the middle voltage <span>$V_\mathrm{m}$</span>, we need to consider the fault admittance <span>$Y_f$</span>. The fault admittance is defined as:</p><p class="math-container">\[Y_f = G_f + jB_f\]</p><p>The effective fault admittance is controlled by the shortcircuit parameter:</p><p class="math-container">\[Y_{f,\text{eff}} = \mathrm{shortcircuit} \cdot Y_f\]</p><p>When the fault is active, we apply Kirchhoff&#39;s current law at the middle node: <span>$i_\mathrm{a} = i_\mathrm{b} + i_f$</span>, which leads to the middle voltage:</p><p class="math-container">\[V_\mathrm{m} = \frac{V_1 \, (1-\mathrm{pos}) + V_2 \, \mathrm{pos}}{1 + Y_{f,\text{eff}} \, Z \, \mathrm{pos} \, (1-\mathrm{pos})}\]</p><p>Once we have the middle voltage defined, we can calculate the currents <span>$i_\mathrm{a}$</span>, <span>$i_\mathrm{b}$</span>, and <span>$i_f$</span>:</p><p class="math-container">\[\begin{aligned}
+i_\mathrm{a} &amp;= \frac{V_1 - V_\mathrm{m}}{Z_a}\\
+i_\mathrm{b} &amp;= \frac{V_\mathrm{m} - V_2}{Z_b}\\
+i_f &amp;= Y_{f,\text{eff}} \, V_\mathrm{m}
+\end{aligned}\]</p><p>Finally, we can calculate the terminal currents using Kirchhoff law and the transformation ratios:</p><p class="math-container">\[\begin{aligned}
+i_\mathrm{src} &amp;= (-i_\mathrm{a} - i_1) \, r_\mathrm{src}\\
+i_\mathrm{dst} &amp;= (i_\mathrm{b} - i_2) \, r_\mathrm{dst}
+\end{aligned}\]</p><h2 id="Implement-the-CustomPiBranch-MTKModel"><a class="docs-heading-anchor" href="#Implement-the-CustomPiBranch-MTKModel">Implement the CustomPiBranch MTKModel</a><a id="Implement-the-CustomPiBranch-MTKModel-1"></a><a class="docs-heading-anchor-permalink" href="#Implement-the-CustomPiBranch-MTKModel" title="Permalink"></a></h2><details class="admonition is-details">
+<summary class="admonition-header">Excursion: Complex Variables in MTK Models</summary>
+<div class="admonition-body"><div class="admonition is-warning" id="Complex-variables-are-not-supported-in-MTK-Models-(at-least-not-in-PowerDynamics.jl)-79a5b655ad111bc4"><header class="admonition-header">Complex variables are not supported in MTK Models (at least not in PowerDynamics.jl)<a class="admonition-anchor" href="#Complex-variables-are-not-supported-in-MTK-Models-(at-least-not-in-PowerDynamics.jl)-79a5b655ad111bc4" title="Permalink"></a></header><div class="admonition-body"><p>In the end, all parameters and variables of NetworkDynamic models are real-valued, therefore, we cannot use complex parameters or states in our MTK Models.</p></div></div><p>However, there is a &quot;hack&quot; to prevent this issue. Lets say we want to model the complex equation</p><p class="math-container">\[U = Z \cdot I\]</p><p>We could expand everything in real and imaginary parts and rewrite the equations. However, we can also use ModelingToolkits capability to have <strong>complex terms</strong> even without having complex variables.</p><pre><code class="language-julia hljs">@variables u_r u_i i_r i_i
+@parameters R, X
+Ic = i_r + im * i_i</code></pre><p class="math-container">\[ \begin{equation}
+\mathtt{i_{r}} + \mathtt{i_{i}} \mathit{i}
+\end{equation}
+ \]</p><pre><code class="language-julia hljs">Z = R + im * X</code></pre><p class="math-container">\[ \begin{equation}
+R + X \mathit{i}
+\end{equation}
+ \]</p><p>Here, <code>Ic</code> and <code>Z</code> are <strong>not</strong> a symbolic variables, they are julia variables which points to a complex term/expression.</p><p>Using Symboics/ModelingToolkit, we can also multiply complex terms:</p><pre><code class="language-julia hljs">Uc = Z * Ic</code></pre><p class="math-container">\[ \begin{equation}
+R \mathtt{i_{r}} - X \mathtt{i_{i}} + \left( R \mathtt{i_{i}} + X \mathtt{i_{r}} \right) \mathit{i}
+\end{equation}
+ \]</p><p>By applying <code>real</code> and <code>imag</code> to the complex term, we can extract the real and imaginary parts to form separate equations for real and imaginary part:</p><pre><code class="language-julia hljs">eqs = [
+    u_r ~ real(Uc),
+    u_i ~ imag(Uc)
+]</code></pre><p class="math-container">\[ \begin{align}
+\mathtt{u\_r} &amp;= R \mathtt{i\_r} - X \mathtt{i\_i} \\
+\mathtt{u\_i} &amp;= R \mathtt{i\_i} + X \mathtt{i\_r}
+\end{align}
+ \]</p><p>This trick can be used inside <code>@mtkmodel</code> as well, by just defining those complex terms in a <code>begin...end</code> block.</p></div>
+</details><p>With the equations and the knowledge on how to use complex terms within MTK Models the definition is relatively straight forward:</p><pre><code class="language-julia hljs">@mtkmodel CustomPiBranch begin
+    @parameters begin
+        R, [description=&quot;Resistance of branch in pu&quot;]
+        X, [description=&quot;Reactance of branch in pu&quot;]
+        G_src, [description=&quot;Conductance of src shunt&quot;]
+        B_src, [description=&quot;Susceptance of src shunt&quot;]
+        G_dst, [description=&quot;Conductance of dst shunt&quot;]
+        B_dst, [description=&quot;Susceptance of dst shunt&quot;]
+        r_src=1, [description=&quot;src end transformation ratio&quot;]
+        r_dst=1, [description=&quot;dst end transformation ratio&quot;]
+        # fault parameters
+        pos=0.5, [description=&quot;Fault Position (from src, percent of the line)&quot;]
+        G_f=1, [description=&quot;Fault conductance in pu&quot;]
+        B_f=0, [description=&quot;Fault susceptance in pu&quot;]
+        shortcircuit=0, [description=&quot;shortcircuit on line&quot;]
+        # parameter to &quot;switch off&quot; the line
+        active=1, [description=&quot;Line active or switched off&quot;]
+    end
+    @components begin
+        src = Terminal()
+        dst = Terminal()
+    end
+    begin
+        # define complex variables
+        Z = R + im*X
+        Ysrc = G_src + im*B_src
+        Ydst = G_dst + im*B_dst
+        Yf = G_f + im*B_f
+        Vsrc = src.u_r + im*src.u_i
+        Vdst = dst.u_r + im*dst.u_i
+        # define Z_a and Z_b in terms of Z
+        Z_a = Z * pos
+        Z_b = Z * (1-pos)
+        # define internal voltages using the
+        V₁ = r_src * Vsrc
+        V₂ = r_dst * Vdst
+        # currents through the shunt admittances
+        i₁ = Ysrc * V₁
+        i₂ = Ydst * V₂
+        # effective fault admittance (controlled by shortcircuit)
+        Yf_eff = shortcircuit * Yf
+        # middle voltage with fault admittance effect
+        V_m = (V₁*(1-pos) + V₂*pos) / (1 + Yf_eff * Z * pos * (1-pos))
+        # fault current to ground
+        i_f = Yf_eff * V_m
+        # current through the two Z parts
+        i_a = (V₁ - V_m) / Z_a
+        i_b = (V_m - V₂) / Z_b
+        # terminal currents
+        isrc = (-i_a - i₁)*r_src
+        idst = (i_b - i₂)*r_dst
+    end
+    @equations begin
+        src.i_r ~ active * real(isrc)
+        src.i_i ~ active * imag(isrc)
+        dst.i_r ~ active * real(idst)
+        dst.i_i ~ active * imag(idst)
+    end
+end</code></pre><p>Additionally to the equations defined above, we multiply the currents by <code>active</code>. This is equivalent of opening two ideal breakers on both ends of the branch when <code>active=false</code>.</p><p>Lastly lets ensure that our model satisfies the <a href="../../ModelingConcepts/#Branch-Interface">Branch Interface</a>:</p><pre><code class="language-julia hljs">@named pibranch = CustomPiBranch()
+isbranchmodel(pibranch)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><h2 id="Extending-the-model-for-dynamic-over-current-Protection"><a class="docs-heading-anchor" href="#Extending-the-model-for-dynamic-over-current-Protection">Extending the model for dynamic over-current Protection</a><a id="Extending-the-model-for-dynamic-over-current-Protection-1"></a><a class="docs-heading-anchor-permalink" href="#Extending-the-model-for-dynamic-over-current-Protection" title="Permalink"></a></h2><p>Now that we have a working basic PI-branch model, let&#39;s extend it with dynamic protection capabilities.</p><p>In order to implement the overcurrent protection, we need to make a plan in terms of callbacks. Callbacks are a neat <a href="https://docs.sciml.ai/DiffEqDocs/stable/features/callback_functions/">feature of DifferentialEquations.jl</a>, which allow you to stop the solver under certain conditions and trigger a user-defined affect function to change the state of the system. Their general capability is <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/callbacks/#Callbacks">extended in NetworkDynamics</a>.</p><p>We want to implement the following behavior:</p><ol><li>Continuously monitor the current magnitude and compare to the maximal current threshold.</li><li>If the maximum current is reached at time <span>$t$</span>, mark the line as to be switched off at time <span>$t_\mathrm{cutoff} = t + \Delta t$</span>.</li><li>Continuously monitor time of the simulation and switch off the line at <span>$t_\mathrm{cutoff}$</span>.</li></ol><p>The way to implement this is by introducing 3 new parameters:</p><ul><li><code>I_max</code>, the maximum current magnitude,</li><li><code>t_cutoff=Inf</code>, the time when the line should be switched off, <em>which defaults to infinity</em> and</li><li><code>t_delay</code>, the delay time after which the line should be switched off.</li></ul><p>For robust overcurrent protection, we need to implement <strong>multiple complementary callbacks</strong>:</p><ul><li>A <strong>continuous callback</strong> that detects smooth threshold crossings using root-finding</li><li>A <strong>discrete callback</strong> that catches instantaneous jumps above the threshold</li><li>A <strong>cutoff callback</strong> that switches off the line at the scheduled time</li></ul><p>This dual detection approach is necessary because discrete events (like short circuits) can cause the current to jump above the threshold without crossing it smoothly, which continuous callbacks might miss. Both overcurrent callbacks share the same affect function that schedules the line cutoff, while the cutoff callback actually switches off the line.</p><div class="admonition is-info" id="Note-7b832cd461860501"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-7b832cd461860501" title="Permalink"></a></header><div class="admonition-body"><p>NetworkDynamics currently does not support Events defined in MTK models. So we need to split the implementation: The new parameters need to be introduced to the <code>MTKModel</code> (extending CustomPiBranch), the callbacks need to be defined for the <em>compiled VertexModel</em>.</p></div></div><h3 id="Extension-of-the-CustomPiBranch-MTKModel"><a class="docs-heading-anchor" href="#Extension-of-the-CustomPiBranch-MTKModel">Extension of the CustomPiBranch MTKModel</a><a id="Extension-of-the-CustomPiBranch-MTKModel-1"></a><a class="docs-heading-anchor-permalink" href="#Extension-of-the-CustomPiBranch-MTKModel" title="Permalink"></a></h3><p>Let&#39;s add the new parameters to the <code>CustomPiBranch</code> model by <em>extending</em> the model. Extend means that we essentially copy-paste the whole model definitions and are able to add new parameters, equations, variables and so on.</p><p>We add an additional &quot;observed&quot; state <code>I_mag</code>, which always contains the current magnitude at the src or dst terminal (whatever is higher).</p><pre><code class="language-julia hljs">@mtkmodel ProtectedPiBranch begin
+    @extend CustomPiBranch()
+    @parameters begin
+        I_max=Inf, [description=&quot;Maximum current magnitude&quot;]
+        t_cutoff=Inf, [description=&quot;Time when the line should be switched off&quot;]
+        t_delay=0.1, [description=&quot;Delay time after which the line should be switched off&quot;]
+    end
+    @variables begin
+        I_mag(t), [description=&quot;Current magnitude at src or dst terminal&quot;]
+    end
+    @equations begin
+        I_mag ~ max(sqrt(src.i_r^2 + src.i_i^2), sqrt(dst.i_r^2 + dst.i_i^2))
+    end
+end</code></pre><p>Once the model is defined, we can go through the building hierarchy outlined in <a href="../../ModelingConcepts/#Modeling-Concepts">Modeling Concepts</a>. First, we need to form something satisfying the <a href="../../ModelingConcepts/#MTKLine-Interface">MTKLine Interface</a>.</p><h2 id="Creating-the-Dual-Branch-MTKLine"><a class="docs-heading-anchor" href="#Creating-the-Dual-Branch-MTKLine">Creating the Dual-Branch MTKLine</a><a id="Creating-the-Dual-Branch-MTKLine-1"></a><a class="docs-heading-anchor-permalink" href="#Creating-the-Dual-Branch-MTKLine" title="Permalink"></a></h2><p>Here we implement our dual-branch architecture by creating two separate <code>ProtectedPiBranch</code> instances and combining them into a single <code>MTKLine</code>. This creates a transmission line model with two parallel branches:</p><pre><code class="nohighlight hljs"> ┌───────────────────────────────────────────┐
+ │MTKLine   ┌─────────────────────┐          │
+ │         ┌┤ ProtectedPiBranch A ├┐         │
+ │┌───────┐│└─────────────────────┘│┌───────┐│
+ ││LineEnd├o                       o┤LineEnd││
+ │└───────┘│┌─────────────────────┐│└───────┘│
+ │  :src   └┤ ProtectedPiBranch B ├┘  :dst   │
+ │          └─────────────────────┘          │
+ └───────────────────────────────────────────┘</code></pre><p>The end terminals of both branches are connected to the same physical line end. However, the branches operate independently:</p><ul><li>Each branch monitors its own current magnitude (<code>pibranchA₊I_mag</code>, <code>pibranchB₊I_mag</code>)</li><li>Each has independent protection parameters (<code>I_max</code>, <code>t_delay</code>, <code>t_cutoff</code>)</li><li>Each can be individually switched off (<code>pibranchA₊active</code>, <code>pibranchB₊active</code>)</li><li>Electrical parameters are adjusted so that parallel combination matches the original single-branch behavior</li></ul><pre><code class="language-julia hljs">branchA = ProtectedPiBranch(; name=:pibranchA)
+branchB = ProtectedPiBranch(; name=:pibranchB)
+mtkline = MTKLine(branchA, branchB)</code></pre><p>Then, we take the mtkline and put it into a compiled <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.EdgeModel-Tuple%7B%7D"><code>EdgeModel</code></a> by calling the <a href="../../API/#PowerDynamics.Line"><code>Line</code></a> constructor</p><pre><code class="nohighlight hljs">
+       ╔═══════════════════════════════════════════════╗
+       ║ EdgeModel (compiled)                          ║
+       ║ ┌───────────────────────────────────────────┐ ║
+   src ║ │MTKLine   ┌─────────────────────┐          │ ║ dst
+vertex ║ │         ┌┤ ProtectedPiBranch A ├┐         │ ║ vertex
+   u ───→│┌───────┐│└─────────────────────┘│┌───────┐│←─── u
+       ║ ││LineEnd├o                       o┤LineEnd││ ║
+   i ←───│└───────┘│┌─────────────────────┐│└───────┘│───→ i
+       ║ │  :src   └┤ ProtectedPiBranch B ├┘  :dst   │ ║
+       ║ │          └─────────────────────┘          │ ║
+       ║ └───────────────────────────────────────────┘ ║
+       ╚═══════════════════════════════════════════════╝</code></pre><pre><code class="language-julia hljs">protected_template = Line(mtkline; name=:protected_piline)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">EdgeModel <span class="sgr1">:protected_piline</span> <span class="sgr94">PureFeedForward()</span>
+ ├─ 2/2 inputs:  src=[src₊u_r, src₊u_i] dst=[dst₊u_r, dst₊u_i]
+ ├─   0 states:  []  
+ ├─ 2/2 outputs: src=[src₊i_r, src₊i_i] dst=[dst₊i_r, dst₊i_i]
+ └─  32 params:  [pibranchA₊R, pibranchA₊X, pibranchA₊G_src, pibranchA₊B_src, pibranchA₊G_dst, pibranchA₊B_dst, pibranchA₊r_src=1, pibranchA₊r_dst=1, pibranchA₊pos=0.5, pibranchA₊G_f=1, pibranchA₊B_f=0, pibranchA₊shortcircuit=0, pibranchA₊active=1, pibranchA₊I_max=Inf, pibranchA₊t_cutoff=Inf, pibranchA₊t_delay=0.1, pibranchB₊R, pibranchB₊X, pibranchB₊G_src, pibranchB₊B_src, pibranchB₊G_dst, pibranchB₊B_dst, pibranchB₊r_src=1, pibranchB₊r_dst=1, pibranchB₊pos=0.5, pibranchB₊G_f=1, pibranchB₊B_f=0, pibranchB₊shortcircuit=0, pibranchB₊active=1, pibranchB₊I_max=Inf, pibranchB₊t_cutoff=Inf, pibranchB₊t_delay=0.1]</code></pre><div class="admonition is-success" id="Reduced-complexity-of-compiled-Model-173931a6bc973d0e"><header class="admonition-header">Reduced complexity of compiled Model<a class="admonition-anchor" href="#Reduced-complexity-of-compiled-Model-173931a6bc973d0e" title="Permalink"></a></header><div class="admonition-body"><p>Note, that the compiled model still has <strong>no states</strong>, i.e. it directly calculates the terminal currents from the terminal voltages and the parameters. This is a perfect showcase of why equation based modeling matters: we still can <em>access</em> all of the internal variables, like the currents per branch. However those are all just &quot;observed&quot; and don&#39;t add to the <em>numeric dimensionality</em> of our model. (Even though the complexity of calculating the output currents is slightly higher than that of the simple PI-Line model).</p></div></div><h3 id="Definition-of-the-Callbacks"><a class="docs-heading-anchor" href="#Definition-of-the-Callbacks">Definition of the Callbacks</a><a id="Definition-of-the-Callbacks-1"></a><a class="docs-heading-anchor-permalink" href="#Definition-of-the-Callbacks" title="Permalink"></a></h3><p>We implement the callbacks as outlined in the NetworkDynamic docs on Callbacks.</p><p>For robust overcurrent protection, we need <strong>two complementary callbacks</strong>:</p><ul><li>A <strong>continuous callback</strong> that detects smooth threshold crossings using root-finding</li><li>A <strong>discrete callback</strong> that catches instantaneous jumps above the threshold</li></ul><p>This dual approach is necessary because discrete events (like short circuits) can cause the current to jump above the threshold without crossing it smoothly, which continuous callbacks might miss.</p><h4 id="Overcurrent-Detection-Callbacks"><a class="docs-heading-anchor" href="#Overcurrent-Detection-Callbacks">Overcurrent Detection Callbacks</a><a id="Overcurrent-Detection-Callbacks-1"></a><a class="docs-heading-anchor-permalink" href="#Overcurrent-Detection-Callbacks" title="Permalink"></a></h4><p>For <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.ComponentCondition"><code>ComponentCondition</code></a>, we need to specify which symbols to monitor. We&#39;ve explicitly added <code>I_mag</code> as an observed state to our <code>ProtectedPiBranch</code> model, which contains the maximum current magnitude between the src and dst terminals for each branch.</p><p>Since our dual-branch transmission line has two independent branches (<code>:pibranchA</code> and <code>:pibranchB</code>), we define callback functions that take the branch name as a parameter. This allows us to automatically create identical callbacks for both branches without code duplication.</p><p><strong>Condition Definitions:</strong></p><p>The <strong>continuous condition</strong> uses root-finding, returning the difference between limit and current magnitude (zero when the limit is reached):</p><pre><code class="language-julia hljs">function continuous_overcurrent_condition(branchname)
+    I_mag = Symbol(branchname, &quot;₊&quot;, :I_mag) # pilineX₊I_mag
+    I_max = Symbol(branchname, &quot;₊&quot;, :I_max) # pilineX₊I_max
+    t_cutoff = Symbol(branchname, &quot;₊&quot;, :t_cutoff) # pilineX₊t_cutoff
+
+    ComponentCondition([I_mag], [I_max, t_cutoff]) do u, p, t
+        p[t_cutoff] != Inf &amp;&amp; return Inf # return Inf if cutoff already scheduled
+        p[I_max] - u[I_mag]
+    end
+end</code></pre><p>The <strong>discrete condition</strong> uses a boolean check that triggers whenever the current exceeds the threshold:</p><pre><code class="language-julia hljs">function discrete_overcurrent_condition(branchname)
+    I_mag = Symbol(branchname, &quot;₊&quot;, :I_mag) # pilineX₊I_mag
+    I_max = Symbol(branchname, &quot;₊&quot;, :I_max) # pilineX₊I_max
+    t_cutoff = Symbol(branchname, &quot;₊&quot;, :t_cutoff) # pilineX₊t_cutoff
+
+    ComponentCondition([I_mag], [I_max, t_cutoff]) do u, p, t
+        p[t_cutoff] != Inf &amp;&amp; return false # return false if cutoff already scheduled
+        u[I_mag] ≥ p[I_max]
+    end
+end</code></pre><p><strong>Shared Affect Function:</strong></p><p>Both callbacks use the same affect function. When triggered, it schedules the line cutoff by setting <code>t_cutoff</code> and tells the integrator to step to that time:</p><pre><code class="language-julia hljs">function overcurrent_affect(branchname)
+    t_cutoff = Symbol(branchname, &quot;₊&quot;, :t_cutoff) # pilineX₊t_cutoff
+    t_delay = Symbol(branchname, &quot;₊&quot;, :t_delay)   # pilineX₊t_delay
+
+    ComponentAffect([], [t_cutoff, t_delay]) do u, p, ctx
+        p[t_cutoff] != Inf &amp;&amp; return # return early if already scheduled for cutoff
+        tcutoff = ctx.t + p[t_delay]
+        println(&quot;$branchname of line $(ctx.src)→$(ctx.dst) overcurrent at t=$(ctx.t), scheduling cutoff at t=$tcutoff&quot;)
+        # update the parameter of the edge to store the cutoff time
+        p[t_cutoff] = tcutoff
+        # tell the integrator to explicitly step to the cutoff time
+        add_tstop!(ctx.integrator, tcutoff)
+    end
+end</code></pre><h4 id="Line-Cutoff-Callback"><a class="docs-heading-anchor" href="#Line-Cutoff-Callback">Line Cutoff Callback</a><a id="Line-Cutoff-Callback-1"></a><a class="docs-heading-anchor-permalink" href="#Line-Cutoff-Callback" title="Permalink"></a></h4><p>The cutoff callback switches off the line when the scheduled cutoff time is reached. Since we expect the solver to explicitly hit the cutoff time (via <code>add_tstop!</code>), we only need a discrete callback:</p><pre><code class="language-julia hljs">function cutoff_condition(branchname)
+    t_cutoff = Symbol(branchname, &quot;₊&quot;, :t_cutoff) # pilineX₊t_cutoff
+    ComponentCondition([], [t_cutoff]) do u, p, t
+        t == p[t_cutoff]
+    end
+end
+function cutoff_affect(branchname)
+    active = Symbol(branchname, &quot;₊&quot;, :active) # pilineX₊active
+    ComponentAffect([], [active]) do u, p, ctx
+        println(&quot;$branchname of line $(ctx.src)→$(ctx.dst) cutoff at t=$(ctx.t)&quot;)
+        p[active] = 0 # switch off the line
+    end
+end
+function cutoff_callback(branchname)
+    DiscreteComponentCallback(cutoff_condition(branchname), cutoff_affect(branchname))
+end</code></pre><h4 id="Adding-Callbacks-to-Template"><a class="docs-heading-anchor" href="#Adding-Callbacks-to-Template">Adding Callbacks to Template</a><a id="Adding-Callbacks-to-Template-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-Callbacks-to-Template" title="Permalink"></a></h4><p>We build both callbacks by combining their respective conditions and affects. Finally, we add all three callbacks to the protected template:</p><pre><code class="language-julia hljs">function branch_callbacks(branchname)
+    oc_affect = overcurrent_affect(branchname)
+    oc1 = ContinuousComponentCallback(
+        continuous_overcurrent_condition(branchname),
+        oc_affect
+    )
+    oc2 = DiscreteComponentCallback(
+        discrete_overcurrent_condition(branchname),
+        oc_affect
+    )
+    cut = DiscreteComponentCallback(
+        cutoff_condition(branchname),
+        cutoff_affect(branchname)
+    )
+    (oc1, oc2, cut)
+end
+set_callback!(protected_template, branch_callbacks(:pibranchA))
+add_callback!(protected_template, branch_callbacks(:pibranchB))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">EdgeModel <span class="sgr1">:protected_piline</span> <span class="sgr94">PureFeedForward()</span>
+ ├─ 2/2 inputs:    src=[src₊u_r, src₊u_i] dst=[dst₊u_r, dst₊u_i]
+ ├─   0 states:    []  
+ ├─ 2/2 outputs:   src=[src₊i_r, src₊i_i] dst=[dst₊i_r, dst₊i_i]
+ ├─  32 params:    [pibranchA₊R, pibranchA₊X, pibranchA₊G_src, pibranchA₊B_src, pibranchA₊G_dst, pibranchA₊B_dst, pibranchA₊r_src=1, pibranchA₊r_dst=1, pibranchA₊pos=0.5, pibranchA₊G_f=1, pibranchA₊B_f=0, pibranchA₊shortcircuit=0, pibranchA₊active=1, pibranchA₊I_max=Inf, pibranchA₊t_cutoff=Inf, pibranchA₊t_delay=0.1, pibranchB₊R, pibranchB₊X, pibranchB₊G_src, pibranchB₊B_src, pibranchB₊G_dst, pibranchB₊B_dst, pibranchB₊r_src=1, pibranchB₊r_dst=1, pibranchB₊pos=0.5, pibranchB₊G_f=1, pibranchB₊B_f=0, pibranchB₊shortcircuit=0, pibranchB₊active=1, pibranchB₊I_max=Inf, pibranchB₊t_cutoff=Inf, pibranchB₊t_delay=0.1]
+ └─   6 callbacks: (:pibranchA₊I_mag, :pibranchA₊I_max, :pibranchA₊t_cutoff) affecting (:pibranchA₊t_cutoff, :pibranchA₊t_delay)
+                   (:pibranchA₊I_mag, :pibranchA₊I_max, :pibranchA₊t_cutoff) affecting (:pibranchA₊t_cutoff, :pibranchA₊t_delay)
+                   (:pibranchA₊t_cutoff) affecting (:pibranchA₊active)
+                   (:pibranchB₊I_mag, :pibranchB₊I_max, :pibranchB₊t_cutoff) affecting (:pibranchB₊t_cutoff, :pibranchB₊t_delay)
+                   (:pibranchB₊I_mag, :pibranchB₊I_max, :pibranchB₊t_cutoff) affecting (:pibranchB₊t_cutoff, :pibranchB₊t_delay)
+                   (:pibranchB₊t_cutoff) affecting (:pibranchB₊active)</code></pre><h2 id="Simulate-the-IEEE39-Grid-with-the-ProtectedLine"><a class="docs-heading-anchor" href="#Simulate-the-IEEE39-Grid-with-the-ProtectedLine">Simulate the IEEE39 Grid with the ProtectedLine</a><a id="Simulate-the-IEEE39-Grid-with-the-ProtectedLine-1"></a><a class="docs-heading-anchor-permalink" href="#Simulate-the-IEEE39-Grid-with-the-ProtectedLine" title="Permalink"></a></h2><p>In the last part of this tutorial, we want to see our protected transmission line in action. The third part of the <a href="../ieee39_part3/#ieee39-part3">IEEE39 Grid Tutorial</a> simulates a short circuit on a line. To do so, it uses two callbacks: one to enable the short circuit and one to disable the line. We can do this much more elegantly now by just using the <code>ProtectedPiBranch</code> model.</p><p>Lets load the first part of that tutorial to get the IEEE39 Grid model. Also, we initialize the model (the quintessence of <a href="../ieee39_part2/#ieee39-part2">part II</a>).</p><pre><code class="language-julia hljs">EXAMPLEDIR = joinpath(pkgdir(PowerDynamics), &quot;docs&quot;, &quot;examples&quot;)
+include(joinpath(EXAMPLEDIR, &quot;ieee39_part1.jl&quot;))
+formula = @initformula :ZIPLoad₊Vset = sqrt(:busbar₊u_r^2 + :busbar₊u_i^2)
+set_initformula!(nw[VIndex(31)], formula)
+set_initformula!(nw[VIndex(39)], formula)
+s0 = initialize_from_pf!(nw; verbose=false)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr33"><span class="sgr1">┌ Warning: </span></span>LU factorization failed, falling back to QR factorization. `A` is potentially rank-deficient.
+<span class="sgr33"><span class="sgr1">└ </span></span><span class="sgr90">@ LinearSolve ~/.julia/packages/LinearSolve/fHamo/src/default.jl:520</span></code></pre><p>Now, we should have a fully initialized network available as <code>nw</code>:</p><pre><code class="language-julia hljs">nw</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Network with 201 states and 1306 parameters
+ ├─ 39 vertices (5 unique types)
+ └─ 46 edges (1 unique type)
+Edge-Aggregation using SequentialAggregator(+)</code></pre><h3 id="Derive-Network-with-Protected-Line-Models"><a class="docs-heading-anchor" href="#Derive-Network-with-Protected-Line-Models">Derive Network with Protected Line Models</a><a id="Derive-Network-with-Protected-Line-Models-1"></a><a class="docs-heading-anchor-permalink" href="#Derive-Network-with-Protected-Line-Models" title="Permalink"></a></h3><p>Now we&#39;ll demonstrate the protected line model in action by applying it to the IEEE39 test system.</p><p>We need to build our own network model by replacing the transmission line models with our <code>ProtectedPiBranch</code>. For that, we create a helper function that takes an edge model from the old network and creates a protected transmission line model with equivalent electrical parameters.</p><p>Our protected transmission line model uses two parallel branches (A and B), so we need to adjust the parameters. For two parallel branches to behave like the original single branch:</p><ul><li>Impedances (R, X): 2× original (parallel combination gives original)</li><li>Shunt admittances (G, B): 0.5× original (parallel combination gives original)</li><li>Transformation ratios (r): same as original</li></ul><pre><code class="language-julia hljs">function protected_line_from_line(e::EdgeModel)
+    new = copy(protected_template)
+    # copy src and destination information
+    src_dst = get_graphelement(e)
+    set_graphelement!(new, src_dst)
+    for branch in [:pibranchA, :pibranchB]
+        # Impedances: double them (2× original)
+        set_default!(new, Symbol(branch, &quot;₊&quot;, :R), 2 * get_default(e, :piline₊R))
+        set_default!(new, Symbol(branch, &quot;₊&quot;, :X), 2 * get_default(e, :piline₊X))
+        # Shunt admittances: halve them (0.5× original)
+        set_default!(new, Symbol(branch, &quot;₊&quot;, :G_src), 0.5 * get_default(e, :piline₊G_src))
+        set_default!(new, Symbol(branch, &quot;₊&quot;, :B_src), 0.5 * get_default(e, :piline₊B_src))
+        set_default!(new, Symbol(branch, &quot;₊&quot;, :G_dst), 0.5 * get_default(e, :piline₊G_dst))
+        set_default!(new, Symbol(branch, &quot;₊&quot;, :B_dst), 0.5 * get_default(e, :piline₊B_dst))
+        # Transformation ratios: keep same
+        set_default!(new, Symbol(branch, &quot;₊&quot;, :r_src), get_default(e, :piline₊r_src))
+        set_default!(new, Symbol(branch, &quot;₊&quot;, :r_dst), get_default(e, :piline₊r_dst))
+    end
+    new
+end
+old_edgemodels = [nw[EIndex(i)] for i in 1:ne(nw)];
+vertexmodels = [nw[VIndex(i)] for i in 1:nv(nw)];
+new_edgemodels = protected_line_from_line.(old_edgemodels);</code></pre><p>We can then build a new Network with those modified edgemodels:</p><pre><code class="language-julia hljs">nw_protected = Network(vertexmodels, new_edgemodels)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Network with 201 states and 2042 parameters
+ ├─ 39 vertices (5 unique types)
+ └─ 46 edges (1 unique type)
+Edge-Aggregation using SequentialAggregator(+)
+6 callback sets across 0 vertices and 46 edges</code></pre><p>... and initialize it!</p><pre><code class="language-julia hljs">s0_protected = initialize_from_pf!(nw_protected; verbose=false)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NWState{Vector{Float64}} of Network (39 vertices, 46 edges)
+  ├─ VIndex(1, :busbar₊u_i)                      =&gt; -0.1537005168018229
+  ├─ VIndex(1, :busbar₊u_r)                      =&gt; 1.0360171229045203
+  ├─ VIndex(2, :busbar₊u_i)                      =&gt; -0.10513936683885863
+  ├─ VIndex(2, :busbar₊u_r)                      =&gt; 1.0434526576051297
+  ├─ VIndex(5, :busbar₊u_i)                      =&gt; -0.15053530762365022
+  ├─ VIndex(5, :busbar₊u_r)                      =&gt; 0.993976368877831
+  ├─ VIndex(6, :busbar₊u_i)                      =&gt; -0.1393645217247641
+  ├─ VIndex(6, :busbar₊u_r)                      =&gt; 0.9979886162106123
+  ⋮
+  ├─ VIndex(39, :machine₊terminal₊i_i)           =&gt; -2.538683831099698
+  ├─ VIndex(39, :machine₊terminal₊i_r)           =&gt; 9.410063917554226
+  ├─ VIndex(39, :machine₊ψ″_q)                   =&gt; -0.1505993365374145
+  ├─ VIndex(39, :machine₊ψ″_d)                   =&gt; 1.0219450150609855
+  ├─ VIndex(39, :machine₊E′_d)                   =&gt; 0.10353704204613715
+  ├─ VIndex(39, :machine₊E′_q)                   =&gt; 1.029534387321863
+  ├─ VIndex(39, :machine₊ω)                      =&gt; 1.0
+  └─ VIndex(39, :machine₊δ)                      =&gt; -0.0009449613162717396
+ p = NWParameter([-3.22, -0.024, 1.03017, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, -5.0  …  0.97561, 1.0, 0.5, 1.0, 0.0, 0.0, 1.0, Inf, Inf, 0.1])
+ t = nothing</code></pre><p>As a short sanity check, lets compare the initialized values of both networks: we do so by extracting the <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.interface_values"><code>interface_values</code></a> for both solutions (a dictionary of all currents and voltages (inputs and outputs of the models))) Then we compare their values.</p><pre><code class="language-julia hljs">collect(values(interface_values(s0))) ≈ collect(values(interface_values(s0_protected)))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><p>They are identical! If we would have made an error in our transmission line model, the steady state would be most certainly different.</p><h3 id="Simulate-with-the-Protected-Line-Models"><a class="docs-heading-anchor" href="#Simulate-with-the-Protected-Line-Models">Simulate with the Protected Line Models</a><a id="Simulate-with-the-Protected-Line-Models-1"></a><a class="docs-heading-anchor-permalink" href="#Simulate-with-the-Protected-Line-Models" title="Permalink"></a></h3><p>Now that we have our protected transmission line models ready, we need to configure them for the simulation. First, we set the current threshold <code>I_max</code> for overcurrent protection.</p><p>We set the threshold to 130% of the power flow solution:</p><pre><code class="language-julia hljs">AFFECTED_LINE = 24
+
+for i in 1:46
+    i_at_steadys = s0_protected[EIndex(i, :pibranchA₊I_mag)]
+    s0_protected[EIndex(i, :pibranchA₊I_max)] = 1.3*i_at_steadys
+    i_at_steadys = s0_protected[EIndex(i, :pibranchB₊I_mag)]
+    s0_protected[EIndex(i, :pibranchB₊I_max)] = 1.3*i_at_steadys
+end</code></pre><p>Next, we need to introduce a perturbation to test our protection system. We&#39;ll introduce a shortcircuit with <span>$Y_\mathrm{fault}=1\,\mathrm{pu}$</span> on branch A of line 24. Notably, we only need to start the short circuit, as the protection is now &quot;baked into&quot; the transmission line model.</p><pre><code class="language-julia hljs">_enable_short = ComponentAffect([], [:pibranchA₊shortcircuit]) do u, p, ctx
+    @info &quot;Short circuit activated on branch A of line $(ctx.src)→$(ctx.dst) at t = $(ctx.t)s&quot;
+    p[:pibranchA₊shortcircuit] = 1
+end
+shortcircuit_cb = PresetTimeComponentCallback(0.1, _enable_short)
+known_cbs = filter(cb -&gt; !(cb isa PresetTimeComponentCallback), get_callbacks(nw_protected[EIndex(AFFECTED_LINE)]))
+set_callback!(nw_protected, EIndex(AFFECTED_LINE), (shortcircuit_cb, known_cbs...))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">EdgeModel <span class="sgr1">:protected_piline</span> <span class="sgr94">PureFeedForward()</span> @ Edge 14=&gt;15
+ ├─ 2/2 inputs:    src=[src₊u_r=1.0027, src₊u_i=-0.1348] dst=[dst₊u_r=1.0061, dst₊u_i=-0.13668]
+ ├─   0 states:    []  
+ ├─ 2/2 outputs:   src=[src₊i_r=-0.097957, src₊i_i=-0.34758] dst=[dst₊i_r=0.048277, dst₊i_i=-0.020038]
+ ├─  32 params:    [pibranchA₊R=0.0036, pibranchA₊X=0.0434, pibranchA₊G_src=0, pibranchA₊B_src=0.0915, pibranchA₊G_dst=0, pibranchA₊B_dst=0.0915, pibranchA₊r_src=1, pibranchA₊r_dst=1, pibranchA₊pos=0.5, pibranchA₊G_f=1, pibranchA₊B_f=0, pibranchA₊shortcircuit=0, pibranchA₊active=1, pibranchA₊I_max=Inf, pibranchA₊t_cutoff=Inf, pibranchA₊t_delay=0.1, pibranchB₊R=0.0036, pibranchB₊X=0.0434, pibranchB₊G_src=0, pibranchB₊B_src=0.0915, pibranchB₊G_dst=0, pibranchB₊B_dst=0.0915, pibranchB₊r_src=1, pibranchB₊r_dst=1, pibranchB₊pos=0.5, pibranchB₊G_f=1, pibranchB₊B_f=0, pibranchB₊shortcircuit=0, pibranchB₊active=1, pibranchB₊I_max=Inf, pibranchB₊t_cutoff=Inf, pibranchB₊t_delay=0.1]
+ └─   7 callbacks: (:pibranchA₊shortcircuit) affected at t=0.1
+                   (:pibranchA₊I_mag, :pibranchA₊I_max, :pibranchA₊t_cutoff) affecting (:pibranchA₊t_cutoff, :pibranchA₊t_delay)
+                   (:pibranchA₊I_mag, :pibranchA₊I_max, :pibranchA₊t_cutoff) affecting (:pibranchA₊t_cutoff, :pibranchA₊t_delay)
+                   (:pibranchA₊t_cutoff) affecting (:pibranchA₊active)
+                   (:pibranchB₊I_mag, :pibranchB₊I_max, :pibranchB₊t_cutoff) affecting (:pibranchB₊t_cutoff, :pibranchB₊t_delay)
+                   (:pibranchB₊I_mag, :pibranchB₊I_max, :pibranchB₊t_cutoff) affecting (:pibranchB₊t_cutoff, :pibranchB₊t_delay)
+                   (:pibranchB₊t_cutoff) affecting (:pibranchB₊active)</code></pre><p>With all those callbacks set, we can go ahead simulating the system.</p><pre><code class="language-julia hljs">prob = ODEProblem(
+    nw_protected,
+    uflat(s0_protected),
+    (0.0, 15),
+    copy(pflat(s0_protected));
+    callback=get_callbacks(nw_protected),
+    dtmax=0.01,
+)
+sol = solve(prob, Rodas5P());</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr36"><span class="sgr1">[ Info: </span></span>Short circuit activated on branch A of line 14→15 at t = 0.1s
+pibranchA of line 14→15 overcurrent at t=0.100001, scheduling cutoff at t=0.200001
+pibranchA of line 14→15 cutoff at t=0.200001
+pibranchB of line 14→15 overcurrent at t=1.6246088465310589, scheduling cutoff at t=1.724608846531059
+pibranchB of line 14→15 cutoff at t=1.724608846531059</code></pre><p>When we run this simulation, the console output will show that the short circuit on Branch A activates at t=0.1s and leads to a line shutdown at t=0.2s (after the 0.1s delay), which clears the fault. However, due to the introduced dynamics in the system, branch B of the affected line also experiences a current magnitude exceeding the threshold, which leads to a shutdown of the line at around 1.5 seconds.</p><p>Let&#39;s look at the current magnitude evolution during the simulation:</p><pre><code class="language-julia hljs">fig = let fig = Figure()
+    ax = Axis(fig[1, 1];
+        title=&quot;Current Magnitude Across All Lines&quot;,
+        xlabel=&quot;Time [s]&quot;,
+        ylabel=&quot;Current Magnitude (reltive to steady state)&quot;)
+
+    # Full simulation time range
+    ts = range(sol.t[begin], sol.t[end], length=3000)
+
+    # Plot current magnitude for but the failing line
+    for i in 1:46
+        i == AFFECTED_LINE &amp;&amp; continue
+        # Factor of 2: total transmission line current is double the branch current
+        # since we have two identical parallel branches (A and B)
+        current = 2*sol(ts, idxs=EIndex(i, :pibranchA₊I_mag)).u
+        current = current ./ current[begin]
+        lines!(ax, ts, current)
+    end
+
+    A_current = sol(ts, idxs=EIndex(AFFECTED_LINE, :pibranchA₊I_mag)).u
+    B_current = sol(ts, idxs=EIndex(AFFECTED_LINE, :pibranchB₊I_mag)).u
+    A_current = A_current ./ A_current[begin]
+    B_current = B_current ./ B_current[begin]
+
+    lines!(ax, ts, A_current; linewidth=2, color=:blue, label=&quot;Branch A&quot;)
+    lines!(ax, ts, B_current; linewidth=2, color=:red, label=&quot;Branch B&quot;)
+
+    hlines!(ax, [1.3]; color=:black, linestyle=:dot)
+    xlims!(ax, ts[begin], ts[end])
+    axislegend(ax; pos=:tr)
+    fig
+end</code></pre><img src="c0de304b.png" alt="Example block output"/><p>We can also zoom into the time range around the short circuit to see how the current of branch B crosses the threshold and the branch is disabled shortly after.</p><pre><code class="language-julia hljs">xlims!(0, 2)
+ylims!(0.8, 1.5)
+fig</code></pre><img src="0d30c00f.png" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../custom_bus/">« Custom Generator Bus</a><a class="docs-footer-nextpage" href="../ieee9bus/">IEEE 9Bus Example »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Tuesday 19 August 2025 10:23">Tuesday 19 August 2025</span>. Using Julia version 1.11.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
