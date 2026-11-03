@@ -82,6 +82,11 @@ each generator to its respective junction bus, and each junction bus to its load
     Here we use the "copy-constructor" of `EdgeModel` to create a new `EdgeModel` based
     on a previous one. This is useful to create multiple lines and is far more efficient
     than going through the full compilation process each time.
+
+    The model cache of NetworkDynamics is another way to get the same benefit: with
+    `NetworkDynamics.set_mtk_cache!(:on)`, you can compile every line from its own model, and
+    structurally equal lines reuse the work of the first one. The
+    [IEEE39 tutorial](@ref ieee39-part1) builds its grid that way.
 =#
 
 @named pibranch = PiLine(;R=0.01, X=0.005, B_src=0.08, B_dst=0.08)

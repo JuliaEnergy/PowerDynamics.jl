@@ -349,6 +349,14 @@ vertex ║ │         ┌┤ ProtectedPiBranch A ├┐         │ ║ vertex
 =#
 protected_template = compile_line(mtkline; name=:protected_piline)
 #=
+!!! tip "Templates and the model cache"
+    We compile this line once and copy it for every line we replace later, so the expensive
+    compilation happens only once. The model cache of NetworkDynamics is another way to get
+    that benefit: with `NetworkDynamics.set_mtk_cache!(:on)`, you can compile every line from
+    its own model, and structurally equal lines reuse the work of the first one. The
+    [IEEE39 tutorial](@ref ieee39-part1) builds its grid that way.
+=#
+#=
 !!! tip "Reduced complexity of compiled Model"
     Note, that the compiled model still has **no states**, i.e. it directly calculates
     the terminal currents from the terminal voltages and the parameters. This is a perfect
