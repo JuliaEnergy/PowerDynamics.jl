@@ -77,27 +77,28 @@ You can check if a model satisfies the injector interface using the [`isinjector
 
 !!! details "Code example: definition of PQ load as injector"
     ```@example concepts
-    using PowerDynamics, PowerDynamics.Library, ModelingToolkitBase, SciCompDSL
+    using PowerDynamics, PowerDynamics.Library, ModelingToolkitBase
     using ModelingToolkitBase: D_nounits as Dt, t_nounits as t
-    @mtkmodel MyPQLoad begin
-        @components begin
-            terminal = Terminal()
-        end
-        @parameters begin
+    @component function MyPQLoad(; name, defaults...)
+        @named terminal = Terminal()
+        params = @parameters begin
             Pset, [description="Active Power demand"]
             Qset, [description="Reactive Power demand"]
         end
-        @variables begin
+        vars = @variables begin
             P(t), [description="Active Power"]
             Q(t), [description="Reactive Power"]
         end
-        @equations begin
+        eqs = [
             P ~ terminal.u_r*terminal.i_r + terminal.u_i*terminal.i_i
             Q ~ terminal.u_i*terminal.i_r - terminal.u_r*terminal.i_i
             # if possible, it's better for the solver to explicitly provide algebraic equations for the current
             terminal.i_r ~ (Pset*terminal.u_r + Qset*terminal.u_i)/(terminal.u_r^2 + terminal.u_i^2)
             terminal.i_i ~ (Pset*terminal.u_i - Qset*terminal.u_r)/(terminal.u_r^2 + terminal.u_i^2)
-        end
+        ]
+        sys = System(eqs, t, vars, params; name, systems=[terminal])
+        # keyword arguments like `Pset=1` become defaults
+        set_mtk_defaults(sys, defaults)
     end
     MyPQLoad(name=:pqload) #hide
     nothing #hide
@@ -134,18 +135,18 @@ You can check if a model satisfies the bus interface using the [`isbusmodel`](@r
 
 !!! details "Code example: definition of a Bus containing a swing equation and a load"
     ```@example concepts
-    using PowerDynamics, PowerDynamics.Library, ModelingToolkitBase, SciCompDSL
-    @mtkmodel MyMTKBus begin
-        @components begin
-            systembase = SystemBase() # optional, injected at compile_bus
-            busbar = BusBar()
-            swing = Swing()
-            load = PQLoad()
-        end
-        @equations begin
+    using PowerDynamics, PowerDynamics.Library, ModelingToolkitBase
+    @component function MyMTKBus(; name, defaults...)
+        @named systembase = SystemBase() # optional, injected at compile_bus
+        @named busbar = BusBar()
+        @named swing = Swing()
+        @named load = PQLoad()
+        eqs = [
             connect(busbar.terminal, swing.terminal)
             connect(busbar.terminal, load.terminal)
-        end
+        ]
+        sys = System(eqs, t; name, systems=[systembase, busbar, swing, load])
+        set_mtk_defaults(sys, defaults)
     end
     MyMTKBus(name=:bus) #hide
     nothing #hide
@@ -174,21 +175,21 @@ You can check if a model satisfies the branch interface using the [`isbranchmode
 
 !!! details "Code example: algebraic R-line"
     ```@example concepts
-    using PowerDynamics, PowerDynamics.Library, ModelingToolkitBase, SciCompDSL
-    @mtkmodel MyRLine begin
-        @components begin
-            src = Terminal()
-            dst = Terminal()
-        end
-        @parameters begin
+    using PowerDynamics, PowerDynamics.Library, ModelingToolkitBase
+    @component function MyRLine(; name, defaults...)
+        @named src = Terminal()
+        @named dst = Terminal()
+        params = @parameters begin
             R=0, [description="Resistance"]
         end
-        @equations begin
+        eqs = [
             dst.i_r ~ (dst.u_r - src.u_r)/R
             dst.i_i ~ (dst.u_i - src.u_i)/R
             src.i_r ~ -dst.i_r
             src.i_i ~ -dst.i_i
-        end
+        ]
+        sys = System(eqs, t, [], params; name, systems=[src, dst])
+        set_mtk_defaults(sys, defaults)
     end
     MyRLine(name=:rline) #hide
     nothing #hide
@@ -238,21 +239,21 @@ You can check if a model satisfies the line interface using the [`islinemodel`](
 
 !!! details "Code example: Transmission line with two pi-branches"
     ```@example concepts
-    using PowerDynamics, PowerDynamics.Library, ModelingToolkitBase, SciCompDSL
-    @mtkmodel MyMTKLine begin
-        @components begin
-            systembase = SystemBase() # optional, injected at compile_line
-            src = LineEnd(; side=:src)
-            dst = LineEnd(; side=:dst)
-            branch1 = PiLine()
-            branch2 = PiLine()
-        end
-        @equations begin
+    using PowerDynamics, PowerDynamics.Library, ModelingToolkitBase
+    @component function MyMTKLine(; name, defaults...)
+        @named systembase = SystemBase() # optional, injected at compile_line
+        @named src = LineEnd(; side=:src)
+        @named dst = LineEnd(; side=:dst)
+        @named branch1 = PiLine()
+        @named branch2 = PiLine()
+        eqs = [
             connect(src.terminal, branch1.src)
             connect(src.terminal, branch2.src)
             connect(dst.terminal, branch1.dst)
             connect(dst.terminal, branch2.dst)
-        end
+        ]
+        sys = System(eqs, t; name, systems=[systembase, src, dst, branch1, branch2])
+        set_mtk_defaults(sys, defaults)
     end
     MyMTKLine(name=:mtkline) #hide
     nothing #hide
@@ -280,8 +281,8 @@ however they will be kept around as so-called "observed" states, meaning we can 
 
 !!! tip "Tip: Introduce states of interest as observables"
     It is often useful to add derived quantities of interest explicitly to your models. For example, if you're interested in some internal
-    voltage angle just define an equation `u_angle ~ atan(u_d, u_q)`. If nothing else depends on it, this equation will be symbolically reduced, 
-    i.e. you don't add any overhead to your simulation but it will be accessible after the simulation. 
+    voltage angle just define an equation `u_angle ~ atan(u_d, u_q)`. If nothing else depends on it, this equation will be symbolically reduced,
+    i.e. you don't add any overhead to your simulation but it will be accessible after the simulation.
     This is often far more convenient than "reconstructing" such states manually!
 
 
@@ -365,7 +366,7 @@ by putting both Branches in parallel:
 linemtk = MTKLine(branch1, branch2; name=:powerline)
 show(stdout, MIME"text/plain"(), bus1mtk) #hide
 ```
-Similar to before, we need to compile the MTKModel by calling [`compile_line`](@ref).
+Similar to before, we need to compile the line model by calling [`compile_line`](@ref).
 ```@example concepts
 edgef = compile_line(linemtk) # extract component function
 ```

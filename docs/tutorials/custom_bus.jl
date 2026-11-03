@@ -54,20 +54,18 @@ speed (it is pinned to $1$ in PowerDynamics). Naming the frame explicitly is wha
 distinguishable from a frequency *setpoint*, which is a different quantity that happens to
 have the same value here.
 
-We can use the ModelingToolkit DSL to define the full injector model:
+We define the full injector model as a ModelingToolkit component:
 =#
-using PowerDynamics, NetworkDynamics, ModelingToolkitBase, SciCompDSL
+using PowerDynamics, NetworkDynamics, ModelingToolkitBase
 using PowerDynamics.Library
 using ModelingToolkitBase: t_nounits as t, D_nounits as Dt
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEqRosenbrock, OrdinaryDiffEqNonlinearSolve
 using CairoMakie
 
-@mtkmodel MilanoClassicalMachine begin
-    @components begin
-        terminal=Terminal()
-    end
-    @parameters begin
+@component function MilanoClassicalMachine(; name, defaults...)
+    @named terminal = Terminal()
+    params = @parameters begin
         R_s=0.000124, [description="stator resistance"]
         X′_d=0.0608, [description="d-axis transient reactance"]
         H=23.64, [description="inertia constant"]
@@ -79,7 +77,7 @@ using CairoMakie
         vf_set, [guess=1, description="field voltage"]
         P_m, [guess=1, description="mechanical power"]
     end
-    @variables begin
+    vars = @variables begin
         δ(t), [guess=0, description="rotor angle"]
         ω(t), [guess=1, description="rotor speed"]
         τ_e(t), [description="electrical torque"]
@@ -90,13 +88,11 @@ using CairoMakie
         ψ_d(t), [description="d-axis flux linkage"]
         ψ_q(t), [description="q-axis flux linkage"]
     end
-    begin
-        T_to_loc(α)  = [ sin(α) -cos(α);
-                         cos(α)  sin(α)]
-        T_to_glob(α) = [ sin(α)  cos(α);
-                        -cos(α)  sin(α)]
-    end
-    @equations begin
+    T_to_loc(α)  = [ sin(α) -cos(α);
+                     cos(α)  sin(α)]
+    T_to_glob(α) = [ sin(α)  cos(α);
+                    -cos(α)  sin(α)]
+    eqs = [
         ## Park's transformations
         [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q]
         [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i]
@@ -115,7 +111,10 @@ using CairoMakie
         ## magnetic equations from static model Milano 15.36
         0 ~ V_q + R_s*I_q + X′_d*I_d - vf_set
         0 ~ V_d + R_s*I_d - X′_d*I_q
-    end
+    ]
+    sys = System(eqs, t, vars, params; name, systems=[terminal])
+    ## keyword arguments like `H=20` become defaults
+    set_mtk_defaults(sys, defaults)
 end
 
 
@@ -144,14 +143,12 @@ never declare. We do not have to: `compile_bus` adds one if the model does not b
 You *can* write `@named systembase = SystemBase()` yourself, which is how you would bake
 non-default bases into the symbolic model (e.g. `SystemBase(ωbase=2π*60)`).
 =#
-@mtkmodel MyMTKBus begin
-    @components begin
-        busbar = BusBar()
-        machine = MilanoClassicalMachine()
-    end
-    @equations begin
-        connect(busbar.terminal, machine.terminal)
-    end
+@component function MyMTKBus(; name, defaults...)
+    @named busbar = BusBar()
+    @named machine = MilanoClassicalMachine()
+    eqs = [connect(busbar.terminal, machine.terminal)]
+    sys = System(eqs, t; name, systems=[busbar, machine])
+    set_mtk_defaults(sys, defaults)
 end
 mtkbus = MyMTKBus(name=:bus)
 isbusmodel(mtkbus) # assert that the created model satisfies the interface
@@ -338,14 +335,12 @@ First, we create a modified Milano machine with control inputs/outputs:
 `vf_in` for field voltage and `ω_out` for frequency output.
 =#
 
-@mtkmodel MilanoControllableMachine begin
-    @components begin
-        terminal=Terminal()
-        ## Control interface
-        vf_in = RealInput(guess=1)  # field voltage input
-        ω_out = RealOutput()        # frequency output for PSS
-    end
-    @parameters begin
+@component function MilanoControllableMachine(; name, defaults...)
+    @named terminal = Terminal()
+    ## Control interface
+    @named vf_in = RealInput(guess=1)  # field voltage input
+    @named ω_out = RealOutput()        # frequency output for PSS
+    params = @parameters begin
         R_s=0.000124, [description="stator resistance"]
         X′_d=0.0608, [description="d-axis transient reactance"]
         H=23.64, [description="inertia constant"]
@@ -356,7 +351,7 @@ First, we create a modified Milano machine with control inputs/outputs:
         ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
         P_m, [guess=1, description="mechanical power"]
     end
-    @variables begin
+    vars = @variables begin
         δ(t), [guess=0, description="rotor angle"]
         ω(t), [guess=1, description="rotor speed"]
         τ_e(t), [description="electrical torque"]
@@ -367,13 +362,11 @@ First, we create a modified Milano machine with control inputs/outputs:
         ψ_d(t), [description="d-axis flux linkage"]
         ψ_q(t), [description="q-axis flux linkage"]
     end
-    begin
-        T_to_loc(α)  = [ sin(α) -cos(α);
-                         cos(α)  sin(α)]
-        T_to_glob(α) = [ sin(α)  cos(α);
-                        -cos(α)  sin(α)]
-    end
-    @equations begin
+    T_to_loc(α)  = [ sin(α) -cos(α);
+                     cos(α)  sin(α)]
+    T_to_glob(α) = [ sin(α)  cos(α);
+                    -cos(α)  sin(α)]
+    eqs = [
         ## Park's transformations
         [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q]
         [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i]
@@ -395,7 +388,9 @@ First, we create a modified Milano machine with control inputs/outputs:
 
         ## Control interface - output frequency for PSS
         ω_out.u ~ ω
-    end
+    ]
+    sys = System(eqs, t, vars, params; name, systems=[terminal, vf_in, ω_out])
+    set_mtk_defaults(sys, defaults)
 end
 nothing #hide #md
 
@@ -406,24 +401,24 @@ The simplest PSS consists of a washout filter with gain. The washout filter
 ensures the PSS only responds to frequency changes, not steady-state errors.
 =#
 
-@mtkmodel SimplePSS begin
-    @components begin
-        ω_in = RealInput() # frequency input from machine
-        vst = RealOutput() # stabilizer output signal
-    end
-    @parameters begin
+@component function SimplePSS(; name, defaults...)
+    @named ω_in = RealInput() # frequency input from machine
+    @named vst = RealOutput() # stabilizer output signal
+    params = @parameters begin
         Tw=10, [description="washout time constant"]
         Ks=20, [description="stabilizer gain"]
     end
-    @variables begin
+    vars = @variables begin
         y(t), [guess=0, description="washout filter output"]
     end
-    @equations begin
+    eqs = [
         ## Washout filter: dy/dt = (ω - y)/Tw
         Dt(y) ~ (ω_in.u - y) / Tw
         ## output gain
         vst.u ~ Ks * (ω_in.u - y)
-    end
+    ]
+    sys = System(eqs, t, vars, params; name, systems=[ω_in, vst])
+    set_mtk_defaults(sys, defaults)
 end
 nothing #hide #md
 
@@ -447,25 +442,25 @@ Therefore, our combined injector model needs to look something like this:
 Notably, similar to how we left `vf_set` free for initialization in the previous example,
 now we need to leave `vf_base` free.
 
-We define a new mtkmodel which combines machine with controller and forms a new injector:
+We define a new component which combines machine with controller and forms a new injector:
 =#
-@mtkmodel GeneratorWithPSS begin
-    @components begin
-        terminal = Terminal()
-        machine = MilanoControllableMachine()
-        pss = SimplePSS()
-    end
-    @parameters begin
+@component function GeneratorWithPSS(; name, defaults...)
+    @named terminal = Terminal()
+    @named machine = MilanoControllableMachine()
+    @named pss = SimplePSS()
+    params = @parameters begin
         vf_base, [guess=1.0, description="base field voltage"]
     end
-    @equations begin
+    eqs = [
         ## Connect terminals
         connect(terminal, machine.terminal)
         ## Connect control loop: machine frequency → PSS → back to machine field voltage
         connect(machine.ω_out, pss.ω_in)
         ## Sum base field voltage with PSS output
         machine.vf_in.u ~ vf_base + pss.vst.u
-    end
+    ]
+    sys = System(eqs, t, [], params; name, systems=[terminal, machine, pss])
+    set_mtk_defaults(sys, defaults)
 end
 
 @named gen_with_pss = GeneratorWithPSS()
@@ -490,20 +485,20 @@ Alternatively, we could define a model which directly implements the `MTKBus` in
 └─────────────────────────────────────┘
 ```
 =#
-@mtkmodel CustomMTKBus begin
-    @components begin
-        busbar = BusBar()
-        machine = MilanoControllableMachine()
-        pss = SimplePSS()
-    end
-    @parameters begin
+@component function CustomMTKBus(; name, defaults...)
+    @named busbar = BusBar()
+    @named machine = MilanoControllableMachine()
+    @named pss = SimplePSS()
+    params = @parameters begin
         vf_base, [guess=1.0, description="base field voltage"]
     end
-    @equations begin
+    eqs = [
         connect(busbar.terminal, machine.terminal)
         connect(machine.ω_out, pss.ω_in)
         machine.vf_in.u ~ vf_base + pss.vst.u
-    end
+    ]
+    sys = System(eqs, t, [], params; name, systems=[busbar, machine, pss])
+    set_mtk_defaults(sys, defaults)
 end
 @named genbus_custom = CustomMTKBus()
 @assert isbusmodel(genbus_custom)

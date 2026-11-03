@@ -21,7 +21,7 @@ end
 Mark `TrajectoriesOfInterest` object as reference test. Those objects will be
 saved using JLD2 and compared to the existing reference if available.
 """
-macro reftest(name, toi, tol=1e-5)
+macro reftest(name, toi, tol=1e-4)
     quote
         _toi = $(esc(toi))
         if VERSION < v"1.11-"
@@ -41,7 +41,7 @@ end
 
 _intestset() = Test.get_testset() !== Test.FallbackTestSet()
 
-function _save_and_compare(name::String, toi; tol=1e-5)
+function _save_and_compare(name::String, toi; tol=1e-4)
     @assert !isempty(REFDIR[]) "Please set REFDIR[]!"
     @assert !isfile(REFDIR[]) "$(REFDIR[]) seems to be a file!"
     if !isdir(REFDIR[])

@@ -60,4 +60,12 @@ export get_pfinitconstraints, get_pfinitformulas
 export delete_pfinitconstraints!, delete_pfinitformulas!
 include("pfinitconstraint.jl")
 
+function __init__()
+    # Global settings a cached component body could read while building a model
+    NetworkDynamics.register_cache_context!(:PowerDynamics_bases,
+        () -> (get_Sbase(), get_ωbase(), get_Vbase()))
+    NetworkDynamics.register_cache_context!(:PowerDynamics_config,
+        () -> (get_saturation_config(), get_callback_verbosity()))
+end
+
 end

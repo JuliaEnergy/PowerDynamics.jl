@@ -88,28 +88,11 @@ TGOV1 steam turbine governor with droop, valve limiter, and reheater.
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
-@mtkmodel TGOV1 begin
-    @structural_parameters begin
-        ω_ref_input=false
-        p_ref_input=false
-    end
-    @components begin
-        ω_meas = RealInput()
-        if ω_ref_input
-            ω_ref = RealInput()
-        end
-        if p_ref_input
-            p_ref = RealInput()
-        end
-        τ_m = RealOutput()
-    end
-    @parameters begin
-       if !ω_ref_input
-            ω_ref=1, [description="Reference frequency"]
-       end
-       if !p_ref_input
-            p_ref, [guess=1, description="Reference power [Machine PU]"]
-       end
+@cached_component function TGOV1(; name, ω_ref_input=false, p_ref_input=false)
+    @named ω_meas = RealInput()
+    @named τ_m = RealOutput()
+    systems = [ω_meas, τ_m]
+    params = @parameters begin
        V_min, [description="Valve min position"]
        V_max, [description="Valve max position"]
        R, [description="Govenor droop [Machine PU]"]
@@ -118,18 +101,33 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
        T3, [description="Transient time constant 3 [s]"]
        DT, [description="Turbine Damping"]
     end
-    @variables begin
+    vars = @variables begin
         ref_sig(t), [description="Internal reference signal"]
         xg1(t), [guess=1]
         # xg1_sat(t)
         xg2(t), [guess=0]
         Δω(t), [description="Speed deviation from ω_ref [pu]"]
     end
-    begin
-        _ω_ref = ω_ref_input ? ω_ref.u : ω_ref
-        _p_ref = p_ref_input ? p_ref.u : p_ref
+    if ω_ref_input
+        @named ω_ref = RealInput()
+        push!(systems, ω_ref)
+        _ω_ref = ω_ref.u
+    else
+        @parameters ω_ref=1 [description="Reference frequency"]
+        push!(params, ω_ref)
+        _ω_ref = ω_ref
     end
-    @equations begin
+    if p_ref_input
+        @named p_ref = RealInput()
+        push!(systems, p_ref)
+        _p_ref = p_ref.u
+    else
+        @parameters p_ref [guess=1, description="Reference power [Machine PU]"]
+        push!(params, p_ref)
+        _p_ref = p_ref
+    end
+
+    eqs = [
         # implementation after blockdiagram
         # https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20TGOV1%20and%20TGOV1D.htm
         # and milano
@@ -147,5 +145,6 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 
         # TODO: GOV: output power or torque?
         τ_m.u*ω_meas.u ~ xg2  - DT*Δω
-    end
+    ]
+    System(eqs, t, vars, params; name, systems)
 end

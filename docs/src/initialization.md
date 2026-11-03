@@ -259,13 +259,11 @@ power-flow-dependent initialization rules, if a component carries any. See
 
 ## Using the result
 
-`s0` is an `NWState` of the dynamic network, which is all you need to start simulating —
-[`uflat`](@extref NetworkDynamics.uflat) and [`pflat`](@extref NetworkDynamics.pflat) hand the
-state and the parameters to the solver as plain vectors:
+`s0` is an `NWState` of the dynamic network, which is all you need to start simulating:
 
 ```@example init
 using OrdinaryDiffEqRosenbrock
-prob = ODEProblem(nw, uflat(s0), (0, 1.0), pflat(s0))
+prob = ODEProblem(nw, s0, (0, 1.0))
 sol = solve(prob, Rodas5P())
 sol.retcode
 ```

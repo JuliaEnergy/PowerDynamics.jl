@@ -172,3 +172,70 @@ end
     @test_throws ArgumentError compile_line(neither)
 end
 
+
+import NetworkDynamics
+@testset "global bases with the model cache" begin
+    # a reused (cached) model must still pick up the global bases that are current at build time
+    cacheext = Base.get_extension(NetworkDynamics, :NetworkDynamicsMTKExt)
+    cache_hits() = sum(c -> sum(e -> e.hits, values(c.entries); init=0), cacheext.ALL_CACHES)
+    function two_bus()
+        gen = compile_bus(MTKBus(SauerPaiMachine(; name=:machine, vf_input=false, τ_m_input=false));
+            vidx=1, pf=pfSlack(V=1))
+        load = compile_bus(MTKBus(ZIPLoad(; name=:load)); vidx=2, pf=pfPQ(P=-1, Q=-0.1))
+        line = compile_line(MTKLine(PiLine(; name=:piline)); src=1, dst=2)
+        Network([gen, load], [line])
+    end
+    function with_bases(f, Sbase, fbase)
+        set_Sbase!(Sbase); set_fbase!(fbase)
+        try f() finally set_Sbase!(); set_fbase!() end
+    end
+    base_syms(c) = filter(s -> occursin("base", string(s)), vcat(psym(c), obssym(c)))
+    function base_values(nw)
+        s = NWState(nw)
+        vcat([s[VIndex(i, sym)] for i in 1:length(nw.im.vertexm) for sym in base_syms(nw[VIndex(i)])],
+             [s[EIndex(i, sym)] for i in 1:length(nw.im.edgem) for sym in base_syms(nw[EIndex(i)])])
+    end
+
+    nw_ref = NetworkDynamics.with_mtk_cache(:off) do
+        with_bases(two_bus, 200, 60)
+    end
+    NetworkDynamics.with_mtk_cache(:on) do
+        nw_default = two_bus()
+        hits = cache_hits()
+        nw_changed = with_bases(two_bus, 200, 60)
+        @test cache_hits() > hits # second build was served from the cache
+
+        @test NWState(nw_default)[VIndex(1, :machine₊Sbase)] == 100
+        @test NWState(nw_changed)[VIndex(1, :machine₊Sbase)] == 200
+        @test NWState(nw_changed)[VIndex(1, :machine₊ωbase)] ≈ 2π*60
+        @test isequal(pflat(NWParameter(nw_changed)), pflat(NWParameter(nw_ref)))
+        @test isequal(base_values(nw_changed), base_values(nw_ref))
+        @test !isequal(base_values(nw_default), base_values(nw_ref))
+    end
+end
+
+# cached components whose bodies capture global settings, through submodels they build
+NetworkDynamics.@cached_component function WrappedLoadBus(; name)
+    MTKBus(ZIPLoad(; name=:load); name)
+end
+NetworkDynamics.@cached_component function WrappedLimInt(; name)
+    LimIntegrator(; name, K=1, outMin=-1, outMax=1)
+end
+@testset "global settings are part of the component cache key" begin
+    eqstrings(sys) = string.(ModelingToolkitBase.equations(sys))
+    rhs_ref = with_saturation_config(() -> WrappedLimInt(; name=:lim, cache=:off), :rhs_hard)
+    NetworkDynamics.with_mtk_cache(:on) do
+        NetworkDynamics.wipe_mtk_cache!()
+        a = compile_bus(WrappedLoadBus(; name=:a))
+        set_Sbase!(200); set_Vbase!(220)
+        b = try compile_bus(WrappedLoadBus(; name=:b)) finally set_Sbase!(); set_Vbase!() end
+        @test get_default(a, :systembase₊Sbase) == 100
+        @test get_default(b, :systembase₊Sbase) == 200
+        @test get_default(b, :busbar₊Vbase) == 220
+
+        cb = WrappedLimInt(; name=:lim)
+        rhs = with_saturation_config(() -> WrappedLimInt(; name=:lim), :rhs_hard)
+        @test eqstrings(rhs) == eqstrings(rhs_ref)
+        @test eqstrings(rhs) != eqstrings(cb)
+    end
+end

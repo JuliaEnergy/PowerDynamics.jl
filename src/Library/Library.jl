@@ -4,7 +4,7 @@ using ..PowerDynamics: PowerDynamics, Terminal, BusBase, SystemBase, Ibase
 using NetworkDynamics: NetworkDynamics, ComponentCondition, ComponentAffect,
                        VertexModel, VIndex, EIndex, NWState,
                        VectorContinuousComponentCallback, DiscreteComponentCallback, ComponentPostprocessing,
-                       set_initf, set_mtk_defaults
+                       set_initf, set_mtk_defaults, @cached_component
 using ModelingToolkitBase: ModelingToolkitBase, @named, simplify, t_nounits as t, D_nounits as Dt,
                            @component
 # needed for @mtkmodel

@@ -33,7 +33,7 @@ The test system includes:
 using PowerDynamics
 using PowerDynamics.Library
 using NetworkDynamics
-using ModelingToolkitBase, SciCompDSL
+using ModelingToolkitBase
 using ModelingToolkitBase: D_nounits as Dt, t_nounits as t
 using CSV
 using SteadyStateDiffEq

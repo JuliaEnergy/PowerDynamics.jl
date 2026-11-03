@@ -61,7 +61,7 @@ firing order.
              ╰──────────────────────────────────╯
 ```
 =#
-using PowerDynamics, NetworkDynamics, ModelingToolkitBase, SciCompDSL
+using PowerDynamics, NetworkDynamics, ModelingToolkitBase
 using PowerDynamics.Library
 using ModelingToolkitBase: t_nounits as t, D_nounits as Dt
 using ModelingToolkitStandardLibrary.Blocks

@@ -33,37 +33,34 @@ Load whose active and reactive power scale as a polynomial function of voltage m
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
-@mtkmodel VoltageDependentLoad begin
-    @parameters begin
+@cached_component function VoltageDependentLoad(; name)
+    params = @parameters begin
         Pset, [guess=-1, description="Active Power demand"]
         Qset, [guess=0, description="Reactive Power demand"]
         αP, [description="Active Power exponent"]
         αQ, [description="Reactive Power exponent"]
         Vset, [guess=1, description="Reference voltage (where real power equals set power) [pu]"]
     end
-    @components begin
-        terminal = Terminal()
-    end
-    @variables begin
+    @named terminal = Terminal()
+    vars = @variables begin
         P(t), [description="Active Power [pu]"]
         Q(t), [description="Reactive Power [pu]"]
     end
-    begin
-        v = sqrt(terminal.u_r^2 + terminal.u_i^2)
-        Pload = Pset * (v/Vset)^αP
-        Qload = Qset * (v/Vset)^αQ
-        Sload = Pload + im*Qload
-        vcomplex = terminal.u_r + im*terminal.u_i
-        iout = conj(Sload/vcomplex)
-    end
-    @equations begin
+    v = sqrt(terminal.u_r^2 + terminal.u_i^2)
+    Pload = Pset * (v/Vset)^αP
+    Qload = Qset * (v/Vset)^αQ
+    Sload = Pload + im*Qload
+    vcomplex = terminal.u_r + im*terminal.u_i
+    iout = conj(Sload/vcomplex)
+    eqs = [
         terminal.i_r ~ simplify(real(iout))
         terminal.i_i ~ simplify(imag(iout))
 
         # observables
         P ~ terminal.u_r*terminal.i_r + terminal.u_i*terminal.i_i
         Q ~ terminal.u_i*terminal.i_r - terminal.u_r*terminal.i_i
-    end
+    ]
+    System(eqs, t, vars, params; name, systems=[terminal])
 end
 
 """
@@ -116,11 +113,12 @@ end
     ZIPLoad
 
 ZIP load combining constant-impedance, constant-current, and constant-power fractions.
+At zero voltage it draws no current.
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
-@mtkmodel ZIPLoad begin
-    @parameters begin
+@cached_component function ZIPLoad(; name)
+    params = @parameters begin
         Pset, [guess=-1, description="Active Power at operation point [pu]"]
         Qset, [guess=0, description="Reactive Power at operation point [pu]"]
         Vset, [guess=1, description="Voltage at operation point [pu]"]
@@ -131,22 +129,28 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         KpC=1-KpZ-KpI, [description="Active power constant power fraction"]
         KqC=1-KqZ-KqI, [description="Reactive power constant power fraction"]
     end
-    @components begin
-        terminal = Terminal()
-    end
-    @variables begin
+    @named terminal = Terminal()
+    vars = @variables begin
         Vrel(t), [description="Relative voltage magnitude"]
         P(t), [description="Active Power"]
         Q(t), [description="Reactive Power"]
     end
-    @equations begin
-        Vrel ~ sqrt(terminal.u_r^2 + terminal.u_i^2)/Vset
+    u_r, u_i = terminal.u_r, terminal.u_i
+    u² = u_r^2 + u_i^2
+    # the impedance share is a constant admittance, so its current needs no division by |u|²
+    Pz = Pset*KpZ/Vset^2
+    Qz = Qset*KqZ/Vset^2
+    # the current of the other shares is undefined at u = 0, there they draw none
+    Pic = Pset*(KpI*Vrel + KpC)
+    Qic = Qset*(KqI*Vrel + KqC)
+    eqs = [
+        Vrel ~ sqrt(u²)/Vset
         P ~ Pset*(KpZ*Vrel^2 + KpI*Vrel + KpC)
         Q ~ Qset*(KqZ*Vrel^2 + KqI*Vrel + KqC)
-        # formulate equations for i_r and i_i instead
-        terminal.i_r ~  simplify(real((P + im*Q)/(terminal.u_r + im*terminal.u_i)))
-        terminal.i_i ~ -simplify(imag((P + im*Q)/(terminal.u_r + im*terminal.u_i)))
-    end
+        terminal.i_r ~ Pz*u_r + Qz*u_i + ifelse(u² > 0, (Pic*u_r + Qic*u_i)/u², 0)
+        terminal.i_i ~ Pz*u_i - Qz*u_r + ifelse(u² > 0, (Pic*u_i - Qic*u_r)/u², 0)
+    ]
+    System(eqs, t, vars, params; name, systems=[terminal])
 end
 
 """

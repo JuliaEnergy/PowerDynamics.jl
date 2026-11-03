@@ -164,12 +164,11 @@ The simulation is complete! The `sol` object contains the time-domain solution o
 network variables. We can now analyze how the system responded to the short circuit disturbance.
 
 !!! tip
-    The ODEProblem contains a reference to exactly one copy of the *flat parameter array*.
-    If you use callbacks to change those parameters (as we do), it is advised to
-    `copy` the parameter array before passing it to the ODEProblem! Otherwise the callback
-    will change our `u0` object.
-    Also, this means you need to be careful when using the same `prob` for multiple subsequent
-    `solve` calls, as the initial state of the `prob` object might have changed!
+    Callbacks change parameters during the solve. Since NetworkDynamics v1.4, every solve of a
+    problem built with `ODEProblem(nw, ...)` works on its own copy of the parameters, so the
+    same `prob` can be solved several times. With older versions the solve changes `prob.p` in
+    place, and a second solve of the same `prob` starts from the parameters the first one
+    ended with.
 
 ### Simulation Results Overview
 
