@@ -114,11 +114,11 @@ function _resolve_busbar_vbase!(vertexf, satellite)
 end
 function _strip_weak_initf!(c, sym)
     has_initformula(c) || return nothing
-    formulas = collect(get_initformulas(c))
+    formulas = copy(get_initformulas(c))
     idx = findfirst(f -> f.weak && f.outsym == [sym] && isempty(f.sym), formulas)
     isnothing(idx) && return nothing
     f = popat!(formulas, idx)
-    isempty(formulas) ? delete_initformulas!(c) : set_initformula!(c, Tuple(formulas))
+    isempty(formulas) ? delete_initformulas!(c) : set_initformula!(c, formulas)
     out = SymbolicView(zeros(1), f.outsym)
     f(out, Float64[])
     out[sym]
