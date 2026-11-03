@@ -9,6 +9,9 @@
   network built from one model per bus and line compiles faster than one built from compiled
   templates without the cache, so templating is often no longer needed. The cache is off by
   default.
+- PowerDynamics registers its global settings (per-unit bases, saturation config, callback
+  verbosity) with `NetworkDynamics.register_cache_context!`. A cached component built under
+  other global settings is therefore built again instead of being reused.
 - The models in the documentation are written as `@component` functions instead of
   `@mtkmodel`, and the docs no longer need `SciCompDSL`.
 - **Fix:** `ZIPLoad` returned NaN at exactly zero voltage, also for a pure impedance load,
