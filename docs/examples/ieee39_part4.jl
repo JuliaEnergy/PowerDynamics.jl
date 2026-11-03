@@ -174,7 +174,7 @@ end;
 
 Following the descriptions in [Modeling Concepts](@ref), we build an MTKBus using
 the droop as the single injector and then compile the bus model, similar to
-how we define the templates in [part I](@ref ieee39-part1):
+how we define the buses in [part I](@ref ieee39-part1):
 
 ```asciiart
            ╔═════════════════════════╗
