@@ -1,4 +1,20 @@
 # PowerDynamics.jl Changelog
+## Version 5.1.0 Changelog
+
+- **Cached library models.** Requires NetworkDynamics ≥ 1.4, whose model cache this release
+  builds on. The library models used by the examples are `@cached_component`s now: `PiLine`,
+  `PiLine_fault`, `RXGroundFault`, `StaticShunt`, `VoltageDependentLoad`, `ZIPLoad`,
+  `SauerPaiMachine`, `AVRTypeI`, `TGOV1` and the powerflow constraint models. With the cache
+  switched on (`NetworkDynamics.set_mtk_cache!(:on)` or `NetworkDynamics.with_mtk_cache`), a
+  network built from one model per bus and line compiles faster than one built from compiled
+  templates without the cache, so templating is often no longer needed. The cache is off by
+  default.
+- The models in the documentation are written as `@component` functions instead of
+  `@mtkmodel`, and the docs no longer need `SciCompDSL`.
+- **Fix:** `ZIPLoad` returned NaN at exactly zero voltage, also for a pure impedance load,
+  which could stop a simulation of a bolted fault next to a radial load. It now draws no
+  current there, with a finite Jacobian; away from zero voltage nothing changes.
+
 ## Version 5.0.0 Changelog
 
 Two themes: the ecosystem move that comes down from

@@ -113,6 +113,7 @@ end
     ZIPLoad
 
 ZIP load combining constant-impedance, constant-current, and constant-power fractions.
+At zero voltage it draws no current.
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
@@ -134,13 +135,20 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         P(t), [description="Active Power"]
         Q(t), [description="Reactive Power"]
     end
+    u_r, u_i = terminal.u_r, terminal.u_i
+    u² = u_r^2 + u_i^2
+    # the impedance share is a constant admittance, so its current needs no division by |u|²
+    Pz = Pset*KpZ/Vset^2
+    Qz = Qset*KqZ/Vset^2
+    # the current of the other shares is undefined at u = 0, there they draw none
+    Pic = Pset*(KpI*Vrel + KpC)
+    Qic = Qset*(KqI*Vrel + KqC)
     eqs = [
-        Vrel ~ sqrt(terminal.u_r^2 + terminal.u_i^2)/Vset
+        Vrel ~ sqrt(u²)/Vset
         P ~ Pset*(KpZ*Vrel^2 + KpI*Vrel + KpC)
         Q ~ Qset*(KqZ*Vrel^2 + KqI*Vrel + KqC)
-        # formulate equations for i_r and i_i instead
-        terminal.i_r ~  simplify(real((P + im*Q)/(terminal.u_r + im*terminal.u_i)))
-        terminal.i_i ~ -simplify(imag((P + im*Q)/(terminal.u_r + im*terminal.u_i)))
+        terminal.i_r ~ Pz*u_r + Qz*u_i + ifelse(u² > 0, (Pic*u_r + Qic*u_i)/u², 0)
+        terminal.i_i ~ Pz*u_i - Qz*u_r + ifelse(u² > 0, (Pic*u_i - Qic*u_r)/u², 0)
     ]
     System(eqs, t, vars, params; name, systems=[terminal])
 end
