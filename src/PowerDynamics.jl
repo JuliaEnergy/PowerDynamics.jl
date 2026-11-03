@@ -68,4 +68,9 @@ function __init__()
         () -> (get_saturation_config(), get_callback_verbosity()))
 end
 
+using PrecompileTools: @compile_workload
+@compile_workload begin
+    include("precompile_workload.jl")
+end
+
 end
