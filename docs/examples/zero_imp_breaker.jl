@@ -23,7 +23,7 @@ and OrdinaryDiffEq for solving the resulting differential-algebraic equations.
 
 using PowerDynamics
 using PowerDynamics.Library
-using ModelingToolkitBase, SciCompDSL
+using ModelingToolkitBase
 using ModelingToolkitBase: t_nounits as t, D_nounits as Dt
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
@@ -118,19 +118,17 @@ enforce `i = 0`.
     This is necessary, because MTK does not know about the explicit feedback loop `u_src = f(i_src)`.
 =#
 
-@mtkmodel Breaker begin
-    @parameters begin
+@component function Breaker(; name, defaults...)
+    @named src = Terminal()
+    @named dst = Terminal()
+    params = @parameters begin
         closed=1, [description="Breaker closed (1) or open (0)"]
     end
-    @components begin
-        src = Terminal()
-        dst = Terminal()
-    end
-    @variables begin
+    vars = @variables begin
         i_r(t), [guess=0, description="Current real part through breaker"]
         i_i(t), [guess=0, description="Current imaginary part through breaker"]
     end
-    @equations begin
+    eqs = [
         ## When closed: enforce u_dst = u_src (with current as implicit output)
         ## When open: enforce i = 0
         0 ~ ifelse(closed == 1, dst.u_r - src.u_r + implicit_output(i_r), i_r)
@@ -140,7 +138,9 @@ enforce `i = 0`.
         dst.i_i ~ i_i
         src.i_r ~ -dst.i_r
         src.i_i ~ -dst.i_i
-    end
+    ]
+    sys = System(eqs, t, vars, params; name, systems=[src, dst])
+    set_mtk_defaults(sys, defaults)
 end
 
 breaker_mod = Breaker(name=:breaker)

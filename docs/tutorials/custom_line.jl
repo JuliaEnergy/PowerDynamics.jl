@@ -12,7 +12,7 @@ To make it more interesting, we add protection logic to the branches:
 - if the current exceeds the limit, the branch is switched off after a delay time.
 =#
 using PowerDynamics
-using ModelingToolkitBase, SciCompDSL
+using ModelingToolkitBase
 using ModelingToolkitBase: D_nounits as Dt, t_nounits as t
 using NetworkDynamics
 using OrdinaryDiffEqRosenbrock
@@ -22,8 +22,8 @@ using Graphs
 #=
 ## Basic PI-Branch Model
 
-We start by defining a basic PI-branch model as an MTKModel. It is similar to the one in
-`PiLine_fault.jl`, which is written as a `@cached_component` function instead. This model should fulfill the [Branch Interface](@ref), i.e. it needs to have two [`Terminal`](@ref), one called
+We start by defining a basic PI-branch model as a ModelingToolkit component, similar to the
+`PiLine_fault` model of the library. This model should fulfill the [Branch Interface](@ref), i.e. it needs to have two [`Terminal`](@ref), one called
 `:src` the other called `:dst`:
 
 ```asciiart
@@ -117,7 +117,7 @@ i_\mathrm{dst} &= (i_\mathrm{b} - i_2) \, r_\mathrm{dst}
 =#
 
 #=
-## Implement the CustomPiBranch MTKModel
+## Implement the CustomPiBranch Model
 
 ```@raw html
 <details class="admonition is-details">
@@ -157,7 +157,7 @@ eqs = [
 ]
 
 #=
-This trick can be used inside `@mtkmodel` as well, by just defining those complex terms in a `begin...end` block.
+This trick can be used inside a component function as well, by just defining those complex terms as local variables.
 
 ```@raw html
 </div>
@@ -167,8 +167,10 @@ This trick can be used inside `@mtkmodel` as well, by just defining those comple
 With the equations and the knowledge on how to use complex terms within MTK
 Models the definition is relatively straight forward:
 =#
-@mtkmodel CustomPiBranch begin
-    @parameters begin
+@component function CustomPiBranch(; name, defaults...)
+    @named src = Terminal()
+    @named dst = Terminal()
+    params = @parameters begin
         R, [description="Resistance of branch in pu"]
         X, [description="Reactance of branch in pu"]
         G_src, [description="Conductance of src shunt"]
@@ -185,46 +187,42 @@ Models the definition is relatively straight forward:
         ## parameter to "switch off" the line
         active=1, [description="Line active or switched off"]
     end
-    @components begin
-        src = Terminal()
-        dst = Terminal()
-    end
-    begin
-        ## define complex variables
-        Z = R + im*X
-        Ysrc = G_src + im*B_src
-        Ydst = G_dst + im*B_dst
-        Yf = G_f + im*B_f
-        Vsrc = src.u_r + im*src.u_i
-        Vdst = dst.u_r + im*dst.u_i
-        ## define Z_a and Z_b in terms of Z
-        Z_a = Z * pos
-        Z_b = Z * (1-pos)
-        ## define internal voltages using the
-        V₁ = r_src * Vsrc
-        V₂ = r_dst * Vdst
-        ## currents through the shunt admittances
-        i₁ = Ysrc * V₁
-        i₂ = Ydst * V₂
-        ## effective fault admittance (controlled by shortcircuit)
-        Yf_eff = shortcircuit * Yf
-        ## middle voltage with fault admittance effect
-        V_m = (V₁*(1-pos) + V₂*pos) / (1 + Yf_eff * Z * pos * (1-pos))
-        ## fault current to ground
-        i_f = Yf_eff * V_m
-        ## current through the two Z parts
-        i_a = (V₁ - V_m) / Z_a
-        i_b = (V_m - V₂) / Z_b
-        ## terminal currents
-        isrc = (-i_a - i₁)*r_src
-        idst = (i_b - i₂)*r_dst
-    end
-    @equations begin
+    ## define complex variables
+    Z = R + im*X
+    Ysrc = G_src + im*B_src
+    Ydst = G_dst + im*B_dst
+    Yf = G_f + im*B_f
+    Vsrc = src.u_r + im*src.u_i
+    Vdst = dst.u_r + im*dst.u_i
+    ## define Z_a and Z_b in terms of Z
+    Z_a = Z * pos
+    Z_b = Z * (1-pos)
+    ## define internal voltages using the
+    V₁ = r_src * Vsrc
+    V₂ = r_dst * Vdst
+    ## currents through the shunt admittances
+    i₁ = Ysrc * V₁
+    i₂ = Ydst * V₂
+    ## effective fault admittance (controlled by shortcircuit)
+    Yf_eff = shortcircuit * Yf
+    ## middle voltage with fault admittance effect
+    V_m = (V₁*(1-pos) + V₂*pos) / (1 + Yf_eff * Z * pos * (1-pos))
+    ## fault current to ground
+    i_f = Yf_eff * V_m
+    ## current through the two Z parts
+    i_a = (V₁ - V_m) / Z_a
+    i_b = (V_m - V₂) / Z_b
+    ## terminal currents
+    isrc = (-i_a - i₁)*r_src
+    idst = (i_b - i₂)*r_dst
+    eqs = [
         src.i_r ~ active * real(isrc)
         src.i_i ~ active * imag(isrc)
         dst.i_r ~ active * real(idst)
         dst.i_i ~ active * imag(idst)
-    end
+    ]
+    sys = System(eqs, t, [], params; name, systems=[src, dst])
+    set_mtk_defaults(sys, defaults)
 end
 nothing #hide #md
 #=
@@ -268,29 +266,33 @@ the line cutoff, while the cutoff callback actually switches off the line.
 
 !!! note
     NetworkDynamics currently does not support Events defined in MTK models. So we need to split the implementation:
-    The new parameters need to be introduced to the `MTKModel` (extending CustomPiBranch), the callbacks need to be defined
+    The new parameters need to be introduced to the MTK model (extending CustomPiBranch), the callbacks need to be defined
     for the *compiled EdgeModel*.
 
-### Extension of the CustomPiBranch MTKModel
+### Extension of the CustomPiBranch Model
 Let's add the new parameters to the `CustomPiBranch` model by *extending* the model.
 Extend means that we essentially copy-paste the whole model definitions and are able to add
-new parameters, equations, variables and so on.
+new parameters, equations, variables and so on. `@unpack` gives us the terminals of the base
+model, so the new equation can refer to them.
 
 We add an additional "observed" state `I_mag`, which always contains the current magnitude at the src or dst terminal (whatever is higher).
 =#
-@mtkmodel ProtectedPiBranch begin
-    @extend CustomPiBranch()
-    @parameters begin
+@component function ProtectedPiBranch(; name, defaults...)
+    base = CustomPiBranch(; name)
+    @unpack src, dst = base
+    params = @parameters begin
         I_max=Inf, [description="Maximum current magnitude"]
         t_cutoff=Inf, [description="Time when the line should be switched off"]
         t_delay=0.1, [description="Delay time after which the line should be switched off"]
     end
-    @variables begin
+    vars = @variables begin
         I_mag(t), [description="Current magnitude at src or dst terminal"]
     end
-    @equations begin
+    eqs = [
         I_mag ~ max(sqrt(src.i_r^2 + src.i_i^2), sqrt(dst.i_r^2 + dst.i_i^2))
-    end
+    ]
+    sys = extend(System(eqs, t, vars, params; name), base)
+    set_mtk_defaults(sys, defaults)
 end
 nothing #hide
 

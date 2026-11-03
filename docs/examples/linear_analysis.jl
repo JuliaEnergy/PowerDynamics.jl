@@ -36,7 +36,7 @@ SimplusGT uses a special machine model for their Type 0 Apparatus which:
 using PowerDynamics
 using PowerDynamics.Library
 using PowerDynamics.Library.ComposableInverter
-using ModelingToolkitBase, SciCompDSL
+using ModelingToolkitBase
 using ModelingToolkitBase: t_nounits as t, D_nounits as Dt
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
@@ -45,11 +45,9 @@ using NetworkDynamics: feedback
 using CairoMakie
 using Test #src
 
-@mtkmodel SyncMachineStatorDynamics begin
-    @components begin
-        terminal = Terminal()
-    end
-    @parameters begin
+@component function SyncMachineStatorDynamics(; name, defaults...)
+    @named terminal = Terminal()
+    params = @parameters begin
         J, [description="Inertia constant [MWs²/MVA]"]
         D, [description="Damping coefficient [pu]"]
         wL, [description="Stator inductance * base frequency [pu]"]
@@ -59,7 +57,7 @@ using Test #src
         psi_f, [guess=1, description="Field flux linkage [pu]"]
         T_m, [guess=1, description="Mechanical torque [pu]"]
     end
-    @variables begin
+    vars = @variables begin
         i_d(t), [guess=0, description="d-axis stator current [pu]"]
         i_q(t), [guess=1, description="q-axis stator current [pu]"]
         w(t), [guess=2*pi*50, description="Rotor speed [rad/s]"]
@@ -70,15 +68,13 @@ using Test #src
         psi_q(t), [guess=0, description="q-axis flux linkage [pu]"]
         Te(t), [guess=1, description="Electrical torque [pu]"]
     end
-    begin
-        J_pu = J*2/ωbase^2
-        D_pu = D/ωbase^2
-        L = wL/ωbase
-        T_to_loc(α)  = [ cos(α) sin(α);
-                        -sin(α)  cos(α)]
-        T_to_glob(α) = T_to_loc(-α)
-    end
-    @equations begin
+    J_pu = J*2/ωbase^2
+    D_pu = D/ωbase^2
+    L = wL/ωbase
+    T_to_loc(α)  = [ cos(α) sin(α);
+                    -sin(α)  cos(α)]
+    T_to_glob(α) = T_to_loc(-α)
+    eqs = [
         ## output transformation (global dq/local dq)
         [terminal.i_r, terminal.i_i] .~ -T_to_glob(theta)*[i_d, i_q]
         [v_d, v_q] .~ T_to_loc(theta)*[terminal.u_r, terminal.u_i]
@@ -93,7 +89,9 @@ using Test #src
         ## `w` is the *absolute* rotor speed in [rad/s], `theta` is measured against the
         ## global dq frame, whose speed in [rad/s] is ωbase*ωframe.
         Dt(theta) ~ w - ωbase*ωframe
-    end
+    ]
+    sys = System(eqs, t, vars, params; name, systems=[terminal])
+    set_mtk_defaults(sys, defaults)
 end
 nothing #hide #md
 

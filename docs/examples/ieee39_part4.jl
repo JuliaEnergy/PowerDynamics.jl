@@ -27,7 +27,7 @@ the integration with Julia's optimization ecosystem for parameter tuning.
 ## Loading required packages and setup
 using PowerDynamics
 using PowerDynamics.Library
-using ModelingToolkitBase, SciCompDSL
+using ModelingToolkitBase
 using ModelingToolkitBase: D_nounits as Dt, t_nounits as t
 using NetworkDynamics
 using NetworkDynamics: SII
@@ -115,15 +115,13 @@ the network through a single `Terminal`:
       └──────────────────────────┘
 ```
 
-We can define the following MTKModel to represent the droop inverter:
+We can define the following component to represent the droop inverter:
 =#
 
-@mtkmodel DroopInverter begin
-    @components begin
-        terminal = Terminal()
-    end
+@component function DroopInverter(; name, defaults...)
+    @named terminal = Terminal()
 
-    @parameters begin
+    params = @parameters begin
         Pset, [description="Active power setpoint", guess=1]
         Qset, [description="Reactive power setpoint", guess=0]
         Vset, [description="Voltage magnitude setpoint", guess=1]
@@ -136,7 +134,7 @@ We can define the following MTKModel to represent the droop inverter:
         τ_q = 1.0, [description="Reactive Power filter time constant [s]"]
     end
 
-    @variables begin
+    vars = @variables begin
         Pmeas(t), [description="Measured active power", guess=1]
         Qmeas(t), [description="Measured reactive power", guess=0]
         Pfilt(t), [description="Filtered active power", guess=1]
@@ -146,7 +144,7 @@ We can define the following MTKModel to represent the droop inverter:
         V(t), [description="Voltage magnitude"]
     end
 
-    @equations begin
+    eqs = [
         ## Power measurement from terminal quantities
         Pmeas ~ terminal.u_r*terminal.i_r + terminal.u_i*terminal.i_i
         Qmeas ~ terminal.u_i*terminal.i_r - terminal.u_r*terminal.i_i
@@ -166,7 +164,9 @@ We can define the following MTKModel to represent the droop inverter:
         ## Output voltage components
         terminal.u_r ~ V*cos(δ)
         terminal.u_i ~ V*sin(δ)
-    end
+    ]
+    sys = System(eqs, t, vars, params; name, systems=[terminal])
+    set_mtk_defaults(sys, defaults)
 end;
 
 #=
