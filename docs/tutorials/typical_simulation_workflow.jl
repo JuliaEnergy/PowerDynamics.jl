@@ -284,10 +284,10 @@ General information on callbacks in Differential Equations can be found in the
 
 We define the callback and attach it to bus 2 (our first load) like this:
 =#
-affect = ComponentAffect([], [:load₊G, :load₊B]) do u, p, ctx
+affect = ComponentAffect([:load₊G, :load₊B]) do u, ctx
     @info "Increase load admittance Y by 10% at t=$(ctx.t)"
-    p[:load₊G] = p[:load₊G] * 1.1
-    p[:load₊B] = p[:load₊B] * 1.1
+    u[:load₊G] = u[:load₊G] * 1.1
+    u[:load₊B] = u[:load₊B] * 1.1
 end
 cb = PresetTimeComponentCallback(0.1, affect)
 set_callback!(bus2, cb)

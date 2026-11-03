@@ -400,9 +400,9 @@ function continuous_overcurrent_condition(branchname)
     I_max = Symbol(branchname, "₊", :I_max) # pilineX₊I_max
     t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
 
-    ComponentCondition([I_mag], [I_max, t_cutoff]) do u, p, t
-        p[t_cutoff] != Inf && return Inf # return Inf if cutoff already scheduled
-        p[I_max] - u[I_mag]
+    ComponentCondition([I_mag, I_max, t_cutoff]) do u, t
+        u[t_cutoff] != Inf && return Inf # return Inf if cutoff already scheduled
+        u[I_max] - u[I_mag]
     end
 end
 nothing #hide #md
@@ -416,9 +416,9 @@ function discrete_overcurrent_condition(branchname)
     I_max = Symbol(branchname, "₊", :I_max) # pilineX₊I_max
     t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
 
-    ComponentCondition([I_mag], [I_max, t_cutoff]) do u, p, t
-        p[t_cutoff] != Inf && return false # return false if cutoff already scheduled
-        u[I_mag] ≥ p[I_max]
+    ComponentCondition([I_mag, I_max, t_cutoff]) do u, t
+        u[t_cutoff] != Inf && return false # return false if cutoff already scheduled
+        u[I_mag] ≥ u[I_max]
     end
 end
 nothing #hide #md
@@ -433,12 +433,12 @@ function overcurrent_affect(branchname)
     t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
     t_delay = Symbol(branchname, "₊", :t_delay)   # pilineX₊t_delay
 
-    ComponentAffect([], [t_cutoff, t_delay]) do u, p, ctx
-        p[t_cutoff] != Inf && return # return early if already scheduled for cutoff
-        tcutoff = ctx.t + p[t_delay]
+    ComponentAffect([t_cutoff, t_delay]) do u, ctx
+        u[t_cutoff] != Inf && return # return early if already scheduled for cutoff
+        tcutoff = ctx.t + u[t_delay]
         println("$branchname of line $(ctx.src)→$(ctx.dst) overcurrent at t=$(ctx.t), scheduling cutoff at t=$tcutoff")
         ## update the parameter of the edge to store the cutoff time
-        p[t_cutoff] = tcutoff
+        u[t_cutoff] = tcutoff
         ## tell the integrator to explicitly step to the cutoff time
         add_tstop!(ctx.integrator, tcutoff)
     end
@@ -454,15 +454,15 @@ we only need a discrete callback:
 =#
 function cutoff_condition(branchname)
     t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
-    ComponentCondition([], [t_cutoff]) do u, p, t
-        t == p[t_cutoff]
+    ComponentCondition([t_cutoff]) do u, t
+        t == u[t_cutoff]
     end
 end
 function cutoff_affect(branchname)
     active = Symbol(branchname, "₊", :active) # pilineX₊active
-    ComponentAffect([], [active]) do u, p, ctx
+    ComponentAffect([active]) do u, ctx
         println("$branchname of line $(ctx.src)→$(ctx.dst) cutoff at t=$(ctx.t)")
-        p[active] = 0 # switch off the line
+        u[active] = 0 # switch off the line
     end
 end
 function cutoff_callback(branchname)
@@ -616,9 +616,9 @@ line 24.
 Notably, we only need to start the short circuit, as the protection is
 now "baked into" the transmission line model.
 =#
-_enable_short = ComponentAffect([], [:pibranchA₊shortcircuit]) do u, p, ctx
+_enable_short = ComponentAffect([:pibranchA₊shortcircuit]) do u, ctx
     @info "Short circuit activated on branch A of line $(ctx.src)→$(ctx.dst) at t = $(ctx.t)s"
-    p[:pibranchA₊shortcircuit] = 1
+    u[:pibranchA₊shortcircuit] = 1
 end
 shortcircuit_cb = PresetTimeComponentCallback(0.1, _enable_short)
 known_cbs = filter(cb -> !(cb isa PresetTimeComponentCallback), get_callbacks(nw_protected[EIndex(AFFECTED_LINE)]))

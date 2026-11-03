@@ -41,15 +41,15 @@ function OpenIPSL_SMIB(_bus1; just_init=false, tol=1e-10, nwtol=1e-10)
         busmodel = MTKBus(pwFault; name=:FAULT)
         faultbus = compile_bus(busmodel, vidx=4)
 
-        enable = ComponentAffect([], [:pwFault₊B, :pwFault₊G]) do u, p, ctx
-            p[:pwFault₊B] = 1e10
-            p[:pwFault₊G] = 1e10
-            # p[:pwFault₊B] = 10
-            # p[:pwFault₊G] = 10
+        enable = ComponentAffect([:pwFault₊B, :pwFault₊G]) do u, ctx
+            u[:pwFault₊B] = 1e10
+            u[:pwFault₊G] = 1e10
+            # u[:pwFault₊B] = 10
+            # u[:pwFault₊G] = 10
         end
-        disable = ComponentAffect([], [:pwFault₊B, :pwFault₊G]) do u, p, ctx
-            p[:pwFault₊B] = 0
-            p[:pwFault₊G] = 0
+        disable = ComponentAffect([:pwFault₊B, :pwFault₊G]) do u, ctx
+            u[:pwFault₊B] = 0
+            u[:pwFault₊G] = 0
         end
         enable_cb = PresetTimeComponentCallback(2, enable)
         disable_cb = PresetTimeComponentCallback(2.15, disable)

@@ -473,36 +473,36 @@ function _generate_limint_callbacks(namespace, x)
     use_discrete_callback = get_saturation_config().discrete_cb
 
     if use_continuous_callback
-        condition = ComponentCondition(_SatLim_condition, [min, max, x, forcing], [satmax, satmin])
+        condition = ComponentCondition(_SatLim_condition, [min, max, x, forcing, satmax, satmin])
 
-        saturation_affect = ComponentAffect([], [satmax, satmin]) do u, p, event_signs, ctx
+        saturation_affect = ComponentAffect([satmax, satmin]) do u, event_signs, ctx
             comp = get_compidx(ctx)
             verbose = get_callback_verbosity()
             if event_signs[1] > 0
                 # out[1] upcrossing: x exceeded max, enter upper saturation
                 verbose && println("$comp: $namespace: /⎺ reached upper saturation at $(round(ctx.t, digits=4))s")
-                p[satmax] = 1.0
-                p[satmin] = 0.0
+                u[satmax] = 1.0
+                u[satmin] = 0.0
             end
             if event_signs[2] > 0
                 # out[2] upcrossing: x dropped below min, enter lower saturation
                 verbose && println("$comp: $namespace: \\_ reached lower saturation at $(round(ctx.t, digits=4))s")
-                p[satmax] = 0.0
-                p[satmin] = 1.0
+                u[satmax] = 0.0
+                u[satmin] = 1.0
             end
             if event_signs[3] > 0
                 # out[3] upcrossing: forcing went from negative to positive, i.e. we leave lower saturation
-                insatmin = !iszero(p[satmin])
+                insatmin = !iszero(u[satmin])
                 if insatmin
                     verbose && println("$comp: $namespace: _/ left lower saturation at $(round(ctx.t, digits=4))s")
-                    p[satmin] = 0.0
+                    u[satmin] = 0.0
                 end
             elseif event_signs[3] < 0
                 # out[3] downcrossing: forcing went from positive to negative, i.e. we leave upper saturation
-                insatmax = !iszero(p[satmax])
+                insatmax = !iszero(u[satmax])
                 if insatmax
                     verbose && println("$comp: $namespace: ⎺\\ left upper saturation at $(round(ctx.t, digits=4))s")
-                    p[satmax] = 0.0
+                    u[satmax] = 0.0
                 end
             end
         end
@@ -511,15 +511,15 @@ function _generate_limint_callbacks(namespace, x)
 
     if use_discrete_callback
         # TODO: merge both discrete conditions and move condition below function for performance
-        function _discrete_cond(u,p,t)
+        function _discrete_cond(u,t)
             # account for numerical inaccuracies at the boundaries. While saturated x is
             # frozen, so crossing the same bound again is only solver noise: don't re-clamp
-            insatmin = !iszero(p[1])
-            insatmax = !iszero(p[2])
+            insatmin = !iszero(u[4])
+            insatmax = !iszero(u[5])
             !insatmin && u[1] < u[2] - 1e-10 || !insatmax && u[1] > u[3] + 1e-10
         end
-        discrete_condition = ComponentCondition(_discrete_cond, [x, min, max], [satmin, satmax])
-        discrete_affect = ComponentAffect([x],[satmin, satmax]) do u, p, ctx
+        discrete_condition = ComponentCondition(_discrete_cond, [x, min, max, satmin, satmax])
+        discrete_affect = ComponentAffect([x, satmin, satmax]) do u, ctx
             comp = get_compidx(ctx)
             verbose = get_callback_verbosity()
             if ctx.model isa VertexModel
@@ -536,43 +536,43 @@ function _generate_limint_callbacks(namespace, x)
                     use_continuous_callback ? printstyled(" (triggered by discrete cb)\n", color=:yellow) : println()
                 end
                 u[x] = _min
-                p[satmin] = 1.0
-                p[satmax] = 0.0
+                u[satmin] = 1.0
+                u[satmax] = 0.0
             elseif u[x] > _max
                 if verbose || use_continuous_callback
                     print("$comp: $namespace: /⎺ reached upper saturation at $(round(ctx.t, digits=4))s")
                     use_continuous_callback ? printstyled(" (triggered by discrete cb)\n", color=:yellow) : println()
                 end
                 u[x] = _max
-                p[satmin] = 0.0
-                p[satmax] = 1.0
+                u[satmin] = 0.0
+                u[satmax] = 1.0
             else
                 error("Sanity check was wrongfully triggered!")
             end
         end
-        function _discrete_unsat_cond(u,p,t)
-            insatmin = !iszero(p[1])
-            insatmax = !iszero(p[2])
+        function _discrete_unsat_cond(u,t)
+            insatmin = !iszero(u[2])
+            insatmax = !iszero(u[3])
             insatmin && u[1] > 0 || insatmax && u[1] < 0
         end
-        discrete_unsat_condition = ComponentCondition(_discrete_unsat_cond, [forcing],[satmin, satmax])
-        discrete_unsat_affect = ComponentAffect([],[satmin, satmax]) do u, p, ctx
+        discrete_unsat_condition = ComponentCondition(_discrete_unsat_cond, [forcing, satmin, satmax])
+        discrete_unsat_affect = ComponentAffect([satmin, satmax]) do u, ctx
             comp = get_compidx(ctx)
             verbose = get_callback_verbosity()
-            insatmin = !iszero(p[satmin])
-            insatmax = !iszero(p[satmax])
+            insatmin = !iszero(u[satmin])
+            insatmax = !iszero(u[satmax])
             if insatmin
                 if verbose
                     print("$comp: $namespace: _/ left lower saturation at $(round(ctx.t, digits=4))s")
                     use_continuous_callback ? printstyled(" (triggered by discrete cb)\n", color=:yellow) : println()
                 end
-                p[satmin] = 0.0
+                u[satmin] = 0.0
             elseif insatmax
                 if verbose
                     print("$comp: $namespace: ⎺\\ left upper saturation at $(round(ctx.t, digits=4))s")
                     use_continuous_callback ? printstyled(" (triggered by discrete cb)\n", color=:yellow) : println()
                 end
-                p[satmax] = 0.0
+                u[satmax] = 0.0
             else
                 error("Sanity check was wrongfully triggered!")
             end
@@ -594,12 +594,11 @@ function _generate_limint_callbacks(namespace, x)
         error("No callback type selected for LimiterCallbackConfig!")
     end
 end
-function _SatLim_condition(_out, u, p, _)
+function _SatLim_condition(_out, u, _)
         # define condition in separate function to avoid capturing and make them batch compatible
-        # expect u[min, max, x, forcing]
-        # expect p[satmax, satmin]
-        insatmax = !iszero(p[1])
-        insatmin = !iszero(p[2])
+        # expect u[min, max, x, forcing, satmax, satmin]
+        insatmax = !iszero(u[5])
+        insatmin = !iszero(u[6])
 
         upcrossing_max =  u[3] - u[2]
         upcrossing_min = -u[3] + u[1]

@@ -193,8 +193,8 @@ maintain synchronism with the network.
 =#
 freq_event = PresetTimeComponentCallback(
     1, # trigger at time 1
-    ComponentAffect([],[:V,:ω]) do u, p, ctx
-        p[:ω] = 1.01 # set frequency to 1.01 pu
+    ComponentAffect([:V, :ω]) do u, ctx
+        u[:ω] = 1.01 # set frequency to 1.01 pu
     end
 )
 set_callback!(slackbus, freq_event)
