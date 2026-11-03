@@ -5,29 +5,17 @@ Machine Model as described in the book of Sauer and Pai.
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
-@mtkmodel SauerPaiMachine begin
-    @structural_parameters begin
-        vf_input = true
-        τ_m_input = true
-        stator_dynamics = false
-    end
-    @components begin
-        terminal=Terminal()
-        # inputs
-        if vf_input
-            vf_in = RealInput(guess=1) # field voltage input [pu]
-        end
-        if τ_m_input
-            τ_m_in = RealInput() # mechanical torque [pu]
-        end
-        # outputs
-        δout = RealOutput() # rotor angle
-        ωout = RealOutput() # rotor speed [pu]
-        v_mag_out = RealOutput() # terminal voltage [pu]
-        Pout = RealOutput() # active power [pu]
-        Qout = RealOutput() # reactive power [pu]
-    end
-    @parameters begin
+@cached_component function SauerPaiMachine(; name, vf_input=true, τ_m_input=true, stator_dynamics=false)
+    @named terminal = Terminal()
+    # outputs
+    @named δout = RealOutput() # rotor angle
+    @named ωout = RealOutput() # rotor speed [pu]
+    @named v_mag_out = RealOutput() # terminal voltage [pu]
+    @named Pout = RealOutput() # active power [pu]
+    @named Qout = RealOutput() # reactive power [pu]
+    systems = [terminal, δout, ωout, v_mag_out, Pout, Qout]
+
+    params = @parameters begin
         R_s, [description="stator resistance"]
         X_d, [description="d-axis synchronous reactance"]
         X_q, [description="q-axis synchronous reactance"]
@@ -48,15 +36,8 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         ωframe, [bound_to = :systembase₊ωframe, description="Global dq frame speed [pu]"]
         Sn, [initf_weak = Sbase, description="Machine power rating [MVA]"]
         Vn, [initf_weak = Vbase, description="Machine voltage rating [kV]"]
-        # input/parameter switches
-        if !vf_input
-            vf_set, [guess=1, bounds=(0,Inf), description="field voltage"]
-        end
-        if !τ_m_input
-            τ_m_set, [guess=1, bounds=(0,Inf), description="mechanical torque"]
-        end
     end
-    @variables begin
+    vars = @variables begin
         ψ_d(t), [guess=1, description="d-axis flux linkage"]
         ψ_q(t), [guess=0, description="q-axis flux linkage"]
         ψ″_d(t), [guess=1, description="flux linkage assosciated with X″_d"]
@@ -79,18 +60,38 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         vf(t), [bounds=(0,Inf), description="field voltage"]
         τ_m(t), [bounds=(0,Inf), description="mechanical torque"]
     end
-    begin
-        γ_d1 = (X″_d - X_ls)/(X′_d - X_ls)
-        γ_q1 = (X″_q - X_ls)/(X′_q - X_ls)
-        γ_d2 = (X′_d-X″_d)/(X′_d-X_ls)^2 # ~ (1 - γ_d1)/(X′_d - X_ls)
-        γ_q2 = (X′_q-X″_q)/(X′_q-X_ls)^2 # ~ (1 - γ_q1)/(X′_q - X_ls)
-        # This transformation seems identical to Milano and PSD models
-        T_to_loc(α)  = [ sin(α) -cos(α);
-                         cos(α)  sin(α)]
-        T_to_glob(α) = [ sin(α)  cos(α);
-                        -cos(α)  sin(α)]
+
+    # input/parameter switches
+    if vf_input
+        @named vf_in = RealInput(guess=1) # field voltage input [pu]
+        push!(systems, vf_in)
+        vf_source = vf_in.u
+    else
+        @parameters vf_set [guess=1, bounds=(0,Inf), description="field voltage"]
+        push!(params, vf_set)
+        vf_source = vf_set
     end
-    @equations begin
+    if τ_m_input
+        @named τ_m_in = RealInput() # mechanical torque [pu]
+        push!(systems, τ_m_in)
+        τ_m_source = τ_m_in.u
+    else
+        @parameters τ_m_set [guess=1, bounds=(0,Inf), description="mechanical torque"]
+        push!(params, τ_m_set)
+        τ_m_source = τ_m_set
+    end
+
+    γ_d1 = (X″_d - X_ls)/(X′_d - X_ls)
+    γ_q1 = (X″_q - X_ls)/(X′_q - X_ls)
+    γ_d2 = (X′_d-X″_d)/(X′_d-X_ls)^2 # ~ (1 - γ_d1)/(X′_d - X_ls)
+    γ_q2 = (X′_q-X″_q)/(X′_q-X_ls)^2 # ~ (1 - γ_q1)/(X′_q - X_ls)
+    # This transformation seems identical to Milano and PSD models
+    T_to_loc(α)  = [ sin(α) -cos(α);
+                     cos(α)  sin(α)]
+    T_to_glob(α) = [ sin(α)  cos(α);
+                    -cos(α)  sin(α)]
+
+    eqs = [
         # Park's transformations
         [terminal.u_r, terminal.u_i] .~ T_to_glob(δ)*[V_d, V_q] * (Vn/Vbase)
         [I_d, I_q] .~ T_to_loc(δ)*[terminal.i_r, terminal.i_i] * (Ibase(Sbase, Vbase)/Ibase(Sn, Vn))
@@ -103,18 +104,6 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         # term is nominal speed (a setpoint), which is frame-invariant.
         Dt(δ) ~ ωbase*(ω - ωframe)
         2*H * Dt(ω) ~ τ_m  - τ_e - D*(ω - 1)
-
-        if stator_dynamics
-            # stator equations, in the *rotor* frame: the cross-coupling speed is the
-            # rotor speed ω (a state), not the global frame. The bare 1/ωbase is the
-            # flux base Vbase/ωbase, i.e. the unit of the differentiated quantity.
-            1/ωbase * Dt(ψ_d) ~ R_s*I_d + ω * ψ_q + V_d
-            1/ωbase * Dt(ψ_q) ~ R_s*I_q - ω * ψ_d + V_q
-        else
-            # static fomulation
-            0 ~ R_s*I_d + ω * ψ_q + V_d
-            0 ~ R_s*I_q - ω * ψ_d + V_q
-        end
 
         T′_d0 * Dt(E′_q) ~ -E′_q - (X_d - X′_d)*(I_d - γ_d2*ψ″_d - (1-γ_d1)*I_d + γ_d2*E′_q) + vf
         T′_q0 * Dt(E′_d) ~ -E′_d + (X_q - X′_q)*(I_q - γ_q2*ψ″_q - (1-γ_q1)*I_q - γ_q2*E′_d)
@@ -130,8 +119,8 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         # 0 ~ -X″_q*I_q - γ_q1*E′_d + (1-γ_q1)*ψ″_q - ψ_q
 
         # inputs
-        vf ~ vf_input ? vf_in.u : vf_set
-        τ_m ~ τ_m_input ? τ_m_in.u : τ_m_set
+        vf ~ vf_source
+        τ_m ~ τ_m_source
 
         # observables
         v_mag ~ sqrt(V_d^2 + V_q^2)
@@ -145,9 +134,20 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         v_mag_out.u ~ v_mag
         δout.u ~ δ
         ωout.u ~ ω
+    ]
+    if stator_dynamics
+        # stator equations, in the *rotor* frame: the cross-coupling speed is the
+        # rotor speed ω (a state), not the global frame. The bare 1/ωbase is the
+        # flux base Vbase/ωbase, i.e. the unit of the differentiated quantity.
+        append!(eqs, [1/ωbase * Dt(ψ_d) ~ R_s*I_d + ω * ψ_q + V_d,
+                      1/ωbase * Dt(ψ_q) ~ R_s*I_q - ω * ψ_d + V_q])
+    else
+        # static fomulation
+        append!(eqs, [0 ~ R_s*I_d + ω * ψ_q + V_d,
+                      0 ~ R_s*I_q - ω * ψ_d + V_q])
     end
+    System(eqs, t, vars, params; name, systems)
 end
-
 
 #=
 MWE why whe need to have ψ force by constraint rather than free

@@ -13,22 +13,19 @@ to the bus voltage: I = Y * V. It has no dynamic states and is evaluated algebra
 
 $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
 """
-@mtkmodel StaticShunt begin
-    @parameters begin
+@cached_component function StaticShunt(; name)
+    params = @parameters begin
         G, [description="Shunt conductance [pu]"]
         B, [description="Shunt susceptance [pu]"]
     end
-    @components begin
-        terminal = Terminal()
-    end
-    begin
-        Y = G + im*B
-        ishunt = -Y * (terminal.u_r + im*terminal.u_i)
-    end
-    @equations begin
+    @named terminal = Terminal()
+    Y = G + im*B
+    ishunt = -Y * (terminal.u_r + im*terminal.u_i)
+    eqs = [
         terminal.i_r ~ real(ishunt)
         terminal.i_i ~ imag(ishunt)
-    end
+    ]
+    System(eqs, t, [], params; name, systems=[terminal])
 end
 
 """

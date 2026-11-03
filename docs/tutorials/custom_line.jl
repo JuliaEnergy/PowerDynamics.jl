@@ -22,8 +22,8 @@ using Graphs
 #=
 ## Basic PI-Branch Model
 
-We start by defining a basic PI-branch model, which is similar to the one in `PiLine_fault.jl` as an
-MTKModel. This model should fulfill the [Branch Interface](@ref), i.e. it needs to have two [`Terminal`](@ref), one called
+We start by defining a basic PI-branch model as an MTKModel. It is similar to the one in
+`PiLine_fault.jl`, which is written as a `@cached_component` function instead. This model should fulfill the [Branch Interface](@ref), i.e. it needs to have two [`Terminal`](@ref), one called
 `:src` the other called `:dst`:
 
 ```asciiart
