@@ -379,9 +379,9 @@ end
 ####
 #### solve dyn system
 ####
-increase_load = ComponentAffect([], [:load₊Pset]) do u, p, ctx
+increase_load = ComponentAffect([:load₊Pset]) do u, ctx
     # println("Change load setpoint at $(ctx.t)")
-    p[:load₊Pset] = -1.20 * 3.29
+    u[:load₊Pset] = -1.20 * 3.29
 end
 inc_cb = PresetTimeComponentCallback(1, increase_load)
 set_callback!(nw[VIndex(16)], inc_cb)

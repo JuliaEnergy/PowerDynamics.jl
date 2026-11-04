@@ -348,8 +348,8 @@ s0 = NWState(nw)
 This creates a state and parameter object, which is prefilled with all of the default values stored in the Network.
 The undefined states/parameters are set to `NaN`.
 
-!!! note Automatic State Reduction
-In the printout of `s0` you see only two "real" states: $\omega$ and $\theta$ of the swing equation, everything else was simplified away, just like in the MTK example above.
+!!! note "Automatic State Reduction"
+    In the printout of `s0` you see only two "real" states: $\omega$ and $\theta$ of the swing equation, everything else was simplified away, just like in the MTK example above.
 
 Using the symbolic indexing syntax described above, we can now set the initial conditions for all states and parameters that are not already defined.
 

@@ -230,11 +230,11 @@ using ModelingToolkitBase, PowerDynamics, PowerDynamics.Library, NetworkDynamics
 ```
 Let's define a perturbation event by changing the load admittance at t=0.1s:
 ```@example modelborders
-affect = ComponentAffect([], [:load₊G]) do u, p, ctx
+affect = ComponentAffect([:load₊G]) do u, ctx
     if ctx.t == 0.1
-       p[:load₊G] *= 100
+       u[:load₊G] *= 100
     elseif ctx.t == 0.2
-       p[:load₊G] /= 100
+       u[:load₊G] /= 100
     end
 end
 cb = PresetTimeComponentCallback([0.1, 0.2], affect)
@@ -310,7 +310,7 @@ Now we model the same system using loopback connections. Note how we use `curren
 @named gen = SauerPaiMachine(; genp...)
 @named genAbus = compile_bus(MTKBus(gen); current_source=true)
 ```
-Make sure to also compile the powerflow model as a current source. 
+Make sure to also compile the powerflow model as a current source.
 ```@example modelborders
 set_pfmodel!(genAbus, pfSlack(V=1; current_source=true))
 nothing #hide

@@ -14,7 +14,7 @@ This example demonstrates **eigenvalue analysis** and **impedance-based Bode ana
     so please check out their great toolbox for in-depth linear analysis of power systems!
 
     Throughout this example we compare our results to figures exported from SimplusGT.
-    You can find a README.md in `/docs/examples/SimplusGTData` of the PowerDynamics.jl repository which explains how those reference plots have been created.
+    You can find a README.md in `docs/examples/SimplusGT_data/generate_figures` of the PowerDynamics.jl repository which explains how those reference plots have been created.
 =#
 
 #=
@@ -27,11 +27,13 @@ Since modeling is not the focus of this tutorial, it is provided without further
 <details class="admonition is-details"> #md
 <summary class="admonition-header">Definition of custom Machine Model</summary> #md
 <div class="admonition-body"> #md
+``` #md
+
 SimplusGT uses a special machine model for their Type 0 Apparatus which:
+
 - retains the stator flux dynamics (i.e. defines the current output as a differential equation),
 - assumes constant field flux (parameter which is initialized at operation point) and
 - contains no governor dynamics (i.e. mechanical torque is a constant parameter initialized at operation point).
-``` #md
 =#
 using PowerDynamics
 using PowerDynamics.Library
@@ -839,13 +841,13 @@ Since we have the full nonlinear model at hand, let's also do a time-domain simu
 To perturb the system, we apply a three-phase short circuit at Bus 1 by reducing the shunt resistance to near zero for a short time.
 The fault starts at 0.1s and is cleared at 0.2s.
 =#
-affect = ComponentAffect([], [:shunt₊R]) do u, p, ctx
+affect = ComponentAffect([:shunt₊R]) do u, ctx
     if ctx.t == 0.1
         println("Short Circuit at Bus 1 at t=0.1s")
-        p[:shunt₊R] = 1e-6
+        u[:shunt₊R] = 1e-6
     elseif ctx.t == 0.2
         println("Clearing Short Circuit at Bus 1 at t=0.2s")
-        p[:shunt₊R] = 1/0.6
+        u[:shunt₊R] = 1/0.6
     end
 end
 short = PresetTimeComponentCallback([0.1, 0.2], affect)

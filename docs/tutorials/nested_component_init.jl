@@ -398,8 +398,8 @@ slackbus = compile_bus(PowerDynamics.VariableFrequencySlack(name=:slack); vidx=1
 line = compile_line(MTKLine(PiLine(; name=:piline, R=0.01, X=0.1, B_src=0, B_dst=0)); src=1, dst=2)
 
 set_callback!(genbus, PresetTimeComponentCallback(
-    1, ComponentAffect([], [:gen₊gov₊P_ref]) do u, p, ctx
-        p[:gen₊gov₊P_ref] += 0.02
+    1, ComponentAffect([:gen₊gov₊P_ref]) do u, ctx
+        u[:gen₊gov₊P_ref] += 0.02
     end))
 
 nw = Network([slackbus, genbus], line)

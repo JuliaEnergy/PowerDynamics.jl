@@ -105,20 +105,20 @@ Now we define callback functions to model the disturbance sequence:
 
 ## Define callback to enable short circuit at t=0.1s
 VERBOSE_CALLBACK = true #hide #md
-_enable_short = ComponentAffect([], [:piline₊shortcircuit]) do u, p, ctx
+_enable_short = ComponentAffect([:piline₊shortcircuit]) do u, ctx
     if VERBOSE_CALLBACK #hide #md
     @info "Short circuit activated on line $(ctx.src)→$(ctx.dst) at t = $(ctx.t)s"
     end #hide #md
-    p[:piline₊shortcircuit] = 1
+    u[:piline₊shortcircuit] = 1
 end
 shortcircuit_cb = PresetTimeComponentCallback(0.1, _enable_short)
 
 ## Define callback to disconnect line at t=0.2s (fault clearing)
-_disable_line = ComponentAffect([], [:piline₊active]) do u, p, ctx
+_disable_line = ComponentAffect([:piline₊active]) do u, ctx
     if VERBOSE_CALLBACK #hide #md
     @info "Line $(ctx.src)→$(ctx.dst) disconnected at t = $(ctx.t)s"
     end #hide #md
-    p[:piline₊active] = 0
+    u[:piline₊active] = 0
 end
 deactivate_cb = PresetTimeComponentCallback(0.2, _disable_line)
 

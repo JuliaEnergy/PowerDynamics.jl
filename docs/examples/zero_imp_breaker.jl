@@ -187,20 +187,20 @@ callback. This is obviously not a realistic breaker control strategy, but it ser
 demonstrate both opening and closing of the breaker in a single simulation.
 =#
 
-toggle_breaker = ComponentAffect([],[:breaker₊closed]) do u, p, ctx
-    current = p[:breaker₊closed]
+toggle_breaker = ComponentAffect([:breaker₊closed]) do u, ctx
+    current = u[:breaker₊closed]
     next = current == 1 ? 0 : 1
     println("Toggling breaker state from ", Int(current), " to ", Int(next), " at t=", ctx.t)
-    p[:breaker₊closed] = next
+    u[:breaker₊closed] = next
 end
 
 ## Open the breaker at t=0.1s
 open_breaker = PresetTimeComponentCallback(0.1, toggle_breaker)
 
 ## Close the breaker when voltage angles are synchronized
-close_cond = ComponentCondition([:src₊u_r, :src₊u_i, :dst₊u_r, :dst₊u_i], [:breaker₊closed]) do u, p, ctx
+close_cond = ComponentCondition([:src₊u_r, :src₊u_i, :dst₊u_r, :dst₊u_i, :breaker₊closed]) do u, t
     ## Don't trigger if already/still closed
-    p[:breaker₊closed] == 1 && return Inf
+    u[:breaker₊closed] == 1 && return Inf
 
     ## Calculate voltage angles on both sides
     src_arg = atan(u[:src₊u_i], u[:src₊u_r])

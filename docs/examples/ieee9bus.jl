@@ -217,9 +217,9 @@ To see some dynamics, we need to introduce some disturbance.
 For that we use a [`PresetTimeComponentCallback`](@extref NetworkDynamics.PresetTimeComponentCallback)
 to deactivate a line at a certain time.
 =#
-deactivate_line = ComponentAffect([], [:pibranch₊active]) do u, p, ctx
+deactivate_line = ComponentAffect([:pibranch₊active]) do u, ctx
     @info "Deactivate line $(ctx.src)=>$(ctx.dst) at t=$(ctx.t)"
-    p[:pibranch₊active] = 0
+    u[:pibranch₊active] = 0
 end
 cb = PresetTimeComponentCallback([1.0], deactivate_line)
 set_callback!(l46, cb)
