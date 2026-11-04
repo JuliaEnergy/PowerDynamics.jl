@@ -16,7 +16,7 @@ ref = CSV.read(
     joinpath(pkgdir(PowerDynamics),"test","OpenIPSL_test","GENROU","modelica_results.csv.gz"),
     DataFrame;
     drop=(i,name) -> contains(string(name), "nrows="),
-    silencewarnings=true
+    on_error=:collect
 )
 
 # bus 1 is provided from outside
@@ -157,7 +157,7 @@ ref_extended = CSV.read(
     joinpath(pkgdir(PowerDynamics),"test","OpenIPSL_test","GENROU","modelica_results_extended.csv.gz"),
     DataFrame;
     drop=(i,name) -> contains(string(name), "nrows="),
-    silencewarnings=true
+    on_error=:collect
 )
 
 # Separate plot for Voltage Magnitude across all buses
