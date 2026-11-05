@@ -16,7 +16,7 @@ ref = CSV.read(
     joinpath(pkgdir(PowerDynamics),"test","OpenIPSL_test","ESST1A","modelica_results.csv.gz"),
     DataFrame;
     drop=(i,name) -> contains(string(name), "nrows="),
-    silencewarnings=true
+    on_error=:collect
 )
 
 # GENROE+ESST1A bus model parameters from OpenIPSL ESST1A test case

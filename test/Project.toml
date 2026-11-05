@@ -41,7 +41,7 @@ path = ".."
 
 [compat]
 Aqua = "0.8.12"
-CSV = "0.10.15, 1"
+CSV = "1"
 CairoMakie = "0.15"
 DataFrames = "≥0.0.1"
 DiffEqCallbacks = "≥0.0.1"

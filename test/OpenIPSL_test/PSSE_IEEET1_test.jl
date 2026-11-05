@@ -17,7 +17,7 @@ ref = CSV.read(
     joinpath(pkgdir(PowerDynamics),"test","OpenIPSL_test","IEEET1","modelica_results.csv.gz"),
     DataFrame;
     drop=(i,name) -> contains(string(name), "nrows="),
-    silencewarnings=true
+    on_error=:collect
 )
 
 # IEEET1 exciter parameters from OpenIPSL IEEET1 test case
