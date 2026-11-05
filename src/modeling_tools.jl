@@ -376,7 +376,7 @@ function MTKBus(injectors...; name=:bus, Vbase=nothing)
     @named busbar = BusBar(; _busbar_defaults(Vbase)...)
     @named systembase = SystemBase()
     eqs = [connect(busbar.terminal, inj.terminal) for inj in injectors]
-    System(eqs, t; systems=[busbar, systembase, injectors...], name)
+    _composite_system(eqs, [busbar, systembase, injectors...], name)
 end
 
 function MTKBus(systems::Union{AbstractVector,Tuple,Set}, eqs=autoconnections(systems); name=:bus, Vbase=nothing)
@@ -388,10 +388,21 @@ function MTKBus(systems::Union{AbstractVector,Tuple,Set}, eqs=autoconnections(sy
             push!(eqs, eq)
         end
     end
-    System(eqs, t; systems=vcat(busbar, systembase, systems), name)
+    _composite_system(eqs, vcat(busbar, systembase, systems), name)
 end
 
 _busbar_defaults(Vbase) = isnothing(Vbase) ? (;) : (; Vbase)
+
+# A system which only connects its subsystems has no variables of its own. The 4-arg `System`
+# says so up front, which spares MTK a search through all flattened subsystem equations.
+# Equations other than connections may introduce new variables, so they get the full search.
+function _composite_system(eqs, systems, name)
+    if all(eq -> eq.lhs isa ModelingToolkitBase.Connection, eqs)
+        System(eqs, t, [], []; systems, name)
+    else
+        System(eqs, t; systems, name)
+    end
+end
 
 """
     MTKLine(branches...; name=:line)
@@ -440,7 +451,7 @@ function MTKLine(branches...; name=:line)
     eqs = [[connect(src.terminal, branch.src) for branch in branches]...,
            [connect(dst.terminal, branch.dst) for branch in branches]...]
 
-    System(eqs, t; systems=[ systems..., branches...], name)
+    _composite_system(eqs, [systems..., branches...], name)
 end
 
 
