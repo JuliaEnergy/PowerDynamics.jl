@@ -139,7 +139,7 @@ explicitly is still useful when you want to set the bases on the symbolic model
 
 See also: [`BusBar`](@ref), [`LineEnd`](@ref), [`set_Sbase!`](@ref), [`set_ωbase!`](@ref)
 """
-@component function SystemBase(; name, defaults...)
+@cached_component function SystemBase(; name)
     params = @parameters begin
         Sbase = get_Sbase(), [description="System power base [MVA]"]
         ωbase = get_ωbase(), [description="System frequency base [rad/s]"]
@@ -151,7 +151,7 @@ See also: [`BusBar`](@ref), [`LineEnd`](@ref), [`set_Sbase!`](@ref), [`set_ωbas
     eqs = Equation[
         fbase ~ ωbase/(2π)
     ]
-    set_mtk_defaults(System(eqs, t, vars, params; name), defaults)
+    System(eqs, t, vars, params; name)
 end
 
 """
@@ -251,7 +251,7 @@ NetworkDynamics.VertexModel-Tuple{}) by calling [`compile_bus`](@ref).
 
 See also: [`Terminal`](@ref), [`MTKBus`](@ref), [`compile_bus`](@ref)
 """
-@component function BusBar(; name, defaults...)
+@cached_component function BusBar(; name)
     @named base = BusBase()
     @named terminal = Terminal()
     @unpack u_r, u_i, i_r, i_i = base
@@ -261,8 +261,7 @@ See also: [`Terminal`](@ref), [`MTKBus`](@ref), [`compile_bus`](@ref)
         i_r ~ terminal.i_r
         i_i ~ terminal.i_i
     ]
-    sys = extend(System(eqs, t; name, systems=[terminal]), base)
-    set_mtk_defaults(sys, defaults)
+    extend(System(eqs, t; name, systems=[terminal]), base)
 end
 
 
@@ -283,7 +282,7 @@ calling [`compile_line`](@ref).
 
 See also: [`Terminal`](@ref), [`MTKLine`](@ref), [`compile_line`](@ref)
 """
-@component function LineEnd(; name, side, defaults...)
+@cached_component function LineEnd(; name, side)
     side in (:src, :dst) ||
         throw(ArgumentError("LineEnd: `side` must be :src or :dst, got $(repr(side)). \
                              It selects which incident bus this end inherits `Vbase` from."))
@@ -334,7 +333,7 @@ See also: [`Terminal`](@ref), [`MTKLine`](@ref), [`compile_line`](@ref)
         Q_MVAr ~ Q * Sbase
         i_kA ~ i_mag * Ibase
     ]
-    set_mtk_defaults(System(eqs, t, vars, params; name, systems=[terminal]), defaults)
+    System(eqs, t, vars, params; name, systems=[terminal])
 end
 
 """
