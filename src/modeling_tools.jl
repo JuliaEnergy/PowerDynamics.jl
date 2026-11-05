@@ -458,15 +458,14 @@ end
 # this is a hack to convice MTK that i_r and i_i do depend on u_r and u_i
 # we tell MTK to not further resolve, which makes it accept
 # the curent constraint as a valid constraint for ur/ui
-@mtkmodel KirchoffBus begin
-    @components begin
-        busbar = BusBase()
-        systembase = SystemBase()
-    end
-    @equations begin
+@cached_component function KirchoffBus(; name)
+    @named busbar = BusBase()
+    @named systembase = SystemBase()
+    eqs = [
         busbar.i_r ~ implicit_output(busbar.u_r)
         busbar.i_i ~ implicit_output(busbar.u_i)
-    end
+    ]
+    System(eqs, t, [], []; systems=[busbar, systembase], name)
 end
 
 MTKBus(; name=:bus) = KirchoffBus(; name)
