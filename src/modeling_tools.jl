@@ -376,7 +376,7 @@ function MTKBus(injectors...; name=:bus, Vbase=nothing)
     @named busbar = BusBar(; _busbar_defaults(Vbase)...)
     @named systembase = SystemBase()
     eqs = [connect(busbar.terminal, inj.terminal) for inj in injectors]
-    _composite_system(eqs, [busbar, systembase, injectors...], name)
+    composite_system(eqs, [busbar, systembase, injectors...], name)
 end
 
 function MTKBus(systems::Union{AbstractVector,Tuple,Set}, eqs=autoconnections(systems); name=:bus, Vbase=nothing)
@@ -388,21 +388,10 @@ function MTKBus(systems::Union{AbstractVector,Tuple,Set}, eqs=autoconnections(sy
             push!(eqs, eq)
         end
     end
-    _composite_system(eqs, vcat(busbar, systembase, systems), name)
+    composite_system(eqs, vcat(busbar, systembase, systems), name)
 end
 
 _busbar_defaults(Vbase) = isnothing(Vbase) ? (;) : (; Vbase)
-
-# A system which only connects its subsystems has no variables of its own. The 4-arg `System`
-# says so up front, which spares MTK a search through all flattened subsystem equations.
-# Equations other than connections may introduce new variables, so they get the full search.
-function _composite_system(eqs, systems, name)
-    if all(eq -> eq.lhs isa ModelingToolkitBase.Connection, eqs)
-        System(eqs, t, [], []; systems, name)
-    else
-        System(eqs, t; systems, name)
-    end
-end
 
 """
     MTKLine(branches...; name=:line)
@@ -451,7 +440,7 @@ function MTKLine(branches...; name=:line)
     eqs = [[connect(src.terminal, branch.src) for branch in branches]...,
            [connect(dst.terminal, branch.dst) for branch in branches]...]
 
-    _composite_system(eqs, [systems..., branches...], name)
+    composite_system(eqs, [systems..., branches...], name)
 end
 
 
@@ -512,7 +501,7 @@ function CompositeInjector(systems, eqs=autoconnections(systems); name=Symbol(jo
     @assert allequal(ivs) "Systems have different independent variables! $ivs"
     iv = first(ivs)
     termeqs = Equation[connect(sys.terminal, terminal) for sys in systems if isinjectormodel(sys)]
-    System(vcat(termeqs, eqs), iv; systems=vcat(terminal, systems), name)
+    composite_system(vcat(termeqs, eqs), vcat(terminal, systems), name; iv)
 end
 
 function autoconnections(systems)
@@ -566,6 +555,22 @@ function _findmatch(in_symbol, outs_symbol)
     else
         error("Multiple possible matches found for input :$in. Candidates: $(Symbol.(outs[idx]))")
     end
+end
+
+"""
+    composite_system(eqs, systems, name; iv=t)
+
+Build a `System` from subsystems and the equations that tie them together. It gives the same
+result as `System(eqs, iv; systems, name)`, but it is a lot faster for deep hierarchies.
+
+MTK's constructor flattens all subsystems to look for variables scoped up to the new level.
+This helper skips that search. A variable inside a subsystem that uses `ParentScope` to reach
+this level still ends up in the flattened system, but loses its default.
+"""
+function composite_system(eqs, systems, name; iv=t)
+    # without subsystems, this only collects the variables of `eqs` itself
+    own = System(eqs, iv; name)
+    System(eqs, iv, ModelingToolkitBase.get_unknowns(own), ModelingToolkitBase.get_ps(own); systems, name)
 end
 
 """
