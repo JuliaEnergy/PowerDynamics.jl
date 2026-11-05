@@ -118,7 +118,8 @@ function _strip_weak_initf!(c, sym)
     idx = findfirst(f -> f.weak && f.outsym == [sym] && isempty(f.sym), formulas)
     isnothing(idx) && return nothing
     f = popat!(formulas, idx)
-    isempty(formulas) ? delete_initformulas!(c) : set_initformula!(c, formulas)
+    # the remaining formulas were checked when they were attached
+    isempty(formulas) ? delete_initformulas!(c) : set_initformula!(c, formulas; check=false)
     out = SymbolicView(zeros(1), f.outsym)
     f(out, Float64[])
     out[sym]
