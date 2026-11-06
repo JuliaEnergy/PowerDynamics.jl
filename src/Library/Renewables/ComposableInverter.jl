@@ -840,7 +840,7 @@ end
 Grid-following inverter with DC-link dynamics and active power control.
 
 Extends SimpleGFL with DC-link capacitor model and PI controller for DC voltage regulation.
-The DC voltage controller generates active current reference (q-axis). Suitable for:
+The DC voltage controller generates active current reference (d-axis). Suitable for:
 - Inverters with significant DC-link capacitance
 - Renewable sources with DC power input (solar PV, battery storage)
 - Studies requiring DC-side transient analysis
@@ -868,7 +868,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         # Reactive current setpoint (constant, from PF)
         iset_q, [guess=0, description="dq-frame reactive current setpoint"]
         # External DC power (solved at initialization)
-        P_dc, [guess=0, description="External DC power draw"]
+        P_dc, [guess=0, description="External DC power source"]
     end
 
     vars = @variables begin
@@ -888,7 +888,7 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
     push!(systems, cc1)
 
     # DC PI output → active current reference (d-axis in d-aligned convention)
-    iset_d_dc = (V_dc - v_dc_state)*kp_v_dc + v_dc_i
+    iset_d_dc = (v_dc_state - V_dc)*kp_v_dc + v_dc_i
 
     # P_ac: power from converter to AC filter (V_I · i_f in dq frame)
     P_ac = cc1.V_I_d * cc1.i_f_d + cc1.V_I_q * cc1.i_f_q
@@ -908,8 +908,8 @@ $(PowerDynamics.ref_source_file(@__FILE__, @__LINE__))
         cc1.i_f_ref_d ~ iset_d_dc
         cc1.i_f_ref_q ~ iset_q
         # DC link dynamics
-        C_dc * Dt(v_dc_state) ~ (P_ac - P_dc) / v_dc_state
-        Dt(v_dc_i) ~ (V_dc - v_dc_state) * ki_v_dc
+        C_dc * Dt(v_dc_state) ~ (P_dc - P_ac) / v_dc_state
+        Dt(v_dc_i) ~ (v_dc_state - V_dc) * ki_v_dc
     ]
     sys = System(eqs, t, vars, pars; name, systems)
     sys = set_mtk_defaults(sys, defaults)
