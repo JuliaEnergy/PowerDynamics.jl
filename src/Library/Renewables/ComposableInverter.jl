@@ -840,7 +840,7 @@ end
 Grid-following inverter with DC-link dynamics and active power control.
 
 Extends SimpleGFL with DC-link capacitor model and PI controller for DC voltage regulation.
-The DC voltage controller generates active current reference (q-axis). Suitable for:
+The DC voltage controller generates active current reference (d-axis). Suitable for:
 - Inverters with significant DC-link capacitance
 - Renewable sources with DC power input (solar PV, battery storage)
 - Studies requiring DC-side transient analysis
