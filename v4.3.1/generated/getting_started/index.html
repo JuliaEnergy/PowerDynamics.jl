@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Getting Started · PowerDynamics.jl</title><meta name="title" content="Getting Started · PowerDynamics.jl"/><meta property="og:title" content="Getting Started · PowerDynamics.jl"/><meta property="twitter:title" content="Getting Started · PowerDynamics.jl"/><meta name="description" content="Documentation for PowerDynamics.jl."/><meta property="og:description" content="Documentation for PowerDynamics.jl."/><meta property="twitter:description" content="Documentation for PowerDynamics.jl."/><meta property="og:url" content="https://juliaenergy.github.io/PowerDynamics.jl/generated/getting_started/"/><meta property="twitter:url" content="https://juliaenergy.github.io/PowerDynamics.jl/generated/getting_started/"/><link rel="canonical" href="https://juliaenergy.github.io/PowerDynamics.jl/generated/getting_started/"/><meta property="og:image" content="https://juliaenergy.github.io/PowerDynamics.jl/assets/preview.png"/><meta property="twitter:image" content="https://juliaenergy.github.io/PowerDynamics.jl/assets/preview.png"/><meta property="twitter:card" content="summary_large_image"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="PowerDynamics.jl logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="PowerDynamics.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PowerDynamics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../ModelingConcepts/">Modeling Concepts</a></li><li><a class="tocitem" href="../../initialization/">Initialization</a></li><li><a class="tocitem" href="../../Library/">Component Library</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../../julia_setup/">Julia Setup for New Users</a></li><li class="is-active"><a class="tocitem" href>Getting Started</a><ul class="internal"><li><a class="tocitem" href="#Simple-ModelingToolkit-System"><span>Simple ModelingToolkit System</span></a></li><li><a class="tocitem" href="#MTK:-Model-Definition-and-Simulation"><span>MTK: Model Definition &amp; Simulation</span></a></li><li><a class="tocitem" href="#MTK:-Solution-Handling"><span>MTK: Solution Handling</span></a></li><li><a class="tocitem" href="#Simple-PowerDynamics-System"><span>Simple PowerDynamics System</span></a></li><li><a class="tocitem" href="#PD:-Symbolic-Indexing"><span>PD: Symbolic Indexing</span></a></li><li><a class="tocitem" href="#PD:-Manual-Definition-of-Initial-Conditions"><span>PD: Manual Definition of Initial Conditions</span></a></li><li><a class="tocitem" href="#PD:-Simulation-of-the-System"><span>PD: Simulation of the System</span></a></li><li><a class="tocitem" href="#PD:-Solution-Handling"><span>PD: Solution Handling</span></a></li></ul></li><li><a class="tocitem" href="../typical_simulation_workflow/">Typical Simulation Workflow</a></li><li><a class="tocitem" href="../custom_bus/">Custom Generator Bus</a></li><li><a class="tocitem" href="../custom_line/">Custom Transmission Line</a></li></ul></li><li><span class="tocitem">Advanced Examples</span><ul><li><a class="tocitem" href="../ieee9bus/">IEEE 9-Bus Example</a></li><li><a class="tocitem" href="../ieee39_part1/">IEEE39 Part I: Modeling</a></li><li><a class="tocitem" href="../ieee39_part2/">IEEE39 Part II: Initialization</a></li><li><a class="tocitem" href="../ieee39_part3/">IEEE39 Part III: Simulation</a></li><li><a class="tocitem" href="../ieee39_part4/">IEEE39 Part IV: Parameter Tuning</a></li><li><a class="tocitem" href="../emt_toymodel/">EMT Toymodel</a></li></ul></li><li><a class="tocitem" href="../../API/">API</a></li><li><a class="tocitem" href="../../networkdynamics_forward/">🔗 NetworkDynamics.jl Docs</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Getting Started</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Getting Started</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaEnergy/PowerDynamics.jl/blob/main/docs/tutorials/getting_started.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="getting-started"><a class="docs-heading-anchor" href="#getting-started">Getting Started with PowerDynamics.jl</a><a id="getting-started-1"></a><a class="docs-heading-anchor-permalink" href="#getting-started" title="Permalink"></a></h1><p>This tutorial introduces the core ideas behind PowerDynamics.jl and its relationship to the SciML ecosystem.</p><p>This tutorial can be downloaded as a normal Julia script <a href="../getting_started.jl">here</a>.</p><p>PowerDynamics.jl is a tool for modeling and simulating dynamic powergrid models. Its main idea is to build equation-based, symbolic models for various dynamic components. Different components, such as shunts, generators or controllers are then connected to form dynamic models representing entire Buses or Lines. The dynamic Bus and Line models are then interconnected to form powergrids.</p><p>The most important distinction in contrast to other tools is that PowerDynamics.jl is a <em>modeling framework</em> rather than a <em>simulation tool</em>. At its core, a dynamic powergrid model is just a set of differential-algebraic equations (DAEs) that describe the evolution of the system over time. PowerDynamics.jl helps you to build these DAE models in a modular way, and then simulate them using the powerful solvers from the <a href="https://sciml.ai/">SciML ecosystem</a>.</p><p>PowerDynamics.jl gives you direct access to the underlying DAE structure and purposely exposes you to the &quot;raw&quot; commands from the SciML Ecosystem, most importantly <a href="https://docs.sciml.ai/DiffEqDocs/stable/">DifferentialEquations.jl</a>. While this can be a bit overwhelming at first, it really pays off to learn the API of the underlying packages directly rather than wrapping them all up in a PowerDynamics-specific API.</p><p>This tight integration means, that it is much easier to transfer advanced SciML methods and concepts to systems defined with PowerDynamics.jl.</p><p>In this tutorial, we will model the same physical system, a Single-Machine-Infinite-Bus (SMIB), in two different ways. First, we&#39;ll build it as a &quot;plain&quot; ModelingToolkit model using pure SciML packages. Then, we&#39;ll model the same system using PowerDynamics&#39; component-based approach. This side-by-side comparison highlights the parallels in nomenclature and workflow between the two approaches.</p><p>The workflow for both approaches looks like this:</p><pre><code class="language-asciiart hljs">╭────────────────────────╮ ╭────────────────────────────╮
+│ Pure MTK Model         │ │ PowerDynamics.jl Model     │
+╞════════════════════════╡ ╞════════════════════════════╡
+│ Equation-based model   │ │ Composite Model consisting │
+│ of the entire system.  │ │ of equation-based MTK      │
+╰─────────────────────┬──╯ │ models for Buses and Lines │
+                      │    │         ╭───────╮          │
+                      │    │     2 ┯━┿       ┿━┯ 3      │
+                      │    │       ↓ │   ╭───╯ ↓        │
+                      │    │         ┷━┯━┷ 1            │
+                      │    │          (~)               │
+                      │    ╰──────┬─────────────────────╯
+  ModelingToolkit.jl  │           │  PowerDynamics.jl
+           generates  ▾           ▾  generates
+                  ╭───┴───────────┴───╮
+                  │ DAE System        │
+                  │ M ̇x = f(x, p, t)  │
+                  ╰─────────┬─────────╯
+RHS function + Mass Matrix  ▾
+      ╭─────────────────────┴─────────────────────╮
+      │ SciML-ODEProblem                          │
+      │ Data structure for time-domain simulation │
+      ╰─────────────────────┬─────────────────────╯
+  OrdinaryDiffEq.jl solver  ▾
+     ╭──────────────────────┴──────────────────────╮
+     │ SciML-ODESolution                           │
+     │ Solution object containing the time series  │
+     │ for all components                          │
+     ╰──────────────────────┬──────────────────────╯
+         Symbolic Indexing  ▾
+ ╭──────────────────────────┴──────────────────────────╮
+ │ Time-series Inspection                              │
+ │ Symbolic indexing allows for easy access to all     │
+ │ states of all subcomponents for detailed analysis.  │
+ ╰─────────────────────────────────────────────────────╯</code></pre><div class="admonition is-info" id="Short-description-of-used-Packages-and-their-relation-494f671cf10bf27"><header class="admonition-header">Short description of used Packages and their relation<a class="admonition-anchor" href="#Short-description-of-used-Packages-and-their-relation-494f671cf10bf27" title="Permalink"></a></header><div class="admonition-body"><p><strong>Top-level Packages:</strong></p><ul><li><a href="https://github.com/JuliaEnergy/PowerDynamics.jl">PowerDynamics.jl</a>: The main package for building powergrid models. It provides a library and modeling tools specific to power systems, such as powerflow models and component libraries.</li><li><a href="https://github.com/JuliaDynamics/NetworkDynamics.jl">NetworkDynamics.jl</a>: Our backend package that provides most of the core functionality. It is general-purpose and can model any kind of networked dynamical system.</li></ul><p><strong>SciML Packages:</strong></p><ul><li><a href="https://github.com/SciML/ModelingToolkit.jl">ModelingToolkit.jl (MTK)</a>: A symbolic modeling framework for defining and manipulating differential equations. The key word here is <em>symbolically</em> – you write equations, not numerical code. MTK automatically performs simplifications and generates efficient numerical code for simulation.</li><li><a href="https://github.com/SciML/DifferentialEquations.jl">DifferentialEquations.jl</a>: Umbrella package for everything related to differential equations, including stochastic and delay differential equations. Since it&#39;s large, we typically import specific subpackages, i.e.:</li><li><a href="https://github.com/SciML/OrdinaryDiffEq.jl">OrdinaryDiffEq.jl</a>: Solvers for ordinary differential equations (ODEs and DAEs). You can reduce load time even further by only importing specific solver packages like OrdinaryDiffEqRosenbrock.jl or OrdinaryDiffEqTsit5.jl.</li><li><a href="https://github.com/SciML/NonlinearSolve.jl">NonlinearSolve.jl</a>: Solvers for nonlinear systems of equations, used for powerflow calculations and DAE initialization.</li></ul><p><strong>Other Packages:</strong></p><ul><li><a href="https://github.com/MakieOrg/Makie.jl">Makie.jl</a>: A powerful plotting package for visualizing results with its backends CairoMakie.jl for vector graphic output and GLMakie.jl/WGLMakie.jl for interactive visualizations.</li></ul></div></div><h2 id="Simple-ModelingToolkit-System"><a class="docs-heading-anchor" href="#Simple-ModelingToolkit-System">Simple ModelingToolkit System</a><a id="Simple-ModelingToolkit-System-1"></a><a class="docs-heading-anchor-permalink" href="#Simple-ModelingToolkit-System" title="Permalink"></a></h2><p>In this section we&#39;ll model the simplest Single-Machine-Infinite-Bus System (SMIB): a Swing equation connected to a slack bus.</p><pre><code class="language-asciiart hljs">                    ω,θ
+                     ⤺
+Turbine Power  Pₘ  🭃▄▄▄🭎  Pₑ  Electrical Power
+               ─→  🭔▀▀▀🭟  ─→
+                     H
+</code></pre><p>The equations of the rotor connected to the infinite bus can be written as:</p><p class="math-container">\[\begin{aligned}
+\dot{\theta} &amp;= \omega\\
+M\,\dot{\omega} &amp;= P_\mathrm{m} - P_\mathrm{e} - D\,\omega&amp;&amp;\text{Swing Equation with}\\
+P_\mathrm{e} &amp;= \frac{1}{X}\sin{\theta}&amp;&amp;\text{connection to infinite bus with}\ δ=0
+\end{aligned}\]</p><p>where <span>$M$</span> is the inertia, <span>$\omega_s$</span> is the synchronous speed, <span>$P_m$</span> is the mechanical power input, and <span>$P_e$</span> is the electrical power output. The state is described by the rotor angle <span>$\theta$</span> and the angular velocity <span>$\omega$</span> (deviation from synchronous speed). The ideal rotor is connected to a slack bus via a lossless transmission line with reactance <span>$X$</span>.</p><p>To simulate this system, we first need to import some packages...</p><pre><code class="language-julia hljs">using ModelingToolkit
+using ModelingToolkit: t_nounits as t, D_nounits as Dt
+using OrdinaryDiffEqRosenbrock
+using CairoMakie</code></pre><h2 id="MTK:-Model-Definition-and-Simulation"><a class="docs-heading-anchor" href="#MTK:-Model-Definition-and-Simulation">MTK: Model Definition &amp; Simulation</a><a id="MTK:-Model-Definition-and-Simulation-1"></a><a class="docs-heading-anchor-permalink" href="#MTK:-Model-Definition-and-Simulation" title="Permalink"></a></h2><div class="admonition is-success" id="Unicode-Symbols-644ff97d86c197e2"><header class="admonition-header">Unicode Symbols<a class="admonition-anchor" href="#Unicode-Symbols-644ff97d86c197e2" title="Permalink"></a></header><div class="admonition-body"><p>Julia allows you to use unicode characters in variable names. In most Julia development environments you can insert them with LaTeX-like syntax: <code>\alpha&lt;TAB&gt; ⇒ α</code>, <code>\_e&lt;TAB&gt; ⇒ ₑ</code> and <code>\_+ ⇒ ₊</code>. Especially <code>₊</code> is important as it is used as a separator in MTK.</p></div></div><p>After importing the packages, we can define the <em>symbolic system</em> using the <code>@mtkmodel</code> macro:</p><pre><code class="language-julia hljs">@mtkmodel SwingInfiniteBus begin
+    @parameters begin
+        M  = 1   # machine inertia
+        D  = 1   # machine damping
+        Pₘ = 1   # mechanical power
+        X  = 0.1 # reactance of powerline
+    end
+    @variables begin
+        θ(t)  # rotor angle
+        ω(t)  # angular velocity (rel to sync. speed)
+        Pₑ(t) # electrical power (connection to IB)
+    end
+    @equations begin
+        Pₑ ~ 1/X * sin(θ)
+        Dt(θ) ~ ω
+        M * Dt(ω) ~ Pₘ - Pₑ - D*ω
+    end
+end</code></pre><p>The definition of the system is quite straightforward. Note how we defined 3 states, including one for the electrical power <span>$P_\mathrm{e}$</span>. We can instantiate the system by calling its constructor <code>SwingInfiniteBus()</code>:</p><pre><code class="language-julia hljs">@named symbolic_system = SwingInfiniteBus()
+full_equations(symbolic_system) # show all equations</code></pre><p class="math-container">\[ \begin{align}
+\mathtt{P_e}\left( t \right) &amp;= \frac{\sin\left( \theta\left( t \right) \right)}{X} \\
+\frac{\mathrm{d} \theta\left( t \right)}{\mathrm{d}t} &amp;= \omega\left( t \right) \\
+M \frac{\mathrm{d} \omega\left( t \right)}{\mathrm{d}t} &amp;= \mathtt{P_m} - \mathtt{P_e}\left( t \right) - D \omega\left( t \right)
+\end{align}
+ \]</p><p>In order to simulate the system, we need to call <code>mtkcompile</code>, which will essentially perform a symbolic simplification of the system:</p><pre><code class="language-julia hljs">compiled_system = mtkcompile(symbolic_system)
+full_equations(compiled_system) # show all equations</code></pre><p class="math-container">\[ \begin{align}
+\frac{\mathrm{d} \omega\left( t \right)}{\mathrm{d}t} &amp;= \frac{ - \mathtt{P_m} + \frac{\sin\left( \theta\left( t \right) \right)}{X} + D \omega\left( t \right)}{ - M} \\
+\frac{\mathrm{d} \theta\left( t \right)}{\mathrm{d}t} &amp;= \omega\left( t \right)
+\end{align}
+ \]</p><p>You can see that the &quot;compiled&quot; system only consists of two states, <span>$\theta$</span> and <span>$\omega$</span>. This is because <span>$P_\mathrm{e}$</span> is not really a state of the system, but rather an intermediate variable, so it was thrown out. While trivial in this case, this is the symbolic simplification at work.</p><p>To simulate the system, we need to define initial conditions for the states <span>$\theta$</span> and <span>$\omega$</span>. Also, we need to define a time span for the simulation.</p><pre><code class="language-julia hljs">u0 = [
+    compiled_system.θ =&gt; 0.0,
+    compiled_system.ω =&gt; 0.0,
+]
+tspan = (0.0, 10.0)</code></pre><p>Combining the compiled system, initial conditions, and time span, we can define a so-called <code>ODEProblem</code>.</p><pre><code class="language-julia hljs">prob = ODEProblem(compiled_system, u0, tspan)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr38_2" style="color:#56b6c2">ODEProblem</span> with uType <span class="sgr38_2" style="color:#56b6c2">Vector{Float64}</span> and tType <span class="sgr38_2" style="color:#56b6c2">Float64</span>. In-place: <span class="sgr38_2" style="color:#56b6c2">true</span>
+Initialization status: <span class="sgr38_2" style="color:#56b6c2">FULLY_DETERMINED</span>
+Non-trivial mass matrix: <span class="sgr38_2" style="color:#56b6c2">false</span>
+timespan: (0.0, 10.0)
+u0: 2-element Vector{Float64}:
+ 0.0
+ 0.0</code></pre><p>The ODEProblem contains all the information needed to simulate the system. We can simulate the system using any of the solvers from OrdinaryDiffEq.jl. In this case, we decided to use the <code>Rodas5P</code> solver from <code>OrdinaryDiffEqRosenbrock.jl</code>.</p><pre><code class="language-julia hljs">sol = solve(prob, Rodas5P())</code></pre><h2 id="MTK:-Solution-Handling"><a class="docs-heading-anchor" href="#MTK:-Solution-Handling">MTK: Solution Handling</a><a id="MTK:-Solution-Handling-1"></a><a class="docs-heading-anchor-permalink" href="#MTK:-Solution-Handling" title="Permalink"></a></h2><p>The solution object we get contains all the time series in the system. For low-level access, we can look at</p><pre><code class="language-julia hljs">sol.t</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">37-element Vector{Float64}:
+  0.0
+  9.999999999999999e-5
+  0.0010999999999999998
+  0.011099999999999997
+  0.04948942490065575
+  0.11326144381079117
+  0.19874440292127327
+  0.3120731700268947
+  0.453946017165926
+  0.6287173910305606
+  ⋮
+  7.010443455834744
+  7.368959713888967
+  7.790025606351214
+  8.21109149881346
+  8.632157391275706
+  9.067562297839844
+  9.502967204403982
+  9.947833955811438
+ 10.0</code></pre><p>to get an array of all the points in time the solver stepped to. While</p><pre><code class="language-julia hljs">sol.u</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">37-element Vector{Vector{Float64}}:
+ [0.0, 0.0]
+ [9.999499850007931e-5, 4.999833295834928e-9]
+ [0.0010993930046600358, 6.047776178843383e-7]
+ [0.011036355670577466, 6.13713955994444e-5]
+ [0.048087927994389795, 0.0012021989206479854]
+ [0.10480849085000353, 0.006113357565607139]
+ [0.1686149771857689, 0.017910739105420462]
+ [0.2267008386608886, 0.04061687237054282]
+ [0.2522804237032705, 0.07521841529439802]
+ [0.21637536997011117, 0.11714704213030243]
+ ⋮
+ [0.0015197707403184768, 0.10306570242988226]
+ [-0.006579919072431453, 0.10194659957842682]
+ [-0.004990999605295394, 0.09910662879643255]
+ [0.002243995103244743, 0.0985588876430202]
+ [0.004208143699585749, 0.10019511079357862]
+ [0.00012118288329842279, 0.10123748198102822]
+ [-0.0026809003480379396, 0.10051649468142382]
+ [-0.0009343202224257873, 0.09958573081796912]
+ [-0.0005817725033815394, 0.0995461772659495]</code></pre><p>gives the full state of the system for each of the time points.</p><p>However, this is far from all we can do with the solution object! First off, since we use dense output by default, we can interpolate the solution at any point in time:</p><pre><code class="language-julia hljs">sol(2.5) # interpolate at t=2.5s (better than linear interpolation)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Float64}:
+ 0.0915931399515922
+ 0.09362252539085167</code></pre><p>The output, however, is still not very user friendly, since we only get a vector of values. This is where <strong>symbolic indexing</strong> comes to our help! Using the syntax</p><pre><code class="language-julia hljs">sol(1.0, idxs=compiled_system.θ) # get θ at t=1.0s</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.16079143211660155</code></pre><p>we can extract a specific state at a specific time point. This syntax has lots of variants; for example, we can efficiently interpolate multiple states at multiple time points:</p><pre><code class="language-julia hljs">sol([0.0, 1.0], idxs=[compiled_system.θ, compiled_system.ω]) # get θ and ω at t=0.0s and t=1.0s</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">t: 2-element Vector{Float64}:
+ 0.0
+ 1.0
+u: 2-element Vector{Vector{Float64}}:
+ [0.0, 0.0]
+ [0.16079143211660155, 0.00510049738675578]</code></pre><p>Since ModelingToolkit keeps track of all of its simplifications, we can also extract so-called &quot;observed&quot; states, i.e., states that were part of the original symbolic system but got eliminated during compilation. For this example, we can get the electrical power <span>$P_\mathrm{e}$</span> at any time point even though it is not part of the solution itself:</p><pre><code class="language-julia hljs">sol(0.5, idxs=compiled_system.Pₑ) # get Pe at t=0.5s</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.8668372862402866</code></pre><p>Finally, we can use the same <em>symbolic indexing</em> syntax in plotting commands. The example below uses Makie.jl; however, the commands are very similar in Plots.jl.</p><pre><code class="language-julia hljs">let
+    fig = Figure()
+    ax = Axis(fig[1,1], xlabel=&quot;Time (s)&quot;, ylabel=&quot;States&quot;)
+    lines!(sol, idxs=compiled_system.θ, color=:darkred)
+    lines!(sol, idxs=compiled_system.ω, color=:darkblue)
+    lines!(sol, idxs=compiled_system.Pₑ, color=:darkgreen)
+    axislegend(ax; position=:rt)
+    fig
+end</code></pre><img src="7d3c3c00.png" alt="Example block output"/><h2 id="Simple-PowerDynamics-System"><a class="docs-heading-anchor" href="#Simple-PowerDynamics-System">Simple PowerDynamics System</a><a id="Simple-PowerDynamics-System-1"></a><a class="docs-heading-anchor-permalink" href="#Simple-PowerDynamics-System" title="Permalink"></a></h2><p>Now, we&#39;re going to model the same physical system but this time using the component based approach of PowerDynamics.jl</p><p>This means, we&#39;ll define two buses with a pi-line (zero shunts) connecting them.</p><pre><code class="language-asciiart hljs">        bus 1          bus 2
+          ╻              ╻
+  (═)╶────╂──────────────╂───╴(~)
+swing-eqs ╹   pi-line    ╹ slack/infinite bus</code></pre><p>First, we need to load the PowerDynamics.jl package:</p><pre><code class="language-julia hljs">using PowerDynamics
+using PowerDynamics: Library</code></pre><p>We start by loading a Swing model generator from the library.</p><pre><code class="language-julia hljs">@named symbolic_swing = Library.Swing(V=1)
+full_equations(symbolic_swing) # show all equations</code></pre><p class="math-container">\[ \begin{align}
+\frac{\mathrm{d} \theta\left( t \right)}{\mathrm{d}t} &amp;= \omega\left( t \right) - \mathtt{\omega\_ref} \\
+M \frac{\mathrm{d} \omega\left( t \right)}{\mathrm{d}t} &amp;= \mathtt{Pm} - \mathtt{Pel}\left( t \right) - D \left( \omega\left( t \right) - \mathtt{\omega\_ref} \right) \\
+\mathtt{Pel}\left( t \right) &amp;= \mathtt{terminal.i\_r}\left( t \right) \mathtt{terminal.u\_r}\left( t \right) + \mathtt{terminal.i\_i}\left( t \right) \mathtt{terminal.u\_i}\left( t \right) \\
+\mathtt{terminal.u\_r}\left( t \right) &amp;= V \cos\left( \theta\left( t \right) \right) \\
+\mathtt{terminal.u\_i}\left( t \right) &amp;= V \sin\left( \theta\left( t \right) \right)
+\end{align}
+ \]</p><p>The equations represent a classic swing equation with no voltage dynamics. We passed the keyword argument <code>V=1</code> to set the voltage magnitude to 1 p.u. So far, this is a &quot;pure&quot; MTK model, similar to the <code>symbolic_system</code> from above. The equations are structurally identical to the ones we defined manually above only differing in some conventions.</p><p>We can then compile the model to get rid of intermediate variables and make it ready for simulation. We do so by calling <code>compile_bus</code>. The additional call to <code>MTKBus</code> can be ignored for now and is explained in further tutorials and the <a href="../../ModelingConcepts/#Modeling-Concepts">Modeling Concepts</a> docs. Additionally, we give the bus model an index using the <code>vidx</code> keyword (short for vertex index).</p><pre><code class="language-julia hljs">bus1 = compile_bus(MTKBus(symbolic_swing); vidx=1, name=:swing)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:swing</span> <span class="sgr94">NoFeedForward()</span> @ Vertex 1
+ ├─ 2 inputs:  [busbar₊i_r, busbar₊i_i]
+ ├─ 2 states:  [symbolic_swing₊ω<span class="sgr90">≈0</span>, symbolic_swing₊θ<span class="sgr90">≈0</span>]
+ ├─ 2 outputs: [busbar₊u_r=1, busbar₊u_i=0]
+ └─ 5 params:  [symbolic_swing₊ω_ref=1, symbolic_swing₊Pm<span class="sgr90">≈1</span>, symbolic_swing₊M=0.005, symbolic_swing₊D=0.0001, symbolic_swing₊V=1]</code></pre><p>This object is a so-called <code>VertexModel</code>. VertexModels (and EdgeModels) are the building blocks of systems in PowerDynamics.jl and NetworkDynamics.jl. From the printout you can already see that it has different variables/parameters with some default values and so on.</p><p>For the second bus, we use a slack bus (also called infinite bus), which maintains constant voltage magnitude and angle:</p><pre><code class="language-julia hljs">@named symbolic_slack = Library.VδConstraint(; V=1, δ=0)
+bus2 = compile_bus(MTKBus(symbolic_slack); vidx=2, name=:slack)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">VertexModel <span class="sgr1">:slack</span> <span class="sgr94">NoFeedForward()</span> @ Vertex 2
+ ├─ 2 inputs:  [busbar₊i_r, busbar₊i_i]
+ ├─ 0 states:  []
+ ├─ 2 outputs: [busbar₊u_r=1, busbar₊u_i=0]
+ └─ 2 params:  [symbolic_slack₊V=1, symbolic_slack₊δ=0]</code></pre><p>The <code>VδConstraint</code> enforces <span>$V=1$</span> p.u. and <span>$\delta=0$</span> at all times, which is the mathematical definition of a slack/infinite bus.</p><p>And a powerline connecting the two:</p><pre><code class="language-julia hljs">@named symbolic_piline = Library.PiLine()
+line = compile_line(MTKLine(symbolic_piline); src=1, dst=2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">EdgeModel <span class="sgr1">:line</span> <span class="sgr94">PureFeedForward()</span> @ Edge 1=&gt;2
+ ├─ 2/2 inputs:  src=[src₊u_r, src₊u_i] dst=[dst₊u_r, dst₊u_i]
+ ├─   0 states:  []  
+ ├─ 2/2 outputs: src=[src₊i_r, src₊i_i] dst=[dst₊i_r, dst₊i_i]
+ └─   9 params:  [symbolic_piline₊R=0, symbolic_piline₊X=0.1, symbolic_piline₊G_src=0, symbolic_piline₊B_src=0, symbolic_piline₊G_dst=0, symbolic_piline₊B_dst=0, symbolic_piline₊r_src=1, symbolic_piline₊r_dst=1, symbolic_piline₊active=1]</code></pre><p>The powerline got the <code>src</code> and <code>dst</code> keywords. This means our line is defined from bus 1 to bus 2.</p><p>Having defined all the components, we can now connect them to a network model.</p><pre><code class="language-julia hljs">nw = Network([bus1, bus2], line)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Network with 2 states and 16 parameters
+ ├─ 2 vertices (2 unique types)
+ └─ 1 edges (1 unique type)
+Edge-Aggregation using SequentialAggregator(+)</code></pre><p>The <code>nw</code> object is somewhat similar to the <code>compiled_system</code> from above: it is a fully defined DAE system (ODE system in this case) that can be simulated. Similar to the <code>compiled_system</code>, it not only contains the right-hand-side function but also contains information necessary for <strong>symbolic indexing</strong>, i.e., which component has which states/parameters under which names and so on.</p><h2 id="PD:-Symbolic-Indexing"><a class="docs-heading-anchor" href="#PD:-Symbolic-Indexing">PD: Symbolic Indexing</a><a id="PD:-Symbolic-Indexing-1"></a><a class="docs-heading-anchor-permalink" href="#PD:-Symbolic-Indexing" title="Permalink"></a></h2><p>In contrast to the MTK example above, our symbolic indices are &quot;hierarchical&quot;, i.e., we have to specify the component first and then the state/parameter name.</p><p><code>VIndex</code> objects are used to reference states/parameters of vertex-entities (buses, shunts, generators, loads, etc.),</p><pre><code class="language-asciiart hljs">VIndex(  1,    :symbolic_swing₊ω)
+VIndex(:swing, :symbolic_swing₊θ)
+       ╶─┬──╴  ╶───────┬───────╴
+         ╵             │
+Index/name of vertex   │
+                       ╵
+         Name of parameter/state</code></pre><p>while <code>EIndex</code> objects are used to reference states/parameters of edge-entities (lines, transformers, etc.),</p><pre><code class="language-asciiart hljs">EIndex(        1,             :src₊P       )
+EIndex(     :edge,            :src₊Q       )
+EIndex(     1 =&gt; 2,           :src₊Q       )
+EIndex(:swing =&gt; :slack, :symbolic_piline₊R)
+       ╶──────┬───────╴  ╶───────┬────────╴
+              ╵                  │
+ Index/name or src-dst pair      │
+                                 ╵
+                      Name of parameter/state</code></pre><h2 id="PD:-Manual-Definition-of-Initial-Conditions"><a class="docs-heading-anchor" href="#PD:-Manual-Definition-of-Initial-Conditions">PD: Manual Definition of Initial Conditions</a><a id="PD:-Manual-Definition-of-Initial-Conditions-1"></a><a class="docs-heading-anchor-permalink" href="#PD:-Manual-Definition-of-Initial-Conditions" title="Permalink"></a></h2><p>For large systems with possibly thousands of states and parameters, finding a suitable initial state is a hard problem which is covered in depth in later tutorials.</p><p>For now, our system is quite simple and we can find a suitable initial state by hand. We can create a &quot;default&quot; state by calling <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.NWState"><code>NWState</code></a> on the network object:</p><pre><code class="language-julia hljs">s0 = NWState(nw)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NWState{Vector{Float64}} of Network (2 vertices, 1 edges)
+  ├─ VIndex(1, :symbolic_swing₊ω) =&gt; NaN
+  └─ VIndex(1, :symbolic_swing₊θ) =&gt; NaN<span class="sgr90">
+ p = NWParameter([1.0, NaN, 0.005, 0.0001, 1.0, 1.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0])
+ t = nothing</span></code></pre><p>This creates a state and parameter object, which is prefilled with all of the default values stored in the Network. The undefined states/parameters are set to <code>NaN</code>.</p><p>!!! note Automatic State Reduction In the printout of <code>s0</code> you see only two &quot;real&quot; states: <span>$\omega$</span> and <span>$\theta$</span> of the swing equation, everything else was simplified away, just like in the MTK example above.</p><p>Using the symbolic indexing syntax described above, we can now set the initial conditions for all states and parameters that are not already defined.</p><p>Similar to the example above, we start at 0 angle and a frequency of 1 p.u. (in contrast to the MTK example above, the swing model from the library is defined in terms of PU frequency not frequency deviation):</p><pre><code class="language-julia hljs">s0[VIndex(1, :symbolic_swing₊θ)] = 0.0
+s0[VIndex(:swing, :symbolic_swing₊ω)] = 1 # alternatively, reference vertex by unique name</code></pre><p>Instead of using the symbolic indices explicitly, <code>NWState</code> supports a more user-friendly syntax for accessing states. We set the mechanical power input, the inertia, and the damping of the machine at bus 1:</p><pre><code class="language-julia hljs">s0.v[1][:symbolic_swing₊Pm] =  1
+s0.v[1][:symbolic_swing₊M] = 1
+s0.v[:swing][:symbolic_swing₊D] = 1</code></pre><p>It is important to understand that at its core, <code>NWState</code> objects are just &quot;wrappers&quot; around flat arrays. Similar to the pure-MTK example above, where our state vector <code>u</code> was just a vector of 2 plain values, the <code>NWState</code> object contains a flat vector of all states and a flat vector of all parameters. The flat vectors can be accessed using the <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.uflat"><code>uflat</code></a> and <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.pflat"><code>pflat</code></a> functions:</p><pre><code class="language-julia hljs">uflat(s0)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Float64}:
+ 1.0
+ 0.0</code></pre><pre><code class="language-julia hljs">pflat(s0)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">16-element Vector{Float64}:
+ 1.0
+ 1.0
+ 1.0
+ 1.0
+ 1.0
+ 1.0
+ 0.0
+ 0.0
+ 0.1
+ 0.0
+ 0.0
+ 0.0
+ 0.0
+ 1.0
+ 1.0
+ 1.0</code></pre><p>By wrapping those flat vectors in a <code>NWState</code> object we make them &quot;human readable&quot; by providing symbolic indexing.</p><p>There are lots of things you can do with <code>NWState</code> objects. For example, once again it is possible to inspect &quot;observed&quot; states—states which are not actually part of the state vector but rather intermediate variables. For example, we can inspect the active power at both src and destination end.</p><pre><code class="language-julia hljs">s0.e[1=&gt;2]([:src₊P, :dst₊P])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">FilteringProxy</span> for NWState()
+  Component filter: EIndex(1 =&gt; 2)
+  State filter:     [:src₊P, :dst₊P]
+  Types:<span class="sgr92"><span class="sgr1">  states ✓</span></span><span class="sgr1"><span class="sgr93">  parameters ✓</span><span class="sgr95">  inputs ✓</span><span class="sgr94">  outputs ✓</span><span class="sgr96">  observables ✓</span></span>
+<span class="sgr1">Matching Indices:</span>
+  ╭ EIndex(1, <span class="sgr96">:src₊P</span>)   0  :line
+  ╰ EIndex(1, <span class="sgr96">:dst₊P</span>)   0  </code></pre><p>Unsurprisingly, since we start at an angle of 0 with both slack and swing, there is no active power flow.</p><h2 id="PD:-Simulation-of-the-System"><a class="docs-heading-anchor" href="#PD:-Simulation-of-the-System">PD: Simulation of the System</a><a id="PD:-Simulation-of-the-System-1"></a><a class="docs-heading-anchor-permalink" href="#PD:-Simulation-of-the-System" title="Permalink"></a></h2><p>Similar to before, we take our model and use it to define an <code>ODEProblem</code>. We can then solve it using the <code>Rodas5P</code> solver again.</p><p>The only notable difference here is, that we need to pass both flat vectors: states and parameters.</p><pre><code class="language-julia hljs">prob = ODEProblem(nw, s0, (0.0, 10.0))
+sol = solve(prob, Rodas5P())</code></pre><h2 id="PD:-Solution-Handling"><a class="docs-heading-anchor" href="#PD:-Solution-Handling">PD: Solution Handling</a><a id="PD:-Solution-Handling-1"></a><a class="docs-heading-anchor-permalink" href="#PD:-Solution-Handling" title="Permalink"></a></h2><p>The solution handling is analogous to the pure-MTK example above.</p><pre><code class="language-julia hljs">sol(1.0, idxs=VIndex(1, :symbolic_swing₊θ)) # get θ of bus 1 at t=1.0s</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.16079122457153705</code></pre><p>For generating lists of symbolic indices at once, NetworkDynamics.jl provides the auxiliary functions <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.vidxs"><code>vidxs</code></a> and <a href="https://juliadynamics.github.io/NetworkDynamics.jl/stable/API/#NetworkDynamics.eidxs"><code>eidxs</code></a>:</p><pre><code class="language-julia hljs">vidxs(nw, :, :busbar₊u_arg) # create lists of VIndex objects</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{NetworkDynamics.SymbolicIndex}:
+ VIndex(1, :busbar₊u_arg)
+ VIndex(2, :busbar₊u_arg)</code></pre><pre><code class="language-julia hljs">sol(1.0, idxs=vidxs(nw, :, :busbar₊u_arg)) # use vidxs get voltage angle of all buses at t=1.0s</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Float64}:
+ 0.16079122457153708
+ 0.0</code></pre><div class="admonition is-success" id="Tip-a195bfbfccbe1bfb"><header class="admonition-header">Tip<a class="admonition-anchor" href="#Tip-a195bfbfccbe1bfb" title="Permalink"></a></header><div class="admonition-body"><p>Certain electrical &quot;bus&quot; states, such as <code>:busbar₊u_arg</code> or <code>:busbar₊u_mag</code>, are available at every bus regardless of the models attached to that bus. The full list of avialable symbols can be checked interatively using <code>s0.v[1]</code>/<code>s0.e[1=&gt;2]</code>.</p></div></div><p>Sometimes, you want to get the full <code>NWState</code> at a specific time point.</p><pre><code class="language-julia hljs">s10 = NWState(sol, 1.0) # get full NWState at t=1.0s</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NWState{Vector{Float64}} of Network (2 vertices, 1 edges)
+  ├─ VIndex(1, :symbolic_swing₊ω) =&gt; 1.0050995390965825
+  └─ VIndex(1, :symbolic_swing₊θ) =&gt; 0.16079122457153705<span class="sgr90">
+ p = NWParameter([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0])
+ t = 1.0</span></code></pre><p>which you can then inspect as before:</p><pre><code class="language-julia hljs">s10.e[1=&gt;2]([:src₊P, :dst₊P]) # get active power at line 1=&gt;2 at t=1.0s</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">FilteringProxy</span> for NWState()
+  Component filter: EIndex(1 =&gt; 2)
+  State filter:     [:src₊P, :dst₊P]
+  Types:<span class="sgr92"><span class="sgr1">  states ✓</span></span><span class="sgr1"><span class="sgr93">  parameters ✓</span><span class="sgr95">  inputs ✓</span><span class="sgr94">  outputs ✓</span><span class="sgr96">  observables ✓</span></span>
+<span class="sgr1">Matching Indices:</span>
+  ╭ EIndex(1, <span class="sgr96">:src₊P</span>)  -1.6009928  :line
+  ╰ EIndex(1, <span class="sgr96">:dst₊P</span>)   1.6009928  </code></pre><p>We can do some plotting as before:</p><pre><code class="language-julia hljs">let
+    fig = Figure()
+    ax = Axis(fig[1,1], xlabel=&quot;Time (s)&quot;, ylabel=&quot;Voltage Angles&quot;)
+    lines!(sol, idxs=VIndex(1, :symbolic_swing₊θ), color=:darkred)
+    lines!(sol, idxs=VIndex(2, :busbar₊u_arg), color=:darkblue)
+    axislegend(ax; position=:rt)
+    ax = Axis(fig[2,1], xlabel=&quot;Time (s)&quot;, ylabel=&quot;Frequency at Swing&quot;)
+    lines!(sol, idxs=VIndex(1, :symbolic_swing₊ω), color=:darkred)
+    axislegend(ax; position=:rt)
+    ax = Axis(fig[3,1], xlabel=&quot;Time (s)&quot;, ylabel=&quot;Active Power in Line&quot;)
+    lines!(sol, idxs=EIndex(1=&gt;2, :src₊P), color=:darkgreen, label=&quot;P injected towards bus 1&quot;)
+    lines!(sol, idxs=EIndex(1=&gt;2, :dst₊P), color=:lightgreen, label=&quot;P injected towards bus 2&quot;)
+    axislegend(ax; position=:rt)
+    fig
+end</code></pre><img src="d0fb3ac8.png" alt="Example block output"/><p>We observe the expected behavior:</p><ul><li>as in the pure MTK example, the swing node accelerates and oscillates around until it settles at a new steady state, where the angle difference between bus 1 and the slack bus (with <span>$\delta=0$</span>) leads to a power flow of <span>$P_\mathrm{e} = P_\mathrm{m} = 1$</span> p.u.</li><li>in steady state, the active power injected at bus 1 is equal to the active power extracted at bus 2 (lossless line)</li></ul><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../julia_setup/">« Julia Setup for New Users</a><a class="docs-footer-nextpage" href="../typical_simulation_workflow/">Typical Simulation Workflow »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Tuesday 21 October 2025 07:53">Tuesday 21 October 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
