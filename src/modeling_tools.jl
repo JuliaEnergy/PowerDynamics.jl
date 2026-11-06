@@ -139,7 +139,7 @@ explicitly is still useful when you want to set the bases on the symbolic model
 
 See also: [`BusBar`](@ref), [`LineEnd`](@ref), [`set_Sbase!`](@ref), [`set_ωbase!`](@ref)
 """
-@component function SystemBase(; name, defaults...)
+@cached_component function SystemBase(; name)
     params = @parameters begin
         Sbase = get_Sbase(), [description="System power base [MVA]"]
         ωbase = get_ωbase(), [description="System frequency base [rad/s]"]
@@ -151,7 +151,7 @@ See also: [`BusBar`](@ref), [`LineEnd`](@ref), [`set_Sbase!`](@ref), [`set_ωbas
     eqs = Equation[
         fbase ~ ωbase/(2π)
     ]
-    set_mtk_defaults(System(eqs, t, vars, params; name), defaults)
+    System(eqs, t, vars, params; name)
 end
 
 """
@@ -251,7 +251,7 @@ NetworkDynamics.VertexModel-Tuple{}) by calling [`compile_bus`](@ref).
 
 See also: [`Terminal`](@ref), [`MTKBus`](@ref), [`compile_bus`](@ref)
 """
-@component function BusBar(; name, defaults...)
+@cached_component function BusBar(; name)
     @named base = BusBase()
     @named terminal = Terminal()
     @unpack u_r, u_i, i_r, i_i = base
@@ -261,8 +261,7 @@ See also: [`Terminal`](@ref), [`MTKBus`](@ref), [`compile_bus`](@ref)
         i_r ~ terminal.i_r
         i_i ~ terminal.i_i
     ]
-    sys = extend(System(eqs, t; name, systems=[terminal]), base)
-    set_mtk_defaults(sys, defaults)
+    extend(System(eqs, t; name, systems=[terminal]), base)
 end
 
 
@@ -283,7 +282,7 @@ calling [`compile_line`](@ref).
 
 See also: [`Terminal`](@ref), [`MTKLine`](@ref), [`compile_line`](@ref)
 """
-@component function LineEnd(; name, side, defaults...)
+@cached_component function LineEnd(; name, side)
     side in (:src, :dst) ||
         throw(ArgumentError("LineEnd: `side` must be :src or :dst, got $(repr(side)). \
                              It selects which incident bus this end inherits `Vbase` from."))
@@ -334,7 +333,7 @@ See also: [`Terminal`](@ref), [`MTKLine`](@ref), [`compile_line`](@ref)
         Q_MVAr ~ Q * Sbase
         i_kA ~ i_mag * Ibase
     ]
-    set_mtk_defaults(System(eqs, t, vars, params; name, systems=[terminal]), defaults)
+    System(eqs, t, vars, params; name, systems=[terminal])
 end
 
 """
@@ -377,7 +376,7 @@ function MTKBus(injectors...; name=:bus, Vbase=nothing)
     @named busbar = BusBar(; _busbar_defaults(Vbase)...)
     @named systembase = SystemBase()
     eqs = [connect(busbar.terminal, inj.terminal) for inj in injectors]
-    System(eqs, t; systems=[busbar, systembase, injectors...], name)
+    composite_system(eqs, [busbar, systembase, injectors...], name)
 end
 
 function MTKBus(systems::Union{AbstractVector,Tuple,Set}, eqs=autoconnections(systems); name=:bus, Vbase=nothing)
@@ -389,7 +388,7 @@ function MTKBus(systems::Union{AbstractVector,Tuple,Set}, eqs=autoconnections(sy
             push!(eqs, eq)
         end
     end
-    System(eqs, t; systems=vcat(busbar, systembase, systems), name)
+    composite_system(eqs, vcat(busbar, systembase, systems), name)
 end
 
 _busbar_defaults(Vbase) = isnothing(Vbase) ? (;) : (; Vbase)
@@ -441,22 +440,21 @@ function MTKLine(branches...; name=:line)
     eqs = [[connect(src.terminal, branch.src) for branch in branches]...,
            [connect(dst.terminal, branch.dst) for branch in branches]...]
 
-    System(eqs, t; systems=[ systems..., branches...], name)
+    composite_system(eqs, [systems..., branches...], name)
 end
 
 
 # this is a hack to convice MTK that i_r and i_i do depend on u_r and u_i
 # we tell MTK to not further resolve, which makes it accept
 # the curent constraint as a valid constraint for ur/ui
-@mtkmodel KirchoffBus begin
-    @components begin
-        busbar = BusBase()
-        systembase = SystemBase()
-    end
-    @equations begin
+@cached_component function KirchoffBus(; name)
+    @named busbar = BusBase()
+    @named systembase = SystemBase()
+    eqs = [
         busbar.i_r ~ implicit_output(busbar.u_r)
         busbar.i_i ~ implicit_output(busbar.u_i)
-    end
+    ]
+    System(eqs, t, [], []; systems=[busbar, systembase], name)
 end
 
 MTKBus(; name=:bus) = KirchoffBus(; name)
@@ -503,7 +501,7 @@ function CompositeInjector(systems, eqs=autoconnections(systems); name=Symbol(jo
     @assert allequal(ivs) "Systems have different independent variables! $ivs"
     iv = first(ivs)
     termeqs = Equation[connect(sys.terminal, terminal) for sys in systems if isinjectormodel(sys)]
-    System(vcat(termeqs, eqs), iv; systems=vcat(terminal, systems), name)
+    composite_system(vcat(termeqs, eqs), vcat(terminal, systems), name; iv)
 end
 
 function autoconnections(systems)
@@ -557,6 +555,22 @@ function _findmatch(in_symbol, outs_symbol)
     else
         error("Multiple possible matches found for input :$in. Candidates: $(Symbol.(outs[idx]))")
     end
+end
+
+"""
+    composite_system(eqs, systems, name; iv=t)
+
+Build a `System` from subsystems and the equations that tie them together. It gives the same
+result as `System(eqs, iv; systems, name)`, but it is a lot faster for deep hierarchies.
+
+MTK's constructor flattens all subsystems to look for variables scoped up to the new level.
+This helper skips that search. A variable inside a subsystem that uses `ParentScope` to reach
+this level still ends up in the flattened system, but loses its default.
+"""
+function composite_system(eqs, systems, name; iv=t)
+    # without subsystems, this only collects the variables of `eqs` itself
+    own = System(eqs, iv; name)
+    System(eqs, iv, ModelingToolkitBase.get_unknowns(own), ModelingToolkitBase.get_ps(own); systems, name)
 end
 
 """

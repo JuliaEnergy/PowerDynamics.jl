@@ -172,6 +172,16 @@ end
     @test_throws ArgumentError compile_line(neither)
 end
 
+@testset "MTKBus with extra equations keeps their bus level variables" begin
+    @named load = PQLoad(Pset=-1, Qset=0)
+    @variables extra(t)
+    @parameters kp=2.0
+    bus = MTKBus([load], [extra ~ kp * load.terminal.u_r]; name=:bus)
+    @test any(isequal(extra), ModelingToolkitBase.get_unknowns(bus))
+    @test any(isequal(kp), ModelingToolkitBase.get_ps(bus))
+    @test :kp ∈ compile_bus(bus).psym
+end
+
 
 import NetworkDynamics
 @testset "global bases with the model cache" begin
