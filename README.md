@@ -34,6 +34,6 @@ If you use PowerDynamics.jl in your research publications, [please cite our pape
 ```
 
 ## Funding
-Development of this project was in part funded by the *German Federal Ministry for Economic Affairs and Climate Action* as part of the *OpPoDyn*-Project ([Project ID 01258425/1](https://www.enargus.de/pub/bscw.cgi/?op=enargus.eps2&q=%2201258425/1%22), 2024-2027).
+Development of this project was in part funded by the *German Federal Ministry for Economic Affairs and Climate Action* as part of the *OpPoDyn*-Project ([FKZ 03EI1071A/B](https://www.enargus.de/pub/bscw.cgi/?op=enargus.eps2&q=%2201258425/1%22), 2024-2027).
 
 <img src="docs/src/assets/bmwk_logo_en.svg" width="300"/>

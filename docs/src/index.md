@@ -103,7 +103,7 @@ Pkg.status(; mode = PKGMODE_MANIFEST) #hide
 ```
 
 ## Funding
-Development of this project was in part funded by the *German Federal Ministry for Economic Affairs and Climate Action* as part of the *OpPoDyn*-Project (Project ID 01258425/1, 2024-2027).
+Development of this project was in part funded by the *German Federal Ministry for Economic Affairs and Climate Action* as part of the *OpPoDyn*-Project (FKZ 03EI1071A/B, 2024-2027).
 
 ```@raw html
 <img src="assets/bmwk_logo_en.svg" width="300"/>
