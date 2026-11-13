@@ -10,7 +10,7 @@
 # - if the current exceeds the limit, the branch is switched off after a delay time.
 
 using PowerDynamics
-using ModelingToolkitBase, SciCompDSL
+using ModelingToolkitBase
 using ModelingToolkitBase: D_nounits as Dt, t_nounits as t
 using NetworkDynamics
 using OrdinaryDiffEqRosenbrock
@@ -20,8 +20,8 @@ using Graphs
 
 # ## Basic PI-Branch Model
 #
-# We start by defining a basic PI-branch model, which is similar to the one in `PiLine_fault.jl` as an
-# MTKModel. This model should fulfill the Branch Interface, i.e. it needs to have two `Terminal`, one called
+# We start by defining a basic PI-branch model as a ModelingToolkit component, similar to the
+# `PiLine_fault` model of the library. This model should fulfill the Branch Interface, i.e. it needs to have two `Terminal`, one called
 # `:src` the other called `:dst`:
 #
 # ```asciiart
@@ -113,7 +113,7 @@ using Graphs
 # \end{aligned}
 # ```
 
-# ## Implement the CustomPiBranch MTKModel
+# ## Implement the CustomPiBranch Model
 #
 # ```@raw html
 # <details class="admonition is-details">
@@ -153,7 +153,7 @@ eqs = [
     u_i ~ imag(Uc)
 ]
 
-# This trick can be used inside `@mtkmodel` as well, by just defining those complex terms in a `begin...end` block.
+# This trick can be used inside a component function as well, by just defining those complex terms as local variables.
 #
 # ```@raw html
 # </div>
@@ -163,8 +163,10 @@ eqs = [
 # With the equations and the knowledge on how to use complex terms within MTK
 # Models the definition is relatively straight forward:
 
-@mtkmodel CustomPiBranch begin
-    @parameters begin
+@component function CustomPiBranch(; name, defaults...)
+    @named src = Terminal()
+    @named dst = Terminal()
+    params = @parameters begin
         R, [description="Resistance of branch in pu"]
         X, [description="Reactance of branch in pu"]
         G_src, [description="Conductance of src shunt"]
@@ -181,46 +183,42 @@ eqs = [
         # parameter to "switch off" the line
         active=1, [description="Line active or switched off"]
     end
-    @components begin
-        src = Terminal()
-        dst = Terminal()
-    end
-    begin
-        # define complex variables
-        Z = R + im*X
-        Ysrc = G_src + im*B_src
-        Ydst = G_dst + im*B_dst
-        Yf = G_f + im*B_f
-        Vsrc = src.u_r + im*src.u_i
-        Vdst = dst.u_r + im*dst.u_i
-        # define Z_a and Z_b in terms of Z
-        Z_a = Z * pos
-        Z_b = Z * (1-pos)
-        # define internal voltages using the
-        V₁ = r_src * Vsrc
-        V₂ = r_dst * Vdst
-        # currents through the shunt admittances
-        i₁ = Ysrc * V₁
-        i₂ = Ydst * V₂
-        # effective fault admittance (controlled by shortcircuit)
-        Yf_eff = shortcircuit * Yf
-        # middle voltage with fault admittance effect
-        V_m = (V₁*(1-pos) + V₂*pos) / (1 + Yf_eff * Z * pos * (1-pos))
-        # fault current to ground
-        i_f = Yf_eff * V_m
-        # current through the two Z parts
-        i_a = (V₁ - V_m) / Z_a
-        i_b = (V_m - V₂) / Z_b
-        # terminal currents
-        isrc = (-i_a - i₁)*r_src
-        idst = (i_b - i₂)*r_dst
-    end
-    @equations begin
+    # define complex variables
+    Z = R + im*X
+    Ysrc = G_src + im*B_src
+    Ydst = G_dst + im*B_dst
+    Yf = G_f + im*B_f
+    Vsrc = src.u_r + im*src.u_i
+    Vdst = dst.u_r + im*dst.u_i
+    # define Z_a and Z_b in terms of Z
+    Z_a = Z * pos
+    Z_b = Z * (1-pos)
+    # define internal voltages using the
+    V₁ = r_src * Vsrc
+    V₂ = r_dst * Vdst
+    # currents through the shunt admittances
+    i₁ = Ysrc * V₁
+    i₂ = Ydst * V₂
+    # effective fault admittance (controlled by shortcircuit)
+    Yf_eff = shortcircuit * Yf
+    # middle voltage with fault admittance effect
+    V_m = (V₁*(1-pos) + V₂*pos) / (1 + Yf_eff * Z * pos * (1-pos))
+    # fault current to ground
+    i_f = Yf_eff * V_m
+    # current through the two Z parts
+    i_a = (V₁ - V_m) / Z_a
+    i_b = (V_m - V₂) / Z_b
+    # terminal currents
+    isrc = (-i_a - i₁)*r_src
+    idst = (i_b - i₂)*r_dst
+    eqs = [
         src.i_r ~ active * real(isrc)
         src.i_i ~ active * imag(isrc)
         dst.i_r ~ active * real(idst)
         dst.i_i ~ active * imag(idst)
-    end
+    ]
+    sys = System(eqs, t, [], params; name, systems=[src, dst])
+    set_mtk_defaults(sys, defaults)
 end
 
 # Additionally to the equations defined above, we multiply the currents by `active`.
@@ -263,29 +261,33 @@ isbranchmodel(pibranch)
 # > **Note**
 # >
 # > NetworkDynamics currently does not support Events defined in MTK models. So we need to split the implementation:
-# > The new parameters need to be introduced to the `MTKModel` (extending CustomPiBranch), the callbacks need to be defined
+# > The new parameters need to be introduced to the MTK model (extending CustomPiBranch), the callbacks need to be defined
 # > for the *compiled EdgeModel*.
 #
-# ### Extension of the CustomPiBranch MTKModel
+# ### Extension of the CustomPiBranch Model
 # Let's add the new parameters to the `CustomPiBranch` model by *extending* the model.
 # Extend means that we essentially copy-paste the whole model definitions and are able to add
-# new parameters, equations, variables and so on.
+# new parameters, equations, variables and so on. `@unpack` gives us the terminals of the base
+# model, so the new equation can refer to them.
 #
 # We add an additional "observed" state `I_mag`, which always contains the current magnitude at the src or dst terminal (whatever is higher).
 
-@mtkmodel ProtectedPiBranch begin
-    @extend CustomPiBranch()
-    @parameters begin
+@component function ProtectedPiBranch(; name, defaults...)
+    base = CustomPiBranch(; name)
+    @unpack src, dst = base
+    params = @parameters begin
         I_max=Inf, [description="Maximum current magnitude"]
         t_cutoff=Inf, [description="Time when the line should be switched off"]
         t_delay=0.1, [description="Delay time after which the line should be switched off"]
     end
-    @variables begin
+    vars = @variables begin
         I_mag(t), [description="Current magnitude at src or dst terminal"]
     end
-    @equations begin
+    eqs = [
         I_mag ~ max(sqrt(src.i_r^2 + src.i_i^2), sqrt(dst.i_r^2 + dst.i_i^2))
-    end
+    ]
+    sys = extend(System(eqs, t, vars, params; name), base)
+    set_mtk_defaults(sys, defaults)
 end
 nothing #hide
 
@@ -339,6 +341,13 @@ mtkline = MTKLine(branchA, branchB)
 
 protected_template = compile_line(mtkline; name=:protected_piline)
 
+# > **Templates and the model cache**
+# >
+# > We compile this line once and copy it for every line we replace later, so the expensive
+# > compilation happens only once. The model cache of NetworkDynamics is another way to get
+# > that benefit: with `NetworkDynamics.set_mtk_cache!(:on)`, you can compile every line from
+# > its own model, and structurally equal lines reuse the work of the first one. The
+# > IEEE39 tutorial builds its grid that way.
 # > **Reduced complexity of compiled Model**
 # >
 # > Note, that the compiled model still has **no states**, i.e. it directly calculates
@@ -381,9 +390,9 @@ function continuous_overcurrent_condition(branchname)
     I_max = Symbol(branchname, "₊", :I_max) # pilineX₊I_max
     t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
 
-    ComponentCondition([I_mag], [I_max, t_cutoff]) do u, p, t
-        p[t_cutoff] != Inf && return Inf # return Inf if cutoff already scheduled
-        p[I_max] - u[I_mag]
+    ComponentCondition([I_mag, I_max, t_cutoff]) do u, t
+        u[t_cutoff] != Inf && return Inf # return Inf if cutoff already scheduled
+        u[I_max] - u[I_mag]
     end
 end
 
@@ -395,9 +404,9 @@ function discrete_overcurrent_condition(branchname)
     I_max = Symbol(branchname, "₊", :I_max) # pilineX₊I_max
     t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
 
-    ComponentCondition([I_mag], [I_max, t_cutoff]) do u, p, t
-        p[t_cutoff] != Inf && return false # return false if cutoff already scheduled
-        u[I_mag] ≥ p[I_max]
+    ComponentCondition([I_mag, I_max, t_cutoff]) do u, t
+        u[t_cutoff] != Inf && return false # return false if cutoff already scheduled
+        u[I_mag] ≥ u[I_max]
     end
 end
 
@@ -410,12 +419,12 @@ function overcurrent_affect(branchname)
     t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
     t_delay = Symbol(branchname, "₊", :t_delay)   # pilineX₊t_delay
 
-    ComponentAffect([], [t_cutoff, t_delay]) do u, p, ctx
-        p[t_cutoff] != Inf && return # return early if already scheduled for cutoff
-        tcutoff = ctx.t + p[t_delay]
+    ComponentAffect([t_cutoff, t_delay]) do u, ctx
+        u[t_cutoff] != Inf && return # return early if already scheduled for cutoff
+        tcutoff = ctx.t + u[t_delay]
         println("$branchname of line $(ctx.src)→$(ctx.dst) overcurrent at t=$(ctx.t), scheduling cutoff at t=$tcutoff")
         # update the parameter of the edge to store the cutoff time
-        p[t_cutoff] = tcutoff
+        u[t_cutoff] = tcutoff
         # tell the integrator to explicitly step to the cutoff time
         add_tstop!(ctx.integrator, tcutoff)
     end
@@ -429,15 +438,15 @@ end
 
 function cutoff_condition(branchname)
     t_cutoff = Symbol(branchname, "₊", :t_cutoff) # pilineX₊t_cutoff
-    ComponentCondition([], [t_cutoff]) do u, p, t
-        t == p[t_cutoff]
+    ComponentCondition([t_cutoff]) do u, t
+        t == u[t_cutoff]
     end
 end
 function cutoff_affect(branchname)
     active = Symbol(branchname, "₊", :active) # pilineX₊active
-    ComponentAffect([], [active]) do u, p, ctx
+    ComponentAffect([active]) do u, ctx
         println("$branchname of line $(ctx.src)→$(ctx.dst) cutoff at t=$(ctx.t)")
-        p[active] = 0 # switch off the line
+        u[active] = 0 # switch off the line
     end
 end
 function cutoff_callback(branchname)
@@ -577,9 +586,9 @@ end
 # Notably, we only need to start the short circuit, as the protection is
 # now "baked into" the transmission line model.
 
-_enable_short = ComponentAffect([], [:pibranchA₊shortcircuit]) do u, p, ctx
+_enable_short = ComponentAffect([:pibranchA₊shortcircuit]) do u, ctx
     @info "Short circuit activated on branch A of line $(ctx.src)→$(ctx.dst) at t = $(ctx.t)s"
-    p[:pibranchA₊shortcircuit] = 1
+    u[:pibranchA₊shortcircuit] = 1
 end
 shortcircuit_cb = PresetTimeComponentCallback(0.1, _enable_short)
 known_cbs = filter(cb -> !(cb isa PresetTimeComponentCallback), get_callbacks(nw_protected[EIndex(AFFECTED_LINE)]))

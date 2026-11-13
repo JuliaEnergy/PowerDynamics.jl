@@ -93,16 +93,16 @@ AFFECTED_LINE = 11
 # Now we define callback functions to model the disturbance sequence:
 
 # Define callback to enable short circuit at t=0.1s
-_enable_short = ComponentAffect([], [:piline₊shortcircuit]) do u, p, ctx
+_enable_short = ComponentAffect([:piline₊shortcircuit]) do u, ctx
     @info "Short circuit activated on line $(ctx.src)→$(ctx.dst) at t = $(ctx.t)s"
-    p[:piline₊shortcircuit] = 1
+    u[:piline₊shortcircuit] = 1
 end
 shortcircuit_cb = PresetTimeComponentCallback(0.1, _enable_short)
 
 # Define callback to disconnect line at t=0.2s (fault clearing)
-_disable_line = ComponentAffect([], [:piline₊active]) do u, p, ctx
+_disable_line = ComponentAffect([:piline₊active]) do u, ctx
     @info "Line $(ctx.src)→$(ctx.dst) disconnected at t = $(ctx.t)s"
-    p[:piline₊active] = 0
+    u[:piline₊active] = 0
 end
 deactivate_cb = PresetTimeComponentCallback(0.2, _disable_line)
 
@@ -144,12 +144,11 @@ sol = solve(prob, Rodas5P());
 #
 # > **Tip**
 # >
-# > The ODEProblem contains a reference to exactly one copy of the *flat parameter array*.
-# > If you use callbacks to change those parameters (as we do), it is advised to
-# > `copy` the parameter array before passing it to the ODEProblem! Otherwise the callback
-# > will change our `u0` object.
-# > Also, this means you need to be careful when using the same `prob` for multiple subsequent
-# > `solve` calls, as the initial state of the `prob` object might have changed!
+# > Callbacks change parameters during the solve. Since NetworkDynamics v1.4, every solve of a
+# > problem built with `ODEProblem(nw, ...)` works on its own copy of the parameters, so the
+# > same `prob` can be solved several times. With older versions the solve changes `prob.p` in
+# > place, and a second solve of the same `prob` starts from the parameters the first one
+# > ended with.
 #
 # ### Simulation Results Overview
 #

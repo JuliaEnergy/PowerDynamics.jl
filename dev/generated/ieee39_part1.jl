@@ -171,41 +171,22 @@ BASE_FREQ = 60.0
 set_Sbase!(BASE_MVA)
 set_fbase!(BASE_FREQ)
 
-# ## Subcomponent Definition
-# As stated above, our buses fall into 5 different categories.
-# We will define a "template" for each of those categories and then create the individual buses from those templates.
-# By doing so, we can reach substantial performance improvements, as we do not have to repeatedly **compile** the same models (the symbolic simplification is quite costly).
-# Instead, we copy the templates and adjust parameters.
-#
-# However, before we can define the bus templates, we need to define the individual subcomponents.
-# Those subcomponents are MTK models and not yet compiled node models. See Modeling Concepts and the custom bus tutorial.
+# ## Device Models
+# Each bus is a busbar plus whatever devices the data lists for it. Before we build the buses,
+# we look at the device models we are going to use. Those are MTK models and not yet compiled
+# node models. See Modeling Concepts and the custom bus tutorial.
 #
 # ### Load Model
-# We use the ZIP load model to represent loads. This model satisfies the Injector Interface.
+# We use the `ZIPLoad` model to represent loads. This model satisfies the Injector Interface.
 # ```asciiart
 # (t) ┌──────────┐
 #  o──┤ ZIP Load │
 #     └──────────┘
 # ```
 #
-# Every parameter that we are going to read from the CSV files is declared **free** by passing
-# `nothing` instead of a value. A library model normally comes with sensible defaults; passing
-# `nothing` removes the default for that parameter, so the compiled model carries the parameter
-# but no value for it. That way the CSV data is the single source of truth: if a column is
-# missing, initialization fails loudly instead of silently falling back to a library default.
-
-load = ZIPLoad(;
-    name=:ZIPLoad,
-    Pset=nothing, Qset=nothing,
-    KpZ=nothing, KqZ=nothing,
-    KpI=nothing, KqI=nothing,
-    KpC=nothing, KqC=nothing,
-)
-
 # ### Generator Models
-#
-# For generators, we use the Sauer-Pai machine model, which is a 6th-order synchronous machine model.
-# We create two variants:
+# For generators, we use the `SauerPaiMachine`, a 6th-order synchronous machine model.
+# It appears in two variants.
 #
 # **Uncontrolled Machine**: No external control inputs for mechanical torque or field voltage.
 # This model satisfies the Injector Interface directly.
@@ -214,23 +195,9 @@ load = ZIPLoad(;
 #  o──┤ Machine │
 #     └─────────┘
 # ```
-
-# all machine parameters come from machine.csv, so they are declared free
-unset_machine_p = (;
-    Sn=nothing, Vn=nothing, R_s=nothing, X_ls=nothing,
-    X_d=nothing, X_q=nothing, X′_d=nothing, X′_q=nothing, X″_d=nothing, X″_q=nothing,
-    T′_d0=nothing, T′_q0=nothing, T″_d0=nothing, T″_q0=nothing,
-    H=nothing, D=nothing,
-)
-
-uncontrolled_machine = SauerPaiMachine(;
-    τ_m_input=false,  ## No external mechanical torque input
-    vf_input=false,   ## No external field voltage input
-    name=:machine,
-    unset_machine_p...,
-)
-
-# **Controlled Machine**: Includes automatic voltage regulator (AVR) and turbine governor controls.
+#
+# **Controlled Machine**: Includes an automatic voltage regulator (`AVRTypeI`) and a
+# turbine governor (`TGOV1`).
 #
 # The controlled machine is modeled as a **composite injector**. It consists
 # of 3 subcomponents: the machine, the AVR and the governor.
@@ -252,38 +219,13 @@ uncontrolled_machine = SauerPaiMachine(;
 #       │                 ω_meas        │
 #       └───────────────────────────────┘
 # ```
-
-_machine = SauerPaiMachine(;
-    name=:machine,
-    unset_machine_p...,
-)
-_avr = AVRTypeI(;
-    name=:avr,
-    ceiling_function=:quadratic,
-    # from avr.csv
-    Ka=nothing, Ke=nothing, Kf=nothing,
-    Ta=nothing, Tf=nothing, Te=nothing, Tr=nothing,
-    vr_min=nothing, vr_max=nothing,
-    E1=nothing, Se1=nothing, E2=nothing, Se2=nothing,
-)
-_gov = TGOV1(;
-    name=:gov,
-    # from gov.csv
-    V_min=nothing, V_max=nothing, R=nothing,
-    T1=nothing, T2=nothing, T3=nothing, DT=nothing, ω_ref=nothing,
-)
-
-controlled_machine = CompositeInjector(
-    [_machine, _avr, _gov],
-    name=:ctrld_gen
-)
-
-# ## Bus Template Creation
 #
-# Now we have all the components (i.e., the MTK models) so we can combine them into full bus models and compile the methods.
+# ## Bus Structures
+# Combining those devices, the buses in the data come in five structures.
+# We don't need to set them up ahead of time; they emerge when we build each bus from the
+# devices listed for it. Still, it helps to know what is coming.
 #
-# ### Junction Bus
-# Pure transmission buses with no generation or load
+# **Junction Bus**: pure transmission buses with no generation or load.
 # ```asciiart
 #            ╔══════════════════════╗
 #            ║ Junction (compiled)  ║
@@ -295,18 +237,8 @@ controlled_machine = CompositeInjector(
 #            ║  └─────────────────┘ ║
 #            ╚══════════════════════╝
 # ```
-
-# Note that the per-unit bases need no attention here. `Sbase` and `ωbase` were set globally at
-# the top of this page and are picked up by every `compile_bus` call below; they end up on the
-# bus's `systembase`, and each device's own `Sbase`/`ωbase` are structurally bound to it rather
-# than being per-device parameters. The one genuinely per-bus base, `busbar₊Vbase`, is set from
-# `bus.csv` when we instantiate the individual buses further down.
-
-@named junction_bus_template = compile_bus(MTKBus())
-
-# ### Load Bus
-# Buses with only load components
 #
+# **Load Bus**: buses with only a load.
 # ```asciiart
 #            ╔═════════════════════╗
 #            ║ Load (compiled)     ║
@@ -318,12 +250,8 @@ controlled_machine = CompositeInjector(
 #            ║  └────────────────┘ ║
 #            ╚═════════════════════╝
 # ```
-
-@named load_bus_template = compile_bus(MTKBus(load))
-
-# ### Generator Bus (Controlled)
-# Buses with controlled generators (machine + AVR + governor)
 #
+# **Generator Bus (Controlled)**: buses with a controlled generator (machine + AVR + governor).
 # ```asciiart
 #             ╔════════════════════════════════════════════════╗
 #             ║ Ctrld Machine Bus (compiled)                   ║
@@ -342,14 +270,8 @@ controlled_machine = CompositeInjector(
 #             ║  └───────────────────────────────────────────┘ ║
 #             ╚════════════════════════════════════════════════╝
 # ```
-
-@named ctrld_machine_bus_template = compile_bus(
-    MTKBus(controlled_machine);
-)
-
-# ### Generator + Load Bus (Controlled)
-# Buses with both controlled generators and loads
 #
+# **Generator + Load Bus (Controlled)**: buses with both a controlled generator and a load.
 # ```asciiart
 #             ╔═════════════════════════════════════════════════╗
 #             ║ Ctrld Machine Load Bus (compiled)               ║
@@ -370,14 +292,8 @@ controlled_machine = CompositeInjector(
 #             ║  └────────────────────────────────────────────┘ ║
 #             ╚═════════════════════════════════════════════════╝
 # ```
-
-@named ctrld_machine_load_bus_template = compile_bus(
-    MTKBus(controlled_machine, load);
-)
-
-# ### Generator + Load Bus (Uncontrolled)
-# Buses with uncontrolled generators and loads
 #
+# **Generator + Load Bus (Uncontrolled)**: buses with an uncontrolled generator and a load.
 # ```asciiart
 #             ╔════════════════════════════════╗
 #             ║ Unctr. Ma. Load Bus (compiled) ║
@@ -393,65 +309,102 @@ controlled_machine = CompositeInjector(
 #             ╚════════════════════════════════╝
 # ```
 
-@named unctrld_machine_load_bus_template = compile_bus(
-    MTKBus(uncontrolled_machine, load);
-)
-
-# ## Bus Instantiation and Parameter Setting
+# ## Model Cache
+# Getting from model equations to a compiled bus takes three steps:
+# 1. Construct the MTK models of the individual devices, such as the machine or the AVR. This is
+#    surprisingly costly, because it creates a lot of symbolic terms.
+# 2. Combine the models into composite systems, for example with `CompositeInjector` or
+#    `MTKBus`.
+# 3. Compile the bus with `compile_bus`. NetworkDynamics simplifies the equations of the
+#    whole bus and generates Julia code for them.
 #
-# Now we create the actual bus instances by copying templates and applying
-# specific parameters from the CSV data files.
+# Most buses in a grid share their structure. The eight buses with a controlled machine in this
+# system have the same equations and differ only in their parameter values. Repeating steps 1
+# and 3 for each of them would be wasted work. There are two ways to avoid that.
+#
+# **Templates**: build one bus per structure up front and create every other bus as a copy of
+# it with `compile_bus(template; vidx, name)`, adjusting the parameters afterwards. Copying is the
+# fastest way to get a bus. The catch is that you have to know the structures before you build
+# the grid: sort the buses into categories, build a template for each category and pick the
+# right one for every bus.
+#
+# **Model cache**: build every bus from scratch, as if it were the only one, and let
+# NetworkDynamics remember the expensive steps. Device models defined with `@cached_component`,
+# like all library models used here, cover step 1: constructing a device again with the same
+# options returns the stored model with the new parameter values. `compile_bus` covers step 3:
+# for a bus with the same structure as an earlier one, it reuses the simplified equations and
+# the generated code. This is a bit slower than copying a template, but the code simply follows
+# the data.
+#
+# What counts as the same structure are the equations, variables and model options (such as
+# whether the machine has a field voltage input). Parameter values don't matter. If you are
+# curious what was reused, `NetworkDynamics.mtk_cache_stats()` lists the cache hits.
+#
+# This tutorial uses the cache. It is off by default, so we switch it on.
 
-# Helper function to apply CSV parameters to bus components
-function apply_csv_params!(bus, table, bus_index)
-    row_idx = findfirst(table.bus .== bus_index)
+NetworkDynamics.set_mtk_cache!(:on)
 
-    # Apply all parameters except "bus" column
-    row = table[row_idx, :]
-    for col_name in names(table)
-        col_name == "bus" && continue
-        # `V_b` in machine.csv duplicates `base_kv` in bus.csv. The voltage base is a
-        # property of the bus, not of the machine, so we take it from bus.csv below.
-        col_name == "V_b" && continue
-        set_default!(bus, Regex(col_name*"\$"), row[col_name])
-    end
+# ## Bus Construction
+# The device parameters are spread over the CSV files, one row per bus. A small helper collects
+# the row of a bus into a `NamedTuple`, so we can splat it right into the model constructor.
+
+function csv_params(table, bus)
+    row = table[findfirst(==(bus), table.bus), :]
+    # `V_b` in machine.csv duplicates `base_kv` in bus.csv. The voltage base is a
+    # property of the bus, not of the machine, so we take it from bus.csv below.
+    cols = filter(c -> c ∉ ("bus", "V_b"), names(table))
+    NamedTuple(Symbol(c) => row[c] for c in cols)
 end
 
-# For each bus in the system, we:
-# 1. Select the appropriate template based on its category
-# 2. Create a bus instance with the correct vertex index and name
-# 3. Apply component-specific parameters from CSV files
-# 4. Set the power flow model (PQ, PV, or Slack)
+# Now we go through `bus.csv` and build every bus from the devices the flags `has_gen`,
+# `has_avr`, `has_gov` and `has_load` ask for:
+# 1. Build the device models with their parameters from the CSV files
+# 2. Combine them in an `MTKBus`
+# 3. Compile the bus with `compile_bus`, passing the vertex index, the power flow model
+#    (PQ, PV or Slack) and the voltage base
+#
+# The voltage base is the one per-unit base that is genuinely per bus (this system mixes 16.5,
+# 138, 230 and 345 kV). It only affects the SI observables (`u_kV`, `P_MW`, …) and is handed
+# down to the incident lines during initialization. `Sbase` and `ωbase` need no attention: they
+# were set globally above and are picked up by every model we construct.
+#
+# Compiling a bus is the expensive step. Since the cache is on, only the first bus of each
+# structure is actually compiled; all others reuse it.
 
 busses = []
 for row in eachrow(bus_df)
     i = row.bus
+    injectors = []
 
-    # Select template based on bus category
-    bus = if row.category == "junction"
-        compile_bus(junction_bus_template; vidx=i, name=Symbol("bus$i"))
-    elseif row.category == "load"
-        compile_bus(load_bus_template; vidx=i, name=Symbol("bus$i"))
-    elseif row.category == "ctrld_machine"
-        compile_bus(ctrld_machine_bus_template; vidx=i, name=Symbol("bus$i"))
-    elseif row.category == "ctrld_machine_load"
-        compile_bus(ctrld_machine_load_bus_template; vidx=i, name=Symbol("bus$i"))
-    elseif row.category == "unctrld_machine_load"
-        compile_bus(unctrld_machine_load_bus_template; vidx=i, name=Symbol("bus$i"))
+    if row.has_gen
+        machine = SauerPaiMachine(;
+            name=:machine,
+            vf_input=row.has_avr,   ## field voltage set by an AVR
+            τ_m_input=row.has_gov,  ## mechanical torque set by a governor
+            csv_params(machine_df, i)...,
+        )
+        if row.has_avr || row.has_gov
+            # machine and controllers form one composite injector
+            ctrld_gen = Any[machine]
+            if row.has_avr
+                avr = AVRTypeI(; name=:avr, ceiling_function=:quadratic, csv_params(avr_df, i)...)
+                push!(ctrld_gen, avr)
+            end
+            if row.has_gov
+                gov = TGOV1(; name=:gov, csv_params(gov_df, i)...)
+                push!(ctrld_gen, gov)
+            end
+            push!(injectors, CompositeInjector(ctrld_gen; name=:ctrld_gen))
+        else
+            push!(injectors, machine)
+        end
     end
 
-    # The voltage base is the one per-unit base that is genuinely per bus (this system mixes
-    # 16.5, 138, 230 and 345 kV). It only affects the SI observables (`u_kV`, `P_MW`, …) and
-    # is handed down to the incident lines during initialization.
-    set_default!(bus, :busbar₊Vbase, row.base_kv)
+    if row.has_load
+        load = ZIPLoad(; name=:ZIPLoad, csv_params(load_df, i)...)
+        push!(injectors, load)
+    end
 
-    # Apply component parameters from CSV files
-    row.has_load && apply_csv_params!(bus, load_df, i)
-    row.has_gen && apply_csv_params!(bus, machine_df, i)
-    row.has_avr && apply_csv_params!(bus, avr_df, i)
-    row.has_gov && apply_csv_params!(bus, gov_df, i)
-
-    # Set power flow model based on bus type
     pf_model = if row.bus_type == "PQ"
         pfPQ(P=row.P, Q=row.Q)  ## Load bus: fixed P and Q
     elseif row.bus_type == "PV"
@@ -459,8 +412,9 @@ for row in eachrow(bus_df)
     elseif row.bus_type == "Slack"
         pfSlack(V=row.V, δ=0)   ## Slack bus: fixed V and angle
     end
-    set_pfmodel!(bus, pf_model)
 
+    bus = compile_bus(MTKBus(injectors...);
+        vidx=i, name=Symbol("bus$i"), pf=pf_model, Vbase=row.base_kv)
     push!(busses, bus)
 end
 
@@ -492,16 +446,14 @@ end
 # the bus it is attached to, and that inheritance is resolved during initialization, once the
 # line knows its neighbours. Part II shows the result.
 
-@named piline_template = compile_line(MTKLine(PiLine_fault(;name=:piline)))
-
 # Each transmission element is created by:
-# 1. Instantiating a line from the template with source and destination buses
+# 1. Compiling a line model with its source and destination buses
 # 2. Setting electrical parameters (resistance, reactance, susceptance) from CSV data
 
 branches = []
 for row in eachrow(branch_df)
     # Create line instance with topology
-    line = compile_line(piline_template; src=row.src_bus, dst=row.dst_bus)
+    line = compile_line(MTKLine(PiLine_fault(;name=:piline)); src=row.src_bus, dst=row.dst_bus)
 
     # Apply electrical parameters from CSV data
     for col_name in names(branch_df)

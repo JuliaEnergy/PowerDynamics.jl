@@ -31,7 +31,7 @@
 using PowerDynamics
 using PowerDynamics.Library
 using NetworkDynamics
-using ModelingToolkitBase, SciCompDSL
+using ModelingToolkitBase
 using ModelingToolkitBase: D_nounits as Dt, t_nounits as t
 using CSV
 using SteadyStateDiffEq
@@ -347,9 +347,9 @@ maximum(abs, uflat(s0_detour) - uflat(s0))
 # With the system initialized, we set up a disturbance to observe its transient response.
 # We'll disable the load at t=0.1s to simulate a sudden load disconnection.
 
-disable_load_affect = ComponentAffect([], [:load₊Pset]) do u, p, ctx
+disable_load_affect = ComponentAffect([:load₊Pset]) do u, ctx
     println("Disabling load at time $(ctx.t)")
-    p[:load₊Pset] = 0  ## Set load power to zero
+    u[:load₊Pset] = 0  ## Set load power to zero
 end
 set_callback!(loadbus, PresetTimeComponentCallback(0.1, disable_load_affect))
 

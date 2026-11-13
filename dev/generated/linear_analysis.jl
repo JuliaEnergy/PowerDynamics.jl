@@ -13,14 +13,16 @@
 #     so please check out their great toolbox for in-depth linear analysis of power systems!
 #
 #     Throughout this example we compare our results to figures exported from SimplusGT.
-#     You can find a README.md in `/docs/examples/SimplusGTData` of the PowerDynamics.jl repository which explains how those reference plots have been created.
+#     You can find a README.md in `docs/examples/SimplusGT_data/generate_figures` of the PowerDynamics.jl repository which explains how those reference plots have been created.
 
 # ## Synchronous Machine with Stator Dynamics
 # In order to replicate the results from SimplusGT we need to use identical or nearly identical models.
 # Most of the models needed are present in our Library, but we still need to implement a custom machine model.
 # Since modeling is not the focus of this tutorial, it is provided without further explanation.
 #
+#
 # SimplusGT uses a special machine model for their Type 0 Apparatus which:
+#
 # - retains the stator flux dynamics (i.e. defines the current output as a differential equation),
 # - assumes constant field flux (parameter which is initialized at operation point) and
 # - contains no governor dynamics (i.e. mechanical torque is a constant parameter initialized at operation point).
@@ -28,7 +30,7 @@
 using PowerDynamics
 using PowerDynamics.Library
 using PowerDynamics.Library.ComposableInverter
-using ModelingToolkitBase, SciCompDSL
+using ModelingToolkitBase
 using ModelingToolkitBase: t_nounits as t, D_nounits as Dt
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
@@ -36,11 +38,9 @@ using NetworkDynamics
 using NetworkDynamics: feedback
 using CairoMakie
 
-@mtkmodel SyncMachineStatorDynamics begin
-    @components begin
-        terminal = Terminal()
-    end
-    @parameters begin
+@component function SyncMachineStatorDynamics(; name, defaults...)
+    @named terminal = Terminal()
+    params = @parameters begin
         J, [description="Inertia constant [MWs²/MVA]"]
         D, [description="Damping coefficient [pu]"]
         wL, [description="Stator inductance * base frequency [pu]"]
@@ -50,7 +50,7 @@ using CairoMakie
         psi_f, [guess=1, description="Field flux linkage [pu]"]
         T_m, [guess=1, description="Mechanical torque [pu]"]
     end
-    @variables begin
+    vars = @variables begin
         i_d(t), [guess=0, description="d-axis stator current [pu]"]
         i_q(t), [guess=1, description="q-axis stator current [pu]"]
         w(t), [guess=2*pi*50, description="Rotor speed [rad/s]"]
@@ -61,15 +61,13 @@ using CairoMakie
         psi_q(t), [guess=0, description="q-axis flux linkage [pu]"]
         Te(t), [guess=1, description="Electrical torque [pu]"]
     end
-    begin
-        J_pu = J*2/ωbase^2
-        D_pu = D/ωbase^2
-        L = wL/ωbase
-        T_to_loc(α)  = [ cos(α) sin(α);
-                        -sin(α)  cos(α)]
-        T_to_glob(α) = T_to_loc(-α)
-    end
-    @equations begin
+    J_pu = J*2/ωbase^2
+    D_pu = D/ωbase^2
+    L = wL/ωbase
+    T_to_loc(α)  = [ cos(α) sin(α);
+                    -sin(α)  cos(α)]
+    T_to_glob(α) = T_to_loc(-α)
+    eqs = [
         # output transformation (global dq/local dq)
         [terminal.i_r, terminal.i_i] .~ -T_to_glob(theta)*[i_d, i_q]
         [v_d, v_q] .~ T_to_loc(theta)*[terminal.u_r, terminal.u_i]
@@ -84,7 +82,9 @@ using CairoMakie
         # `w` is the *absolute* rotor speed in [rad/s], `theta` is measured against the
         # global dq frame, whose speed in [rad/s] is ωbase*ωframe.
         Dt(theta) ~ w - ωbase*ωframe
-    end
+    ]
+    sys = System(eqs, t, vars, params; name, systems=[terminal])
+    set_mtk_defaults(sys, defaults)
 end
 
 # ## 4-Bus Network Setup
@@ -700,13 +700,13 @@ end
 # To perturb the system, we apply a three-phase short circuit at Bus 1 by reducing the shunt resistance to near zero for a short time.
 # The fault starts at 0.1s and is cleared at 0.2s.
 
-affect = ComponentAffect([], [:shunt₊R]) do u, p, ctx
+affect = ComponentAffect([:shunt₊R]) do u, ctx
     if ctx.t == 0.1
         println("Short Circuit at Bus 1 at t=0.1s")
-        p[:shunt₊R] = 1e-6
+        u[:shunt₊R] = 1e-6
     elseif ctx.t == 0.2
         println("Clearing Short Circuit at Bus 1 at t=0.2s")
-        p[:shunt₊R] = 1/0.6
+        u[:shunt₊R] = 1/0.6
     end
 end
 short = PresetTimeComponentCallback([0.1, 0.2], affect)

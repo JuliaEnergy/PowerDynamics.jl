@@ -25,7 +25,7 @@
 # Loading required packages and setup
 using PowerDynamics
 using PowerDynamics.Library
-using ModelingToolkitBase, SciCompDSL
+using ModelingToolkitBase
 using ModelingToolkitBase: D_nounits as Dt, t_nounits as t
 using NetworkDynamics
 using NetworkDynamics: SII
@@ -111,14 +111,12 @@ include(joinpath(EXAMPLEDIR, "ieee39_part3.jl"))  # Provides initialized network
 #       └──────────────────────────┘
 # ```
 #
-# We can define the following MTKModel to represent the droop inverter:
+# We can define the following component to represent the droop inverter:
 
-@mtkmodel DroopInverter begin
-    @components begin
-        terminal = Terminal()
-    end
+@component function DroopInverter(; name, defaults...)
+    @named terminal = Terminal()
 
-    @parameters begin
+    params = @parameters begin
         Pset, [description="Active power setpoint", guess=1]
         Qset, [description="Reactive power setpoint", guess=0]
         Vset, [description="Voltage magnitude setpoint", guess=1]
@@ -131,7 +129,7 @@ include(joinpath(EXAMPLEDIR, "ieee39_part3.jl"))  # Provides initialized network
         τ_q = 1.0, [description="Reactive Power filter time constant [s]"]
     end
 
-    @variables begin
+    vars = @variables begin
         Pmeas(t), [description="Measured active power", guess=1]
         Qmeas(t), [description="Measured reactive power", guess=0]
         Pfilt(t), [description="Filtered active power", guess=1]
@@ -141,7 +139,7 @@ include(joinpath(EXAMPLEDIR, "ieee39_part3.jl"))  # Provides initialized network
         V(t), [description="Voltage magnitude"]
     end
 
-    @equations begin
+    eqs = [
         # Power measurement from terminal quantities
         Pmeas ~ terminal.u_r*terminal.i_r + terminal.u_i*terminal.i_i
         Qmeas ~ terminal.u_i*terminal.i_r - terminal.u_r*terminal.i_i
@@ -161,14 +159,16 @@ include(joinpath(EXAMPLEDIR, "ieee39_part3.jl"))  # Provides initialized network
         # Output voltage components
         terminal.u_r ~ V*cos(δ)
         terminal.u_i ~ V*sin(δ)
-    end
+    ]
+    sys = System(eqs, t, vars, params; name, systems=[terminal])
+    set_mtk_defaults(sys, defaults)
 end;
 
 # ### Creating a Bus with the Droop Inverter
 #
 # Following the descriptions in Modeling Concepts, we build an MTKBus using
 # the droop as the single injector and then compile the bus model, similar to
-# how we define the templates in part I:
+# how we define the buses in part I:
 #
 # ```asciiart
 #            ╔═════════════════════════╗

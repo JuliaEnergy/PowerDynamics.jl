@@ -108,7 +108,7 @@
 #
 # To simulate this system, we first need to import some packages...
 
-using ModelingToolkitBase, SciCompDSL
+using ModelingToolkitBase
 using ModelingToolkitBase: t_nounits as t, D_nounits as Dt
 using OrdinaryDiffEqRosenbrock
 using CairoMakie
@@ -119,25 +119,26 @@ using CairoMakie
 # >
 # > Julia allows you to use unicode characters in variable names. In most Julia development environments you can insert them with LaTeX-like syntax: `\alpha<TAB> ⇒ α`, `\_e<TAB> ⇒ ₑ` and `\_+ ⇒ ₊`. Especially `₊` is important as it is used as a separator in MTK.
 #
-# After importing the packages, we can define the *symbolic system* using the `@mtkmodel` macro:
+# After importing the packages, we can define the *symbolic system* as a function marked with `@component`:
 
-@mtkmodel SwingInfiniteBus begin
-    @parameters begin
+@component function SwingInfiniteBus(; name)
+    params = @parameters begin
         M  = 1   # machine inertia
         D  = 1   # machine damping
         Pₘ = 1   # mechanical power
         X  = 0.1 # reactance of powerline
     end
-    @variables begin
+    vars = @variables begin
         θ(t)  # rotor angle
         ω(t)  # angular velocity (rel to sync. speed)
         Pₑ(t) # electrical power (connection to IB)
     end
-    @equations begin
+    eqs = [
         Pₑ ~ 1/X * sin(θ)
         Dt(θ) ~ ω
         Dt(ω) ~ (Pₘ - Pₑ - D*ω) / M
-    end
+    ]
+    System(eqs, t, vars, params; name)
 end
 
 # The definition of the system is quite straightforward. Note how we defined 3
@@ -332,8 +333,9 @@ s0 = NWState(nw)
 # This creates a state and parameter object, which is prefilled with all of the default values stored in the Network.
 # The undefined states/parameters are set to `NaN`.
 #
-# !!! note Automatic State Reduction
-# In the printout of `s0` you see only two "real" states: $\omega$ and $\theta$ of the swing equation, everything else was simplified away, just like in the MTK example above.
+# > **Automatic State Reduction**
+# >
+# > In the printout of `s0` you see only two "real" states: $\omega$ and $\theta$ of the swing equation, everything else was simplified away, just like in the MTK example above.
 #
 # Using the symbolic indexing syntax described above, we can now set the initial conditions for all states and parameters that are not already defined.
 #

@@ -193,9 +193,9 @@ u0[VIndex(5, :load₊P)] ≈ -1.25 && u0[VIndex(5, :load₊Q)] ≈ -0.5
 # For that we use a `PresetTimeComponentCallback`
 # to deactivate a line at a certain time.
 
-deactivate_line = ComponentAffect([], [:pibranch₊active]) do u, p, ctx
+deactivate_line = ComponentAffect([:pibranch₊active]) do u, ctx
     @info "Deactivate line $(ctx.src)=>$(ctx.dst) at t=$(ctx.t)"
-    p[:pibranch₊active] = 0
+    u[:pibranch₊active] = 0
 end
 cb = PresetTimeComponentCallback([1.0], deactivate_line)
 set_callback!(l46, cb)

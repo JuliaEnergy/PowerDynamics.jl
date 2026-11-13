@@ -17,7 +17,7 @@
 
 using PowerDynamics
 using PowerDynamics.Library
-using ModelingToolkitBase, SciCompDSL
+using ModelingToolkitBase
 using ModelingToolkitBase: t_nounits as t, D_nounits as Dt
 using OrdinaryDiffEqRosenbrock
 using OrdinaryDiffEqNonlinearSolve
@@ -72,6 +72,11 @@ J2 = compile_bus(MTKBus(); name=:J2, vidx=6)
 # > Here we use the "copy-constructor" of `EdgeModel` to create a new `EdgeModel` based
 # > on a previous one. This is useful to create multiple lines and is far more efficient
 # > than going through the full compilation process each time.
+#
+#     The model cache of NetworkDynamics is another way to get the same benefit: with
+#     `NetworkDynamics.set_mtk_cache!(:on)`, you can compile every line from its own model, and
+#     structurally equal lines reuse the work of the first one. The
+#     IEEE39 tutorial builds its grid that way.
 
 @named pibranch = PiLine(;R=0.01, X=0.005, B_src=0.08, B_dst=0.08)
 line_template = compile_line(MTKLine(pibranch))
@@ -104,19 +109,17 @@ lines = [
 # > can satisfy the voltage equality.
 # > This is necessary, because MTK does not know about the explicit feedback loop `u_src = f(i_src)`.
 
-@mtkmodel Breaker begin
-    @parameters begin
+@component function Breaker(; name, defaults...)
+    @named src = Terminal()
+    @named dst = Terminal()
+    params = @parameters begin
         closed=1, [description="Breaker closed (1) or open (0)"]
     end
-    @components begin
-        src = Terminal()
-        dst = Terminal()
-    end
-    @variables begin
+    vars = @variables begin
         i_r(t), [guess=0, description="Current real part through breaker"]
         i_i(t), [guess=0, description="Current imaginary part through breaker"]
     end
-    @equations begin
+    eqs = [
         # When closed: enforce u_dst = u_src (with current as implicit output)
         # When open: enforce i = 0
         0 ~ ifelse(closed == 1, dst.u_r - src.u_r + implicit_output(i_r), i_r)
@@ -126,7 +129,9 @@ lines = [
         dst.i_i ~ i_i
         src.i_r ~ -dst.i_r
         src.i_i ~ -dst.i_i
-    end
+    ]
+    sys = System(eqs, t, vars, params; name, systems=[src, dst])
+    set_mtk_defaults(sys, defaults)
 end
 
 breaker_mod = Breaker(name=:breaker)
@@ -161,20 +166,20 @@ s0 = initialize_from_pf!(nw)
 # callback. This is obviously not a realistic breaker control strategy, but it serves to
 # demonstrate both opening and closing of the breaker in a single simulation.
 
-toggle_breaker = ComponentAffect([],[:breaker₊closed]) do u, p, ctx
-    current = p[:breaker₊closed]
+toggle_breaker = ComponentAffect([:breaker₊closed]) do u, ctx
+    current = u[:breaker₊closed]
     next = current == 1 ? 0 : 1
     println("Toggling breaker state from ", Int(current), " to ", Int(next), " at t=", ctx.t)
-    p[:breaker₊closed] = next
+    u[:breaker₊closed] = next
 end
 
 # Open the breaker at t=0.1s
 open_breaker = PresetTimeComponentCallback(0.1, toggle_breaker)
 
 # Close the breaker when voltage angles are synchronized
-close_cond = ComponentCondition([:src₊u_r, :src₊u_i, :dst₊u_r, :dst₊u_i], [:breaker₊closed]) do u, p, ctx
+close_cond = ComponentCondition([:src₊u_r, :src₊u_i, :dst₊u_r, :dst₊u_i, :breaker₊closed]) do u, t
     # Don't trigger if already/still closed
-    p[:breaker₊closed] == 1 && return Inf
+    u[:breaker₊closed] == 1 && return Inf
 
     # Calculate voltage angles on both sides
     src_arg = atan(u[:src₊u_i], u[:src₊u_r])
