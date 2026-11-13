@@ -4,7 +4,8 @@
 - **Cached library models.** Requires NetworkDynamics ≥ 1.4, whose model cache this release
   builds on. The library models used by the examples are `@cached_component`s now: `PiLine`,
   `PiLine_fault`, `RXGroundFault`, `StaticShunt`, `VoltageDependentLoad`, `ZIPLoad`,
-  `SauerPaiMachine`, `AVRTypeI`, `TGOV1` and the powerflow constraint models. With the cache
+  `SauerPaiMachine`, `AVRTypeI`, `TGOV1`, the powerflow constraint models and the bus and line
+  building blocks `BusBar`, `SystemBase`, `LineEnd` and `KirchoffBus`. With the cache
   switched on (`NetworkDynamics.set_mtk_cache!(:on)` or `NetworkDynamics.with_mtk_cache`), a
   network built from one model per bus and line compiles faster than one built from compiled
   templates without the cache, so templating is often no longer needed. The cache is off by
@@ -12,11 +13,17 @@
 - PowerDynamics registers its global settings (per-unit bases, saturation config, callback
   verbosity) with `NetworkDynamics.register_cache_context!`. A cached component built under
   other global settings is therefore built again instead of being reused.
+- `MTKBus`, `MTKLine` and `CompositeInjector` build their systems faster, which matters most for
+  deep model hierarchies.
 - The models in the documentation are written as `@component` functions instead of
   `@mtkmodel`, and the docs no longer need `SciCompDSL`.
 - **Fix:** `ZIPLoad` returned NaN at exactly zero voltage, also for a pure impedance load,
   which could stop a simulation of a bolted fault next to a radial load. It now draws no
   current there, with a finite Jacobian; away from zero voltage nothing changes.
+- **Fix:** The DC-link energy balance of `SimpleGFLDC` had the wrong sign: the AC output
+  charged the capacitor instead of discharging it. `P_dc` is now the DC power feeding the link,
+  and the DC voltage controller acts the other way round. The steady state is unchanged, the
+  dynamics are not ([#303](https://github.com/JuliaEnergy/PowerDynamics.jl/pull/303)).
 
 ## Version 5.0.0 Changelog
 
