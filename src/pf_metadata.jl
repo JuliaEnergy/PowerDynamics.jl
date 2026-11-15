@@ -1,4 +1,182 @@
 ####
+#### Init constraints
+####
+
+"""
+    has_pfinitconstraint(c::ComponentModel)
+    has_pfinitconstraint(nw::Network, idx::Union{VIndex,EIndex})
+
+Checks if the component has an initialization constraint which depends on the pf state in metadata.
+
+See also: [`get_pfinitconstraints`](@ref), [`set_pfinitconstraint!`](@ref).
+"""
+has_pfinitconstraint(c::NetworkDynamics.ComponentModel) = has_metadata(c, :pfinitconstraint)
+has_pfinitconstraint(nw::Network, idx::NetworkDynamics.VCIndex) = has_pfinitconstraint(getcomp(nw, idx))
+has_pfinitconstraint(nw::Network, idx::NetworkDynamics.ECIndex) = has_pfinitconstraint(getcomp(nw, idx))
+
+"""
+    get_pfinitconstraints(c::NetworkDynamics.ComponentModel)
+    get_pfinitconstraints(nw::Network, idx::Union{VIndex,EIndex})
+
+Retrieves the initialization constraints which depend on pf state for the component model.
+Returns a tuple of constraints, even if only one constraint is present.
+May error if no constraints are present. Use `has_pfinitconstraint` to check first.
+
+See also: [`has_pfinitconstraint`](@ref), [`set_pfinitconstraint!`](@ref).
+"""
+function get_pfinitconstraints(c::NetworkDynamics.ComponentModel)
+    constraint = get_metadata(c, :pfinitconstraint)
+    return constraint isa Tuple ? constraint : (constraint,)
+end
+get_pfinitconstraints(nw::Network, idx::NetworkDynamics.VCIndex) = get_pfinitconstraints(getcomp(nw, idx))
+get_pfinitconstraints(nw::Network, idx::NetworkDynamics.ECIndex) = get_pfinitconstraints(getcomp(nw, idx))
+
+"""
+    set_pfinitconstraint!(c::NetworkDynamics.ComponentModel, constraint; check=true)
+    set_pfinitconstraint!(nw::Network, idx::Union{VIndex,EIndex}, constraint; check=true)
+
+Sets initialization constraints which depend on the powerflow solution to the component.
+Accepts either a single `PFInitConstraint` or a tuple of `PFInitConstraint` objects.
+Overwrites any existing pf constraints.
+See also [`delete_pfinitconstraints!`](@ref), [`add_pfinitconstraint!`](@ref).
+"""
+function set_pfinitconstraint!(c::NetworkDynamics.ComponentModel, constraint::Union{PFInitConstraint, Tuple{Vararg{PFInitConstraint}}})
+    set_metadata!(c, :pfinitconstraint, constraint)
+end
+set_pfinitconstraint!(nw::Network, idx::NetworkDynamics.VCIndex, constraint; kw...) = set_pfinitconstraint!(getcomp(nw, idx), constraint; kw...)
+
+"""
+    add_pfinitconstraint!(c::NetworkDynamics.ComponentModel, constraint::PFInitConstraint) -> Bool
+    add_pfinitconstraint!(nw::Network, idx::Union{VIndex,EIndex}, constraint) -> Bool
+
+Adds a new initialization constraint which depends on the powerflow solution to the component.
+If constraints already exist, the new constraint is added to the existing ones.
+If no constraints exist, this is equivalent to `set_pfinitconstraint!`.
+
+Returns `true` if the constraint was successfully added, `false` if it already exists.
+
+See also [`set_pfinitconstraint!`](@ref), [`delete_pfinitconstraints!`](@ref).
+"""
+function add_pfinitconstraint!(c::NetworkDynamics.ComponentModel, constraint::PFInitConstraint)
+    if has_pfinitconstraint(c)
+        existing_constraints = get_pfinitconstraints(c)
+
+        constraint ∈ existing_constraints && return false
+
+        new_constraints = (existing_constraints..., constraint)
+        set_metadata!(c, :pfinitconstraint, new_constraints)
+    else
+        set_metadata!(c, :pfinitconstraint, constraint)
+    end
+    return true
+end
+add_pfinitconstraint!(nw::Network, idx::NetworkDynamics.VCIndex, constraint) = add_pfinitconstraint!(getcomp(nw, idx), constraint)
+add_pfinitconstraint!(nw::Network, idx::NetworkDynamics.ECIndex, constraint) = add_pfinitconstraint!(getcomp(nw, idx), constraint)
+
+"""
+    delete_pfinitconstraints!(c::NetworkDynamics.ComponentModel)
+    delete_pfinitconstraints!(nw::Network, idx::Union{VIndex,EIndex})
+
+Removes the powerflow dependent initialization constraint from the component model,
+or from a component referenced by `idx` in a network.
+Returns `true` if the constraint existed and was removed, `false` otherwise.
+
+See also: [`set_pfinitconstraint!`](@ref).
+"""
+delete_pfinitconstraints!(c::NetworkDynamics.ComponentModel) = delete_metadata!(c, :pfinitconstraint)
+delete_pfinitconstraints!(nw::Network, idx::NetworkDynamics.VCIndex) = delete_pfinitconstraints!(getcomp(nw, idx))
+delete_pfinitconstraints!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfinitconstraints!(getcomp(nw, idx))
+
+####
+#### Init formulas
+####
+
+"""
+    has_pfinitformula(c::ComponentModel)
+    has_pfinitformula(nw::Network, idx::Union{VIndex,EIndex})
+
+Checks if the component has an initialization formula which depends on the pf state in metadata.
+
+See also: [`get_pfinitformulas`](@ref), [`set_pfinitformula!`](@ref).
+"""
+has_pfinitformula(c::NetworkDynamics.ComponentModel) = has_metadata(c, :pfinitformula)
+has_pfinitformula(nw::Network, idx::NetworkDynamics.VCIndex) = has_pfinitformula(getcomp(nw, idx))
+has_pfinitformula(nw::Network, idx::NetworkDynamics.ECIndex) = has_pfinitformula(getcomp(nw, idx))
+
+"""
+    get_pfinitformulas(c::NetworkDynamics.ComponentModel)
+    get_pfinitformulas(nw::Network, idx::Union{VIndex,EIndex})
+
+Retrieves the initialization formulas which depend on pf state for the component model.
+Returns a tuple of formulas, even if only one formula is present.
+May error if no formulas are present. Use `has_pfinitformula` to check first.
+
+See also: [`has_pfinitformula`](@ref), [`set_pfinitformula!`](@ref).
+"""
+function get_pfinitformulas(c::NetworkDynamics.ComponentModel)
+    formula = get_metadata(c, :pfinitformula)
+    return formula isa Tuple ? formula : (formula,)
+end
+get_pfinitformulas(nw::Network, idx::NetworkDynamics.VCIndex) = get_pfinitformulas(getcomp(nw, idx))
+get_pfinitformulas(nw::Network, idx::NetworkDynamics.ECIndex) = get_pfinitformulas(getcomp(nw, idx))
+
+"""
+    set_pfinitformula!(c::NetworkDynamics.ComponentModel, formula; check=true)
+    set_pfinitformula!(nw::Network, idx::Union{VIndex,EIndex}, formula; check=true)
+
+Sets initialization formulas which depend on the powerflow solution to the component.
+Accepts either a single `PFInitFormula` or a tuple of `PFInitFormula` objects.
+Overwrites any existing pf formulas.
+See also [`delete_pfinitformulas!`](@ref), [`add_pfinitformula!`](@ref).
+"""
+function set_pfinitformula!(c::NetworkDynamics.ComponentModel, formula::Union{PFInitFormula, Tuple{Vararg{PFInitFormula}}})
+    set_metadata!(c, :pfinitformula, formula)
+end
+set_pfinitformula!(nw::Network, idx::NetworkDynamics.VCIndex, formula; kw...) = set_pfinitformula!(getcomp(nw, idx), formula; kw...)
+
+"""
+    add_pfinitformula!(c::NetworkDynamics.ComponentModel, formula::PFInitFormula) -> Bool
+    add_pfinitformula!(nw::Network, idx::Union{VIndex,EIndex}, formula) -> Bool
+
+Adds a new initialization formula which depends on the powerflow solution to the component.
+If formulas already exist, the new formula is added to the existing ones.
+If no formulas exist, this is equivalent to `set_pfinitformula!`.
+
+Returns `true` if the formula was successfully added, `false` if it already exists.
+
+See also [`set_pfinitformula!`](@ref), [`delete_pfinitformulas!`](@ref).
+"""
+function add_pfinitformula!(c::NetworkDynamics.ComponentModel, formula::PFInitFormula)
+    if has_pfinitformula(c)
+        existing_formulas = get_pfinitformulas(c)
+
+        formula ∈ existing_formulas && return false
+
+        new_formulas = (existing_formulas..., formula)
+        set_metadata!(c, :pfinitformula, new_formulas)
+    else
+        set_metadata!(c, :pfinitformula, formula)
+    end
+    return true
+end
+add_pfinitformula!(nw::Network, idx::NetworkDynamics.VCIndex, formula) = add_pfinitformula!(getcomp(nw, idx), formula)
+add_pfinitformula!(nw::Network, idx::NetworkDynamics.ECIndex, formula) = add_pfinitformula!(getcomp(nw, idx), formula)
+
+"""
+    delete_pfinitformulas!(c::NetworkDynamics.ComponentModel)
+    delete_pfinitformulas!(nw::Network, idx::Union{VIndex,EIndex})
+
+Removes the powerflow dependent initialization formula from the component model,
+or from a component referenced by `idx` in a network.
+Returns `true` if the formula existed and was removed, `false` otherwise.
+
+See also: [`set_pfinitformula!`](@ref).
+"""
+delete_pfinitformulas!(c::NetworkDynamics.ComponentModel) = delete_metadata!(c, :pfinitformula)
+delete_pfinitformulas!(nw::Network, idx::NetworkDynamics.VCIndex) = delete_pfinitformulas!(getcomp(nw, idx))
+delete_pfinitformulas!(nw::Network, idx::NetworkDynamics.ECIndex) = delete_pfinitformulas!(getcomp(nw, idx))
+
+####
 #### Powerflow callbacks
 ####
 
