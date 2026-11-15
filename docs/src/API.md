@@ -108,6 +108,15 @@ delete_pfinitformulas!
 copy_pf_parameters
 ```
 
+### Powerflow Callbacks
+```@docs
+add_pfcallback!
+set_pfcallback!
+has_pfcallback
+get_pfcallbacks
+delete_pfcallbacks!
+```
+
 ## Utils
 ```@docs
 refine_timeseries

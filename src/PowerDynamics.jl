@@ -60,6 +60,9 @@ export get_pfinitconstraints, get_pfinitformulas
 export delete_pfinitconstraints!, delete_pfinitformulas!
 include("pfinitconstraint.jl")
 
+export add_pfcallback!, set_pfcallback!, has_pfcallback, get_pfcallbacks, delete_pfcallbacks!
+include("pf_metadata.jl")
+
 function __init__()
     # Global settings a cached component body could read while building a model
     NetworkDynamics.register_cache_context!(:PowerDynamics_bases,
