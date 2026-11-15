@@ -19,15 +19,12 @@ has_pfinitconstraint(nw::Network, idx::NetworkDynamics.ECIndex) = has_pfinitcons
     get_pfinitconstraints(nw::Network, idx::Union{VIndex,EIndex})
 
 Retrieves the initialization constraints which depend on pf state for the component model.
-Returns a tuple of constraints, even if only one constraint is present.
+Returns a vector of constraints, even if only one constraint is present.
 May error if no constraints are present. Use `has_pfinitconstraint` to check first.
 
 See also: [`has_pfinitconstraint`](@ref), [`set_pfinitconstraint!`](@ref).
 """
-function get_pfinitconstraints(c::NetworkDynamics.ComponentModel)
-    constraint = get_metadata(c, :pfinitconstraint)
-    return constraint isa Tuple ? constraint : (constraint,)
-end
+get_pfinitconstraints(c::NetworkDynamics.ComponentModel) = NetworkDynamics._get_list(c, :pfinitconstraint, PFInitConstraint)
 get_pfinitconstraints(nw::Network, idx::NetworkDynamics.VCIndex) = get_pfinitconstraints(getcomp(nw, idx))
 get_pfinitconstraints(nw::Network, idx::NetworkDynamics.ECIndex) = get_pfinitconstraints(getcomp(nw, idx))
 
@@ -36,12 +33,13 @@ get_pfinitconstraints(nw::Network, idx::NetworkDynamics.ECIndex) = get_pfinitcon
     set_pfinitconstraint!(nw::Network, idx::Union{VIndex,EIndex}, constraint; check=true)
 
 Sets initialization constraints which depend on the powerflow solution to the component.
-Accepts either a single `PFInitConstraint` or a tuple of `PFInitConstraint` objects.
+Accepts a single `PFInitConstraint` or a tuple or vector of them.
 Overwrites any existing pf constraints.
 See also [`delete_pfinitconstraints!`](@ref), [`add_pfinitconstraint!`](@ref).
 """
-function set_pfinitconstraint!(c::NetworkDynamics.ComponentModel, constraint::Union{PFInitConstraint, Tuple{Vararg{PFInitConstraint}}})
-    set_metadata!(c, :pfinitconstraint, constraint)
+function set_pfinitconstraint!(c::NetworkDynamics.ComponentModel, constraint)
+    @nospecialize constraint
+    set_metadata!(c, :pfinitconstraint, NetworkDynamics._as_list(PFInitConstraint, constraint, "Constraint"))
 end
 set_pfinitconstraint!(nw::Network, idx::NetworkDynamics.VCIndex, constraint; kw...) = set_pfinitconstraint!(getcomp(nw, idx), constraint; kw...)
 
@@ -58,17 +56,7 @@ Returns `true` if the constraint was successfully added, `false` if it already e
 See also [`set_pfinitconstraint!`](@ref), [`delete_pfinitconstraints!`](@ref).
 """
 function add_pfinitconstraint!(c::NetworkDynamics.ComponentModel, constraint::PFInitConstraint)
-    if has_pfinitconstraint(c)
-        existing_constraints = get_pfinitconstraints(c)
-
-        constraint ∈ existing_constraints && return false
-
-        new_constraints = (existing_constraints..., constraint)
-        set_metadata!(c, :pfinitconstraint, new_constraints)
-    else
-        set_metadata!(c, :pfinitconstraint, constraint)
-    end
-    return true
+    NetworkDynamics._add_to_list!(c, :pfinitconstraint, PFInitConstraint, constraint)
 end
 add_pfinitconstraint!(nw::Network, idx::NetworkDynamics.VCIndex, constraint) = add_pfinitconstraint!(getcomp(nw, idx), constraint)
 add_pfinitconstraint!(nw::Network, idx::NetworkDynamics.ECIndex, constraint) = add_pfinitconstraint!(getcomp(nw, idx), constraint)
@@ -108,15 +96,12 @@ has_pfinitformula(nw::Network, idx::NetworkDynamics.ECIndex) = has_pfinitformula
     get_pfinitformulas(nw::Network, idx::Union{VIndex,EIndex})
 
 Retrieves the initialization formulas which depend on pf state for the component model.
-Returns a tuple of formulas, even if only one formula is present.
+Returns a vector of formulas, even if only one formula is present.
 May error if no formulas are present. Use `has_pfinitformula` to check first.
 
 See also: [`has_pfinitformula`](@ref), [`set_pfinitformula!`](@ref).
 """
-function get_pfinitformulas(c::NetworkDynamics.ComponentModel)
-    formula = get_metadata(c, :pfinitformula)
-    return formula isa Tuple ? formula : (formula,)
-end
+get_pfinitformulas(c::NetworkDynamics.ComponentModel) = NetworkDynamics._get_list(c, :pfinitformula, PFInitFormula)
 get_pfinitformulas(nw::Network, idx::NetworkDynamics.VCIndex) = get_pfinitformulas(getcomp(nw, idx))
 get_pfinitformulas(nw::Network, idx::NetworkDynamics.ECIndex) = get_pfinitformulas(getcomp(nw, idx))
 
@@ -125,12 +110,13 @@ get_pfinitformulas(nw::Network, idx::NetworkDynamics.ECIndex) = get_pfinitformul
     set_pfinitformula!(nw::Network, idx::Union{VIndex,EIndex}, formula; check=true)
 
 Sets initialization formulas which depend on the powerflow solution to the component.
-Accepts either a single `PFInitFormula` or a tuple of `PFInitFormula` objects.
+Accepts a single `PFInitFormula` or a tuple or vector of them.
 Overwrites any existing pf formulas.
 See also [`delete_pfinitformulas!`](@ref), [`add_pfinitformula!`](@ref).
 """
-function set_pfinitformula!(c::NetworkDynamics.ComponentModel, formula::Union{PFInitFormula, Tuple{Vararg{PFInitFormula}}})
-    set_metadata!(c, :pfinitformula, formula)
+function set_pfinitformula!(c::NetworkDynamics.ComponentModel, formula)
+    @nospecialize formula
+    set_metadata!(c, :pfinitformula, NetworkDynamics._as_list(PFInitFormula, formula, "Formula"))
 end
 set_pfinitformula!(nw::Network, idx::NetworkDynamics.VCIndex, formula; kw...) = set_pfinitformula!(getcomp(nw, idx), formula; kw...)
 
@@ -147,17 +133,7 @@ Returns `true` if the formula was successfully added, `false` if it already exis
 See also [`set_pfinitformula!`](@ref), [`delete_pfinitformulas!`](@ref).
 """
 function add_pfinitformula!(c::NetworkDynamics.ComponentModel, formula::PFInitFormula)
-    if has_pfinitformula(c)
-        existing_formulas = get_pfinitformulas(c)
-
-        formula ∈ existing_formulas && return false
-
-        new_formulas = (existing_formulas..., formula)
-        set_metadata!(c, :pfinitformula, new_formulas)
-    else
-        set_metadata!(c, :pfinitformula, formula)
-    end
-    return true
+    NetworkDynamics._add_to_list!(c, :pfinitformula, PFInitFormula, formula)
 end
 add_pfinitformula!(nw::Network, idx::NetworkDynamics.VCIndex, formula) = add_pfinitformula!(getcomp(nw, idx), formula)
 add_pfinitformula!(nw::Network, idx::NetworkDynamics.ECIndex, formula) = add_pfinitformula!(getcomp(nw, idx), formula)
