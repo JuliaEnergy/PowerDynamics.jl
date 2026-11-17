@@ -53,12 +53,15 @@ export has_pfmodel, get_pfmodel, set_pfmodel!, delete_pfmodel!
 include("powerflow.jl")
 
 export PFInitConstraint, @pfinitconstraint, PFInitFormula, @pfinitformula, copy_pf_parameters
+include("pfinitconstraint.jl")
+
 export add_pfinitconstraint!, add_pfinitformula!
 export set_pfinitconstraint!, set_pfinitformula!
 export has_pfinitconstraint, has_pfinitformula
 export get_pfinitconstraints, get_pfinitformulas
 export delete_pfinitconstraints!, delete_pfinitformulas!
-include("pfinitconstraint.jl")
+export add_pfcallback!, set_pfcallback!, has_pfcallback, get_pfcallbacks, delete_pfcallbacks!
+include("pf_metadata.jl")
 
 function __init__()
     # Global settings a cached component body could read while building a model

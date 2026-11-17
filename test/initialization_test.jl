@@ -151,6 +151,25 @@ end
         @test add_pfinitconstraint!(em, pfic)
         @test !add_pfinitconstraint!(em, pfic)
 
+        @test has_pfinitformula(nw, eidx) && has_pfinitconstraint(em)
+        @test get_pfinitformulas(em) == [pfif]
+        @test get_pfinitconstraints(nw, eidx) == [pfic]
+        set_pfinitformula!(em, (pfif, pfif))
+        @test length(get_pfinitformulas(em)) == 2
+        @test delete_pfinitformulas!(em) && !has_pfinitformula(em)
+        @test delete_pfinitconstraints!(nw, eidx) && !has_pfinitconstraint(em)
+
+        # few smoketetst on the other metadata accessors
+        cb1(fs, idx; tol) = []
+        cb2(fs, idx; tol) = []
+        @test !has_pfcallback(em)
+        @test add_pfcallback!(nw, eidx, cb1)
+        @test !add_pfcallback!(em, cb1)
+        @test get_pfcallbacks(em) == [cb1]
+        set_pfcallback!(em, (cb2, cb1))
+        @test get_pfcallbacks(nw, eidx) == [cb2, cb1]
+        @test delete_pfcallbacks!(em) && !has_pfcallback(em)
+
         f1 = copy_pf_parameters(em)
         f2 = copy_pf_parameters(em)
         @test f1 == f2
