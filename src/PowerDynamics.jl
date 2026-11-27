@@ -33,6 +33,7 @@ export set_Sbase!, set_ωbase!, set_fbase!, set_Vbase!
 include("modeling_tools.jl")
 
 export isinjectormodel, isbusmodel, isbranchmodel, islinemodel
+export get_injector_terminal, injector_terminal, set_injector_terminal
 include("interfaces.jl")
 
 export set_voltage!, set_current!, refine_timeseries, unwrap_deg, unwrap_rad

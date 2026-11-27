@@ -1,4 +1,17 @@
 # PowerDynamics.jl Changelog
+## Version 6.0.0 Changelog (unreleased)
+
+- **Injector terminal.** An injector may contain several terminals; the one which connects it
+  to the bus is named by `set_injector_terminal(sys, :name)` and defaults to `:terminal`.
+  `MTKBus` and `CompositeInjector` connect through it. New accessors
+  `get_injector_terminal` and `injector_terminal` ([#308]).
+- Powerflow callbacks: `add_pfcallback!`, `set_pfcallback!`, `has_pfcallback`,
+  `get_pfcallbacks` and `delete_pfcallbacks!` handle the `:pfcallbacks` metadata of a
+  component ([#306]).
+
+[#306]: https://github.com/JuliaEnergy/PowerDynamics.jl/pull/306
+[#308]: https://github.com/JuliaEnergy/PowerDynamics.jl/pull/308
+
 ## Version 5.1.0 Changelog
 
 - **Cached library models.** Requires NetworkDynamics ≥ 1.4, whose model cache this release
