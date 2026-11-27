@@ -375,7 +375,7 @@ function MTKBus(injectors...; name=:bus, Vbase=nothing)
     end
     @named busbar = BusBar(; _busbar_defaults(Vbase)...)
     @named systembase = SystemBase()
-    eqs = [connect(busbar.terminal, inj.terminal) for inj in injectors]
+    eqs = [connect(busbar.terminal, injector_terminal(inj)) for inj in injectors]
     composite_system(eqs, [busbar, systembase, injectors...], name)
 end
 
@@ -384,7 +384,7 @@ function MTKBus(systems::Union{AbstractVector,Tuple,Set}, eqs=autoconnections(sy
     @named systembase = SystemBase()
     for sys in systems
         if isinjectormodel(sys)
-            eq = connect(sys.terminal, busbar.terminal)
+            eq = connect(injector_terminal(sys), busbar.terminal)
             push!(eqs, eq)
         end
     end
@@ -462,8 +462,9 @@ MTKBus(; name=:bus) = KirchoffBus(; name)
 """
     CompositeInjector(systems, eqs=autoconnections(systems); name=Symbol(join(getname.(systems), "_")))
 
-Create an injector object which contains several subsystems. Every subsystem which has a `terminal` will be connected
-to a newly created terminal of the composite injector. The subsystems are namespaced within the composite injector.
+Create an injector object which contains several subsystems. Every subsystem which is an injector will be connected
+through its injector terminal (see [`injector_terminal`](@ref)) to a newly created terminal of the composite
+injector. The subsystems are namespaced within the composite injector.
 
 There are two options for additional connections between the subsystems:
 - interconnections will be created automatically using some name-matching heuristics using `autoconnections(systems)`:
@@ -500,7 +501,7 @@ function CompositeInjector(systems, eqs=autoconnections(systems); name=Symbol(jo
     ivs = ModelingToolkitBase.get_iv.(systems)
     @assert allequal(ivs) "Systems have different independent variables! $ivs"
     iv = first(ivs)
-    termeqs = Equation[connect(sys.terminal, terminal) for sys in systems if isinjectormodel(sys)]
+    termeqs = Equation[connect(injector_terminal(sys), terminal) for sys in systems if isinjectormodel(sys)]
     composite_system(vcat(termeqs, eqs), vcat(terminal, systems), name; iv)
 end
 

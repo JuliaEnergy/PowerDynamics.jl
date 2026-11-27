@@ -60,7 +60,7 @@ It represents a connection point with constant voltage in dq-coordinates `u_r` a
 ### Modeling of Buses
 #### [Model class `Injector`](@id Injector Interface)
 
-An injector is a class of components with a single `Terminal()` (called `:terminal`).
+An injector is a class of components with a `Terminal()` that connects it to the bus (called `:terminal` by default).
 Examples for injectors might be Generators, Shunts, Loads.
 ```asciiart
 (t)   ┌──────────┐
@@ -71,9 +71,13 @@ The current for injectors is always in injector convention; i.e., positive curre
 
 !!! note "Model classes"
     Model "classes" are nothing formalized. In this document, a model class is just a description for some `System` from `ModelingToolkit.jl`, which satisfies certain requirements.
-    For example, any `System` is considered an "Injector" if it contains a connector `Terminal()` called `:terminal`.
+    For example, any `System` is considered an "Injector" if it contains a connector `Terminal()` called `:terminal` and is not a busbar.
 
 You can check if a model satisfies the injector interface using the [`isinjectormodel`](@ref) function.
+
+An injector may contain further terminals inside, for example a breaker or a unit transformer
+between the device and the bus. Then [`set_injector_terminal`](@ref) names the one that connects
+it to the bus, and [`MTKBus`](@ref) and [`CompositeInjector`](@ref) connect through that one.
 
 !!! details "Code example: definition of PQ load as injector"
     ```@example concepts

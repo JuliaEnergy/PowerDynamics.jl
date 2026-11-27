@@ -183,6 +183,39 @@ end
 end
 
 
+@testset "injector terminal" begin
+    @named bb = BusBar()
+    @test !isinjectormodel(bb)
+    @test_throws ArgumentError injector_terminal(bb)
+    @test_throws ArgumentError compile_bus(bb)
+
+    @named load = PQLoad(Pset=-1, Qset=0)
+    @test get_injector_terminal(load) == :terminal
+    @test nameof(injector_terminal(load)) == nameof(load.terminal)
+
+    # an injector whose bus side terminal is called port, the device keeps its terminal inside
+    @named port = Terminal()
+    sys = System([connect(port, load.terminal)], t; systems=[port, load], name=:inj)
+    @test !isinjectormodel(sys)
+    @test_throws ArgumentError set_injector_terminal(sys, :nonexistent)
+    inj = set_injector_terminal(sys, :port)
+    @test isinjectormodel(inj)
+    @test get_injector_terminal(inj) == :port
+    @test nameof(injector_terminal(inj)) == nameof(inj.port) == Symbol("inj₊port")
+
+    bus = compile_bus(MTKBus(inj))
+    @test :inj₊port₊i_r ∈ bus.obssym ∪ bus.sym
+    bus = compile_bus(inj)
+    @test :inj₊port₊i_r ∈ bus.obssym ∪ bus.sym
+    @named load2 = PQLoad(Pset=-0.5, Qset=0)
+    bus = compile_bus(MTKBus([inj, load2]))
+    @test :inj₊port₊i_r ∈ bus.obssym ∪ bus.sym
+    composite = CompositeInjector([inj, load2]; name=:comp)
+    @test isinjectormodel(composite)
+    bus = compile_bus(composite)
+    @test :comp₊inj₊port₊i_r ∈ bus.obssym ∪ bus.sym
+end
+
 import NetworkDynamics
 @testset "global bases with the model cache" begin
     # a reused (cached) model must still pick up the global bases that are current at build time

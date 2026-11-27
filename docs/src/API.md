@@ -54,6 +54,13 @@ isbranchmodel
 islinemodel
 ```
 
+### Injector Terminal
+```@docs
+get_injector_terminal
+injector_terminal
+set_injector_terminal
+```
+
 ## Power Flow Analysis
 
 ### Power Flow Bus Types

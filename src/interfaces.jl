@@ -9,10 +9,10 @@ end
 
 Check if a `System` satisfies the injector model interface.
 
-An injector model must contain a [`Terminal`](@ref) named `:terminal`. Injector
-models represent components like generators, loads, and other devices that
-connect to a single bus. They can have arbitrary internal complexity as long as they
-have exactly one terminal.
+An injector model must contain a [`Terminal`](@ref) which connects it to the bus, by default
+named `:terminal` (see [`get_injector_terminal`](@ref)). Injector models represent
+components like generators, loads, and other devices that connect to a single bus. They can
+have arbitrary internal complexity, including further terminals inside.
 
 ```asciiart
    (t)    ┌──────────┐
@@ -20,29 +20,74 @@ have exactly one terminal.
 :terminal └──────────┘
 ```
 
-See also: [`Terminal`](@ref)
+A [`BusBar`](@ref) has a terminal too, but it is not an injector.
+
+See also: [`Terminal`](@ref), [`injector_terminal`](@ref)
 """
 function isinjectormodel(sys::System)
-    # HACK: use try catch instead of hasproperty https://github.com/SciML/ModelingToolkit.jl/issues/3016
-    try
-        return isterminal(sys.terminal)
-    catch e
-        if e isa ArgumentError && contains(e.msg, "variable terminal does not exist")
-            return false
-        else
-            rethrow(e)
-        end
+    isbusbar(sys) && return false
+    name = get_injector_terminal(sys)
+    subsystems = ModelingToolkitBase.get_systems(sys)
+    idx = findfirst(s -> getname(s) == name, subsystems)
+    isnothing(idx) ? false : isterminal(subsystems[idx])
+end
+
+# metadata key for the name of the injector terminal
+struct InjectorTerminal end
+
+"""
+    get_injector_terminal(sys::System)
+
+Name of the terminal which connects an injector to the bus: `:terminal` unless set
+otherwise with [`set_injector_terminal`](@ref). Does not check whether `sys` is an injector.
+"""
+get_injector_terminal(sys::System) = ModelingToolkitBase.getmetadata(sys, InjectorTerminal, :terminal)
+
+"""
+    injector_terminal(sys::System)
+
+The terminal which connects the injector `sys` to the bus, as namespaced subsystem, for
+example for `connect(busbar.terminal, injector_terminal(inj))`. Throws if `sys` is no
+injector model.
+
+See also: [`get_injector_terminal`](@ref), [`isinjectormodel`](@ref)
+"""
+function injector_terminal(sys::System)
+    isinjectormodel(sys) || throw(ArgumentError("$(getname(sys)) is not an injector model"))
+    getproperty(sys, get_injector_terminal(sys))
+end
+
+"""
+    set_injector_terminal(sys::System, name::Symbol)
+
+Return a copy of `sys` whose terminal `name` connects it to the bus, for an injector with
+several terminals. The copy has to satisfy the injector interface.
+
+```julia
+inj = set_injector_terminal(inj, :port)
+injector_terminal(inj) # inj.port
+```
+
+See also: [`get_injector_terminal`](@ref), [`isinjectormodel`](@ref)
+"""
+function set_injector_terminal(sys::System, name::Symbol)
+    newsys = ModelingToolkitBase.setmetadata(sys, InjectorTerminal, name)
+    if !isinjectormodel(newsys)
+        throw(ArgumentError("$(getname(sys)) with injector terminal $name does not satisfy the \
+                             injector interface, it needs a Terminal subsystem $name."))
     end
+    newsys
 end
 
 
 function isbusbar(sys::System)
     # TODO: consider overloading constructors in libary to add metadata
     # @set! busbar.metadata = (; modelname=:busbar)
-    vars = getname.(unknowns(sys)) ⊇ Set([:u_r, :u_i, :i_r, :i_i])
+    # cheap check first, the io analysis below is expensive for large injectors
+    getname.(ModelingToolkitBase.get_unknowns(sys)) ⊇ Set([:u_r, :u_i, :i_r, :i_i]) || return false
     inputs = Set(getname.(ModelingToolkitBase.unbound_inputs(sys))) == Set([:i_r, :i_i])
     outputs = Set(getname.(ModelingToolkitBase.unbound_outputs(sys))) == Set([:u_r, :u_i])
-    vars && inputs && outputs
+    inputs && outputs
 end
 """
     isbusmodel(sys::System)
