@@ -83,10 +83,11 @@ end
 function isbusbar(sys::System)
     # TODO: consider overloading constructors in libary to add metadata
     # @set! busbar.metadata = (; modelname=:busbar)
-    vars = getname.(unknowns(sys)) ⊇ Set([:u_r, :u_i, :i_r, :i_i])
+    # cheap check first, the io analysis below is expensive for large injectors
+    getname.(ModelingToolkitBase.get_unknowns(sys)) ⊇ Set([:u_r, :u_i, :i_r, :i_i]) || return false
     inputs = Set(getname.(ModelingToolkitBase.unbound_inputs(sys))) == Set([:i_r, :i_i])
     outputs = Set(getname.(ModelingToolkitBase.unbound_outputs(sys))) == Set([:u_r, :u_i])
-    vars && inputs && outputs
+    inputs && outputs
 end
 """
     isbusmodel(sys::System)
